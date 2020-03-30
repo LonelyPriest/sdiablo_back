@@ -616,7 +616,7 @@ create table w_card_sale_detail
     cid             INTEGER not null default -1, -- refer to w_charge
     
     amount          INTEGER not null default -1,    
-    good           INTEGER default -1, -- refer to card_good
+    good            INTEGER default -1, -- refer to card_good
     tag_price       INTEGER default -1,
     
     merchant        INTEGER default -1,
@@ -627,6 +627,39 @@ create table w_card_sale_detail
     unique key      uk (merchant, retailer, rsn, good),
     key     dk     (merchant, shop, retailer),
     primary key     (id)
+) default charset=utf8;
+
+create table w_gift
+(
+    id              INTEGER AUTO_INCREMENT,
+    code            VARCHAR(32) not null default '',
+    name            VARCHAR(64) not null default '',
+    PY              VARCHAR(64) not null default '',
+    rule            TINYINT not null default -1, -- 0: gete per month
+    score           INTEGER not null default 0,  -- get by score
+    merchant        INTEGER not null default -1,
+    entry_date      DATE not null default 0,
+    unique key      uk (code, merchant),
+    key    dk       (name, merchant),
+    primary key     (id)      
+) default charset=utf8;
+
+create table w_gift_sale
+(
+    id              INTEGER AUTO_INCREMENT,
+    rsn             VARCHAR(32) default '-1',
+    employee        VARCHAR(8) not null,
+    retailer        INTEGER not null default -1,
+    gift            INTEGER not null default -1, -- refer to w_gift
+    score           INTEGER not null default -1,
+    comment         VARCHAR(256) not null default '',
+    merchant        INTEGER not null default -1,
+    shop            INTEGER not null default -1,
+    comment         VARCHAR(256) not null default '',
+    entry_date      DATETIME not null default 0,
+    unique key  uk  (rsn),
+    key dk (retailer, merchant, shop),
+    primary key (id) 
 ) default charset=utf8;
 
 create table retailer_balance_history

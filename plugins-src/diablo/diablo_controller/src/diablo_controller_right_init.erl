@@ -213,7 +213,11 @@ init([]) ->
 	  <<"删除次卡商品销售">>, <<"delete_threshold_card_sale">>, ?right_w_retailer},
 
 	 {?delete_threshold_card,
-	  <<"删除次/月/季/年卡">>, <<"delete_threshold_card">>, ?right_w_retailer}
+	  <<"删除次/月/季/年卡">>, <<"delete_threshold_card">>, ?right_w_retailer},
+
+	 {?add_w_gift, <<"新增礼品">>, <<"add_w_gift">>, ?right_w_retailer},
+	 {?delete_w_gift, <<"删除礼品">>, <<"delete_w_gift">>, ?right_w_retailer}, 
+	 {?modify_w_gift, <<"编辑礼品">>, <<"modify_w_gift">>, ?right_w_retailer}
 	],
 
     
@@ -1088,6 +1092,7 @@ pass_action(wholesaler) ->
      <<"filter_retailer_consume">>,
      <<"gift_ticket">>,
      <<"list_ticket_plan">>,
+     <<"list_w_gift">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,

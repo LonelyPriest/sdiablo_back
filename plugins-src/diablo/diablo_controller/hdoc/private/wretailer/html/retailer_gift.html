@@ -1,0 +1,365 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>会员礼品</div> 
+	<div class="actions">
+	  <div class="btn-group btn-group-solid">
+	    <a x-ng-if="right.add_gift" type="button" class="btn green"
+	       x-ng-click="new_gift()">新增
+	      <i class="glyphicon glyphicon-plus"></i></a>
+	    
+	    <a type="button" class="btn blue reload purple-stripe"
+	       x-ng-click="refresh()">刷新
+	      <i class="icon icon-spinner fg-white"></i></a>
+	  </div>
+	</div> 
+      </div>
+
+      <div class="portlet-body">
+	<div class="table-toolbar">
+	  <div class="row">
+	    <div class="col-xs-12 col-ms-12 col-md-12">
+	      <div class="input-group">
+		<div class="has-feedback">
+	      	  <input
+	      	     class="form-control"
+		     type ="text"
+		     focus-auto=true
+	      	     x-ng-edit
+	      	     placeholder="请输入礼品编码/名称或首字母拼音"
+	      	     typeahead-editable="false"
+		     typeahead-wait-ms="300"
+		     typeahead-loading="loading"
+	      	     uib-typeahead="s as s.name for s in match_retailer_gift($viewValue)"
+	      	     x-ng-model="select.gift"
+		     x-ng-enter="select.gift && do_search(default_page)"/>
+		  <span x-ng-show="loading">
+	  	    <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+		  </span>
+		</div>
+		<div class="input-group-btn">
+		  <button class="btn green"
+			  x-ng-disabled="!select.phone"
+			  x-ng-click="do_search(default_page)">
+	      	    <i class="glyphicon glyphicon-search"></i>
+	      	  </button>
+		</div> 
+	      </div> 
+	    </div> 
+	  </div>
+	</div>
+	
+	<div class="portlet-body"> 
+	  <div class="panel panel-default table-panel"> 
+	    <div class="table-responsive">
+	      <table class="table table-bordered table-striped table-hover table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>序号</th>
+		    <th>编号</th>
+		    <th>名称</th>
+		    <th>规则</th> 
+		    <th>兑换积分</th>
+		    <th>日期</th>
+		    <th>操作</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr ng-repeat="g in gifts">
+		    <td x-ng-bind=g.order_id></td>
+		    <td x-ng-bind=g.code></td>
+		    <td x-ng-bind=g.name></td>
+		    <td x-ng-bind=rules[g.rule_id].name></td>
+		    <td x-ng-bind=g.score></td>
+		    <td x-ng-bind=g.entry_date></td>
+		    <td> 
+		      <button x-ng-if="right.modify_gift" class="btn diablo-button green"
+		      	      x-ng-click="exchange_gift(g)">兑换
+			<i class="glyphicon glyphicon-transfer"></i>
+		      </button>
+		      <button x-ng-if="right.modify_gift" class="btn diablo-button purple"
+		      	      x-ng-click="free_gift(g)">领取
+			<i class="glyphicon glyphicon-download-alt"></i>
+		      </button> 
+		      <button x-ng-if="right.modify_gift" class="btn diablo-button yellow"
+		      	      x-ng-click="modify_gift(g)">修改
+			<i class="glyphicon glyphicon-edit"></i>
+		      </button>
+		      <button x-ng-if="right.delete_gift" class="btn diablo-button red"
+		      	      x-ng-click="delete_card_good(g)">删除
+			<i class="glyphicon glyphicon-erase"></i>
+		      </button>
+		    </td> 
+		  </tr> 
+		</tbody> 
+		<tfoot></tfoot>
+		
+	      </table>
+	    </div>
+	    
+	  </div>
+
+	  <div x-ng-show="total_items>items_perpage" class="row">
+	    <div class="col-md-12, col-sm-12, col-xs-12">
+	      <span>显示第 {{current_page}} / {{num_pages}} 项结果，
+		共 {{total_items}} 项</span>
+	      <uib-pagination
+		 class="pagination-lg table-pagination pull-right"
+		 total-items="total_items"
+		 items-per-page="items_perpage"
+		 num-pages="num_pages"
+		 max-size="max_page_size"
+		 boundary-links="true"
+		 previous-text="&lsaquo;" next-text="&rsaquo;"
+		 first-text="&laquo;" last-text="&raquo;"
+		 x-ng-model="current_page"
+		 x-ng-change="page_changed(current_page)">
+	      </uib-pagination>
+	    </div>
+	  </div> 
+	</div> <!--END portlet body--> 
+      </div> <!--END table container-->
+      
+    </div>
+  </div>
+</div>
+
+
+<script type="text/ng-template" id="new-gift.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title"><span class="label label-sm label-primary">新增礼品</span></h4>
+  </div>
+  
+  <div class="modal-body">
+    <form class="form-horizontal" name="gForm" novalidate>
+      <div class="form-body">
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">礼品编号</label>
+	  <div class="col-sm-8 col-md-8">
+	    <div class="input-group">
+	      <input class="form-control"
+		     type="text"
+		     required
+		     capitalize
+		     x-ng-edit
+		     name="code"
+		     x-ng-pattern="params.pattern.code" 
+		     x-ng-model="params.code"/>
+	      <span class="input-group-addon bg-white fg-red">*</span> 
+	    </div>
+	    <div ng-show="gForm.code.$invalid && !gForm.code.$pristine">
+	      <span class="fg-red">编号只能是数字或字母，不小于2位</span>
+	    </div> 
+	  </div>
+	</div>
+	
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">礼品名称</label>
+	  <div class="col-sm-8 col-md-8">
+	    <div class="input-group">
+	      <input class="form-control"
+		     type="text"
+		     required
+		     capitalize
+		     x-ng-edit
+		     name="name"
+		     x-ng-pattern="params.pattern.name"
+		     x-ng-model="params.name"/>
+	      <span class="input-group-addon bg-white fg-red">*</span> 
+	    </div>
+	    <div ng-show="gForm.name.$invalid && !gForm.name.$pristine">
+	      <span class="fg-red">只能是中文，字母或下划线</span>
+	    </div> 
+	  </div>
+	</div>
+	
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">兑换规则</label> 
+	  <div class="col-sm-8 col-md-8">
+	    <select class="form-control" type="text"
+		    x-ng-model="params.rule"
+		    x-ng-options="r as r.name for r in params.rules">
+	    </select> 
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">兑换积分</label>
+	  <div class="col-sm-8 col-md-8">
+	    <div class="input-group">
+	      <input class="form-control"
+		     type="number"
+		     required
+		     x-ng-edit
+		     name="score"
+		     x-ng-pattern="params.pattern.score" 
+		     x-ng-model="params.score"
+		     placeholder="兑换该礼品所需的积分"/>
+	      <span class="input-group-addon bg-white fg-red">*</span> 
+	    </div>
+	    <div ng-show="gForm.score.$invalid && !gForm.score.$pristine">
+	      <span class="fg-red">积分只能是数字</span>
+	    </div> 
+	  </div>
+	</div> 
+      </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="gForm.$invalid"
+	    x-ng-click="ok()">确定</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div> 
+</script>
+
+<script type="text/ng-template" id="exchange-gift.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title">
+      <span x-ng-if="params.mode===0" class="label label-sm label-primary">礼品领取</span>
+      <span x-ng-if="params.mode===1" class="label label-sm label-primary">礼品兑换</span>
+    </h4>
+  </div>
+  
+  <div class="modal-body">
+    <form class="form-horizontal" name="gForm" novalidate>
+      <div class="form-body">
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">礼品编号</label>
+	  <div class="col-sm-8 col-md-8">
+	    <input class="form-control"
+		   type="text"
+		   readonly
+		   x-ng-model="params.code"/>
+	  </div>
+	</div>
+	
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">礼品名称</label>
+	  <div class="col-sm-8 col-md-8">
+	      <input class="form-control"
+		     type="text"
+		     x-ng-edit
+		     readonly
+		     x-ng-model="params.name"/>
+	  </div>
+	</div>
+	
+	<div x-ng-if="params.mode===0" class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">领取规则</label> 
+	  <div class="col-sm-8 col-md-8">
+	    <input class="form-control"
+		   type="text"
+		   x-ng-edit
+		   readonly
+		   x-ng-model="params.rule_name"/> 
+	  </div>
+	</div>
+
+	<div x-ng-if="params.mode===1" class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">兑换积分</label>
+	  <div class="col-sm-8 col-md-8">
+	    <div class="input-group">
+	      <input class="form-control"
+		     type="number"
+		     required
+		     x-ng-edit
+		     name="score"
+		     x-ng-pattern="params.pattern.score" 
+		     x-ng-model="params.score"
+		     placeholder="兑换该礼品所需的积分"/>
+	      <span class="input-group-addon bg-white fg-red">*</span> 
+	    </div>
+	    <div ng-show="gForm.score.$invalid && !gForm.score.$pristine">
+	      <span class="fg-red">积分只能是数字</span>
+	    </div> 
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">会员</label>
+	  <div class="col-sm-8 col-md-8"> 
+	    <input type="text"
+		   class="form-control"
+		   name="retailer"
+		   x-ng-edit
+		   placeholder="会员电话/姓名/拼音"
+		   typeahead-editable="false"
+		   typeahead-wait-ms="300"
+		   typeahead-loading="iloading"
+		   uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"
+		   x-ng-model="params.retailer" />
+	    <span x-ng-show="iloading">
+	      <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+	    </span>
+	    <div ng-show="gForm.retailer.$invalid && !gForm.retailer.$pristine">
+	      <span class="fg-red">介绍人只能从下拉列表中获取</span>
+	    </div> 
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <span class="col-md-2 col-sm-3 col-xs-2 control-label">经手人</span>
+	  <div class="col-md-8 col-sm-8 col-xs-8">
+	    <select class="form-control" type="text"
+		    required
+	      	    x-ng-model="params.employee"
+	      	    x-ng-options="e as e.name for e in employees|filter:$viewValue">
+	    </select> 
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <span class="col-md-2 col-sm-3 col-xs-2 control-label">店铺</span>
+	  <div class="col-md-8 col-sm-8 col-xs-8">
+	    <select class="form-control" type="text"
+		    required
+	      	    x-ng-model="params.shop"
+	      	    x-ng-options="s as s.name for s in shops|filter:$viewValue">
+	    </select> 
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">备注</label>
+	  <div class="col-sm-8 col-md-8">
+	    <div x-ng-class="{'has-error': gForm.comment.$invalid && !gForm.comment.$pristine}">
+	      <input type="text"
+		     class="form-control"
+		     name="comment"
+		     x-ng-edit
+		     placeholder="请输入备注"
+		     x-ng-model="params.comment"
+		     x-ng-pattern="params.pattern.comment"/>
+	    </div>
+	    <div ng-show="gForm.comment.$invalid && !gForm.comment.$pristine">
+	      <span class="fg-red">中文，字母，数字，不支持特殊字符</span> 
+	    </div>
+	  </div>
+	</div>
+	
+      </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="gForm.$invalid"
+	    x-ng-click="ok()">确定</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div> 
+</script>

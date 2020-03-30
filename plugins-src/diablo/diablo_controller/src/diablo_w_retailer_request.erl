@@ -1121,7 +1121,7 @@ action(Session, Req, {"add_threshold_card_good"}, Payload) ->
 	       200, Req, ?succ(add_threshold_card_good, GoodId));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
-    end;    
+    end;
 
 action(Session, Req, {"filter_threshold_card_detail"}, Payload) ->
     ?DEBUG("filter_threshold_card_detail with session ~p, paylaod~n~p", [Session, Payload]), 
@@ -1163,19 +1163,45 @@ action(Session, Req, {"filter_threshold_card_good"}, Payload) ->
 %% charge
 %%
 action(Session, Req, {"add_w_retailer_score"}, Payload) ->
-    ?DEBUG("add_w_retailer_score with session ~p, payload ~p",
-	   [Session, Payload]),
-
-    Merchant = ?session:get(merchant, Session),
-
+    ?DEBUG("add_w_retailer_score with session ~p, payload ~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session), 
     case ?w_retailer:score(new, Merchant, Payload) of
 	{ok, Id} ->
 	    ?w_user_profile:update(score, Merchant),
-	    ?utils:respond(
-	       200, Req, ?succ(add_retailer_score, Id));
+	    ?utils:respond(200, Req, ?succ(add_retailer_score, Id));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
+
+%%
+%% gift
+%%
+action(Session, Req, {"add_w_gift"}, Payload) ->
+    ?DEBUG("add_w_gift: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    case ?w_retailer:gift(new, Merchant, Payload) of
+	{ok, Id} ->
+	    ?utils:respond(200, Req, ?succ(add_retailer_gift, Id));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"list_w_gift"}, Payload) ->
+    ?DEBUG("list_w_gift: session ~p, payload ~p", [Session, Payload]),
+    Merchant  = ?session:get(merchant, Session),
+    
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_retailer:filter(
+		  total_gift, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_retailer:filter(gift,
+				  Match,
+				  Merchant,
+				  Conditions,
+				  CurrentPage, ItemsPerPage)
+       end, Req, Payload);
 
 action(Session, Req, {"export_w_retailer"}, Payload) ->
     ?DEBUG("export_w_retailer with session ~p, payload ~p", [Session, Payload]),
@@ -1314,6 +1340,7 @@ sidebar(Session) ->
     S3 = [{"wretailer_charge_detail", "充值记录", "glyphicon glyphicon-bookmark"}], 
     S4 = [{"wretailer_account", "会员帐户", "glyphicon glyphicon-piggy-bank"}], 
 
+    Gift = [{"gift", "礼品详情", "glyphicon glyphicon-gift"}], 
 
     Recharge =
 	[{{"promotion", "充值积分", "glyphicon glyphicon-superscript"},
@@ -1354,7 +1381,7 @@ sidebar(Session) ->
     Consume = [{"consume", "消费统计", "glyphicon glyphicon-usd"}],
 
     
-    L1 = ?menu:sidebar(level_1_menu, S2 ++ S1 ++ S4 ++ S3),
+    L1 = ?menu:sidebar(level_1_menu, S2 ++ S1 ++ S4 ++ S3 ++ Gift),
     L2 = ?menu:sidebar(level_2_menu, Ticket ++ Recharge ++
 			   case ?to_i(?v(<<"threshold_card">>, BaseSetting, ?NO)) of
 			       ?YES -> ThresholdCard;

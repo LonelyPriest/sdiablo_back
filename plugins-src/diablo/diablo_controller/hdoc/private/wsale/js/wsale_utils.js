@@ -1206,7 +1206,7 @@ var wsaleCalc = function(){
 			    // one.fprice = diablo_price(one.tag_price, one.fdiscount);
 			}
 
-			valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			valid_price = wsaleCalc.get_valid_price(isVip, one);
 			// one.fprice = diablo_price(one.tag_price, one.fdiscount);
 			one.fprice = diablo_price(valid_price, one.fdiscount);
 		    } 
@@ -1273,12 +1273,24 @@ var wsaleCalc = function(){
 		    var one = inventories[i];
 		    valid_price = wsaleCalc.get_valid_price(isVip, one);
 		    // if (diablo_discount(one.rprice, one.tag_price) >= score_discount) {
-		    
-		    if (diablo_discount(one.rprice, valid_price) >= score_discount) {
-			if (one.sid !== diablo_invalid_index){
-			    pscores = wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
+		    if (diablo_yes === scoreDiscountPerStock) {
+			var ff = one.rprice * diablo_full_discount / (valid_price * one.discount);
+			// console.log(ff);
+			if (ff * diablo_full_discount >= score_discount) {
+			    if (one.sid !== diablo_invalid_index){
+				pscores = wsaleUtils.sort_score(
+				    one.score, one.promotion, one.calc, pscores);
+			    }
+			}
+		    } else {
+			if (diablo_discount(one.rprice, valid_price) >= score_discount) {
+			    if (one.sid !== diablo_invalid_index){
+				pscores = wsaleUtils.sort_score(
+				    one.score, one.promotion, one.calc, pscores);
+			    }
 			}
 		    }
+		    
 		}
 	    } 
 	    

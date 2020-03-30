@@ -854,6 +854,8 @@ sys_config(shop) ->
      {"m_sale",          "允许负数退货",         "1",   "0"},
      {"round",           "四舍五入",             "1",   "0"},
      {"h_stock",         "入库字段隐藏",         "000110111111011", "0"},
+     
+     {"consume_sms",     "消费短信提醒",         "0",   "0"},
 
      {"p_balance",
       "销售模式",
@@ -967,8 +969,7 @@ sys_config() ->
 	      %% [0]: recharge notify
 	      %% [1]: threshold_card consume notify
 	      %% [2]: gift ticket notify
-	      {"recharge_sms",    "充值短信提醒",         "000",   "0"},
-	      
+	      {"recharge_sms",    "充值短信提醒",         "000",   "0"},	      
 	      {"consume_sms",     "消费短信提醒",         "0",   "0"},
 	      
 	      {"price_on_region", "按区域填写价格",       "0",   "0"},

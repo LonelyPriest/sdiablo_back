@@ -212,6 +212,8 @@ success(syn_score_ticket, Merchant) ->
     {0, "Success syn ticket of merchant:" ++ ?to_s(Merchant)};
 success(new_ticket_plan, Plan) ->
     {0, "Success to add a new ticket plan:" ++ ?to_s(Plan)};
+success(add_retailer_gift, Gift) ->
+    {0, "Success to add a new gift:" ++ ?to_s(Gift)};
 
 %% wsale
 success(new_w_sale, RSn) ->
@@ -564,6 +566,8 @@ error(balance_card_expire, Card) ->
     {2135, "balance limit card is in valid date:" ++ ?to_s(Card)};
 error(invalid_ticket_state, State) ->
     {2136, "invalid ticket state:" ++ ?to_s(State)};
+error(retailer_gift_exist, Code) ->
+    {2137, "gift exist:" ++ ?to_s(Code)};
 
 %% wprint
 error(wprint_server_exist, Server) ->

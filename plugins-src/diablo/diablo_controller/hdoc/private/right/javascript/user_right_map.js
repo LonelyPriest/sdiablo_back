@@ -117,7 +117,10 @@ var rightAuthen = {
 	    update_level      :rightAuthen.root_right._retailer + 33,
 	    syn_score_ticket  :rightAuthen.root_right._retailer + 34,
 	    print_retailer    :rightAuthen.root_right._retailer + 35,
-	    page_retailer     :rightAuthen.root_right._retailer + 39
+	    page_retailer     :rightAuthen.root_right._retailer + 39,
+	    add_gift          :rightAuthen.root_right._retailer + 44,
+	    delete_gift       :rightAuthen.root_right._retailer + 45,
+	    modify_gift       :rightAuthen.root_right._retailer + 46
 	}
     },
 
@@ -425,7 +428,12 @@ diabloAuthen.prototype.authenRetailerRight = function() {
 	update_level          :this.authenRetailer('update_level'),
 	print_retailer        :this.authenRetailer('print_retailer'),
 	page_retailer         :this.authenRetailer('page_retailer'),
-	master                :this.master
+	master                :this.master,
+
+	//gift
+	add_gift              :this.authenRetailer('add_gift'),
+	delete_gift           :this.authenRetailer('delete_gift'),
+	modify_gift           :this.authenRetailer('moidfy_gift')
     };
 };
 

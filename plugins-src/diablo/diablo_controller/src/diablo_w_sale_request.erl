@@ -2195,7 +2195,7 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
 			{ok, {RSN, Phone, _ShouldPay, Balance, Score}} ->
 			    {SMSCode, _} =
 				try
-				    BaseSettings = ?w_report_request:get_setting(Merchant, ?DEFAULT_BASE_SETTING),
+				    BaseSettings = ?w_report_request:get_setting(Merchant, ShopId),
 				    SMS =
 					case ?w_report_request:get_config(<<"consume_sms">>, BaseSettings) of
 					    [] -> 0;
@@ -2468,7 +2468,7 @@ sys_vip_of_shop(Merchant, Shop) ->
 
 send_sms(Merchant, Action, ShopId, Retailer, ShouldPay) ->
     try 
-	{ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
+	%% {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
 	ShopName = case ?w_user_profile:get(shop, Merchant, ShopId) of
 			     {ok, []} -> [];
 			     {ok, [{Shop}]} ->
@@ -2482,10 +2482,16 @@ send_sms(Merchant, Action, ShopId, Retailer, ShouldPay) ->
 	
 	SysVips  = sys_vip_of_shop(Merchant, ShopId), 
 	%% ?DEBUG("SysVips ~p, Retailer ~p", [SysVips, Retailer]),
+	BaseSettings = ?w_report_request:get_setting(Merchant, ShopId),
+	SMS = case ?w_report_request:get_config(<<"consume_sms">>, BaseSettings) of
+		  [] -> 0;
+		  V -> ?to_i(V)
+	      end,
+
+	?DEBUG("sms notify ~p", [SMS]),
 	
 	case not lists:member(RetailerId, SysVips)
-	    andalso ?v(<<"type_id">>, Retailer) /= ?SYSTEM_RETAILER
-	    andalso ?to_i(?v(<<"consume_sms">>, Setting, 0)) == 1 of
+	    andalso ?v(<<"type_id">>, Retailer) /= ?SYSTEM_RETAILER andalso SMS == ?YES of
 	    true -> 
 		?notify:sms_notify(
 		   Merchant,

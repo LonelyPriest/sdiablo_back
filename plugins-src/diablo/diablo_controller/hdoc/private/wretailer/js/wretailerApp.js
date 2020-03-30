@@ -171,7 +171,13 @@ function wretailerConfig(angular) {
 		templateUrl: '/private/wretailer/html/retailer_consume.html',
 		controller: 'wretailerConsumeCtrl',
 		resolve: angular.extend({}, shop, user)
-	    }). 
+	    }).
+	    // gift
+	    when('/gift', {
+		templateUrl: '/private/wretailer/html/retailer_gift.html',
+		controller: 'wretailerGiftCtrl',
+		resolve: angular.extend({}, employee, shop, user)
+	    }).
 	    // default
 	    otherwise({
 		templateUrl: '/private/wretailer/html/wretailer_detail.html',
@@ -207,8 +213,12 @@ function wretailerConfig(angular) {
 	    9001: "数据库操作失败，请联系服务人员！！"};
 
 	this.score_rules = [
-	    {name: "钱兑换积分", id:0, remark: "钱到积分"},
-	    {name: "积分兑换钱", id:1, remakr: "积分到钱"}
+	    {name: "钱兑换积分", id:0, remark: "钱换积分"},
+	    {name: "积分兑换钱", id:1, remakr: "积分换钱"}
+	];
+
+	this.gift_rules = [
+	    {name: "按月领取", id:0, remark: "每个月仅能领取一次"}
 	];
 
 	this.charge_rules = [
@@ -578,6 +588,28 @@ function wretailerConfig(angular) {
 	    return http.save(
 		{operation: "list_threshold_child_card"},
 		{retailer:retailer, csn:card_sn}).$promise;
+	};
+
+	/*
+	 * gift
+	 */
+	this.add_gift = function(gift) {
+	    return http.save(
+		{operation: "add_w_gift"},
+		{code: gift.code,
+		 name: gift.name,
+		 py:   diablo_pinyin(gift.name),
+		 rule: gift.rule,
+		 score:gift.score}).$promise;
+	};
+
+	this.filter_gift = function(match, fields, currentPage, itemsPerpage){
+	    return http.save(
+		{operation: "list_w_gift"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
 	};
 	
 	/*

@@ -144,6 +144,12 @@ var diablo_match_stock_by_region = 2;
 var diablo_match_stock_by_merchant = 3;
 
 /*
+ * gift mode
+ */
+var diablo_free_gift  = 0;
+var diablo_score_gift = 1;
+
+/*
  * bill mode
  */
 var diablo_bill_cash = 0;

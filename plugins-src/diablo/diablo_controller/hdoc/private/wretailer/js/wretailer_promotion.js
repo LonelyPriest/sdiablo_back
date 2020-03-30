@@ -343,10 +343,120 @@ function wretailerDetailPrintCtrlProvide(
     
 };
 
+function wretailerGiftCtrlProvide(
+    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService,
+    filterEmployee, filterShop, user){
+    var dialog = diabloUtilsService;
+    var now = $.now();
+    
+    $scope.shops = user.sortShops;
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenRetailerRight();
+
+    $scope.pattern = {
+	code:  diabloPattern.style_number,
+	name:  diabloPattern.ch_en_num,
+	score: diabloPattern.number,
+	comment:diabloPattern.comment
+    };
+
+    $scope.rules = wretailerService.gift_rules;
+
+    // $scope.pattern = {name: ch_name_address};
+    
+    // $scope.shops = user.sortShops;
+    // $scope.threshold_cards = wretailerService.threshold_cards;
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = 10;
+    $scope.default_page = 1; 
+    $scope.current_page = $scope.default_page;
+    $scope.total_items = 0;
+
+    $scope.filters = []; 
+    diabloFilter.reset_field();
+    
+    $scope.time = diabloFilter.default_time(now, now);
+    $scope.do_search = function(page){
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    wretailerService.filter_gift($scope.match, search, page, $scope.items_perpage).then(function(result){
+		console.log(result);
+		$scope.gifts = angular.copy(result.data); 
+		if (result.ecode === 0){
+		    if (page === $scope.default_page){
+			$scope.total_items = result.total;
+		    } 
+		    
+		    diablo_order_page(page, $scope.items_perpage, $scope.gifts);
+		    $scope.current_page = page; 
+		} 
+	    })
+	})
+    }; 
+
+    $scope.refresh = function(){
+	$scope.do_search($scope.default_page)
+    };
+
+    $scope.page_changed = function(page){
+	$scope.do_search(page)
+    };
+
+    $scope.new_gift = function() {
+	var callback = function(params) {
+	    console.log(params);
+	    wretailerService.add_gift(
+		{code:diablo_trim(params.code),
+		 name:diablo_trim(params.name),
+		 rule:params.rule.id,
+		 score:retailerUtils.to_integer(params.score)}
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true, "新增礼品", "新增会员礼品成功！！", undefined, $scope.refresh);
+		} else {
+		    dialog.set_error("新增礼品", result.ecode); 
+		}
+	    });
+	};
+	
+	dialog.edit_with_modal(
+	    "new-gift.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {rule: $scope.rules[0], rules:$scope.rules, pattern:$scope.pattern, score: 0}); 
+    };
+
+    $scope.exchange_gift = function(g) {
+	var callback = function(params) {
+	    console.log(params); 
+	};
+
+	dialog.edit_with_modal(
+	    "exchange-gift.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {mode:diablo_score_gift,
+	     code:g.code,
+	     name:g.name,
+	     score:g.score,
+	     pattern:$scope.pattern}); 
+    }
+
+    $scope.delete_gift = function() {
+	dialog.response(false, "删除礼品", "系统暂不支持此操作！！", undefined);
+    };
+};
+
+
+
 define (["wretailerApp"], function(app){
     app.controller("wretailerRechargeNewCtrl", wretailerRechargeNewCtrlProvide);
     app.controller("wretailerRechargeDetailCtrl", wretailerRechargeDetailCtrlProvide);
     app.controller("wretailerScoreNewCtrl", wretailerScoreNewCtrlProvide);
     app.controller("wretailerScoreDetailCtrl", wretailerScoreDetailCtrlProvide);
     app.controller("wretailerDetailPrintCtrl", wretailerDetailPrintCtrlProvide);
+    app.controller("wretailerGiftCtrl", wretailerGiftCtrlProvide);
 });

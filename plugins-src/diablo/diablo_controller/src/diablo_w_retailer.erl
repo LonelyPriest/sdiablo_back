@@ -25,6 +25,7 @@
 -export([score/2, score/3, ticket/2, ticket/3, ticket/4, get_ticket/3, get_ticket/4, make_ticket/3]).
 -export([bank_card/3]).
 -export([filter/4, filter/6]).
+-export([gift/3]).
 -export([match/3, syn/2, syn/3, get/2, card/3, sms/2]).
 
 -define(SERVER, ?MODULE). 
@@ -224,6 +225,10 @@ threshold_card(list_child, Merchant, Retailer, CardSN) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {list_threshold_child_card, Merchant, Retailer, CardSN}).
 
+gift(new, Merchant, Attrs) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {add_gift, Merchant, Attrs}).
+
 filter(total_retailer, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {total_retailer, Merchant, Conditions});
@@ -247,7 +252,11 @@ filter(total_threshold_card_sale, 'and', Merchant, Conditions) ->
     gen_server:call(Name, {total_threshold_card_sale, Merchant, Conditions});
 filter(total_threshold_card_good, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {total_threshold_card_good, Merchant, Conditions}).
+    gen_server:call(Name, {total_threshold_card_good, Merchant, Conditions});
+filter(total_gift, 'and', Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {total_gift, Merchant, Conditions}).
+
 
 
 filter({retailer, Order, Sort}, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
@@ -258,7 +267,6 @@ filter({retailer, Order, Sort}, 'and', Merchant, Conditions, CurrentPage, ItemsP
 filter(consume, 'and', {Merchant, UTable}, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {filter_consume, Merchant, UTable, Conditions, CurrentPage, ItemsPerPage});
-
 
 filter(charge_detail, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -285,7 +293,12 @@ filter(threshold_card_sale, 'and', Merchant, Conditions, CurrentPage, ItemsPerPa
 filter(threshold_card_good, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(
-      Name, {filter_threshold_card_good, Merchant, Conditions, CurrentPage, ItemsPerPage}).
+      Name, {filter_threshold_card_good, Merchant, Conditions, CurrentPage, ItemsPerPage});
+
+filter(gift, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(
+      Name, {filter_gift, Merchant, Conditions, CurrentPage, ItemsPerPage}).
 
 
 %% match
@@ -3037,6 +3050,67 @@ handle_call({list_threshold_child_card, Merchant, Retailer, CardSN}, _From, Stat
 		    ++ " and csn=\'" ++ ?to_s(CardSN) ++ "\'",
 		?sql_utils:execute(read, Sql)
 	end,
+    {reply, Reply, State};
+
+
+handle_call({add_gift, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("add_gift: merchant ~p, Attrs ~p", [Merchant, Attrs]),
+    Code = ?v(<<"code">>, Attrs),
+    Name = ?v(<<"name">>, Attrs),
+    Pinyin = ?v(<<"py">>, Attrs, []),
+    Rule = ?v(<<"rule">>, Attrs),
+    Score = ?v(<<"score">>, Attrs),
+    Sql0 = "select id, code, name from w_gift"
+	" where code=" ++ ?to_s(Code)
+	++ " and merchant=" ++ ?to_s(Merchant),
+    Reply = 
+	case ?sql_utils:execute(s_read, Sql0) of
+	    {ok, []} ->
+		Sql1 = "insert into w_gift(code"
+		    ", name"
+		    ", py"
+		    ", rule"
+		    ", score"
+		    ", merchant"
+		    ", entry_date) values("
+		    ++ "\'" ++ ?to_s(Code) ++ "\',"
+		    ++ "\'" ++ ?to_s(Name) ++ "\',"
+		    ++ "\'" ++ ?to_s(Pinyin) ++ "\',"
+		    ++ ?to_s(Rule) ++ ","
+		    ++ ?to_s(Score) ++ ","
+		    ++ ?to_s(Merchant) ++ ","
+		    ++ "\'" ++ ?to_s(?utils:current_time(localdate)) ++ "\')",
+		?sql_utils:execute(insert, Sql1); 
+	    {ok, _Gift} ->
+		{error, ?err(retailer_gift_exist, Code)};
+	    Error ->
+		Error
+	end,
+    {reply, Reply, State};
+
+handle_call({total_gift, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_gift: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
+    Sql = "select COUNT(*) as total from w_gift"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions),
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({filter_gift, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+    ?DEBUG("filter_gift: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
+    Sql = "select a.id"
+	", a.code"
+	", a.name"
+	", a.rule as rule_id"
+	", a.score"
+	", a.entry_date"
+	" from w_gift a"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:condition(page_desc, {use_id, none, <<"a.">>}, CurrentPage, ItemsPerPage),
+    Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
     
 handle_call(_Request, _From, State) ->
