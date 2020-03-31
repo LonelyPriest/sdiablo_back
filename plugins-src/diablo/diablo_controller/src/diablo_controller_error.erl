@@ -568,6 +568,10 @@ error(invalid_ticket_state, State) ->
     {2136, "invalid ticket state:" ++ ?to_s(State)};
 error(retailer_gift_exist, Code) ->
     {2137, "gift exist:" ++ ?to_s(Code)};
+error(gift_drawed_last_month, Gift) ->
+    {2138, "gift has been drawed:" ++ ?to_s(Gift)};
+error(gift_rule_undefined, Rule) ->
+    {2139, "undefined gift rule:" ++ ?to_s(Rule)};
 
 %% wprint
 error(wprint_server_exist, Server) ->

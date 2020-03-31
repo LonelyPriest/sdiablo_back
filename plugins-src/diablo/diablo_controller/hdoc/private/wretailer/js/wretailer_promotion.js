@@ -428,20 +428,60 @@ function wretailerGiftCtrlProvide(
 	    {rule: $scope.rules[0], rules:$scope.rules, pattern:$scope.pattern, score: 0}); 
     };
 
-    $scope.exchange_gift = function(g) {
+    $scope.get_employee = function(shop_id) {
+	var validEmployees = filterEmployee.filter(function(e) {
+	    return e.shop === shop_id && e.state === 0;
+	});
+
+	return validEmployees.length === 0 ? filterEmployee : validEmployees;
+    };
+
+    $scope.match_retailer_phone = function(viewValue){
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
+    };
+
+    $scope.exchange_gift = function(g, mode) {
 	var callback = function(params) {
-	    console.log(params); 
+	    console.log(params);
+	    var title = mode === 0 ? "礼品领取" : "礼品兑换"; 
+	    if (mode === diablo_score_gift && params.score > params.retailer.score) {
+		dialog.set_error(title, 2151);
+	    } else {
+		wretailerService.exchange_gift(
+		    {mode: mode,
+		     gift: g.id,
+		     rule: g.rule_id,
+		     retailer:params.retailer.id,
+		     shop: params.select_shop.id,
+		     employee: params.employee.id,
+		     score: mode === diablo_free_gift ? undefined : params.score,
+		     comment: params.comment}
+		).then(function(result) {
+		    if (result.ecode === 0) {
+			dialog.response(true, title, title + "成功！！", undefined);
+		    } else {
+			dialog.set_error(title, result.ecode);
+		    }
+		});
+	    } 
 	};
 
+	var default_shop = $scope.shops[0];
 	dialog.edit_with_modal(
 	    "exchange-gift.html",
 	    undefined,
 	    callback,
 	    undefined,
-	    {mode:diablo_score_gift,
-	     code:g.code,
-	     name:g.name,
-	     score:g.score,
+	    {mode:  mode,
+	     code:  g.code,
+	     name:  g.name,
+	     rule_name: $scope.rules[g.rule_id].name,
+	     score: g.score,
+	     shops: $scope.shops,
+	     select_shop: default_shop,
+	     employees: $scope.get_employee(default_shop.id),
+	     get_employee: $scope.get_employee,
+	     match_retailer_phone: $scope.match_retailer_phone,
 	     pattern:$scope.pattern}); 
     }
 
@@ -449,6 +489,71 @@ function wretailerGiftCtrlProvide(
 	dialog.response(false, "删除礼品", "系统暂不支持此操作！！", undefined);
     };
 };
+
+
+function wretailerGiftExchangeCtrlProvide(
+    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService,
+    filterEmployee, filterShop, user){
+    var dialog = diabloUtilsService;
+    var now = $.now();
+    
+    $scope.shops = user.sortShops;
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenRetailerRight(); 
+
+    $scope.rules = wretailerService.gift_rules;
+    $scope.exchange_modes = wretailerService.gift_exchange_modes;
+    
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = 10;
+    $scope.default_page = 1; 
+    $scope.current_page = $scope.default_page;
+    $scope.total_items = 0;
+
+    $scope.filters = []; 
+    diabloFilter.reset_field(); 
+    diabloFilter.add_field("retailer", function(viewValue){
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
+    });
+
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt();
+    
+    var now = retailerUtils.first_day_of_month();
+    $scope.time = diabloFilter.default_time(now.first, now.current);
+    
+    $scope.do_search = function(page){
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    wretailerService.filter_gift_exchange(
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result){
+		console.log(result);
+		$scope.es = angular.copy(result.data); 
+		if (result.ecode === 0){
+		    if (page === $scope.default_page){
+			$scope.total_items = result.total;
+		    }
+
+		    angular.forEach($scope.es, function(e) {
+			e.employee = diablo_get_object(e.employee_id, filterEmployee);
+			e.shop = diablo_get_object(e.shop_id, filterShop);
+		    });
+		    
+		    diablo_order_page(page, $scope.items_perpage, $scope.es);
+		    $scope.current_page = page; 
+		} 
+	    })
+	})
+    }; 
+
+    $scope.refresh = function(){
+	$scope.do_search($scope.default_page)
+    };
+
+    $scope.page_changed = function(page){
+	$scope.do_search(page)
+    };
+}
 
 
 
@@ -459,4 +564,5 @@ define (["wretailerApp"], function(app){
     app.controller("wretailerScoreDetailCtrl", wretailerScoreDetailCtrlProvide);
     app.controller("wretailerDetailPrintCtrl", wretailerDetailPrintCtrlProvide);
     app.controller("wretailerGiftCtrl", wretailerGiftCtrlProvide);
+    app.controller("wretailerGiftExchangeCtrl", wretailerGiftExchangeCtrlProvide);
 });

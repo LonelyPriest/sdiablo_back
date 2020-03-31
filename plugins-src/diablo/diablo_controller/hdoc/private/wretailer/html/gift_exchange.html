@@ -1,0 +1,126 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>礼品兑换记录</div> 
+	<div class="actions">
+	  <div class="btn-group btn-group-solid"> 
+	    <button class="btn blue reload purple-stripe"
+	       x-ng-click="refresh()">刷新<i class="icon icon-spinner fg-white"></i></button>
+	  </div>
+	</div> 
+      </div>
+
+      <div class="portlet-body">
+	<div class="table-toolbar"> 
+	</div>
+	
+	<div class="portlet-body">
+	  <div class="table-toolbar util-btn-margin-bottom-5">
+	    <div class="row">
+              <div class="col-md-4 col-sm-4 col-xs-6">
+		<time-search
+                   glyphicon="glyphicon glyphicon-arrow-left fg-red"
+                   time="time.start_time"
+		   ok="do_search(default_page)">
+		</time-search>
+              </div>
+
+              <div class="col-md-4 col-sm-4 col-xs-6">
+		<time-search
+                   glyphicon="glyphicon glyphicon-arrow-right fg-red"
+                   time="time.end_time"
+		   ok="do_search(default_page)">
+		</time-search>
+              </div> 
+
+              <div class="col-md-4">
+		<query-pattern ng-model="match"
+                               filters="filters"
+                               filter="filter">
+		</query-pattern>
+              </div>
+	    </div> <!--END row-->
+
+	    <query-group filters="filters" prompt="prompt"
+			 ok="do_search(default_page)">
+	    </query-group>
+	    
+	  </div>
+	  
+	  <div class="panel panel-default table-panel"> 
+	    <div class="table-responsive">
+	      <table class="table table-bordered table-striped table-hover table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>序号</th>
+		    <th>单号</th>
+		    <th>会员</th>
+		    <th>联系方式</th>
+		    <th>礼品</th>
+		    <th>规则</th> 
+		    <th>积分</th>
+		    
+		    <th>经手人</th>
+		    <th>兑换店铺</th>
+		    <th>兑换模式</th> 
+		    <th>日期</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr ng-repeat="e in es">
+		    <td x-ng-bind=e.order_id></td>
+		    <td x-ng-bind=e.rsn></td>
+		    <td x-ng-bind=e.retailer></td>
+		    <td x-ng-bind=e.mobile></td>
+
+		    <td x-ng-bind=e.gift></td>
+		    <td x-ng-bind=rules[e.rule].name></td>
+		    
+		    <td class="text-center">
+		      <div x-ng-switch on="e.type">
+			<span x-ng-switch-when=0>-</span>
+			<span x-ng-switch-default>{{e.score}}</span>
+		      </div>
+		    </td>
+		    
+		    <td x-ng-bind=e.employee.name></td>
+		    <td x-ng-bind=e.shop.name></td>
+		    <td x-ng-bind=exchange_modes[e.type].name></td> 
+		    
+		    <td x-ng-bind=e.entry_date></td> 
+		  </tr> 
+		</tbody> 
+		<tfoot></tfoot>
+		
+	      </table>
+	    </div>
+	    
+	  </div>
+
+	  <div x-ng-show="total_items>items_perpage" class="row">
+	    <div class="col-md-12, col-sm-12, col-xs-12">
+	      <span>显示第 {{current_page}} / {{num_pages}} 项结果，
+		共 {{total_items}} 项</span>
+	      <uib-pagination
+		 class="pagination-lg table-pagination pull-right"
+		 total-items="total_items"
+		 items-per-page="items_perpage"
+		 num-pages="num_pages"
+		 max-size="max_page_size"
+		 boundary-links="true"
+		 previous-text="&lsaquo;" next-text="&rsaquo;"
+		 first-text="&laquo;" last-text="&raquo;"
+		 x-ng-model="current_page"
+		 x-ng-change="page_changed(current_page)">
+	      </uib-pagination>
+	    </div>
+	  </div> 
+	</div> <!--END portlet body--> 
+      </div> <!--END table container-->
+      
+    </div>
+  </div>
+</div>

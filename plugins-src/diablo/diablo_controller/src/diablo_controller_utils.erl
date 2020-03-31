@@ -145,6 +145,15 @@ current_date_before(Before) ->
     {Year, Month, Date} = date_before(Before),
     lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [Year, Month, Date])).
 
+fmonth(last, Year, Month) ->
+    {LastYear, LastMonth} = 
+	case Month - 1 == 0 of
+	    true -> {Year - 1, 12};
+	    false -> {Year, Month - 1}
+	end,
+
+    {LastYear, LastMonth}.
+
 respond(batch, Fun, Req) ->
     case Fun() of
 	{ok, Values} ->

@@ -76,14 +76,14 @@
 		    <td x-ng-bind=g.score></td>
 		    <td x-ng-bind=g.entry_date></td>
 		    <td> 
-		      <button x-ng-if="right.modify_gift" class="btn diablo-button green"
-		      	      x-ng-click="exchange_gift(g)">兑换
+		      <button class="btn diablo-button green"
+		      	      x-ng-click="exchange_gift(g, 0)">领取
+			<i class="glyphicon glyphicon-download-alt"></i>
+		      </button>
+		      <button class="btn diablo-button purple"
+			      x-ng-click="exchange_gift(g, 1)">兑换
 			<i class="glyphicon glyphicon-transfer"></i>
 		      </button>
-		      <button x-ng-if="right.modify_gift" class="btn diablo-button purple"
-		      	      x-ng-click="free_gift(g)">领取
-			<i class="glyphicon glyphicon-download-alt"></i>
-		      </button> 
 		      <button x-ng-if="right.modify_gift" class="btn diablo-button yellow"
 		      	      x-ng-click="modify_gift(g)">修改
 			<i class="glyphicon glyphicon-edit"></i>
@@ -302,7 +302,7 @@
 		   typeahead-editable="false"
 		   typeahead-wait-ms="300"
 		   typeahead-loading="iloading"
-		   uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"
+		   uib-typeahead="s as s.name for s in params.match_retailer_phone($viewValue)"
 		   x-ng-model="params.retailer" />
 	    <span x-ng-show="iloading">
 	      <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
@@ -319,7 +319,7 @@
 	    <select class="form-control" type="text"
 		    required
 	      	    x-ng-model="params.employee"
-	      	    x-ng-options="e as e.name for e in employees|filter:$viewValue">
+	      	    x-ng-options="e as e.name for e in params.employees|filter:$viewValue">
 	    </select> 
 	  </div>
 	</div>
@@ -329,8 +329,9 @@
 	  <div class="col-md-8 col-sm-8 col-xs-8">
 	    <select class="form-control" type="text"
 		    required
-	      	    x-ng-model="params.shop"
-	      	    x-ng-options="s as s.name for s in shops|filter:$viewValue">
+	      	    x-ng-model="params.select_shop"
+	      	    x-ng-options="s as s.name for s in params.shops|filter:$viewValue"
+		    x-ng-change="params.employees=params.get_employee(params.select_shop.id)">
 	    </select> 
 	  </div>
 	</div>

@@ -1203,6 +1203,35 @@ action(Session, Req, {"list_w_gift"}, Payload) ->
 				  CurrentPage, ItemsPerPage)
        end, Req, Payload);
 
+action(Session, Req, {"exchange_w_gift"}, Payload) ->
+    ?DEBUG("exchange_w_gift: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    case ?w_retailer:gift(exchange, Merchant, Payload) of
+	{ok, Gift} ->
+	    ?utils:respond(200, Req, ?succ(add_retailer_gift, Gift));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"list_w_gift_exchange"}, Payload) ->
+    ?DEBUG("list_w_gift_exchange: session ~p, payload ~p", [Session, Payload]),
+    Merchant  = ?session:get(merchant, Session), 
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_retailer:filter(
+		  total_gift_exchange, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_retailer:filter(gift_exchange,
+				  Match,
+				  Merchant,
+				  Conditions,
+				  CurrentPage, ItemsPerPage)
+       end, Req, Payload);
+
+%%
+%% export
+%%
 action(Session, Req, {"export_w_retailer"}, Payload) ->
     ?DEBUG("export_w_retailer with session ~p, payload ~p", [Session, Payload]),
     Merchant    = ?session:get(merchant, Session),
@@ -1340,7 +1369,8 @@ sidebar(Session) ->
     S3 = [{"wretailer_charge_detail", "充值记录", "glyphicon glyphicon-bookmark"}], 
     S4 = [{"wretailer_account", "会员帐户", "glyphicon glyphicon-piggy-bank"}], 
 
-    Gift = [{"gift", "礼品详情", "glyphicon glyphicon-gift"}], 
+    Gift = [{"gift", "礼品详情", "glyphicon glyphicon-gift"}],
+    GiftExchange = [{"gift_exchange", "兑换记录", "glyphicon glyphicon-bookmark"}], 
 
     Recharge =
 	[{{"promotion", "充值积分", "glyphicon glyphicon-superscript"},
@@ -1381,7 +1411,7 @@ sidebar(Session) ->
     Consume = [{"consume", "消费统计", "glyphicon glyphicon-usd"}],
 
     
-    L1 = ?menu:sidebar(level_1_menu, S2 ++ S1 ++ S4 ++ S3 ++ Gift),
+    L1 = ?menu:sidebar(level_1_menu, S2 ++ S1 ++ S4 ++ S3 ++ Gift ++ GiftExchange),
     L2 = ?menu:sidebar(level_2_menu, Ticket ++ Recharge ++
 			   case ?to_i(?v(<<"threshold_card">>, BaseSetting, ?NO)) of
 			       ?YES -> ThresholdCard;

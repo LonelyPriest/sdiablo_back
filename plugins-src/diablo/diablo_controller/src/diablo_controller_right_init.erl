@@ -1093,6 +1093,8 @@ pass_action(wholesaler) ->
      <<"gift_ticket">>,
      <<"list_ticket_plan">>,
      <<"list_w_gift">>,
+     <<"exchange_w_gift">>,
+     <<"list_w_gift_exchange">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,

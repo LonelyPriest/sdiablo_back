@@ -159,6 +159,10 @@
 -define(SORT_BY_ID, 0).
 -define(SORT_BY_DATE, 1).
 
+%% gift
+-define(FREE_GIFT, 0).
+-define(SCORE_GIFT, 1).
+
 %% recharge
 -define(RECHARGE, 0).
 -define(WITHDRAW, 1).
@@ -310,6 +314,7 @@
 -define(add_w_gift,                  ?right_w_retailer + 44).
 -define(delete_w_gift,               ?right_w_retailer + 45).
 -define(modify_w_gift,               ?right_w_retailer + 46).
+-define(exchange_w_gift,             ?right_w_retailer + 47).
 
 
 %% shop

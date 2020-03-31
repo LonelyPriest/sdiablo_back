@@ -227,7 +227,10 @@ threshold_card(list_child, Merchant, Retailer, CardSN) ->
 
 gift(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {add_gift, Merchant, Attrs}).
+    gen_server:call(Name, {add_gift, Merchant, Attrs});
+gift(exchange, Merchant, Attrs) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {exchange_gift, Merchant, Attrs}).
 
 filter(total_retailer, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -255,7 +258,10 @@ filter(total_threshold_card_good, 'and', Merchant, Conditions) ->
     gen_server:call(Name, {total_threshold_card_good, Merchant, Conditions});
 filter(total_gift, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {total_gift, Merchant, Conditions}).
+    gen_server:call(Name, {total_gift, Merchant, Conditions});
+filter(total_gift_exchange, 'and', Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {total_gift_exchange, Merchant, Conditions}).
 
 
 
@@ -298,7 +304,13 @@ filter(threshold_card_good, 'and', Merchant, Conditions, CurrentPage, ItemsPerPa
 filter(gift, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(
-      Name, {filter_gift, Merchant, Conditions, CurrentPage, ItemsPerPage}).
+      Name, {filter_gift, Merchant, Conditions, CurrentPage, ItemsPerPage});
+filter(gift_exchange, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(
+      Name, {filter_gift_exchange, Merchant, Conditions, CurrentPage, ItemsPerPage}).
+
+
 
 
 %% match
@@ -3088,6 +3100,89 @@ handle_call({add_gift, Merchant, Attrs}, _From, State) ->
 	end,
     {reply, Reply, State};
 
+handle_call({exchange_gift, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("exchange_gift: merchant ~p, attrs ~p", [Merchant, Attrs]),
+    Gift = ?v(<<"gift">>, Attrs),
+    Mode = ?v(<<"mode">>, Attrs),
+    Rule = ?v(<<"rule">>, Attrs),
+    Retailer = ?v(<<"retailer">>, Attrs),
+    Shop = ?v(<<"shop">>, Attrs),
+    Employee = ?v(<<"employee">>, Attrs),
+    Score = ?v(<<"score">>, Attrs, 0),
+    Comment = ?v(<<"comment">>, Attrs, []),
+
+    GiftSaleSql =
+	fun(RSN) -> 
+		"insert into w_gift_sale(rsn"
+		    ", employee"
+		    ", retailer"
+		    ", gift"
+		    ", score"
+		    ", type"
+		    ", merchant"
+		    ", shop"
+		    ", comment"
+		    ", entry_date) values("
+		    ++ "\'" ++ ?to_s(RSN) ++ "\',"
+		    ++ "\'" ++ ?to_s(Employee) ++ "\',"
+		    ++ ?to_s(Retailer) ++ ","
+		    ++ ?to_s(Gift) ++ ","
+		    ++ ?to_s(Score) ++ ","
+		    ++ ?to_s(Mode) ++ ","
+		    ++ ?to_s(Merchant) ++ ","
+		    ++ ?to_s(Shop) ++ ","
+		    ++ "\'" ++ ?to_s(Comment) ++ "\',"
+		    ++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')" 
+	end,
+    
+    case Mode of
+	?FREE_GIFT ->
+	    case Rule of
+		0 -> %% get by month
+		    {Year, Month, Day} = current_date(),
+		    %% {LastYear, LastMonth} = fetch_last_month(CurrentYear, CurrentMonth),
+		    {StartDate, EndDate} = month(begin_to_now, Year, Month, Day),
+		    Sql = "select a.rsn"
+			", a.gift"
+			", a.shop"
+			", b.rule"
+			" from w_gift_sale a, w_gift b"
+			" where a.gift=b.id"
+			++ " and a.merchant=" ++ ?to_s(Merchant)
+			++ " and a.retailer=" ++ ?to_s(Retailer)
+			++ " and a.gift=" ++ ?to_s(Gift)
+			++ " and a.type=" ++ ?to_s(?FREE_GIFT)
+			++ " and b.rule=0"
+			++ " and " ++ ?sql_utils:condition(time_with_prfix, StartDate, EndDate),
+
+		    case ?sql_utils:execute(s_read, Sql) of
+			{ok, []} ->
+			    %% new
+			    RSN = lists:concat(
+				    ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-",
+				     ?inventory_sn:sn(gift_draw, Merchant)]), 
+			    case ?sql_utils:execute(insert, GiftSaleSql(RSN)) of
+				{ok, _} -> {reply, {ok, RSN}, State};
+				Error -> {reply, Error, State}
+			    end;
+			{ok, _} ->
+			    {reply, {error, ?err(gift_drawed_last_month, Gift)}, State}
+		    end ;
+		_ ->
+		    {reply, {error, ?err(gift_rule_undefined, Rule)}, State}
+	    end;
+	?SCORE_GIFT ->
+	    RSN = lists:concat(
+		    ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-",
+		     ?inventory_sn:sn(gift_draw, Merchant)]), 
+	    Sqls = [GiftSaleSql(RSN),
+		    "update w_retailer set score=score-" ++ ?to_s(Score)
+		    ++ " where merchant=" ++ ?to_s(Merchant)
+		    ++ " and id=" ++ ?to_s(Retailer)],
+	    {reply, ?sql_utils:execute(transaction, Sqls, RSN), State}
+    end;
+    
+
 handle_call({total_gift, Merchant, Conditions}, _From, State) ->
     ?DEBUG("total_gift: merchant ~p, conditions ~p", [Merchant, Conditions]),
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
@@ -3109,6 +3204,48 @@ handle_call({filter_gift, Merchant, Conditions, CurrentPage, ItemsPerPage}, _Fro
 	" from w_gift a"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:condition(page_desc, {use_id, none, <<"a.">>}, CurrentPage, ItemsPerPage),
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+
+handle_call({total_gift_exchange, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_gift_exchange: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
+    Sql = "select COUNT(*) as total from w_gift_sale"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime),
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({filter_gift_exchange, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+    ?DEBUG("filter_gift_exchange: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    Sql = "select a.id"
+	", a.rsn"
+	", a.employee as employee_id"
+	", a.retailer as retailer_id"
+	", a.gift as gift_id"
+	", a.score"
+	", a.type"
+	", a.shop as shop_id"
+	", a.comment"
+	", a.entry_date"
+
+	", b.name as gift"
+	", b.score as fscore"
+	", b.rule"
+	", c.name as retailer"
+	", c.mobile"
+	
+	" from w_gift_sale a"
+	" left join w_gift b on a.gift=b.id"
+	" left join w_retailer c on a.retailer=c.id"
+	
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime)
 	++ ?sql_utils:condition(page_desc, {use_id, none, <<"a.">>}, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
@@ -3214,14 +3351,26 @@ date_next(?HALF_YEAR_UNLIMIT_CHARGE, {Year, Month, Date}) ->
 	false ->
 	    {Year, Month + 6, day_of_next_month(Year, Month + 6, Date)}
     end.
-   
+
+
+month(begin_to_now, Year, Month, Day) ->
+    Start = format_date(Year, Month, 1),
+    %% LastDay = calendar:last_day_of_the_month(Year, Month),
+    {Hour, Minute, Second} = calendar:seconds_to_time(86399),
+    End = 
+	lists:flatten(
+	  io_lib:format("~4..0w-~2..0w-~2..0w ~2..0w:~2..0w:~2..0w",
+			[Year, Month, Day, Hour, Minute, Second])),
+    {Start, End}.
+	    
+    
 day_of_next_month(CurrentYear, NextMonth, CurrentDay) ->
     %% ?DEBUG("CurrentDay ~p, NextMonth ~p, CurrentDay ~p", [CurrentYear, NextMonth, CurrentDay]),
     Days = calendar:last_day_of_the_month(CurrentYear, NextMonth),
     case CurrentDay > Days of
 	true -> Days; 
 	false -> CurrentDay
-    end. 
+    end.
 
 current_date() ->
     {{Year, Month, Date}, {_, _, _}} = calendar:now_to_local_time(erlang:now()),

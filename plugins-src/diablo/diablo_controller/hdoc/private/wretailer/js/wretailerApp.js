@@ -178,6 +178,12 @@ function wretailerConfig(angular) {
 		controller: 'wretailerGiftCtrl',
 		resolve: angular.extend({}, employee, shop, user)
 	    }).
+	    when('/gift_exchange', {
+		templateUrl: '/private/wretailer/html/gift_exchange.html',
+		controller: 'wretailerGiftExchangeCtrl',
+		resolve: angular.extend({}, employee, shop, user)
+	    }).
+	    
 	    // default
 	    otherwise({
 		templateUrl: '/private/wretailer/html/wretailer_detail.html',
@@ -220,6 +226,8 @@ function wretailerConfig(angular) {
 	this.gift_rules = [
 	    {name: "按月领取", id:0, remark: "每个月仅能领取一次"}
 	];
+
+	this.gift_exchange_modes = [{name: "免费领取", id:0}, {name: "积分兑换", id:1}];
 
 	this.charge_rules = [
 	    {name:"固定赠送模式", id:diablo_giving_charge, remark: "充值多少赠送固定金额"},
@@ -606,6 +614,19 @@ function wretailerConfig(angular) {
 	this.filter_gift = function(match, fields, currentPage, itemsPerpage){
 	    return http.save(
 		{operation: "list_w_gift"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
+	};
+
+	this.exchange_gift = function(gift) {
+	    return http.save({operation: "exchange_w_gift"}, gift).$promise;
+	};
+
+	this.filter_gift_exchange = function(match, fields, currentPage, itemsPerpage){
+	    return http.save(
+		{operation: "list_w_gift_exchange"},
 		{match:  angular.isDefined(match) ? match.op : undefined,
 		 fields: fields,
 		 page:   currentPage,

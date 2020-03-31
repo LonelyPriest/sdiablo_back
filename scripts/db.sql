@@ -652,13 +652,14 @@ create table w_gift_sale
     retailer        INTEGER not null default -1,
     gift            INTEGER not null default -1, -- refer to w_gift
     score           INTEGER not null default -1,
-    comment         VARCHAR(256) not null default '',
+    type            TINYINT not null default -1, -- 0:free get, 1:score exchange
     merchant        INTEGER not null default -1,
     shop            INTEGER not null default -1,
     comment         VARCHAR(256) not null default '',
     entry_date      DATETIME not null default 0,
     unique key  uk  (rsn),
     key dk (retailer, merchant, shop),
+    key gift (gift),
     primary key (id) 
 ) default charset=utf8;
 
