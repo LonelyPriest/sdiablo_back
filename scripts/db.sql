@@ -637,6 +637,9 @@ create table w_gift
     PY              VARCHAR(64) not null default '',
     rule            TINYINT not null default -1, -- 0: gete per month
     score           INTEGER not null default 0,  -- get by score
+    org_price       DECIMAL(10, 2) default 0, -- max: 99999999.99
+    tag_price       DECIMAL(10, 2) default 0, -- max: 99999999.99
+    total           INTEGER not null default 0,  -- get by score
     merchant        INTEGER not null default -1,
     entry_date      DATE not null default 0,
     unique key      uk (code, merchant),
@@ -652,7 +655,7 @@ create table w_gift_sale
     retailer        INTEGER not null default -1,
     gift            INTEGER not null default -1, -- refer to w_gift
     score           INTEGER not null default -1,
-    type            TINYINT not null default -1, -- 0:free get, 1:score exchange
+    -- type            TINYINT not null default -1, -- 0:free get, 1:score exchange
     merchant        INTEGER not null default -1,
     shop            INTEGER not null default -1,
     comment         VARCHAR(256) not null default '',

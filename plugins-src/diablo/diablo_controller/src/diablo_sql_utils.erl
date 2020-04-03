@@ -300,6 +300,16 @@ execute(transaction, Sqls, OkReturn) ->
 	    {error, ?err(db_timeout, timeout)};
 	{error, Error} ->
 	    {error, ?err(db_error, Error)} 
+    end;
+
+execute(insert, Sql, OkReturn) ->
+    case ?mysql:fetch(insert, Sql) of
+	{ok, _InsertId} ->
+	    {ok, OkReturn};
+	{error, timeout} ->
+	    {error, ?err(db_error, timeout)}; 
+	{error, {_, Error}} ->
+	    {error, ?err(db_error, Error)}
     end.
     
 execute(read, Sql) ->

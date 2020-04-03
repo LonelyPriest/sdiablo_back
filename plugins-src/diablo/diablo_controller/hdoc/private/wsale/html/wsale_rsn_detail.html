@@ -152,33 +152,34 @@
 			<td>{{inv.shop.name}}</td>
 			<td>{{inv.employee.name}}</td> 
 			<td>
-			  <div x-ng-if="inv.total>=0">
+			  <div x-ng-if="inv.total>0">
 			    {{inv.style_number}}
 			  </div>
-			  <div x-ng-if="inv.total<0" class="fg-red">
+			  <div x-ng-if="inv.total<=0" class="fg-red">
 			    {{inv.style_number}}
 			  </div>
 			</td>
 			
 			<td>
-			  <div x-ng-if="inv.total>=0">
+			  <div x-ng-if="inv.total>0">
 			    {{inv.brand.name}}
 			  </div>
-			  <div x-ng-if="inv.total<0" class="fg-red">
+			  <div x-ng-if="inv.total<=0" class="fg-red">
 			    {{inv.brand.name}}
 			  </div>
 			</td>
-			<td x-ng-if="setting.show_note">
+			<td x-ng-if="setting.show_note"> 
 			  <span x-ng-if="inv.free">
-			    <span class="bg-blue" x-ng-bind="inv.note"></span>
+			    <span x-ng-if="inv.total<=0" class="fg-red" x-ng-bind="inv.note"></span>
+			    <span x-ng-if="inv.total>0" class="fg-blue" x-ng-bind="inv.note"></span>
 			  </span>
 			  <span x-ng-if="!inv.free">-</span>
 			</td>
 			<td>
-			  <div x-ng-if="inv.total>=0">
+			  <div x-ng-if="inv.total>0">
 			    {{inv.type.name}}
 			  </div>
-			  <div x-ng-if="inv.total<0" class="fg-red">
+			  <div x-ng-if="inv.total<=0" class="fg-red">
 			    {{inv.type.name}}
 			  </div>
 			</td>
@@ -200,8 +201,8 @@
 			</td>
 			
 			<td > 
-			  <div x-ng-if="inv.total>=0">{{inv.total}}</div>
-			  <div x-ng-if="inv.total<0" class="fg-red">{{inv.total}}</div>
+			  <div x-ng-if="inv.total>0">{{inv.total}}</div>
+			  <div x-ng-if="inv.total<=0" class="fg-red">{{inv.total}}</div>
 			</td> 
 			<td>{{inv.calc}} </td>
 			<!-- <td>{{inv.rdiscount}} </td> -->

@@ -80,17 +80,21 @@
 			    table-striped table-hover table-condensed table-advanced">
 		<thead>
 		  <tr>
+		    <!-- <th x-ng-click="toggle_base()"> -->
+		    <!--   <span x-ng-if="!hidden.base"> -->
+		    <!-- 	<i class="glyphicon glyphicon-backward fg-red"></i>序号</span> -->
+		    <!--   <span x-ng-if="hidden.base"> -->
+		    <!-- 	  序号<i class="glyphicon glyphicon-forward fg-red"></i></span> -->
+		    <!-- </th> -->
 		    <th>序号</th>
-		    <th x-ng-click="toggle_base()">
-			<span x-ng-if="!hidden.base">
-			  <i class="glyphicon glyphicon-backward fg-red"></i>单号</span>
-			<span x-ng-if="hidden.base">
-			  单号<i class="glyphicon glyphicon-forward fg-red"></i></span>
-		    </th>
+		    <th>单号</th>
 		    <th>交易</th>
-		    <th x-ng-if="!hidden.base">帐号</th>
-		    <th x-ng-if="!hidden.base">店铺</th>
-		    <th x-ng-if="!hidden.base">店员</th>
+		    <!-- <th x-ng-if="!hidden.base">帐号</th> -->
+		    <!-- <th x-ng-if="!hidden.base">店铺</th> -->
+		    <!-- <th x-ng-if="!hidden.base">店员</th> -->
+		    <th>帐号</th>
+		    <th>店铺</th>
+		    <th>店员</th>
 		    
 		    <th class="danger">厂商</th>
 		    <th class="danger">数量</th>
@@ -134,10 +138,9 @@
 		      <span class="fg-pink" x-ng-switch-when=9>结帐</span>
 		    </td>
 
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="!hidden.base">{{r.account}}</td>
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="!hidden.base">{{r.shop.name}}</td>
-		    <td class="{{css(r.state, r.type)}}"
-			x-ng-if="!hidden.base">{{r.employee.name}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.account}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.shop.name}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.employee.name}}</td>
 		    
 		    <td class="{{css(r.state, r.type)}}">{{r.firm.name}}</td>
 		    <td class="{{css(r.state, r.type)}}">{{r.total}}</td>
@@ -228,8 +231,7 @@
 
 		  <!--Total info-->
 		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td x-ng-if="hidden.base" colspan="4"></td>
-		    <td x-ng-if="!hidden.base" colspan="7"></td>
+		    <td colspan="7"></td>
 		    <td class="danger">{{total_amounts}}</td>
 		    <td x-ng-if="!hidden.balance">{{total_cash}}</td>
 		    <td x-ng-if="!hidden.balance">{{total_card}}</td>

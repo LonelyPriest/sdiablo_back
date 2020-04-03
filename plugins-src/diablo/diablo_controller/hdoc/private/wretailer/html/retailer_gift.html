@@ -61,6 +61,9 @@
 		    <th>序号</th>
 		    <th>编号</th>
 		    <th>名称</th>
+		    <th x-ng-if="right.show_orgprice">进价</th>
+		    <th>吊牌价</th>
+		    <th>数量</th>
 		    <th>规则</th> 
 		    <th>兑换积分</th>
 		    <th>日期</th>
@@ -72,18 +75,21 @@
 		    <td x-ng-bind=g.order_id></td>
 		    <td x-ng-bind=g.code></td>
 		    <td x-ng-bind=g.name></td>
+		    <td x-ng-if="right.show_orgprice" x-ng-bind=g.org_price></td>
+		    <td x-ng-bind=g.tag_price></td>
+		    <td x-ng-bind=g.total></td>
 		    <td x-ng-bind=rules[g.rule_id].name></td>
 		    <td x-ng-bind=g.score></td>
 		    <td x-ng-bind=g.entry_date></td>
 		    <td> 
 		      <button class="btn diablo-button green"
-		      	      x-ng-click="exchange_gift(g, 0)">领取
+		      	      x-ng-click="exchange_gift(g)">领取
 			<i class="glyphicon glyphicon-download-alt"></i>
 		      </button>
-		      <button class="btn diablo-button purple"
-			      x-ng-click="exchange_gift(g, 1)">兑换
-			<i class="glyphicon glyphicon-transfer"></i>
-		      </button>
+		      <!-- <button class="btn diablo-button purple" -->
+		      <!-- 	      x-ng-click="exchange_gift(g, 1)">兑换 -->
+		      <!-- 	<i class="glyphicon glyphicon-transfer"></i> -->
+		      <!-- </button> -->
 		      <button x-ng-if="right.modify_gift" class="btn diablo-button yellow"
 		      	      x-ng-click="modify_gift(g)">修改
 			<i class="glyphicon glyphicon-edit"></i>
@@ -181,6 +187,66 @@
 	    </div> 
 	  </div>
 	</div>
+
+	<div x-ng-if="params.show_orgprice" class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">进价</label>
+	  <div class="col-sm-8 col-md-8">
+	    <div class="input-group">
+	      <input class="form-control"
+		     type="number" step="0.01"
+		     required
+		     x-ng-edit
+		     name="org_price"
+		     x-ng-pattern="params.pattern.price" 
+		     x-ng-model="params.org_price"
+		     placeholder="礼品进价"/>
+	      <span class="input-group-addon bg-white fg-red">*</span> 
+	    </div>
+	    <div ng-show="gForm.org_price.$invalid && !gForm.org_price.$pristine">
+	      <span class="fg-red">支持二位小数</span>
+	    </div> 
+	  </div>
+	</div>
+
+	<div x-ng-if="params.show_orgprice" class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">吊牌价</label>
+	  <div class="col-sm-8 col-md-8">
+	    <div class="input-group">
+	      <input class="form-control"
+		     type="number" step="0.01"
+		     required
+		     x-ng-edit
+		     name="tag_price"
+		     x-ng-pattern="params.pattern.price" 
+		     x-ng-model="params.tag_price"
+		     placeholder="礼品进价"/>
+	      <span class="input-group-addon bg-white fg-red">*</span> 
+	    </div>
+	    <div ng-show="gForm.tag_price.$invalid && !gForm.tag_price.$pristine">
+	      <span class="fg-red">支持二位小数</span>
+	    </div>
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">礼品数量</label>
+	  <div class="col-sm-8 col-md-8">
+	    <div class="input-group">
+	      <input class="form-control"
+		     type="number" step="1"
+		     required
+		     x-ng-edit
+		     name="count"
+		     x-ng-pattern="params.pattern.count" 
+		     x-ng-model="params.count"
+		     placeholder="礼品数量"/>
+	      <span class="input-group-addon bg-white fg-red">*</span> 
+	    </div>
+	    <div ng-show="gForm.count.$invalid && !gForm.count.$pristine">
+	      <span class="fg-red">数量只能是整数</span>
+	    </div> 
+	  </div>
+	</div>
 	
 	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">兑换规则</label> 
@@ -192,7 +258,7 @@
 	  </div> 
 	</div>
 
-	<div class="form-group">
+	<div x-ng-if="params.rule.id===0 || params.rule.id===2" class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">兑换积分</label>
 	  <div class="col-sm-8 col-md-8">
 	    <div class="input-group">
@@ -230,8 +296,7 @@
     </button>
     
     <h4 class="modal-title">
-      <span x-ng-if="params.mode===0" class="label label-sm label-primary">礼品领取</span>
-      <span x-ng-if="params.mode===1" class="label label-sm label-primary">礼品兑换</span>
+      <span class="label label-sm label-primary">礼品领取</span>
     </h4>
   </div>
   
@@ -260,7 +325,7 @@
 	  </div>
 	</div>
 	
-	<div x-ng-if="params.mode===0" class="form-group">
+	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">领取规则</label> 
 	  <div class="col-sm-8 col-md-8">
 	    <input class="form-control"
@@ -271,14 +336,14 @@
 	  </div>
 	</div>
 
-	<div x-ng-if="params.mode===1" class="form-group">
+	<div x-ng-if="params.rule_id===0 || params.rule_id===2" class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">兑换积分</label>
 	  <div class="col-sm-8 col-md-8">
 	    <div class="input-group">
 	      <input class="form-control"
 		     type="number"
 		     required
-		     x-ng-edit
+		     readonly
 		     name="score"
 		     x-ng-pattern="params.pattern.score" 
 		     x-ng-model="params.score"

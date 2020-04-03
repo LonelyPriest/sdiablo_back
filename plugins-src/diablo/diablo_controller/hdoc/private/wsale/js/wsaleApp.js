@@ -79,6 +79,9 @@ function wsaleConfg(angular){
 
 	var plan = {"filterTicketPlan": function(diabloFilter){
             return diabloFilter.get_ticket_plan()}};
+
+	var region = {"filterRegion": function(diabloNormalFilter){
+	    return diabloNormalFilter.get_region()}};
 	
 	$routeProvider. 
 	    when('/new_wsale', {
@@ -144,7 +147,7 @@ function wsaleConfg(angular){
 	    when('/list_daily_cost', {
 		templateUrl: '/private/wsale/html/list_daily_cost.html',
 		controller: 'dailyCostCtrl',
-		resolve: angular.extend({}, user) 
+		resolve: angular.extend({}, region, user) 
 	    }).
 	    when('/list_pay_scan', {
 		templateUrl: '/private/wsale/html/pay_scan_detail.html',

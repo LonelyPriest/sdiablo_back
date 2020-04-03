@@ -775,6 +775,25 @@ var wsaleUtils = function(){
 	    if (v === diablo_empty_string)
 		return diablo_yes;
 	    return wsaleUtils.to_integer(v);
+	},
+
+	correct_condition_with_shop: function(condition, shopIds, shops) {
+	    if (wsaleUtils.to_integer(condition.region) === 0){
+		if (angular.isUndefined(condition.shop) || condition.shop.length === 0){
+		    condition.shop = shopIds === 0 ? undefined : shopIds; 
+		}
+	    } else {
+		if (angular.isArray(condition.shop) && condition.shop.length !== 0){
+		    delete condition.region;
+		}
+		else {
+		    condition.shop = shops.filter(function(s){
+			return s.region === condition.region;
+		    }).map(function(s) { return s.id});
+		}
+	    }
+	    
+	    return condition;
 	}
 	
 	// 
@@ -1227,7 +1246,7 @@ var wsaleCalc = function(){
 
 		total      += wsaleUtils.to_integer(count);
 		abs_total  += Math.abs(wsaleUtils.to_integer(count));
-		abs_pay    += valid_price * count;
+		abs_pay    += one.vir_price > one.tag_price ? one.vir_price * count : one.tag_price * count;
 
 		// if (round === 2) {
 		//     one.fprice = diablo_round(one.fprice);

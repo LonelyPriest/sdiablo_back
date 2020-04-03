@@ -433,7 +433,9 @@ diabloAuthen.prototype.authenRetailerRight = function() {
 	//gift
 	add_gift              :this.authenRetailer('add_gift'),
 	delete_gift           :this.authenRetailer('delete_gift'),
-	modify_gift           :this.authenRetailer('moidfy_gift')
+	modify_gift           :this.authenRetailer('moidfy_gift'),
+
+	show_orgprice         :this.showOrgprice()
     };
 };
 

@@ -3069,6 +3069,9 @@ handle_call({add_gift, Merchant, Attrs}, _From, State) ->
     ?DEBUG("add_gift: merchant ~p, Attrs ~p", [Merchant, Attrs]),
     Code = ?v(<<"code">>, Attrs),
     Name = ?v(<<"name">>, Attrs),
+    OrgPrice = ?v(<<"org_price">>, Attrs, 0),
+    TagPrice = ?v(<<"tag_price">>, Attrs, 0),
+    Count = ?v(<<"count">>, Attrs),
     Pinyin = ?v(<<"py">>, Attrs, []),
     Rule = ?v(<<"rule">>, Attrs),
     Score = ?v(<<"score">>, Attrs),
@@ -3083,6 +3086,9 @@ handle_call({add_gift, Merchant, Attrs}, _From, State) ->
 		    ", py"
 		    ", rule"
 		    ", score"
+		    ", org_price"
+		    ", tag_price"
+		    ", total"
 		    ", merchant"
 		    ", entry_date) values("
 		    ++ "\'" ++ ?to_s(Code) ++ "\',"
@@ -3090,6 +3096,9 @@ handle_call({add_gift, Merchant, Attrs}, _From, State) ->
 		    ++ "\'" ++ ?to_s(Pinyin) ++ "\',"
 		    ++ ?to_s(Rule) ++ ","
 		    ++ ?to_s(Score) ++ ","
+		    ++ ?to_s(OrgPrice) ++ ","
+		    ++ ?to_s(TagPrice) ++ ","
+		    ++ ?to_s(Count) ++ ","
 		    ++ ?to_s(Merchant) ++ ","
 		    ++ "\'" ++ ?to_s(?utils:current_time(localdate)) ++ "\')",
 		?sql_utils:execute(insert, Sql1); 
@@ -3103,85 +3112,114 @@ handle_call({add_gift, Merchant, Attrs}, _From, State) ->
 handle_call({exchange_gift, Merchant, Attrs}, _From, State) ->
     ?DEBUG("exchange_gift: merchant ~p, attrs ~p", [Merchant, Attrs]),
     Gift = ?v(<<"gift">>, Attrs),
-    Mode = ?v(<<"mode">>, Attrs),
     Rule = ?v(<<"rule">>, Attrs),
     Retailer = ?v(<<"retailer">>, Attrs),
     Shop = ?v(<<"shop">>, Attrs),
     Employee = ?v(<<"employee">>, Attrs),
     Score = ?v(<<"score">>, Attrs, 0),
     Comment = ?v(<<"comment">>, Attrs, []),
-
-    GiftSaleSql =
-	fun(RSN) -> 
-		"insert into w_gift_sale(rsn"
-		    ", employee"
-		    ", retailer"
-		    ", gift"
-		    ", score"
-		    ", type"
-		    ", merchant"
-		    ", shop"
-		    ", comment"
-		    ", entry_date) values("
-		    ++ "\'" ++ ?to_s(RSN) ++ "\',"
-		    ++ "\'" ++ ?to_s(Employee) ++ "\',"
-		    ++ ?to_s(Retailer) ++ ","
-		    ++ ?to_s(Gift) ++ ","
-		    ++ ?to_s(Score) ++ ","
-		    ++ ?to_s(Mode) ++ ","
-		    ++ ?to_s(Merchant) ++ ","
-		    ++ ?to_s(Shop) ++ ","
-		    ++ "\'" ++ ?to_s(Comment) ++ "\',"
-		    ++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')" 
+    
+    GetRetailerScore =
+	fun() ->
+		Sql0 = "select id, score, mobile from w_retailer"
+		    " where merchant=" ++ ?to_s(Merchant)
+		    ++ " and id=" ++ ?to_s(Retailer),
+		case ?sql_utils:execute(s_read, Sql0) of
+		    {ok, RetailerInfo} ->
+			ScoreLive = ?v(<<"score">>, RetailerInfo),
+			case ScoreLive >= Score of
+			    true -> {ok, ScoreLive};
+			    false -> {error, ?err(gift_score_not_enought, ScoreLive)}
+			end;
+		    Error ->
+			Error
+		end
 	end,
-    
-    case Mode of
-	?FREE_GIFT ->
-	    case Rule of
-		0 -> %% get by month
-		    {Year, Month, Day} = current_date(),
-		    %% {LastYear, LastMonth} = fetch_last_month(CurrentYear, CurrentMonth),
-		    {StartDate, EndDate} = month(begin_to_now, Year, Month, Day),
-		    Sql = "select a.rsn"
-			", a.gift"
-			", a.shop"
-			", b.rule"
-			" from w_gift_sale a, w_gift b"
-			" where a.gift=b.id"
-			++ " and a.merchant=" ++ ?to_s(Merchant)
-			++ " and a.retailer=" ++ ?to_s(Retailer)
-			++ " and a.gift=" ++ ?to_s(Gift)
-			++ " and a.type=" ++ ?to_s(?FREE_GIFT)
-			++ " and b.rule=0"
-			++ " and " ++ ?sql_utils:condition(time_with_prfix, StartDate, EndDate),
 
-		    case ?sql_utils:execute(s_read, Sql) of
-			{ok, []} ->
-			    %% new
-			    RSN = lists:concat(
-				    ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-",
-				     ?inventory_sn:sn(gift_draw, Merchant)]), 
-			    case ?sql_utils:execute(insert, GiftSaleSql(RSN)) of
-				{ok, _} -> {reply, {ok, RSN}, State};
-				Error -> {reply, Error, State}
-			    end;
-			{ok, _} ->
-			    {reply, {error, ?err(gift_drawed_last_month, Gift)}, State}
-		    end ;
-		_ ->
-		    {reply, {error, ?err(gift_rule_undefined, Rule)}, State}
-	    end;
-	?SCORE_GIFT ->
-	    RSN = lists:concat(
-		    ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-",
-		     ?inventory_sn:sn(gift_draw, Merchant)]), 
-	    Sqls = [GiftSaleSql(RSN),
-		    "update w_retailer set score=score-" ++ ?to_s(Score)
-		    ++ " where merchant=" ++ ?to_s(Merchant)
-		    ++ " and id=" ++ ?to_s(Retailer)],
-	    {reply, ?sql_utils:execute(transaction, Sqls, RSN), State}
-    end;
-    
+    GenSqls =
+	fun() ->
+		RSN = lists:concat(
+			["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-",
+			 ?inventory_sn:sn(gift_draw, Merchant)]), 
+		Sqls = ["insert into w_gift_sale(rsn"
+			", employee"
+			", retailer"
+			", gift"
+			", score"
+			", merchant"
+			", shop"
+			", comment"
+			", entry_date) values("
+			++ "\'" ++ ?to_s(RSN) ++ "\',"
+			++ "\'" ++ ?to_s(Employee) ++ "\',"
+			++ ?to_s(Retailer) ++ ","
+			++ ?to_s(Gift) ++ ","
+			++ ?to_s(Score) ++ ","
+			++ ?to_s(Merchant) ++ ","
+			++ ?to_s(Shop) ++ ","
+			++ "\'" ++ ?to_s(Comment) ++ "\',"
+			++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')"]
+
+		    ++ case Rule =:= ?GIFT_MONTH_AND_SCORE orelse Rule =:= ?GIFT_SCORE_ONLY of
+			   true ->
+			       ["update w_retailer set score=score-" ++ ?to_s(Score)
+				++ " where merchant=" ++ ?to_s(Merchant)
+				++ " and id=" ++ ?to_s(Retailer)];
+			   false ->
+			       []
+		       end
+
+		    ++ ["update w_gift set total=total-1"
+			++ " where merchant=" ++ ?to_s(Merchant)
+			++ " and id=" ++ ?to_s(Gift)],
+		{Sqls, RSN}
+	end,
+
+
+    StartDrawByMonth =
+	fun() ->
+		{Year, Month, Day} = current_date(),
+		{StartDate, EndDate} = month(begin_to_now, Year, Month, Day),
+		Sql = "select a.rsn"
+		    ", a.gift"
+		    ", a.shop"
+		    ", b.rule"
+		    " from w_gift_sale a, w_gift b"
+		    " where a.gift=b.id"
+		    ++ " and a.merchant=" ++ ?to_s(Merchant)
+		    ++ " and a.retailer=" ++ ?to_s(Retailer)
+		    ++ " and a.gift=" ++ ?to_s(Gift)
+		    ++ " and b.rule=" ++ ?to_s(Rule)
+		    ++ " and " ++ ?sql_utils:condition(time_with_prfix, StartDate, EndDate), 
+		case ?sql_utils:execute(s_read, Sql) of
+		    {ok, []} ->
+			{Sqls, RSN} = GenSqls(),
+			?sql_utils:execute(transaction, Sqls, RSN);
+		    {ok, _} ->
+			{error, ?err(gift_drawed_last_month, Gift)}
+		end
+	end,
+
+    Reply = 
+	case Rule of
+	    ?GIFT_MONTH_AND_SCORE -> %% get by month and score
+		case GetRetailerScore() of
+		    {ok, _ScoreLive} -> StartDrawByMonth();
+		    Error -> Error 
+		end;
+	    ?GIFT_SCORE_ONLY  ->
+		case GetRetailerScore() of
+		    {ok, _ScoreLive} ->
+			{Sqls, RSN} = GenSqls(),
+			?sql_utils:execute(transaction, Sqls, RSN);
+		    Error -> Error 
+		end;
+	    ?GIFT_MONTH_WITH_FREE ->
+		StartDrawByMonth();
+	    _ ->
+		{error, ?err(gift_rule_undefined, Rule)}
+	end,
+    {reply, Reply, State};    
 
 handle_call({total_gift, Merchant, Conditions}, _From, State) ->
     ?DEBUG("total_gift: merchant ~p, conditions ~p", [Merchant, Conditions]),
@@ -3199,6 +3237,9 @@ handle_call({filter_gift, Merchant, Conditions, CurrentPage, ItemsPerPage}, _Fro
 	", a.code"
 	", a.name"
 	", a.rule as rule_id"
+	", a.org_price"
+	", a.tag_price"
+	", a.total"
 	", a.score"
 	", a.entry_date"
 	" from w_gift a"
@@ -3228,7 +3269,6 @@ handle_call({filter_gift_exchange, Merchant, Conditions, CurrentPage, ItemsPerPa
 	", a.retailer as retailer_id"
 	", a.gift as gift_id"
 	", a.score"
-	", a.type"
 	", a.shop as shop_id"
 	", a.comment"
 	", a.entry_date"

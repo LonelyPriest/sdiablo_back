@@ -352,11 +352,14 @@ function wretailerGiftCtrlProvide(
     $scope.shops = user.sortShops;
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.right = authen.authenRetailerRight();
+    console.log($scope.right);
 
     $scope.pattern = {
 	code:  diabloPattern.style_number,
 	name:  diabloPattern.ch_en_num,
 	score: diabloPattern.number,
+	price: diabloPattern.decimal_2,
+	count: diabloPattern.positive_num,
 	comment:diabloPattern.comment
     };
 
@@ -407,6 +410,9 @@ function wretailerGiftCtrlProvide(
 	    wretailerService.add_gift(
 		{code:diablo_trim(params.code),
 		 name:diablo_trim(params.name),
+		 org_price:params.org_price,
+		 tag_price:params.tag_price,
+		 count:params.count,
 		 rule:params.rule.id,
 		 score:retailerUtils.to_integer(params.score)}
 	    ).then(function(result) {
@@ -425,7 +431,11 @@ function wretailerGiftCtrlProvide(
 	    undefined,
 	    callback,
 	    undefined,
-	    {rule: $scope.rules[0], rules:$scope.rules, pattern:$scope.pattern, score: 0}); 
+	    {rule: $scope.rules[0],
+	     rules:$scope.rules,
+	     pattern:$scope.pattern,
+	     score: 0,
+	     show_orgprice: $scope.right.show_orgprice}); 
     };
 
     $scope.get_employee = function(shop_id) {
@@ -440,30 +450,32 @@ function wretailerGiftCtrlProvide(
 	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
     };
 
-    $scope.exchange_gift = function(g, mode) {
+    $scope.exchange_gift = function(g) {
 	var callback = function(params) {
 	    console.log(params);
-	    var title = mode === 0 ? "礼品领取" : "礼品兑换"; 
-	    if (mode === diablo_score_gift && params.score > params.retailer.score) {
-		dialog.set_error(title, 2151);
+	    var title = "礼品领取"; 
+	    if ((g.rule_id === diablo_gift_month_and_score
+	    	 || g.rule_id === diablo_score_only_cash)
+	    	&& params.score > params.retailer.score) {
+	    	    dialog.set_error(title, 2140); 
 	    } else {
 		wretailerService.exchange_gift(
-		    {mode: mode,
-		     gift: g.id,
+		    {gift: g.id,
 		     rule: g.rule_id,
 		     retailer:params.retailer.id,
 		     shop: params.select_shop.id,
 		     employee: params.employee.id,
-		     score: mode === diablo_free_gift ? undefined : params.score,
+		     score: params.score,
 		     comment: params.comment}
 		).then(function(result) {
 		    if (result.ecode === 0) {
-			dialog.response(true, title, title + "成功！！", undefined);
+			dialog.success_response_with_callback(
+			    title, title + "成功！！", $scope.refresh);
 		    } else {
 			dialog.set_error(title, result.ecode);
 		    }
 		});
-	    } 
+	    }
 	};
 
 	var default_shop = $scope.shops[0];
@@ -472,10 +484,10 @@ function wretailerGiftCtrlProvide(
 	    undefined,
 	    callback,
 	    undefined,
-	    {mode:  mode,
-	     code:  g.code,
+	    {code:  g.code,
 	     name:  g.name,
 	     rule_name: $scope.rules[g.rule_id].name,
+	     rule_id: g.rule_id,
 	     score: g.score,
 	     shops: $scope.shops,
 	     select_shop: default_shop,

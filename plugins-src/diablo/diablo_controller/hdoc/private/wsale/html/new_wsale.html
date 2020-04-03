@@ -136,12 +136,12 @@
 		  
 		  <td x-ng-if="setting.check_sale" class="vert-align">{{inv.total}}</td> 
 		  <td class="col-md-1 vert-align">
-		    <div x-ng-if="select.sysVip">
-		      <span x-ng-if="inv.vir_price>=inv.tag_price" x-ng-bind="inv.vir_price"></span>
-		      <span x-ng-if="inv.vir_price<inv.tag_price" x-ng-bind="inv.tag_price"></span>
+		    <!-- <div x-ng-if="select.sysVip"> -->
+		    <div>
+		      <span x-ng-if="inv.vir_price>inv.tag_price" x-ng-bind="inv.vir_price"></span>
+		      <span x-ng-if="inv.vir_price<=inv.tag_price" x-ng-bind="inv.tag_price"></span>
 		    </div>
-		    <div x-ng-if="!select.sysVip" x-ng-bind="inv.tag_price"> 
-		    </div>
+	  <!-- <div x-ng-if="!select.sysVip" x-ng-bind="inv.tag_price"></div> -->
 		  </td>
 
 		  <!--discount-->

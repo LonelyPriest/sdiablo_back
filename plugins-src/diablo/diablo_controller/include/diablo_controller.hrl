@@ -160,8 +160,9 @@
 -define(SORT_BY_DATE, 1).
 
 %% gift
--define(FREE_GIFT, 0).
--define(SCORE_GIFT, 1).
+-define(GIFT_MONTH_AND_SCORE, 0).
+-define(GIFT_MONTH_WITH_FREE, 1).
+-define(GIFT_SCORE_ONLY, 2).
 
 %% recharge
 -define(RECHARGE, 0).

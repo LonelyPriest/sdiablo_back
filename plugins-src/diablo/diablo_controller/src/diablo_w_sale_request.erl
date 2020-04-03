@@ -2060,9 +2060,9 @@ sale_note(to_dict_with_rsn, [{H}|T], Dict) ->
     Shop  = ?to_b(?v(<<"shop">>, H)),
 
     %% Color = ?v(<<"color">>, H),
-    ColorName = ?v(<<"cname">>, H),
-    
+    ColorName = ?v(<<"cname">>, H),    
     Size  = ?v(<<"size">>,H),
+    Total = ?v(<<"total">>, H),
 
     Key = <<Rsn/binary,
 	    <<"-">>/binary,
@@ -2075,7 +2075,7 @@ sale_note(to_dict_with_rsn, [{H}|T], Dict) ->
     DictNew = 
 	case dict:find(Key, Dict) of
 	    error ->
-		Note = [{<<"note">>, ?to_s(ColorName) ++ ?to_s(Size)}],
+		Note = [{<<"note">>, ?to_s(ColorName) ++ ?to_s(Size) ++ "/" ++ ?to_s(Total)}],
 		N = proplists:delete(<<"size">>, proplists:delete(<<"color">>, H)),
 		dict:store(Key, N ++ Note, Dict);
 	    {ok, _V} ->
@@ -2083,7 +2083,7 @@ sale_note(to_dict_with_rsn, [{H}|T], Dict) ->
 		  Key,
 		  fun(V) ->
 			  NewNote = ?v(<<"note">>, V) ++ ";"
-			      ++ ?to_s(ColorName) ++ ?to_s(Size),
+			      ++ ?to_s(ColorName) ++ ?to_s(Size) ++ "/" ++ ?to_s(Total),
 			  proplists:delete(<<"note">>, V) ++ [{<<"note">>, NewNote}]
 		  end,
 		  Dict)

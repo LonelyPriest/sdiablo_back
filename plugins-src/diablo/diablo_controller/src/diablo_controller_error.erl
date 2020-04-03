@@ -572,6 +572,8 @@ error(gift_drawed_last_month, Gift) ->
     {2138, "gift has been drawed:" ++ ?to_s(Gift)};
 error(gift_rule_undefined, Rule) ->
     {2139, "undefined gift rule:" ++ ?to_s(Rule)};
+error(gift_score_not_enought, Score) ->
+    {2140, "gift not enought score:" ++ ?to_s(Score)};
 
 %% wprint
 error(wprint_server_exist, Server) ->

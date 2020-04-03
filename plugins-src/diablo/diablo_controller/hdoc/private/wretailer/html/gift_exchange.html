@@ -61,7 +61,7 @@
 		    <th>联系方式</th>
 		    <th>礼品</th>
 		    <th>规则</th> 
-		    <th>积分</th>
+		    <th class="text-center">积分</th>
 		    
 		    <th>经手人</th>
 		    <th>兑换店铺</th>
@@ -80,9 +80,11 @@
 		    <td x-ng-bind=rules[e.rule].name></td>
 		    
 		    <td class="text-center">
-		      <div x-ng-switch on="e.type">
-			<span x-ng-switch-when=0>-</span>
-			<span x-ng-switch-default>{{e.score}}</span>
+		      <div x-ng-switch on="e.rule">
+			<span x-ng-switch-when=0>{{e.score}}</span>
+			<span x-ng-switch-when=1>-</span>
+			<span x-ng-switch-when=2>{{e.score}}</span>
+			<span x-ng-switch-default>-</span>
 		      </div>
 		    </td>
 		    
