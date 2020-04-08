@@ -1045,10 +1045,12 @@ sys_config() ->
 	      %%      1-> vip discount only,
 	      %%      2-> vip discount  on discount
 	      %% [1]: auto check level at 5:00 am
-	      %% [2]: 0-> score promotion first,
-	      %%      1-> vip discount when first in any case.
-	      %% [3]: 0-> stock promotion first
-	      %%      1-> vip discount first in any case
+	      
+	      %% [2]: use vir_price or not
+	      %%      0: tag_price default
+	      %%      1: vir_price
+	      %% [3]: 
+	      %%      1-> score with discount of every stock
 	      {"r_discount",        "会员折扣模式",       "0000",    "0"},
 	      
 	      %% {"r_level",        "会员等级模式",       "0",    "0"},

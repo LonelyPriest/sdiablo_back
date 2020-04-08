@@ -875,11 +875,18 @@ var wsaleCalc = function(){
 	    return find;
 	},
 
-	get_valid_price:function(isVip, stock) {
-	    if (!isVip && stock.vir_price > 0 && stock.vir_price > stock.tag_price)
-		return stock.vir_price;
-	    else
-		return stock.tag_price;
+	get_valid_price:function(isVip, virPriceMode, stock) {
+	    if (virPriceMode) {
+		if (!isVip && stock.vir_price > 0 && stock.vir_price > stock.tag_price) {
+		    return stock.vir_price; 
+		}
+		else {
+		    return stock.tag_price;
+		} 
+	    } else {
+		return stock.tag_price; 
+	    }
+	    
 	},
 	
 	calculate: function(isVip,
@@ -900,14 +907,13 @@ var wsaleCalc = function(){
 	    var valid_price  = 0;
 	    
 	    var vipDiscountMode    = wsaleUtils.to_integer(vipMode.charAt(0));
-	    var vipScoreMode       = wsaleUtils.to_integer(vipMode.charAt(2));
-	    // var vipPromotionMode   = wsaleUtils.to_integer(vipMode.charAt(3));
+	    var virPriceMode       = wsaleUtils.to_integer(vipMode.charAt(2));
 	    var scoreDiscountPerStock = wsaleUtils.to_integer(vipMode.charAt(3)); 
 
 	    var stocksSortWithPromotion = [];
 	    for (var i=0, l=inventories.length; i<l; i++) {
 		var one = inventories[i];
-		valid_price = wsaleCalc.get_valid_price(isVip, one);
+		valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, one);
 		if ( (angular.isDefined(one.select) && !one.select) || one.has_rejected) continue;
 
 		if (one.o_fprice !== one.fprice) {
@@ -942,7 +948,7 @@ var wsaleCalc = function(){
 			angular.forEach(s.stocks, function(stock) {
 			    stock.fdiscount = stock.discount < pm.discount ? stock.discount : pm.discount; 
 			    // stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
-			    valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			    valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, stock);
 			    stock.fprice = diablo_price(valid_price, stock.fdiscount);
 			})
 		    } 
@@ -951,7 +957,7 @@ var wsaleCalc = function(){
 			var uPrice = 0; 
 			angular.forEach(s.stocks, function(stock) {
 			    count = wsaleCalc.get_inventory_count(stock, saleMode);
-			    valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			    valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, stock);
 			    if (pm.prule_id === 0) {
 				// uPrice = diablo_price(stock.tag_price, stock.discount);
 				uPrice = diablo_price(valid_price, stock.discount);
@@ -997,7 +1003,7 @@ var wsaleCalc = function(){
 				stock.fdiscount = wsaleUtils.to_decimal(diablo_full_discount - vdiscount); 
 			    } 
 			    // stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
-			    valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			    valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, stock);
 			    stock.fprice = diablo_price(valid_price, stock.fdiscount);
 			}); 
 		    }
@@ -1007,7 +1013,7 @@ var wsaleCalc = function(){
 
 			var orderStocks = [];
 			angular.forEach(s.stocks, function(stock) {
-			    valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			    valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, stock);
 			    // var uPrice = stock.tag_price;
 			    var uPrice = valid_price;
 			    if (pm.prule_id === 0) {
@@ -1066,7 +1072,7 @@ var wsaleCalc = function(){
 				stocksNoWithM2N.push(stock);
 			    }
 			    // stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
-			    valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			    valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, stock);
 			    stock.fprice = diablo_price(valid_price, stock.fdiscount);
 			}); 
 		    }
@@ -1093,7 +1099,7 @@ var wsaleCalc = function(){
 				stock.fdiscount = stock.discount;
 			    }
 			    // stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
-			    valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			    valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, stock);
 			    stock.fprice = diablo_price(valid_price, stock.fdiscount);
 			}); 
 		    } 
@@ -1105,7 +1111,7 @@ var wsaleCalc = function(){
 			    count += c 
 			    // totalPay += diablo_price(stock.tag_price, stock.discount) * c;
 			    // payAll += stock.tag_price * c;
-			    valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			    valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, stock);
 			    totalPay += diablo_price(valid_price, stock.discount) * c;
 			    payAll += valid_price * c;
 			}); 
@@ -1128,7 +1134,7 @@ var wsaleCalc = function(){
 			    
 			    angular.forEach(s.stocks, function(stock) {
 				stock.fdiscount = wsaleUtils.to_decimal(diablo_full_discount - vdiscount);
-				valid_price = wsaleCalc.get_valid_price(isVip, stock);
+				valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, stock);
 				if (pm.prule_id === 0) {
 				    // stock.fprice = diablo_price(diablo_price(stock.tag_price, stock.discount), stock.fdiscount);
 				    stock.fprice = diablo_price(diablo_price(valid_price, stock.discount), stock.fdiscount);
@@ -1141,7 +1147,7 @@ var wsaleCalc = function(){
 			} else {
 			    angular.forEach(s.stocks, function(stock) {
 				stock.fdiscount = stock.discount;
-				valid_price = wsaleCalc.get_valid_price(isVip, stock);
+				valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, stock);
 				// stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
 				stock.fprice = diablo_price(valid_price, stock.fdiscount);
 			    });
@@ -1171,7 +1177,7 @@ var wsaleCalc = function(){
 			    for (var i=0, l=s.stocks.length; i<l; i++) {
 				var stock = s.stocks[i];
 				c = wsaleCalc.get_inventory_count(s.stocks[i], saleMode);
-				valid_price = wsaleCalc.get_valid_price(isVip, stock);
+				valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, stock);
 				// payAll += stock.tag_price * c;
 				payAll += valid_price * c;
 				rmoney += average * c; 
@@ -1179,14 +1185,14 @@ var wsaleCalc = function(){
 			    vdiscount = diablo_discount(payAll - rmoney, payAll);
 			    angular.forEach(s.stocks, function(stock) {
 				stock.fdiscount = wsaleUtils.to_decimal(diablo_full_discount - vdiscount);
-				valid_price = wsaleCalc.get_valid_price(isVip, stock);
+				valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, stock);
 				// stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
 				stock.fprice = diablo_price(valid_price, stock.fdiscount);
 			    }); 
 			} else {
 			    angular.forEach(s.stocks, function(stock) {
 				stock.fdiscount = stock.discount;
-				valid_price = wsaleCalc.get_valid_price(isVip, stock);
+				valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, stock);
 				// stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
 				stock.fprice = diablo_price(valid_price, stock.fdiscount);
 			    });
@@ -1195,7 +1201,7 @@ var wsaleCalc = function(){
 		} else {
 		    angular.forEach(s.stocks, function(stock) {
 			stock.fdiscount = stock.discount;
-			valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, stock);
 			// stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
 			stock.fprice = diablo_price(valid_price, stock.fdiscount);
 		    }); 
@@ -1225,7 +1231,7 @@ var wsaleCalc = function(){
 			    // one.fprice = diablo_price(one.tag_price, one.fdiscount);
 			}
 
-			valid_price = wsaleCalc.get_valid_price(isVip, one);
+			valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, one);
 			// one.fprice = diablo_price(one.tag_price, one.fdiscount);
 			one.fprice = diablo_price(valid_price, one.fdiscount);
 		    } 
@@ -1242,7 +1248,7 @@ var wsaleCalc = function(){
 		// if (!isVip && one.tag_price < one.vir_price) {
 		//     valid_price = one.vir_price;
 		// }
-		valid_price = wsaleCalc.get_valid_price(isVip, one);
+		valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, one);
 
 		total      += wsaleUtils.to_integer(count);
 		abs_total  += Math.abs(wsaleUtils.to_integer(count));
@@ -1290,7 +1296,7 @@ var wsaleCalc = function(){
 		pscores = [];
 		for (var i=0, l=inventories.length; i<l; i++) {
 		    var one = inventories[i];
-		    valid_price = wsaleCalc.get_valid_price(isVip, one);
+		    valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, one);
 		    // if (diablo_discount(one.rprice, one.tag_price) >= score_discount) {
 		    if (diablo_yes === scoreDiscountPerStock) {
 			var ff = one.rprice * diablo_full_discount / (valid_price * one.discount);

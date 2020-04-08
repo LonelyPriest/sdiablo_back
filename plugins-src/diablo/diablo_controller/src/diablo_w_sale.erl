@@ -294,7 +294,9 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 			++ ?to_s(PayOrder) ++ "," 
 			++ "\'" ++ ?to_s(DateTime) ++ "\');",
 
-		    Sql3 = ["update w_retailer set consume=consume+" ++ ?to_s(ShouldPay - Verificate)
+		    Sql3 = ["update w_retailer set consume=consume+"
+			    %% ++ ?to_s(ShouldPay - Verificate)
+			    ++ ?to_s(ShouldPay)
 			    ++ case NewWithdraw =< 0 of
 				   true  -> [];
 				   false -> ", balance=balance-" ++ ?to_s(NewWithdraw)

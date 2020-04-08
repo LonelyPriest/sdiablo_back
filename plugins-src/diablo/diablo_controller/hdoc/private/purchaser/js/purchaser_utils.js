@@ -1097,7 +1097,7 @@ stockPrintU.prototype.print_waynode = function(
     var offset_fabric2 = stockUtils.to_integer(this.template.offset_fabric);
     var offset_fabric3 = stockUtils.to_integer(this.template.offset_fabric3);
     offset_fabric2 = offset_fabric2 === 0 ? 40 : offset_fabric2;
-    offset_fabric3 = offset_fabric3 === 0 ? 50 : offset_fabric2;
+    offset_fabric3 = offset_fabric3 === 0 ? 50 : offset_fabric3;
     
     var fabric_length = waynode.fabrics.length; 
     if (0 !== fabric_length) {

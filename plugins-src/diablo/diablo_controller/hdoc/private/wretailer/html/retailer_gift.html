@@ -82,7 +82,7 @@
 		    <td x-ng-bind=g.score></td>
 		    <td x-ng-bind=g.entry_date></td>
 		    <td> 
-		      <button class="btn diablo-button green"
+		      <button x-ng-if="g.total>0" class="btn diablo-button green"
 		      	      x-ng-click="exchange_gift(g)">领取
 			<i class="glyphicon glyphicon-download-alt"></i>
 		      </button>
