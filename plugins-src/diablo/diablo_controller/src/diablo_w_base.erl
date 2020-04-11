@@ -958,9 +958,10 @@ sys_config() ->
 	      %% [24]: use pay scan
 	      %% [25]: disable withdarw on sale
 	      %% [26]: print score information of retailer
+	      %% [27]: interval print
 	      {"p_balance",
 	       "销售模式",
-	       "0000"++"0000"++"0000"++"0001"++"0000"++"0000"++"001", "0"},
+	       "0000"++"0000"++"0000"++"0001"++"0000"++"0000"++"0010", "0"},
 
 	      %% [0]: auto generate ticket at 04:00
 	      %% [1]: use ticket with no check 0-> check 1-> no check

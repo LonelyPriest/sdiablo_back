@@ -159,7 +159,8 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 		 ", category"
 		 ", fabric"
 		 ", feather"
-		 ", merchant) values("
+		 ", merchant" 
+		 ", entry_date) values("
 		 ++ "\'" ++ ?to_s(StyleNumber) ++ "\'," 
 		 ++ ?to_s(BrandId) ++ ","
 
@@ -168,7 +169,8 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 		 ++ ?to_s(SafetyCategory) ++ ","
 		 ++ "\'" ++ ?to_s(Fabric) ++ "\',"
 		 ++ "\'" ++ ?to_s(Feather) ++ "\',"
-		 ++ ?to_s(Merchant) ++ ")"];
+		 ++ ?to_s(Merchant) ++ ","
+		 ++ "\'" ++ ?to_s(DateTime) ++ "\')"];
 	    false -> []
 	end,
 

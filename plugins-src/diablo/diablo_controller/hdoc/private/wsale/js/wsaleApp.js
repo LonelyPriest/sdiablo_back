@@ -617,6 +617,7 @@ function wsaleNewProvide(
 	$scope.setting.multi_ticket = wsaleUtils.to_integer(sale_mode.charAt(21));
 	$scope.setting.pay_scan = wsaleUtils.to_integer(sale_mode.charAt(24));
 	$scope.setting.disableWithDraw = wsaleUtils.to_integer(sale_mode.charAt(25));
+	$scope.setting.interval_print = wsaleUtils.to_integer(sale_mode.charAt(27));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
 
 	$scope.print_setting = {
@@ -2176,7 +2177,7 @@ function wsaleNewProvide(
 	
 	var print_interval = function(job) {
 	    console.log("print_job:", job);
-	    if ($scope.p_num > 1) {
+	    if ($scope.setting.interval_print && $scope.p_num > 1) {
 		if ($scope.timer_of_print) {
 		    $interval.cancel($scope.timer_of_print); 
 		}
@@ -2229,11 +2230,14 @@ function wsaleNewProvide(
 	    } else {
 		if (angular.isFunction(callback))
 		    $scope.$apply(function() {callback();});
+		for (var i=1; i<$scope.p_num; i++){
+		    start_print(); 
+		}
 	    } 
 	};
 	    
 	if (im_print === diablo_yes) {
-	    sms_notify(); 
+	    sms_notify();
 	    start_print(function(job) {print_interval(job);});
 	} else {
 	    var request = dialog.request(
