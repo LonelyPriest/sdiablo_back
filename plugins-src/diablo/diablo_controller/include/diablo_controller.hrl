@@ -316,6 +316,7 @@
 -define(delete_w_gift,               ?right_w_retailer + 45).
 -define(modify_w_gift,               ?right_w_retailer + 46).
 -define(exchange_w_gift,             ?right_w_retailer + 47).
+-define(update_card_expire,          ?right_w_retailer + 48).
 
 
 %% shop
@@ -436,6 +437,7 @@
 -define(export_w_inventory_fix_note,        ?right_w_inventory + 35).
 -define(offering_w_stock,                   ?right_w_inventory + 36).
 -define(analysis_history_stock,             ?right_w_inventory + 37).
+-define(auto_balance_fix_stock,             ?right_w_inventory + 38).
 
 
 

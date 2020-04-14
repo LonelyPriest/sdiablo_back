@@ -90,6 +90,9 @@ function stockConfg(angular){
 
 	var size_spec = {"filterSizeSpec": function(diabloFilter) {
 	    return diabloFilter.list_good_size_spec()}};
+
+	var sysretailer = {"filterSysRetailer": function(diabloFilter){
+    	    return diabloFilter.get_sys_wretailer()}};
 	
 	$routeProvider.
 	    // new
@@ -169,7 +172,7 @@ function stockConfg(angular){
 	    when('/inventory/inventory_fix_detail', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_fix_detail.html',
 		controller: 'purchaserInventoryFixDetailCtrl' ,
-		resolve: angular.extend({}, user, employee, firm, base) 
+		resolve: angular.extend({}, sysretailer, user, employee, firm, base) 
 	    }).
 	    when('/inventory/inventory_rsn_detail/fix/:rsn?', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_fix_rsn_detail.html',
@@ -708,6 +711,11 @@ function stockConfg(angular){
 			     {style_number:style_number,
 			      brand:brand,
 			      shop:shop}).$promise;
+	};
+
+	
+	this.auto_balance_fix_stock = function(stock){
+	    return http.save({operation: "auto_balance_fix_stock"}, stock).$promise;
 	};
 
 	/*

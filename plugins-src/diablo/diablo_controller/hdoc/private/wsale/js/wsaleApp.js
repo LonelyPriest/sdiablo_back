@@ -2177,7 +2177,7 @@ function wsaleNewProvide(
 	
 	var print_interval = function(job) {
 	    console.log("print_job:", job);
-	    if ($scope.setting.interval_print && $scope.p_num > 1) {
+	    if ($$scope.p_num > 1) {
 		if ($scope.timer_of_print) {
 		    $interval.cancel($scope.timer_of_print); 
 		}
@@ -2230,22 +2230,36 @@ function wsaleNewProvide(
 	    } else {
 		if (angular.isFunction(callback))
 		    $scope.$apply(function() {callback();});
-		for (var i=1; i<$scope.p_num; i++){
-		    start_print(); 
-		}
 	    } 
 	};
+
+	var print_direct = function() {
+	    for (var i=0; i<$scope.p_num; i++){
+		start_print(); 
+	    }
+	    if (angular.isFunction(callback)) {
+		callback();
+	    } 
+	}
 	    
 	if (im_print === diablo_yes) {
 	    sms_notify();
-	    start_print(function(job) {print_interval(job);});
+	    if ($scope.setting.interval_print) {
+		start_print(function(job) {print_interval(job);});
+	    } else {
+		print_direct();
+	    }
 	} else {
 	    var request = dialog.request(
 		"销售开单", "开单成功，是否打印销售单？", undefined, undefined, undefined);
 	    request.result.then(function(close){
 		console.log(close);
 		sms_notify();
-		start_print(function(job) {print_interval(job);});
+		if ($scope.setting.interval_print) {
+		    start_print(function(job) {print_interval(job);});
+		} else {
+		    print_direct();
+		}
 	    }, function(success) {
 		if (angular.isFunction(callback))
 		    callback(); 
@@ -2427,7 +2441,7 @@ function wsaleNewProvide(
 		    type_name   : add.type,
 		    sex         : add.sex,
 		    firm        : add.firm_id,
-		    sex         : add.sex,
+		    // sex         : add.sex,
 		    season      : add.season,
 		    year        : add.year,
 		    entry       : add.entry,

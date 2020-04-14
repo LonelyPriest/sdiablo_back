@@ -223,7 +223,10 @@ threshold_card(cancel_consume, Merchant, Card, Attrs) ->
     gen_server:call(Name, {cancel_card_consume, Merchant, Card, Attrs});
 threshold_card(list_child, Merchant, Retailer, CardSN) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {list_threshold_child_card, Merchant, Retailer, CardSN}).
+    gen_server:call(Name, {list_threshold_child_card, Merchant, Retailer, CardSN});
+threshold_card(update_expire, Merchant, Card, Expire) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {update_threshold_card_expire, Merchant, Card, Expire}).
 
 gift(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -3064,6 +3067,16 @@ handle_call({list_threshold_child_card, Merchant, Retailer, CardSN}, _From, Stat
 	end,
     {reply, Reply, State};
 
+handle_call({update_threshold_card_expire, Merchant, Card, Expire}, _From, State) ->
+    ?DEBUG("update_threshold_card_expire: merchant ~p, card ~p, expire ~p", [Merchant, Card, Expire]),
+
+    Sql = "update w_card set edate=\'" ++ ?to_s(Expire) ++ "\'"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(Card),
+    
+    Reply = ?sql_utils:execute(write, Sql, Card),
+    {reply, Reply, State};
+    
 
 handle_call({add_gift, Merchant, Attrs}, _From, State) ->
     ?DEBUG("add_gift: merchant ~p, Attrs ~p", [Merchant, Attrs]),

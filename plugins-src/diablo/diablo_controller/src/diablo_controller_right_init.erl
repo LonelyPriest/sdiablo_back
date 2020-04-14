@@ -188,6 +188,9 @@ init([]) ->
 	 {?new_threshold_card_sale,
 	  <<"次卡商品销售">>, <<"new_threshold_card_sale">>, ?right_w_retailer},
 
+	 {?update_card_expire,
+	  <<"修改卡有效期">>, <<"update_card_expire">>, ?right_w_retailer},
+
 	 {?add_retailer_level,
 	  <<"新增会员等级">>, <<"add_retailer_level">>, ?right_w_retailer},
 
@@ -443,7 +446,10 @@ init([]) ->
 	  <<"导出盘点明细">>, <<"export_w_inventory_fix_note">>, ?right_w_inventory},
 
 	 {?analysis_history_stock,
-	  <<"历吏库存分析">>, <<"analysis_history_stock">>, ?right_w_inventory}
+	  <<"历吏库存分析">>, <<"analysis_history_stock">>, ?right_w_inventory},
+
+	 {?auto_balance_fix_stock, 
+	  <<"智能平库">>, <<"auto_balance_fix_stock">>, ?right_w_inventory}
 	],
 
     %% firm

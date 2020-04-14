@@ -9,6 +9,8 @@
 -export([authen/2, authen_shop_action/2, filter_condition/3, season/1, one_stock_note/4]).
 -export([get_color/2, mode/1]).
 
+%% -import(?w_sale_request, [start/6]).
+
 -define(d, ?utils:seperator(csv)).
 
 %%--------------------------------------------------------------------
@@ -1492,6 +1494,24 @@ action(Session, Req, {"print_w_inventory_fix_note"}, Payload) ->
 		     {<<"detail">>, {Detail}},
 		     {<<"note">>, Notes}]});
 
+action(Session, Req, {"auto_balance_fix_stock"}, Payload) ->
+    ?DEBUG("auto_balance_fix_stock: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    UserId = ?session:get(id, Session),
+
+    Stocks = ?v(<<"stock">>, Payload, []),
+    {struct, Print} = ?v(<<"print">>, Payload),
+    {struct, Base}  = ?v(<<"base">>, Payload),
+    
+    ?w_sale_request:start(
+       new_sale,
+       Req,
+       {Merchant, UTable},
+       Stocks,
+       lists:keydelete(<<"ticket_custom">>, 1, Base) ++ [{<<"user">>, UserId}],
+       Print);
+    
 action(Session, Req, {"export_w_inventory_fix_note"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     UTable = ?session:get(utable, Session),

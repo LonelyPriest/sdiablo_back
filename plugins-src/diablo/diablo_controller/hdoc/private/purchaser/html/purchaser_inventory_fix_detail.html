@@ -111,6 +111,12 @@
                       <button class="btn diablo-button btn-primary"
 			      x-ng-click="rsn_detail(r)">明细
 			<i class="glyphicon glyphicon-map-marker"></i></button>
+
+		      <button x-ng-if="stock_right.auto_balance_fix_stock"
+			      class="btn diablo-button green"
+			      x-ng-click="balance_stock(r)">平仓
+			<i class="glyphicon glyphicon-scale"></i></button>
+		      
 		    </td>
 		  </tr>
 		</tbody>

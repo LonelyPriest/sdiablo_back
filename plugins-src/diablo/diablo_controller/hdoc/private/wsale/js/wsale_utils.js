@@ -1977,21 +1977,24 @@ var wsalePrint = function(){
 	start_print: function(LODOP, callback){
 	    // wsalePrint.init(LODOP);
 	    // LODOP.PRINT_DESIGN();
-	    // LODOP.PREVIEW(); 
-	    LODOP.SET_PRINT_MODE("CATCH_PRINT_STATUS",true);
-	    if (LODOP.CVERSION) {
-		LODOP.On_Return = function(task, job) {
-		    if (job) {
-			if (angular.isFunction(callback)) callback(job);
+	    // LODOP.PREVIEW();
+	    if (angular.isFunction(callback)) {
+		LODOP.SET_PRINT_MODE("CATCH_PRINT_STATUS",true);
+		if (LODOP.CVERSION) {
+		    LODOP.On_Return = function(task, job) {
+			if (job) 
+			    callback(job);
 		    }
+		    LODOP.PRINT();
+		} else {
+		    var job = LODOP.PRINT();
+		    if (job) 
+			callback(job); 
 		}
-		LODOP.PRINT();
 	    } else {
-		var job = LODOP.PRINT();
-		if (job) {
-		    if (angular.isFunction(callback)) callback(job); 
-		}
+		LODOP.PRINT();
 	    }
+	    
 	} 
     }
 }();

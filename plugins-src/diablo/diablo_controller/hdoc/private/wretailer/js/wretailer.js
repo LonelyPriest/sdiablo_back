@@ -1467,6 +1467,9 @@ function wretailerThresholdCardDetailCtrlProvide(
 	return e.state === 0 && in_array($scope.shopIds, e.shop);
     });
 
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenRetailerRight();
+
     var LODOP;
     var print_mode = diablo_backend;
     for (var i=0, l=$scope.shopIds.length; i<l; i++){
@@ -1808,6 +1811,34 @@ function wretailerThresholdCardDetailCtrlProvide(
 	}
 	
 	dialog.request(title, "确定要删除该卡吗?", callback, undefined, undefined);
+    };
+
+    $scope.update_card_expire = function(card) {
+	var callback = function(params) {
+	    console.log(params);
+	    var expire = dateFilter(params.date, "yyyy-MM-dd");
+	    wretailerService.update_card_expire(card.id, expire).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    dialog.success_response_with_callback(
+			"修改卡有效期",
+			"修改卡有效期成功！！",
+			function() {card.edate=expire;})
+		} else {
+		    dialog.set_error("修改卡有效期", result.ecode);
+		}
+	    })
+	};
+	
+	dialog.edit_with_modal(
+	    "update-card-expire.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {date: diablo_set_date(card.edate),
+	     retailer: card.retailer,
+	     mobile: card.mobile}
+	);
     };
 };
 

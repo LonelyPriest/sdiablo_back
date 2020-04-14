@@ -600,6 +600,12 @@ function wretailerConfig(angular) {
 		{retailer:retailer, csn:card_sn}).$promise;
 	};
 
+	this.update_card_expire = function(card_id, expire) {
+	    return http.save(
+		{operation: "update_card_expire"},
+		{card:card_id, expire:expire}).$promise;
+	}
+
 	/*
 	 * gift
 	 */

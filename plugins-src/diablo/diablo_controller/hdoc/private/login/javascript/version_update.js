@@ -1,5 +1,13 @@
 var version_update = function(){
     var updates = [
+	{date: "2020-04-14",
+	 content:
+	 ["增加月/季/年卡有效期可更改",
+	  "增加盘点差异单一键平仓功能，主要针对差异较大的情况下使用",
+	  "盘点软件可扫描时可更改数量，针对无色无码货品，不再需要全部扫描，减少工作量"
+	 ]
+	},
+	
 	{date: "2020-03-07",
 	 content:
 	 ["日常费用增加可修改功能",
@@ -1347,7 +1355,7 @@ var version_update = function(){
 	    }
 
 	    var apk = "<div class='update-content'>"
-		+ "<a type='button' href='/qzg_stock_fix-release2020-01-30_19-48-20.apk' download=''>"
+		+ "<a type='button' href='/qzg_stock_fix-release2020-04-14_23-43-20.apk' download=''>"
 		+ "<h5 class='text-center fg-pink'>盘点机软件(安卓)下载</h5>"
 		+ "</a>"
 		+ "</div>"

@@ -743,6 +743,10 @@ var diablo_now_date = function(){
     return now;
 };
 
+var diablo_now_datetime = function() {
+    return new Date().getTime();
+};
+
 var diablo_set_date = function(date){
     // console.log(date);
     var a = date.split("-"); 

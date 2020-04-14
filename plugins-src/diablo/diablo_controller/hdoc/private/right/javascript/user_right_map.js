@@ -96,7 +96,8 @@ var rightAuthen = {
 	    
 	    update_tprice_on_stock_in: rightAuthen.root_right._stock + 32,
 	    update_oprice_on_stock_in: rightAuthen.root_right._stock + 33,
-	    bill_firm_on_stock_in:     rightAuthen.root_right._stock + 34
+	    bill_firm_on_stock_in:     rightAuthen.root_right._stock + 34,
+	    auto_balance_fix_stock:    rightAuthen.root_right._stock + 38
 
 	}
     },
@@ -374,7 +375,8 @@ diabloAuthen.prototype.authenStockRight = function() {
 	check_w_stock          :this.checkStock(),
 	delete_w_stock         :this.deleteStock(),
 	print_w_stock          :this.printStockIn(),
-	print_w_stock_note     :this.printStockNote()
+	print_w_stock_note     :this.printStockNote(),
+	auto_balance_fix_stock :this.authenStock('auto_balance_fix_stock')
     }
 };
 

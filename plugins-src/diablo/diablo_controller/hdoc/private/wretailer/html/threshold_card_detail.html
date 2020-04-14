@@ -98,6 +98,7 @@
 		    <td>
 		      <div x-ng-switch on=c.rule_id>
 			<span x-ng-switch-when=2>-</span>
+			<span x-ng-switch-when=7>-</span>
 			<span x-ng-switch-default>{{c.sdate}}</span>
 		      </div>
 		    </td>
@@ -105,6 +106,7 @@
 		    <td>
 		      <div x-ng-switch on=c.rule_id>
 			<span x-ng-switch-when=2>-</span>
+			<span x-ng-switch-when=7>-</span>
 			<span x-ng-switch-default>{{c.edate}}</span>
 		      </div>
 		    </td> 
@@ -114,9 +116,17 @@
 		      <button class="btn diablo-button green"
 			      x-ng-click="consume(c)">刷卡
 			<i class="glyphicon glyphicon-yen"></i>
+
+			<button x-ng-if="right.master
+					 && (c.rule_id===3||c.rule_id===4||c.rule_id===5||c.rule_id===6)"
+				class="btn diablo-button yellow"
+				x-ng-click="update_card_expire(c)">修改
+			<i class="glyphicon glyphicon-edit"></i>
+			
 			<button class="btn diablo-button red"
 			      x-ng-click="delete_card(c)">删除
 			<i class="glyphicon glyphicon-erase"></i>
+			
 		    </td>
 		  </tr> 
 		</tbody> 
@@ -358,4 +368,59 @@
 	    x-ng-click="ok()">确定</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div> 
+</script>
+
+<script type="text/ng-template" id="update-card-expire.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button> 
+    <h4 class="modal-title"><span class="label label-sm label-primary">修改卡有效期</span></h4>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal" name="dForm" novalidate navform> 
+      <div class="form-body">
+	
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">姓名</label>
+	  <div class="col-sm-6 col-md-6">
+	    <input class="form-control"
+		   name="name"
+		   type="text"
+		   readonly
+		   required 
+		   x-ng-model="params.retailer"/> 
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">联系方式</label>
+	  <div class="col-sm-6 col-md-6">
+	    <input class="form-control"
+		   name="name"
+		   type="text"
+		   readonly
+		   required 
+		   x-ng-model="params.mobile"/> 
+	  </div>
+	</div> 
+	
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">结束日期</label>
+	  <div class="col-sm-6 col-md-6">
+	    <time-search time="params.date"></time-search>
+	  </div>
+	</div>
+	
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
 </script>

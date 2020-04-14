@@ -634,8 +634,9 @@ function purchaserInventoryImportFixCtrlProvide(
 
 function purchaserInventoryFixDetailCtrlProvide(
     $scope, dateFilter, diabloPattern, diabloUtilsService,
-    diabloFilter, purchaserService, user, filterEmployee, filterFirm, base){
-    console.log(user); 
+    diabloFilter, purchaserService, filterSysRetailer, user, filterEmployee, filterFirm, base){
+    // console.log(user);
+    console.log(filterSysRetailer);
     $scope.goto_page = diablo_goto_page;
     
     $scope.go_fix = function(){
@@ -646,10 +647,12 @@ function purchaserInventoryFixDetailCtrlProvide(
 	$scope.goto_page('#/inventory/inventory_rsn_detail/fix');
     };
 
-    /*
-    ** filter
-    */ 
-
+    var dialog = diabloUtilsService;
+    
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.stock_right = authen.authenStockRight();
+    // console.log($scope.stock_right); 
+    
     // initial
     $scope.filters = [];
     
@@ -717,6 +720,146 @@ function purchaserInventoryFixDetailCtrlProvide(
 
     $scope.page_changed = function(){
 	$scope.do_search($scope.current_page);
+    };
+
+    var index_of_stock = function(stock, exists) {
+	var index = diablo_invalid_index;;
+	for (var i=0, l=exists.length; i<l; i++) {
+	    if (stock.style_number === exists[i].style_number && stock.brand_id === exists[i].brand) {
+		index = i;
+		break;
+	    }
+	} 
+	return index;
+    };
+
+    var index_of_stock_detail = function(existDetails, detail) {
+	var index = diablo_invalid_index;
+	for (var j=0, k=existDetails.length; j<k; j++) {
+	    if (detail.cid === existDetails[j].cid && detail.size === existDetails[j].size) {
+		// existDetails[j].sell_count += d.sell_count;
+		index = j;
+		break;
+	    } 
+	}
+
+	return index;
+    }
+
+    // var get_stock_detail = function(amounts){
+    // 	var sale_amounts = [];
+    // 	for(var i=0, l=amounts.length; i<l; i++){
+    // 	    var a = amounts[i];
+    // 	    if (angular.isDefined(a.sell_count) && a.sell_count){
+    // 		var new_a = {
+    // 		    cid:        a.cid,
+    // 		    size:       a.size, 
+    // 		    sell_count: wsaleUtils.to_integer(amounts[i].sell_count)}; 
+    // 		sale_amounts.push(new_a); 
+    // 	    }
+    // 	}; 
+    // 	return sale_amounts;
+    // };
+    
+    $scope.balance_stock = function(r) {
+	// get all fix note
+	var callback = function() {
+	    purchaserService.print_w_inventory_fix_note({rsn:r.rsn}).then(function(result) {
+    		console.log(result);
+		if (result.ecode === 0) {
+		    var notes = result.note; 
+		    var base_pay = 0;
+		    var total = 0;
+		    var existStocks = [];
+		    for (var i=0, l=notes.length; i<l; i++) {
+			var n = notes[i];
+			base_pay += diablo_price(n.tag_price, n.discount);
+			var sell_total = n.db_total - n.shop_total;
+			total += sell_total;
+			
+			var index = index_of_stock(n, existStocks);
+			if (index !== diablo_invalid_index) {
+			    var e = existStocks[index];
+			    e.sell_total += sell_total;
+
+			    var d = {cid:n.color_id, size:n.size, sell_count:sell_total};
+			    var indexDetail = index_of_stock_detail(e.amounts, d);
+			    if (diablo_invalid_index !== indexDetail) {
+				e.amounts[indexDetail].sell_count += d.sell_count;
+			    } else {
+				e.amounts.push(d);
+			    } 
+			} else {
+			    existStocks.push({
+				style_number: n.style_number,
+				brand:        n.brand_id,
+				type:         n.type,
+				sex:          n.sex,
+				firm:         n.firm,
+				season:       n.season,
+				year:         n.year,
+				entry:        n.entry_date,
+				sell_total:   sell_total, 
+				org_price:    n.org_price,
+				ediscount:    n.ediscount,
+				tag_price:    n.tag_price,
+				discount:     n.discount,
+				fprice:       0,
+				rprice:       0,
+				fdiscount:    0,
+				rdiscount:    0,
+				path:         n.path,
+				free:         n.free,
+				amounts:      [{cid:n.color_id, size:n.size, sell_count:sell_total}] 
+			    });
+			}
+			
+		    }; 
+		    console.log(existStocks);
+		    
+		    var base = {
+			retailer: filterSysRetailer[0].id,
+			vip: false,
+			
+			shop: result.detail.shop_id,
+			datetime: dateFilter(diablo_now_datetime(), "yyyy-MM-dd HH:mm:ss"),
+			employee: result.detail.employee_id,
+
+			base_pay: stockUtils.to_float(base_pay),
+			should_pay: 0,
+			total: total,
+			round: diablo_yes
+		    };
+		    console.log(base);
+
+		    var print = {im_print: diablo_no};
+
+		    purchaserService.auto_balance_fix_stock(
+			{stock:existStocks, base:base, print:print}
+		    ).then(function(result) {
+			console.log(result);
+			if (result.ecode === 0) {
+			    dialog.response(true, "盘点平仓", "智能平仓成功，请在销售明细中核对！！");
+			} else {
+			    dialog.set_error("盘点平仓", result.ecode);
+			}
+		    })
+
+		    
+		} else {
+		    dialog.response(
+			false,
+			"盘点平仓",
+			"平仓失败失败：获取盘点明细失败，请核对后再操作！！")
+		}
+	    });
+	} 
+	
+	dialog.request(
+	    "盘点平仓",
+	    "智能平仓操作容量产生误差，确认要进行该操作吗！！",
+	    callback, undefined, $scope);
+	
     };
 
 

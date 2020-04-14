@@ -532,6 +532,19 @@ action(Session, Req, {"delete_threshold_card_sale"}, Payload) ->
        fun(ConsumeCard) ->?succ(new_threshold_card_sale, ConsumeCard) end,
        Req);
 
+action(Session, Req, {"update_card_expire"}, Payload) ->
+    ?DEBUG("update_card_expire: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    CardId = ?v(<<"card">>, Payload),
+    Expire = ?v(<<"expire">>, Payload),
+
+    case ?w_retailer:threshold_card(update_expire, Merchant, CardId, Expire) of
+	{ok, CardId} ->
+	    ?utils:respond(200, Req, ?succ(new_threshold_card_sale, CardId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"reset_w_retailer_password", Id}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     Password = ?v(<<"password">>, Payload),

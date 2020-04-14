@@ -1466,10 +1466,25 @@ inventory(fix_rsn_groups, fix, {Merchant, UTable}, Conditions, PageFun) ->
 	", a.size"
 	", a.shop_total"
 	", a.db_total"
+	", a.merchant"
 	", a.entry_date"
 
 	", b.name as color"
 	", c.name as brand"
+
+	", d.free"
+	", d.type"
+	", d.sex"
+	", d.season"
+	", d.firm"
+	", d.year"
+	", d.entry_date"
+	", d.tag_price"
+	", d.discount"
+	", d.org_price"
+	", d.ediscount"
+	", d.path"
+	", d.s_group"
 	
 	" from ("
 	"select id"
@@ -1481,23 +1496,18 @@ inventory(fix_rsn_groups, fix, {Merchant, UTable}, Conditions, PageFun) ->
 	", size"
 	", shop_total"
 	", db_total"
+	", merchant"
 	", entry_date"
 	
-    
-    %% ", d.name as shop"
-	
-    %% " from w_inventory_fix_detail_amount "
-	" from" ++ ?table:t(stock_fix_note, Merchant, UTable)
-	
-	%% " left join colors b on a.color=b.id"
-	%% " left join brands c on a.brand=c.id"
-    %% " left join shops  d on a.shop=d.id"
+	" from" ++ ?table:t(stock_fix_note, Merchant, UTable) 
 	
 	++ " where merchant=" ++ ?to_s(Merchant)
 	++ C1 ++ PageFun() ++ ") a"
 
 	" left join colors b on a.color_id=b.id"
-	" left join brands c on a.brand_id=c.id";
+	" left join brands c on a.brand_id=c.id"
+	" left join" ++ ?table:t(stock, Merchant, UTable) ++ " d"
+	" on a.merchant=d.merchant and a.shop_id=d.shop and a.style_number=d.style_number and a.brand_id=d.brand";
 
 inventory(transfer_detail, transfer, {Merchant, UTable}, Conditions, PageFun) ->
     {StartTime, EndTime, NewConditions} =
