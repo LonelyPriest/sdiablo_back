@@ -36,7 +36,8 @@ require.config({
 	// "diablo-good": "/private/wgood/js/wgood_app",
 
 	"wsale-utils" : "/private/wsale/js/wsale_utils",
-	"diablo-error": '/private/utils/javascript/diablo_error'
+	"diablo-error": '/private/utils/javascript/diablo_error',
+	"diablo-calendar": '/private/utils/javascript/diablo_calendar',
     },
     
     shim: {
@@ -181,6 +182,9 @@ require.config({
 	},
 
 	"diablo-error":{
+	},
+
+	"diablo-calendar":{
 	}
     }
 });
@@ -196,7 +200,7 @@ require([
     "diablo-init", "diablo-function", "diablo-authen",
     "diablo-pattern", "diablo-user-right", "diablo-authen-right",
     "diablo-login-out", "diablo-utils", "diablo-filter", 
-    "wsale-utils", "diablo-error", 
+    "wsale-utils", "diablo-error", "diablo-calendar",
     "wsaleApp", "load_wsale"
 ], function($, angular) {
     $(function() {

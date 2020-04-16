@@ -57,8 +57,8 @@
 
 %% plugin
 -record(knife_plugin, {name,         %% atom ()
-			 version,      %% string()
-			 description,  %% string() 
-			 type,         %% 'ez' or 'dir'
-			 dependencies, %% string() 
-			 location}).   %% string()
+		       version,      %% string()
+		       description,  %% string() 
+		       type,         %% 'ez' or 'dir'
+		       dependencies, %% string() 
+		       location}).   %% string()

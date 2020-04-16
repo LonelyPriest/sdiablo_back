@@ -357,6 +357,7 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     Pinyin   = ?v(<<"py">>, Attrs, []),
     IDCard   = ?v(<<"id_card">>, Attrs, []),
     Birth    = ?v(<<"birth">>, Attrs),
+    Lunar    = ?v(<<"lunar">>, Attrs, 0),
     Type     = ?v(<<"type">>, Attrs),
     Passwd   = ?v(<<"password">>, Attrs, []), 
     Score    = ?v(<<"score">>, Attrs, 0),
@@ -389,9 +390,23 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     case ?sql_utils:execute(read, Sql) of
 	{ok, []} ->
 	    DrawId = default_withdraw(Merchant, Shop, Type),
-	    Sql2 = "insert into w_retailer("
-		"name, intro, level, card, py, id_card, birth, type, password, score"
-		" ,mobile, address, shop, draw, merchant, entry_date)"
+	    Sql2 = "insert into w_retailer(name"
+		", intro"
+		", level"
+		", card"
+		", py"
+		", id_card"
+		", birth"
+		", lunar"
+		", type"
+		", password"
+		", score"
+		", mobile"
+		", address"
+		", shop"
+		", draw"
+		", merchant"
+		", entry_date)"
 		++ " values (" 
 		++ "\'" ++ ?to_s(Name) ++ "\',"
 		++ ?to_s(Intro) ++ ","
@@ -400,6 +415,7 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
 		++ "\'" ++ ?to_s(Pinyin) ++ "\',"
 		++ "\'" ++ ?to_s(IDCard) ++ "\',"
 		++ "\'" ++ ?to_s(Birth) ++ "\',"
+		++ ?to_s(Lunar) ++ ","
 		++ ?to_s(Type) ++ ","
 		++ "\'" ++ ?to_s(Passwd) ++ "\'," 
 		++ ?to_s(Score) ++ "," 
@@ -500,7 +516,8 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
     Shop     = ?v(<<"shop">>, Attrs),
     Address  = ?v(<<"address">>, Attrs),
     Comment  = ?v(<<"comment">>, Attrs),
-    Birth    = ?v(<<"birth">>, Attrs), 
+    Birth    = ?v(<<"birth">>, Attrs),
+    Lunar    = ?v(<<"lunar">>, Attrs),
     Password = ?v(<<"password">>, Attrs), 
 
     OldShop     = ?v(<<"shop_id">>, OldAttrs),
@@ -508,6 +525,7 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
     OldLevel    = ?v(<<"level">>, OldAttrs),
     OldDrawId   = ?v(<<"draw_id">>, OldAttrs),
     OldBalance  = ?to_f(?v(<<"balance">>, OldAttrs)),
+    OldLunar    = ?v(<<"lunar_id">>, OldAttrs),
 
     Balance  = case ?v(<<"balance">>, Attrs) of
 		   undefined -> OldBalance;
@@ -562,6 +580,7 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
 		++ ?utils:v(address, string, Address)
 		++ ?utils:v(comment, string, Comment)
 		++ ?utils:v(birth, string, Birth)
+		++ ?utils:v(lunar, integer, ?supplier:get_modified(Lunar, OldLunar))
 		++ ?utils:v(type, integer, ?supplier:get_modified(Type, OldType))
 		++ ?utils:v(level, integer, ?supplier:get_modified(Level, OldLevel))
 		++ ?utils:v(password, string, Password)
@@ -657,6 +676,7 @@ handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
 	", a.id_card"
 	", a.py"
 	", a.birth"
+	", a.lunar as lunar_id"
 	", a.type as type_id"
 	", a.balance"
 	", a.consume"
@@ -681,6 +701,7 @@ handle_call({get_retailer_batch, Merchant, RetailerIds}, _From, State) ->
 	", level"
 	", py"
 	", birth"
+	", lunar as lunar_id"
 	", shop as shop_id"
 	", draw as draw_id"
 	", type as type_id"
@@ -754,6 +775,7 @@ handle_call({list_retailer, Merchant, Conditions, Mode}, _From, State) ->
 	", a.id_card"
 	", a.py"
 	", a.birth"
+	", a.lunar as lunar_id"
 	", a.type as type_id"
 	", a.balance"
 	", a.consume"
@@ -2206,6 +2228,7 @@ handle_call({{filter_retailer, Order, Sort},
 	", a.card"
 	", a.id_card"
 	", a.birth"
+	", a.lunar as lunar_id"
 	", a.type as type_id"
 	", a.balance"
 	", a.consume"
@@ -2385,6 +2408,7 @@ handle_call({match_phone, Merchant, {Mode, Phone, Shops}}, _From, #state{prompt=
 	", merchant"
 	", name"
 	", birth"
+	", lunar as lunar_id"
 	", level"
 	", card"
 	", py"

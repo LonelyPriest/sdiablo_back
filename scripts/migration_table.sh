@@ -61,7 +61,7 @@ comment,
 merchant,
 change_date,
 entry_date,
-deleted FROM w_inventory_good WHERE merchant=${SUFFIX};
+deleted FROM w_inventory_good WHERE merchant=${SUFFIX} order by id;
 
 INSERT INTO ${TABLE_GOOD_EXTRA} (
 style_number,
@@ -84,7 +84,7 @@ fabric,
 feather,
 merchant,
 entry_date,
-deleted FROM w_inventory_good_extra WHERE merchant=${SUFFIX};
+deleted FROM w_inventory_good_extra WHERE merchant=${SUFFIX} order by id;
 
 INSERT INTO ${TABLE_STOCK_NEW} (
 rsn,
@@ -133,7 +133,7 @@ state,
 check_date,
 entry_date,
 deleted,
-op_date FROM w_inventory_new where merchant=${SUFFIX};
+op_date FROM w_inventory_new where merchant=${SUFFIX} order by id;
 
 INSERT INTO ${TABLE_STOCK_NEW_DETAIL} (
 rsn,
@@ -182,7 +182,7 @@ path,
 merchant,
 entry_date,
 deleted,
-shop FROM w_inventory_new_detail where merchant=${SUFFIX};
+shop FROM w_inventory_new_detail where merchant=${SUFFIX} order by id;
 
 INSERT INTO ${TABLE_STOCK_NEW_DETAIL_AMOUNT} (
 rsn,
@@ -196,7 +196,7 @@ entry_date,
 deleted,
 shop) \
 SELECT rsn,style_number,brand,color,size,total,merchant,entry_date,deleted,shop \
-FROM w_inventory_new_detail_amount where merchant=${SUFFIX};
+FROM w_inventory_new_detail_amount where merchant=${SUFFIX} order by id;
 
 INSERT INTO ${TABLE_STOCK} (
 bcode,
@@ -275,12 +275,12 @@ merchant,
 last_sell,
 change_date,
 entry_date,
-deleted FROM w_inventory where merchant=${SUFFIX};
+deleted FROM w_inventory where merchant=${SUFFIX} order by id;
 
 INSERT INTO ${TABLE_STOCK_NOTE} (
 rsn,style_number,brand,color,size,shop,alarm_a,merchant,total,entry_date,deleted)
 SELECT rsn,style_number,brand,color,size,shop,alarm_a,merchant,total,entry_date,
-deleted FROM w_inventory_amount where merchant=${SUFFIX};
+deleted FROM w_inventory_amount where merchant=${SUFFIX} order by id;
 
 INSERT INTO ${TABLE_SALE} (
 rsn,
@@ -341,7 +341,7 @@ entry_date,
 deleted,
 ticket,
 wxin,
-aliPay FROM w_sale where merchant=${SUFFIX};
+aliPay FROM w_sale where merchant=${SUFFIX} order by id;
 
 INSERT INTO ${TABLE_SALE_DETAIL} (
 rsn,
@@ -402,12 +402,12 @@ deleted,
 ediscount,
 shop,
 in_datetime,
-reject FROM w_sale_detail where merchant=${SUFFIX};
+reject FROM w_sale_detail where merchant=${SUFFIX} order by id;
 
 INSERT INTO ${TABLE_SALE_DETAIL_AMOUNT} (
 rsn, style_number, brand, color, size, total, entry_date, merchant, deleted, shop) \
 SELECT rsn, style_number, brand, color, size, total, entry_date, merchant, deleted, shop \
-FROM w_sale_detail_amount where merchant=${SUFFIX};
+FROM w_sale_detail_amount where merchant=${SUFFIX} order by id;
 
 INSERT INTO ${TABLE_STOCK_TRANSFER} (
 rsn,
@@ -434,7 +434,7 @@ merchant,
 state,
 check_date,
 entry_date,
-deleted FROM w_inventory_transfer where merchant=${SUFFIX};
+deleted FROM w_inventory_transfer where merchant=${SUFFIX} order by id;
 
 
 INSERT INTO ${TABLE_STOCK_TRANSFER_DETAIL} (
@@ -482,7 +482,7 @@ merchant,
 fshop,
 tshop,
 entry_date,
-deleted FROM w_inventory_transfer_detail where merchant=${SUFFIX};
+deleted FROM w_inventory_transfer_detail where merchant=${SUFFIX} order by id;
 
 
 INSERT INTO ${TABLE_STOCK_TRANSFER_DETAIL_AMOUNT} (
@@ -508,7 +508,7 @@ merchant,
 fshop,
 tshop,
 entry_date,
-deleted FROm w_inventory_transfer_detail_amount where merchant=${SUFFIX};
+deleted FROm w_inventory_transfer_detail_amount where merchant=${SUFFIX} order by id;
 
 INSERT INTO ${TABLE_STOCK_FIX} (
 rsn,
@@ -529,7 +529,7 @@ employ,
 shop_total,
 db_total,
 entry_date,
-deleted FROM w_inventory_fix where merchant=${SUFFIX};
+deleted FROM w_inventory_fix where merchant=${SUFFIX} order by id;
 
 INSERT INTO ${TABLE_STOCK_FIX_DETAIL_AMOUNT} (
 rsn,
@@ -554,7 +554,7 @@ size,
 shop_total,
 db_total,
 entry_date,
-deleted FROM w_inventory_fix_detail_amount where merchant=${SUFFIX};
+deleted FROM w_inventory_fix_detail_amount where merchant=${SUFFIX} order by id;
 
 EOF
 

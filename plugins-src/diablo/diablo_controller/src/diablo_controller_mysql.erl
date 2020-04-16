@@ -69,8 +69,7 @@ init([]) ->
     LogFun =
 	fun(Module, Line, _Level, FormatFun) ->
 		{Fmt, Args} = FormatFun(),
-		knife_log:debug("[~p:~p]-> " ++ Fmt ++ "~n",
-				[Module, Line] ++ Args)
+		knife_log:debug("[~p:~p]-> " ++ Fmt ++ "~n", [Module, Line] ++ Args)
 	end,
     
     mysql:start_link(conn, Host, undefined, User, Passwd, DB, LogFun),

@@ -270,7 +270,8 @@ function wretailerConfig(angular) {
 		 type:     r.type.id,
 		 level:    r.level.level,
 		 shop:     r.shop.id,
-		 birth:    dateFilter(r.birth, "yyyy-MM-dd")
+		 birth:    dateFilter(r.birth, "yyyy-MM-dd"),
+		 lunar:    r.lunar.id
 		}).$promise;
 	};
 
@@ -295,6 +296,7 @@ function wretailerConfig(angular) {
 		 type:     r.type,
 		 level:    r.level,
 		 birth:    dateFilter(r.birth, "yyyy-MM-dd"),
+		 lunar:    r.lunar,
 		 // obalance: r.obalance,
 		 balance:  r.balance, 
 		}).$promise;

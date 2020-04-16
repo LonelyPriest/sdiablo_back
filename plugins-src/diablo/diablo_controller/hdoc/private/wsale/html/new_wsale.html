@@ -5,7 +5,7 @@
       <div class="portlet-title">
 	<div class="caption"><i class="glyphicon glyphicon-record"></i>
 	  <span>开单</span>
-	  <span>{{select.datetime|date: 'yyyy-MM-dd'}}</span>
+	  <span>{{select.datetime|date: 'yyyy-MM-dd'}}/{{select.lunar.Animal}}年{{select.lunar.IMonthCn}}{{select.lunar.IDayCn}}</span>
 	</div>
 	<div class="actions">
 	  <div class="btn-group">
@@ -666,7 +666,10 @@
       <div class="row">
 	<div x-ng-if="select.retailer && select.retailer.type_id!==2" class="col-xs-12 col-md-12"> 
 	  <h5 class="text-center" style="margin-top:-2px">
-    	    <span>生日：<span class="fg-blue sell-font">
+    	    <span x-ng-if="select.retailer.lunar_id===0">生日/公历：<span class="fg-blue sell-font">
+		<strong>{{select.retailer.birth}}</strong></span>&nbsp&nbsp
+    	    </span>
+	    <span x-ng-if="select.retailer.lunar_id===1">生日/农历：<span class="fg-blue sell-font">
 		<strong>{{select.retailer.birth}}</strong></span>&nbsp&nbsp
     	    </span>
     	    <span>积分：<span class="fg-red sell-font">
@@ -1261,7 +1264,17 @@
 	  <div class="col-sm-6 col-md-6">
 	    <time-search time="params.retailer.birth"></time-search>
 	  </div> 
-	</div> 
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">日历</label>
+	  <div class="col-sm-6 col-md-6">
+	    <select class="form-control" type="text"
+	  	    x-ng-model="params.retailer.lunar" 
+	  	    x-ng-options="l as l.name for l in params.lunars">
+	    </select>
+	  </div> 
+	</div>
 
 	<div x-ng-if="params.retailer.$new" x-ng-if="retailer.type.id!==2" class="form-group">
 	  <label class="col-sm-3 col-md-3 control-label">会员等级</label>

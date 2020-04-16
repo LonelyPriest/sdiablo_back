@@ -2535,7 +2535,7 @@ filter_table(w_sale_with_page, {Merchant, UTable}, CurrentPage, ItemsPerPage, Co
 	++ " left join users c on a.account=c.id"
 	
     	" where " ++ SortConditions
-	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage), 
+	++ ?sql_utils:condition(page_desc, {use_datetime, 0}, CurrentPage, ItemsPerPage), 
     Sql.
     
 type(new) -> 0;

@@ -25,8 +25,10 @@ function wretailerNewCtrlProvide(
     $scope.setting = {hide_pwd:retailerUtils.to_integer(sale_mode.charAt(9))}; 
     
     $scope.levels = diablo_retailer_levels;
+    $scope.lunars = diablo_lunar;
     $scope.retailer = {
 	birth:$.now(),
+	lunar: $scope.lunars[0],
 	type :$scope.retailer_types[0],
 	shop :$scope.shops[0],
 	level:$scope.levels[0]
@@ -92,6 +94,7 @@ function wretailerDetailCtrlProvide(
     $scope.months          = retailerUtils.months();
     $scope.date_of_month   = retailerUtils.date_of_month();
     $scope.retailer_levels = diablo_retailer_levels;
+    $scope.lunars          = diablo_lunar;
 
     var sale_mode = retailerUtils.sale_mode($scope.shops[0].id, base);
     $scope.setting = {hide_pwd:retailerUtils.to_integer(sale_mode.charAt(9))}; 
@@ -227,8 +230,9 @@ function wretailerDetailCtrlProvide(
 		    angular.forEach($scope.retailers, function(r){
 			r.type = diablo_get_object(r.type_id, $scope.retailer_types);
 			r.olevel = $scope.retailer_levels[r.level];
-			r.birthday = r.birth.substr(5,8); 
+			r.birthday = r.birth.substr(5,8);
 			r.birth     = diablo_set_date_obj(r.birth);
+			r.lunar     = diablo_get_object(r.lunar_id, $scope.lunars);
 			r.shop      = diablo_get_object(r.shop_id, $scope.shops);
 			r.edit_shop = in_array($scope.shopIds, r.shop_id)
 			    || r.shop_id === diablo_invalid_index;
@@ -631,8 +635,8 @@ function wretailerDetailCtrlProvide(
 		type:    get_modified(uRetailer.type, oRetailer.type),
 		intro: function() {
 		    if (uRetailer.intro && angular.isObject(uRetailer.intro))
-			return get_modified(uRetailer.intro.id, oRetailer.intro);
-		    return get_modified(diablo_invalid_index, oRetailer.intro);
+			return get_modified(uRetailer.intro.id, oRetailer.intro_id);
+		    return get_modified(diablo_invalid_index, oRetailer.intro_id);
 		}(),
 		level: function() {
 		    if (oRetailer.type_id !== 2)
@@ -641,6 +645,7 @@ function wretailerDetailCtrlProvide(
 		password:get_modified(uRetailer.password, oRetailer.password),
 		
 		birth:get_modified(uRetailer.birth.getTime(), oRetailer.birth.getTime()),
+		lunar:get_modified(uRetailer.lunar.id, oRetailer.lunar_id),
 		balance: get_modified(uRetailer.balance, oRetailer.balance)
 	    };
 	    
@@ -696,6 +701,7 @@ function wretailerDetailCtrlProvide(
 			 return t.id !== diablo_system_retailer;
 		     });
 	     }(),
+	     lunars:      $scope.lunars,
 	     levels:      $scope.retailer_levels,
 	     shops:       $scope.shops,
 	     pattern:     pattern,

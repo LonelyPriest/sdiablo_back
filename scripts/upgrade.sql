@@ -735,6 +735,10 @@ alter table w_inventory_good drop column feather;
 --2020-03-27
 alter table w_sale add column account INTEGER default -1 after rsn;
 
+--2020-04-16
+alter table w_retailer add column lunar TINYINT default 0 after birth;
+
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 

@@ -457,6 +457,7 @@ function wsaleNewProvide(
     $scope.interval_per_5_minute = undefined;
     $scope.round  = diablo_round;
     $scope.timer_of_print = undefined;
+    $scope.calendar = require('diablo-calendar');
     
     $scope.today = function(){return $.now();}; 
     $scope.back  = function(){diablo_goto_page("#/new_wsale_detail");};
@@ -539,6 +540,10 @@ function wsaleNewProvide(
     $scope.disable_refresh = true;
     $scope.has_withdrawed  = false;
     $scope.has_gift_ticket = false;
+    $scope.solar2lunar = function(date) {
+	console.log(date);
+	return $scope.calendar.solar2lunar(date.year, date.month, date.day);
+    };
     
     $scope.select = {
 	rsn:  undefined,
@@ -572,8 +577,10 @@ function wsaleNewProvide(
 	left_balance: 0,
 	// sid:          diablo_invalid_index,
 	pay_order:    diablo_invalid_index,
-	datetime:     $scope.today()
+	datetime:     $scope.today(),
+	lunar:        $scope.solar2lunar(diablo_get_now_full_date()),
     };
+    console.log($scope.select);
 
     // init
     $scope.sale = {barcode:undefined, style_number:undefined};
@@ -745,7 +752,7 @@ function wsaleNewProvide(
     	    $scope.select.surplus = wsaleUtils.to_decimal(
 		wsaleUtils.to_float($scope.select.retailer.balance));
     	    $scope.select.left_balance = $scope.select.surplus;
-    	} 
+    	}
     	$scope.select.o_retailer = $scope.select.retailer;
     	$scope.select.ticket_batchs = [];
     	$scope.select.ticket_balance = 0;
@@ -1492,7 +1499,8 @@ function wsaleNewProvide(
 		 type:     r.type.id,
 		 level:    r.level.level,
 		 shop:     $scope.select.shop.id,
-		 birth:    dateFilter(r.birth, "yyyy-MM-dd")};
+		 birth:    dateFilter(r.birth, "yyyy-MM-dd"),
+		 lunar:    r.lunar.id};
 
 	    console.log(addedRetailer);
 	    diabloFilter.new_wretailer(addedRetailer).then(function(result){
@@ -1504,6 +1512,7 @@ function wsaleNewProvide(
 			wname:   addedRetailer.name,
 			birth:   addedRetailer.birth.substr(5,8),
 			wbirth:  addedRetailer.birth,
+			lunar_id:addedRetailer.lunar,
 			level:   addedRetailer.level,
 			mobile:  addedRetailer.mobile,
 			type_id: addedRetailer.type,
@@ -1530,10 +1539,12 @@ function wsaleNewProvide(
 		retailer: {
 		    $new:true,
 		    birth:$.now(),
+		    lunar:diablo_lunar[0],
 		    type :$scope.retailer_types[0],
-		    level:diablo_retailer_levels[0],
+		    level:diablo_retailer_levels[0]
 		},
 		levels: diablo_retailer_levels,
+		lunars: diablo_lunar,
 		retailer_types:$scope.retailer_types,
 		pattern: {name:diabloPattern.chinese_name,
 			  tel_mobile: diabloPattern.tel_mobile,
@@ -1558,7 +1569,8 @@ function wsaleNewProvide(
 		py:       get_modified(pinyin(u.name), pinyin(oRetailer.wname)),
 		password: get_modified(u.password, oRetailer.password),
 		type:     get_modified(u.type.id, oRetailer.type_id),
-		birth:    get_modified(u.birth.getTime(), set_date(oRetailer.wbirth).getTime())
+		birth:    get_modified(u.birth.getTime(), set_date(oRetailer.wbirth).getTime()),
+		lunar:    get_modified(u.lunar.id, oRetailer.lunar_id)
 	    };
 	    
 	    console.log(uRetailer);
@@ -1575,10 +1587,15 @@ function wsaleNewProvide(
 			oRetailer.type_id = uRetailer.type; 
 		    }
 
+		    if (angular.isDefined(uRetailer.lunar)) {
+			oRetailer.lunar_id = uRetailer.lunar;
+			oRetailer.lunar = diablo_get_object(oRetailer.lunar_id, diablo_lunar);
+		    }
+
 		    if (angular.isDefined(uRetailer.birth)) {
 			oRetailer.wbirth = dateFilter(uRetailer.birth, "yyyy-MM-dd");
 			oRetailer.birth = oRetailer.wbirth.substr(5,8);
-		    } 
+		    }
 		    $scope.select.retailer = oRetailer;
 		    $scope.set_retailer();
 		    // console.log($scope.select.retailer);
@@ -1598,10 +1615,12 @@ function wsaleNewProvide(
 		    name:    oRetailer.wname,
 		    mobile:  oRetailer.mobile,
 		    birth:   set_date(oRetailer.wbirth),
+		    lunar:   diablo_get_object(oRetailer.lunar_id, diablo_lunar),
 		    type_id: oRetailer.type_id,
 		    type:    diablo_get_object(oRetailer.type_id, $scope.retailer_types),
 		},
 		retailer_types:$scope.retailer_types,
+		lunars: diablo_lunar,
 		pattern: {name:diabloPattern.chinese_name,
 			  password: diabloPattern.num_passwd}
 	    }
@@ -1653,6 +1672,7 @@ function wsaleNewProvide(
 	
 	$scope.select.comment      = undefined; 
 	$scope.select.datetime     = $scope.today();
+	$scope.select.lunar        = $scope.solar2lunar(diablo_get_now_full_date());
 	
 	if ($scope.setting.semployee)
 	    $scope.select.employee = undefined;
@@ -1671,6 +1691,7 @@ function wsaleNewProvide(
     $scope.refresh_datetime_per_5_minute = function(){
     	$scope.interval_per_5_minute = setInterval(function(){
     	    $scope.select.datetime  = $scope.today();
+	    $scope.select.lunar     = $scope.solar2lunar(diablo_get_now_full_date());
 	    // console.log(dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"));
     	}, 300 * 1000);
     };
@@ -3554,6 +3575,9 @@ function wsaleNewDetailProvide(
     }); 
 
     console.log($scope.ticketPlans);
+
+    // var calendar = require("diablo-calendar"); 
+    // console.log(calendar.solar2lunar(2020,7,20));
     
     // var LODOP = undefined;
     // if (diablo_frontend === wsaleUtils.print_mode(user.loginShop, base)) {

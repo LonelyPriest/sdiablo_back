@@ -421,6 +421,8 @@ var diablo_move_state = ["在途中", "已转移"];
 
 var diablo_level = ["未定义", "一等品", "二等品", "合格品"];
 
+var diablo_lunar = [{name:"公历", id:0}, {name:"农历", id:1}];
+
 var diablo_get_object = function(objectId, objects){
     if (!angular.isArray(objects)){
 	return undefined;
@@ -741,6 +743,11 @@ var diablo_now_date = function(){
     // now.setSeconds(0);
     // now.setMilliseconds(0);
     return now;
+};
+
+var diablo_get_now_full_date = function() {
+    var now = new Date();
+    return {year:now.getFullYear(), month:now.getMonth() + 1, day:now.getDate()};
 };
 
 var diablo_now_datetime = function() {

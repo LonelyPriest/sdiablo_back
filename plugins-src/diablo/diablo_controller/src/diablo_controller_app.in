@@ -54,7 +54,7 @@
      diablo_cron_job_register, diablo_cron_control,
      %% base
      diablo_w_base_request,    diablo_w_base,
-     diablo_table,
+     diablo_table, diablo_lunar_calendar,
      
      %% authen
      diablo_controller_right_init, diablo_controller_authen,

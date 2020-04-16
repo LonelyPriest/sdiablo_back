@@ -117,6 +117,7 @@
 		    <th>卡号</th>
 		    <th>身份证号码</th>
 		    <th>生日</th>
+		    <th>日历</th>
 		    <th>会员类型</th>
 		    <th x-ng-click="use_order(order_fields.level)">会员等级
 		      <i class="glyphicon glyphicon-triangle-bottom fg-red"></th> 
@@ -153,6 +154,7 @@
 		      <div x-ng-if="!r.id_card" class="text-center">-</div>
 		    </td>
 		    <td>{{r.birthday}}</td>
+		    <td>{{r.lunar.name}}</td>
 		    <td>
 		      <span x-ng-if="r.type.id===0">{{r.type.name}}</span> 
 		      <span x-ng-if="r.type.id===1" class="bg-magenta">{{r.type.name}}</span>
@@ -214,7 +216,7 @@
 		  </tr>
 
 		  <tr x-ng-if="right.query_balance && total_items!==0" class="bg-white">
-		    <td colspan="10"></td>
+		    <td colspan="11"></td>
 		    <td class="fg-red text-center">{{total_balance}}</td>
 		    <td></td>
 		    <td class="fg-red text-center">{{total_consume}}</td>
@@ -359,6 +361,18 @@
 	    <time-search time="params.retailer.birth"></time-search>
 	  </div>
 	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">日历</label>
+	  <div class="col-sm-10 col-md-10">
+	    <select class="form-control"
+		    x-ng-model="params.retailer.lunar"
+		    x-ng-options="l as l.name for l in params.lunars">
+	    </select>
+	  </div>
+	</div>
+
+	
 
 	<div x-ng-if="!params.retailer.no_vip && right.master && params.retailer.type_id===1"
 	     class="form-group">

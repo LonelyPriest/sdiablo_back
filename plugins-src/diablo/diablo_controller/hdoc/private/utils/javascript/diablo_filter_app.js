@@ -606,6 +606,7 @@ function filterProvider(){
 				    wname:   r.name,
 				    birth:   r.birth.substr(5,8),
 				    wbirth:  r.birth,
+				    lunar_id: r.lunar_id,
 				    level:   r.level,
 				    mobile:  r.mobile,
 				    type_id: r.type_id,
@@ -649,7 +650,8 @@ function filterProvider(){
 		     type:     r.type,
 		     level:    r.level,
 		     shop:     r.shop,
-		     birth:    r.birth}).$promise;
+		     birth:    r.birth,
+		     lunar:    r.lunar}).$promise;
 	    },
 
 	    update_wretailer:function(r) {
@@ -661,6 +663,7 @@ function filterProvider(){
 		     password: r.password,
 		     type:     r.type,
 		     birth:    dateFilter(r.birth, "yyyy-MM-dd"),
+		     lunar:    r.lunar
 		    }).$promise;
 	    },
 

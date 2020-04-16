@@ -141,6 +141,16 @@
 	    </div>
 
 	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">日历</label>
+	      <div class="col-sm-6 col-md-6">
+		<select class="form-control" type="text"
+	  		x-ng-model="retailer.lunar" 
+	  		x-ng-options="l as l.name for l in lunars">
+		</select>
+	      </div> 
+	    </div>
+
+	    <div class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">会员类型</label>
 	      <div class="col-sm-6 col-md-6">
 	    	<select class="form-control" type="text"

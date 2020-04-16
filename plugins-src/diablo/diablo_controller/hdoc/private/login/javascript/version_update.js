@@ -1,5 +1,12 @@
 var version_update = function(){
     var updates = [
+	{date: "2020-04-16",
+	 content:
+	 ["增加会员生日公历/农历表示",
+	  "开单界面增加公历/农历显示",
+	  "会员生日增加公历/农历显示"]
+	},
+	
 	{date: "2020-04-14",
 	 content:
 	 ["增加月/季/年卡有效期可更改",

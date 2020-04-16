@@ -460,6 +460,7 @@ create table w_retailer
     level           TINYINT default 0,
     card            VARCHAR(16) default null,
     birth           DATE default 0,
+    lunar           TINYINT default 0, -- 0:solor 1:lunar
     -- ulimit          TINYINT default 0,
     password        VARCHAR(128) default null,
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
