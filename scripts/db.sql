@@ -1508,7 +1508,7 @@ create table w_daily_report(
 create table zz_sms_template(
    id              INTEGER AUTO_INCREMENT,
    merchant        INTEGER not null default -1,
-   type            TINYINT default 0, -- 0:consume sms, 1:charge sms, 2:ticket sms
+   type            TINYINT default 0, -- 0:consume/reject sms, charge sms, 3:ticket sms
    content         VARCHAR(256) default '',
    unique  key (merchant, type),
    primary key (id)

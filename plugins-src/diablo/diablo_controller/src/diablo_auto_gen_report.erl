@@ -217,16 +217,17 @@ handle_cast({birth, TriggerTime}, #state{merchant=Merchants, birth_of_merchant=B
 			  CronTask = {{daily, TriggerTime},
 				      fun(_Ref, Datetime) ->
 					      task(auto_sms_at_birth, Datetime, [M])
-				      end}, 
+				      end},
+			  ?DEBUG("CronTask ~p", [CronTask]),
 			  [?cron:cron(CronTask)|Acc] 
-			  end, [], Merchants),
-	    %% end, [], [35]),
-	    ?DEBUG("new auto sms ~p with merchants ~p", [NewTasks, Merchants]),
+			  %% end, [], Merchants),
+	    end, [], [1]),
+	    ?DEBUG("new auto sms ~p", [NewTasks]),
 	    {noreply, State#state{birth_of_merchant=NewTasks}};
 	_ -> {noreply, State}
     end;
 
-handle_cast({cancel_birth}, #state{birth_of_merchant=BirthAll} = State) ->
+handle_cast(cancel_birth, #state{birth_of_merchant=BirthAll} = State) ->
     ?DEBUG("cancel_birth", []),
     lists:foreach(
       fun(Birth) ->
@@ -655,26 +656,32 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
     {Merchant, lists:reverse(TicketSqls)};
 
 task(auto_sms_at_birth, Datetime, Merchants) when is_list(Merchants) ->
+    ?DEBUG("auto_sms_at_birth: datetime ~p, Merchants ~p", [Datetime, Merchants]),
     MerchantPhones = lists:foldr(
 		  fun(M, Acc) ->
 			  [task(auto_sms_at_birth, Datetime, M)|Acc]
 		  end, [], Merchants),
-    ?DEBUG("auto_sms_at_birth: Phones", [MerchantPhones]),
+    ?DEBUG("auto_sms_at_birth: Phones ~p", [MerchantPhones]),
 
     lists:foreach(
-      fun({_Merchant, Phones}) ->
+      fun({Merchant, Info}) ->
 	      lists:foreach(
-		fun(Phone)->
+		fun({Phone, Shop})->
 			%% send sms
-			?DEBUG("sms send phone ~p", [Phone])
-		end, Phones)
+			?DEBUG("sms send phone ~p", [Phone]),
+			?notify:sms(birth, Merchant, Phone, Shop)
+		end, Info)
       end, MerchantPhones);
 
 task(auto_sms_at_birth, Datetime, Merchant) when is_number(Merchant)->
-    {{_Year, Month, Day}, _Time} = Datetime, 
+    {{Year, Month, Day}, _Time} = Datetime,
+    {_LunarYear, LunarMonth, LunarDay} = ?lunar_calendar:solar2lunar(Year, Month, Day),
+    ?DEBUG("LunarYear ~p, LunarMonth ~p, LunarDay ~p", [_LunarYear, LunarMonth, LunarDay]),
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, ?DEFAULT_BASE_SETTING),
-    BirthSMS = ?v(<<"birth_sms">>, BaseSetting, 0),
-    BirthBefore = ?to_i(?v(<<"birth_before">>, BaseSetting, 0)),
+    SMSSetting = ?v(<<"recharge_sms">>, BaseSetting, ?SMS_NOTIFY), 
+    BirthSMS = ?utils:nth(4, SMSSetting),
+    ?DEBUG("SMSSetting ~p, BirthSMS ~p", [SMSSetting, BirthSMS]),
+    %% BirthBefore = ?to_i(?v(<<"birth_before">>, BaseSetting, 0)),
     case BirthSMS of
 	0 -> {Merchant, []}; 
 	1 ->
@@ -684,17 +691,32 @@ task(auto_sms_at_birth, Datetime, Merchant) when is_number(Merchant)->
 	    SMSRetailers = 
 		lists:foldr(
 		  fun({Retailer}, Acc) ->
-			  Birth = ?v(<<"birth">>, Retailer, []),
-			  Seconds = calendar:datetime_to_gregorian_seconds(Datetime)
-			      - ?ONE_DAY * BirthBefore,
-			  {{_Year, Month, Day}, _} = calendar:gregorian_seconds_to_datetime(Seconds),
-			  <<_Y:4/binary, "-", MonthOfBirth:2/binary, "-", DayOfBirth/binary>> = Birth,
-			  case Month =:= ?to_i(MonthOfBirth) andalso Day =:= ?to_i(DayOfBirth) of
-			      true ->
-				  %% send sms
-				  [?v(<<"mobile">>, Retailer)|Acc];
+			  case ?v(<<"type_id">>, Retailer) =:= ?SYSTEM_RETAILER of
+			      true -> Acc;
 			      false ->
-				  Acc
+				  Birth = ?v(<<"birth">>, Retailer, []),
+				  <<_Y:4/binary, "-", MonthOfBirth:2/binary, "-", DayOfBirth/binary>> = Birth, 
+				  %% Seconds = calendar:datetime_to_gregorian_seconds(Datetime) - ?ONE_DAY * BirthBefore,
+				  %% {{_Year, Month, Day}, _} = calendar:gregorian_seconds_to_datetime(Seconds),
+				  case ?v(<<"lunar_id">>, Retailer) of
+				      0 -> %% solar calendar
+					  case Month =:= ?to_i(MonthOfBirth)
+					      andalso Day =:= ?to_i(DayOfBirth) of
+					      true ->
+						  [?v(<<"mobile">>, Retailer)|Acc];
+					      false ->
+						  Acc
+					  end;
+				      1 -> %% lunar calendar
+					  case LunarMonth =:= ?to_i(MonthOfBirth)
+					      andalso LunarDay =:= ?to_i(DayOfBirth) of
+					      true ->
+						  [{?v(<<"mobile">>, Retailer),
+						    ?v(<<"shop">>, Retailer)}|Acc];
+					      false ->
+						  Acc
+					  end
+				  end
 			  end
 		  end, [], Retailers),
 	    {Merchant, SMSRetailers}

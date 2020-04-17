@@ -72,10 +72,10 @@ solar(days, _Year, Month) ->
 
 solar2lunar(Year, Month, Day) ->
     Offset0 = calendar:date_to_gregorian_days(Year, Month, Day) - calendar:date_to_gregorian_days(1900, 1, 31),
-    ?DEBUG("Offset0 ~p", [Offset0]),
     {Metric, LunarYear} = lunar_year_by_offset(1900, Offset0),
     LeapMonth = leap(month, LunarYear),
-    {LunarYear, lunar_month_by_offset(LunarYear, 1, LeapMonth, false, Metric, 0)}.
+    {LunarMonth, LunarDay} = lunar_month_by_offset(LunarYear, 1, LeapMonth, false, Metric, 0),
+    {LunarYear, LunarMonth, LunarDay}.
 
 lunar_year_by_offset(Year, SolarDays) when SolarDays < 0 ->
     {SolarDays + lunar_days(Year - 1), Year - 1};

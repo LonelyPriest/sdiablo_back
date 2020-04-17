@@ -11,8 +11,9 @@
 init_sms() ->
     Sqls= [
 	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 0, \'会员提醒：欢迎光临{$var}，本次{$var}成功，消费金额{$var}，当前余额{$var}，累计积分{$var}，感谢您的惠顾！！\')">>
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 3, \'尊敬的VIP：欢迎光临{$var}，现赠与总价值{$var}元的优惠券{$var}张，{$var}天激活后可使用，请保管好该信息并及时消费。\')">>,
-	   <<"insert into zz_sms_template(merchant, type, content) values(15, 3, \'尊敬的VIP，现赠予总价值{$var}元的优惠券{$var}张，{$var}天后激活可在钻石女人、艾莱依、E主题、波司登、千仞岗使用！\')">>
+	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 3, \'尊敬的VIP：欢迎光临{$var}，现赠与总价值{$var}元的优惠券{$var}张，{$var}天激活后可使用，请保管好该信息并及时消费。\')">>,
+	   %% <<"insert into zz_sms_template(merchant, type, content) values(15, 3, \'尊敬的VIP，现赠予总价值{$var}元的优惠券{$var}张，{$var}天后激活可在钻石女人、艾莱依、E主题、波司登、千仞岗使用！\')">>
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 4, \'亲爱的{$var}会员，花开一季，岁月一轮，祝您生日快乐；本店为您准备了生日礼品，等待您前来领取，当天全场优惠，一路相知，伴您左右！\')">>
 	  ],
     ?sql_utils:execute(transaction, Sqls, ok).
     
@@ -165,7 +166,7 @@ sms_once(aliqin, Merchant, {Shop, Phone, Action, Money, Balance, Score}) ->
     end.
 
 sms_once(zz, Merchant, Sign, {Shop, Phone, Action, Money, Balance, Score}) ->
-    ?DEBUG("merchant ~p, Sign ~p, shop ~p, phone ~p, action ~p, money  ~p, balance ~p, score ~p",
+    ?DEBUG("merchant ~p, Sign ~ts, shop ~p, phone ~p, action ~p, money  ~p, balance ~p, score ~p",
 	  [Merchant, Sign, Shop, Phone, Action, Money, Balance, Score]),
     NewBalance = ?f_print:clean_zero(Balance),
     case ?w_user_profile:get(sms_template, Merchant) of
@@ -182,7 +183,8 @@ sms_once(zz, Merchant, Sign, {Shop, Phone, Action, Money, Balance, Score}) ->
 			  true ->
 			   %% <<"【大唐通用】", Content/binary>>;
 			   <<"【钱掌柜】", Content/binary>>;
-			  false -> <<Sign/binary, Content/binary>>
+			  false ->
+			   << <<"【">>/binary, Sign/binary, <<"】">>/binary, Content/binary>>
 		      end,
 	    ?DEBUG("text ~ts", [Text]),
  			      
@@ -338,7 +340,13 @@ sms(swiming, Merchant, Phone, {Shop, Action, LeftSwiming, Expire}) ->
 				     {<<"lcount">>, limit_swiming(LeftSwiming)},
 				     {<<"expire">>, limit_swiming(Expire)}
 				    ]})),
-    start_sms(Merchant, Phone, SMSTemplate, SMSParams).
+    start_sms(Merchant, Phone, SMSTemplate, SMSParams);
+
+sms(birth, Merchant, Phone, Shop) ->
+    Params = string:strip(?to_s(Phone))
+	++ "," ++ ?to_s(Shop),
+    ?DEBUG("params ~ts", [?to_b(Params)]),
+    rocket_sms_send(zz, Merchant, ?BIRTH_NOTIFY, Phone, Params, fun() -> ok end).
 
 start_sms(Merchant, Phone, SMSTemplate, SMSParams) ->
     case check_sms_rate(Merchant) of
@@ -668,7 +676,8 @@ get_sms_template(zz, Action, Merchant, Templates) ->
 		   ?NORMAL_CHARGE -> ?v(<<"type">>, T) =:= 0; %% charge
 		   ?NORMAL_SALE -> ?v(<<"type">>, T) =:= 0;  %% sale
 		   ?NORMAL_REJECT_SALE -> ?v(<<"type">>, T) =:= 0;  %% reject sale
-		   ?NORMAL_TICKET -> ?v(<<"type">>, T) =:= 3   %% ticket
+		   ?NORMAL_TICKET -> ?v(<<"type">>, T) =:= 3;   %% ticket
+		   ?BIRTH_NOTIFY -> ?v(<<"type">>, T) =:= 4 %% birth
 	       end] of
 	FTemplates ->
 	    ?DEBUG("FTemplates ~p", [FTemplates]),
@@ -689,6 +698,7 @@ check_merchant_balance(zz, Merchant) ->
 	    MerchantBalance = ?v(<<"balance">>, MerchantInfo),	
 	    Rate = ?v(<<"sms_rate">>, MerchantInfo),
 	    ?DEBUG("sms rate ~p, MerchantBalance ~p", [Rate, MerchantBalance]),
+	    %% case Rate == 0 orelse Rate > MerchantBalance of
 	    case Rate > MerchantBalance of
 		true  -> {error, ?err(sms_not_enought_blance, Merchant)};
 		false ->
@@ -702,9 +712,10 @@ check_merchant_balance(zz, Merchant) ->
 
 send_sms(zz, Phone, Sign, MsgParams, SMSTemplate) ->
     Content = ?v(<<"content">>, SMSTemplate),
+    ?DEBUG("templdate content ~ts", [?to_b(Content)]),
     Msg = case Sign == <<>> orelse Sign == [] of
 	      true -> <<"【钱掌柜】", Content/binary>>;
-	      false -> <<Sign/binary, Content/binary>>
+	      false -> << <<"【">>/binary, Sign/binary, <<"】">>/binary, Content/binary>>
 	  end,
     SMSParams = ?to_s(ejson:encode({[{<<"account">>, ?zz_sms_account},
 				     {<<"password">>,?zz_sms_password},

@@ -109,6 +109,7 @@
 -define(NORMAL_SALE, 1).
 -define(NORMAL_REJECT_SALE, 2).
 -define(NORMAL_TICKET, 3).
+-define(BIRTH_NOTIFY, 4).
 
 %% bill mode
 -define(CASH, 0).
@@ -153,7 +154,7 @@
 -define(PRINT_DEFAULT_MODE, <<"000">>).
 
 %% sms
--define(SMS_NOTIFY, <<"000">>).
+-define(SMS_NOTIFY, <<"0000">>).
 
 %% sort
 -define(SORT_BY_ID, 0).
@@ -670,6 +671,9 @@
 
 %% report
 -define(gen_report, diablo_auto_gen_report).
+
+%% lunar calendar
+-define(lunar_calendar, diablo_lunar_calendar).
 
 %% cron
 -define(cron_agent, diablo_cron_agent).

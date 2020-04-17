@@ -28,8 +28,12 @@ start(normal, _StartArgs) ->
 
 	    %% report
 	    ok = diablo_auto_gen_report:report(stastic_per_shop, {2, 0, am}),
+	    %% ticket
 	    ok = diablo_auto_gen_report:ticket(preferential, {4, 0, am}),
+	    %% retailer level
 	    ok = diablo_auto_gen_report:retailer_level(check, {5, 0, am}),
+	    %% birth sms
+	    ok = diablo_auto_gen_report:birth(congratulation, {9, 0, am}),
 	    
 
 	    GCTask = {
@@ -42,8 +46,12 @@ start(normal, _StartArgs) ->
 	      {daily, [{8,  00,  am},
 	      	       {10, 00, am},
 	      	       {11, 59, am},
+		       {12, 59, am},
+		       {1,  00,  pm},
 	      	       {2,  00,  pm},
+		       {3,  00,  pm},
 	      	       {4,  00,  pm},
+		       {5,  00,  pm},
 	      	       {6,  00,  pm},
 	      	       {8,  00,  pm},
 	      	       {10,  00,  pm},

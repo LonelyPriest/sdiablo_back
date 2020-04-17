@@ -970,7 +970,8 @@ sys_config() ->
 	      %% [0]: recharge notify
 	      %% [1]: threshold_card consume notify
 	      %% [2]: gift ticket notify
-	      {"recharge_sms",    "充值短信提醒",         "000",   "0"},	      
+	      %% [3]: birth notify at 9:00 am
+	      {"recharge_sms",    "充值短信提醒",         "0000",   "0"},	      
 	      {"consume_sms",     "消费短信提醒",         "0",   "0"},
 	      
 	      {"price_on_region", "按区域填写价格",       "0",   "0"},
