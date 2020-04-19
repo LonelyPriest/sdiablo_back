@@ -1,5 +1,12 @@
 var version_update = function(){
     var updates = [
+	{date: "2020-04-19",
+	 content:
+	 ["增加需按年领取的会员礼品",
+	  "修正开单负数问题",
+	  "增加会员生日短信提醒"]
+	},
+	
 	{date: "2020-04-16",
 	 content:
 	 ["增加会员生日公历/农历表示",

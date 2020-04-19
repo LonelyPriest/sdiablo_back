@@ -2180,6 +2180,13 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
     ShopId           = ?v(<<"shop">>, Base), 
 
     Datetime         = ?v(<<"datetime">>, Base),
+
+    BaseSettings = ?w_report_request:get_setting(Merchant, ShopId),
+    ?DEBUG("Shop ~p, BaseSettings ~p", [ShopId, BaseSettings]),
+    SMS = ?utils:nth(1,?w_report_request:get_config(<<"consume_sms">>, BaseSettings)), 
+    ?DEBUG("sms notify ~p", [SMS]), 
+    CheckSale = ?utils:nth(1, ?w_report_request:get_config(<<"check_sale">>, BaseSettings)),
+    ?DEBUG("check sale ~p", [CheckSale]),
     %% half an hour
     case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 1800 of
 	true ->
@@ -2190,20 +2197,14 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
 			   [{<<"fdate">>, Datetime},
 			    {<<"bdate">>, ?to_b(CurDatetime)}]);
 	false-> 
-	    case check_inventory(oncheck, Round, 0, ShouldPay, Invs) of
+	    case check_inventory(
+		   {oncheck, Merchant, ShopId, UTable, CheckSale}, Round, 0, ShouldPay, Invs) of
 		{ok, _} -> 
 		    case ?w_sale:sale(new, {Merchant, UTable}, lists:reverse(Invs), Base) of 
 			{ok, {RSN, Phone, _ShouldPay, Balance, Score}} ->
 			    {SMSCode, _} =
 				try
-				    BaseSettings = ?w_report_request:get_setting(Merchant, ShopId),
-				    SMS =
-					case ?w_report_request:get_config(<<"consume_sms">>, BaseSettings) of
-					    [] -> 0;
-					    V -> ?to_i(V)
-					end,
-				    ?DEBUG("sms notify ~p", [SMS]),
-				    
+				    %% BaseSettings = ?w_report_request:get_setting(Merchant, ShopId), 
 				    %% {ok, Retailer} = ?w_user_profile:get(
 				    %% 			retailer, Merchant, RetailerId), 
 				    %% SysVips  = sys_vip_of_shop(Merchant, ShopId),
@@ -2291,7 +2292,15 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
 		       Req,
 		       ?err(wsale_invalid_pay, Moneny),
 		       [{<<"should_pay">>, ShouldPay},
-			{<<"check_pay">>, Moneny}])
+			{<<"check_pay">>, Moneny}]);
+		{db_error, StyleNumber} ->
+		    ?utils:respond(200, Req, ?err(db_error, StyleNumber));
+		{not_enought_stock, StyleNumber} ->
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?err(not_enought_stock, StyleNumber),
+		       [{<<"style_number">>, StyleNumber}])
 	    end
     end.
 
@@ -2318,7 +2327,7 @@ start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props) ->
 	    ?utils:respond(200, Req, Error)
     end.
     
-check_inventory(oncheck, Round, Moneny, ShouldPay, []) ->
+check_inventory({oncheck, _Merchant, _Shop, _UTable, _CheckSale}, Round, Moneny, ShouldPay, []) ->
     ?DEBUG("Moneny ~p, ShouldPay, ~p", [Moneny, ShouldPay]),
     case Round of
 	1 -> 
@@ -2333,8 +2342,10 @@ check_inventory(oncheck, Round, Moneny, ShouldPay, []) ->
 	    end
     end;
 
-check_inventory(oncheck, Round, Money, ShouldPay, [{struct, Inv}|T]) ->
+check_inventory(
+  {oncheck, Merchant, Shop, UTable, CheckSale}, Round, Money, ShouldPay, [{struct, Inv}|T]) ->
     StyleNumber = ?v(<<"style_number">>, Inv),
+    Brand = ?v(<<"brand">>, Inv), 
     Amounts = ?v(<<"amounts">>, Inv),
     Count = ?v(<<"sell_total">>, Inv),
     DCount = lists:foldr(
@@ -2352,8 +2363,40 @@ check_inventory(oncheck, Round, Money, ShouldPay, [{struct, Inv}|T]) ->
 	undefined -> {error, Inv};
 	_ ->
 	    case Count =:= DCount of
-		true -> check_inventory(oncheck, Round, Money + Calc, ShouldPay, T);
-		false -> {error, Inv}
+		true ->
+		    case CheckSale of
+			?YES ->
+			    Sql = "select style_number, brand, amount, shop, merchant"
+				" from" ++ ?table:t(stock, Merchant, UTable)
+				++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+				++ " and brand=" ++ ?to_s(Brand)
+				++ " and shop=" ++ ?to_s(Shop)
+				++ " and merchant=" ++ ?to_s(Merchant),
+			    case ?sql_utils:execute(s_read, Sql) of
+				{ok, Stock} ->
+				    case ?v(<<"amount">>, Stock) < Count of
+					true -> {not_enought_stock, StyleNumber};
+					false ->
+					    check_inventory(
+					      {oncheck, Merchant, Shop, UTable, CheckSale},
+					      Round,
+					      Money + Calc,
+					      ShouldPay,
+					      T)
+				    end;
+				{error, _Error} ->
+				    {db_error, StyleNumber}
+			    end;
+			?NO ->
+			    check_inventory(
+			      {oncheck, Merchant, Shop, UTable, CheckSale},
+			      Round,
+			      Money + Calc,
+			      ShouldPay,
+			      T)
+		    end;
+		false ->
+		    {error, Inv}
 	    end
     end.
 

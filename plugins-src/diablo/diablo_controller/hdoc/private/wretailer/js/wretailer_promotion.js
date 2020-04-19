@@ -455,7 +455,8 @@ function wretailerGiftCtrlProvide(
 	    console.log(params);
 	    var title = "礼品领取"; 
 	    if ((g.rule_id === diablo_gift_month_and_score
-	    	 || g.rule_id === diablo_score_only_cash)
+	    	 || g.rule_id === diablo_gift_score_only
+		 || g.rule_id === diablo_gift_year_and_score)
 	    	&& params.score > params.retailer.score) {
 	    	    dialog.set_error(title, 2140); 
 	    } else {

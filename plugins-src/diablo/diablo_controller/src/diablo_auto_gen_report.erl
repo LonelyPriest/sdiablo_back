@@ -207,8 +207,8 @@ handle_cast({gen_ticket, TriggerTime}, #state{merchant=Merchants, ticket_of_merc
     end;
 
 handle_cast({birth, TriggerTime}, #state{merchant=Merchants, birth_of_merchant=BirthAll} = State) ->
-    ?DEBUG("birth time ~p, birth ~p", [TriggerTime, BirthAll]),
-    ?INFO("Auto birth at time time ~p, birth ~p", [TriggerTime, BirthAll]),
+    %% ?DEBUG("birth time ~p, birth ~p", [TriggerTime, BirthAll]),
+    %% ?INFO("Auto birth at time time ~p, birth ~p", [TriggerTime, BirthAll]),
     case BirthAll of
 	[] ->
 	    NewTasks =
@@ -218,11 +218,11 @@ handle_cast({birth, TriggerTime}, #state{merchant=Merchants, birth_of_merchant=B
 				      fun(_Ref, Datetime) ->
 					      task(auto_sms_at_birth, Datetime, [M])
 				      end},
-			  ?DEBUG("CronTask ~p", [CronTask]),
+			  %% ?DEBUG("CronTask ~p", [CronTask]),
 			  [?cron:cron(CronTask)|Acc] 
-			  %% end, [], Merchants),
-	    end, [], [1]),
-	    ?DEBUG("new auto sms ~p", [NewTasks]),
+		  end, [], Merchants),
+	    %% end, [], [1]),
+	    %% ?DEBUG("new auto sms ~p", [NewTasks]),
 	    {noreply, State#state{birth_of_merchant=NewTasks}};
 	_ -> {noreply, State}
     end;
@@ -668,7 +668,7 @@ task(auto_sms_at_birth, Datetime, Merchants) when is_list(Merchants) ->
 	      lists:foreach(
 		fun({Phone, Shop})->
 			%% send sms
-			?DEBUG("sms send phone ~p", [Phone]),
+			%% ?DEBUG("sms send phone ~p", [Phone]),
 			?notify:sms(birth, Merchant, Phone, Shop)
 		end, Info)
       end, MerchantPhones);
@@ -676,11 +676,11 @@ task(auto_sms_at_birth, Datetime, Merchants) when is_list(Merchants) ->
 task(auto_sms_at_birth, Datetime, Merchant) when is_number(Merchant)->
     {{Year, Month, Day}, _Time} = Datetime,
     {_LunarYear, LunarMonth, LunarDay} = ?lunar_calendar:solar2lunar(Year, Month, Day),
-    ?DEBUG("LunarYear ~p, LunarMonth ~p, LunarDay ~p", [_LunarYear, LunarMonth, LunarDay]),
+    %% ?DEBUG("LunarYear ~p, LunarMonth ~p, LunarDay ~p", [_LunarYear, LunarMonth, LunarDay]),
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, ?DEFAULT_BASE_SETTING),
     SMSSetting = ?v(<<"recharge_sms">>, BaseSetting, ?SMS_NOTIFY), 
     BirthSMS = ?utils:nth(4, SMSSetting),
-    ?DEBUG("SMSSetting ~p, BirthSMS ~p", [SMSSetting, BirthSMS]),
+    %% ?DEBUG("SMSSetting ~p, BirthSMS ~p", [SMSSetting, BirthSMS]),
     %% BirthBefore = ?to_i(?v(<<"birth_before">>, BaseSetting, 0)),
     case BirthSMS of
 	0 -> {Merchant, []}; 

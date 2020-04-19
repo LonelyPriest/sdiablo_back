@@ -3197,7 +3197,9 @@ handle_call({exchange_gift, Merchant, Attrs}, _From, State) ->
 			++ "\'" ++ ?to_s(Comment) ++ "\',"
 			++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')"]
 
-		    ++ case Rule =:= ?GIFT_MONTH_AND_SCORE orelse Rule =:= ?GIFT_SCORE_ONLY of
+		    ++ case Rule =:= ?GIFT_MONTH_AND_SCORE
+			   orelse Rule =:= ?GIFT_SCORE_ONLY
+			   orelse Rule =:= ?GIFT_YEAR_AND_SCORE of
 			   true ->
 			       ["update w_retailer set score=score-" ++ ?to_s(Score)
 				++ " where merchant=" ++ ?to_s(Merchant)
@@ -3213,10 +3215,16 @@ handle_call({exchange_gift, Merchant, Attrs}, _From, State) ->
 	end,
 
 
-    StartDrawByMonth =
-	fun() ->
+    StartDrawBy =
+	fun(Mode) ->
 		{Year, Month, Day} = current_date(),
-		{StartDate, EndDate} = month(begin_to_now, Year, Month, Day),
+		{StartDate, EndDate} =
+		    case Mode of
+			month ->
+			    month(begin_to_now, Year, Month, Day);
+			year ->
+			    year(begin_to_now, Year, Month, Day)
+		end,
 		Sql = "select a.rsn"
 		    ", a.gift"
 		    ", a.shop"
@@ -3233,17 +3241,22 @@ handle_call({exchange_gift, Merchant, Attrs}, _From, State) ->
 			{Sqls, RSN} = GenSqls(),
 			?sql_utils:execute(transaction, Sqls, RSN);
 		    {ok, _} ->
-			{error, ?err(gift_drawed_last_month, Gift)}
+			case Mode of
+			    month ->
+				{error, ?err(gift_drawed_last_month, Gift)};
+			    year ->
+				{error, ?err(gift_drawed_last_year, Gift)}
+			end
 		end
-	end,
+	end, 
 
     Reply = 
 	case Rule of
 	    ?GIFT_MONTH_AND_SCORE -> %% get by month and score
 		case GetRetailerScore() of
-		    {ok, _ScoreLive} -> StartDrawByMonth();
+		    {ok, _ScoreLive} -> StartDrawBy(month);
 		    Error -> Error 
-		end;
+		end; 
 	    ?GIFT_SCORE_ONLY  ->
 		case GetRetailerScore() of
 		    {ok, _ScoreLive} ->
@@ -3252,7 +3265,14 @@ handle_call({exchange_gift, Merchant, Attrs}, _From, State) ->
 		    Error -> Error 
 		end;
 	    ?GIFT_MONTH_WITH_FREE ->
-		StartDrawByMonth();
+		StartDrawBy(month);
+	    ?GIFT_YEAR_AND_SCORE ->
+		case GetRetailerScore() of
+		    {ok, _ScoreLive} -> StartDrawBy(year);
+		    Error -> Error 
+		end;
+	    ?GIFT_YEAR_WITH_FREE ->
+		StartDrawBy(year);
 	    _ ->
 		{error, ?err(gift_rule_undefined, Rule)}
 	end,
@@ -3439,7 +3459,16 @@ month(begin_to_now, Year, Month, Day) ->
 	  io_lib:format("~4..0w-~2..0w-~2..0w ~2..0w:~2..0w:~2..0w",
 			[Year, Month, Day, Hour, Minute, Second])),
     {Start, End}.
-	    
+
+year(begin_to_now, Year, Month, Day) ->
+    Start = format_date(Year, 1, 1),
+    %% LastDay = calendar:last_day_of_the_month(Year, Month),
+    {Hour, Minute, Second} = calendar:seconds_to_time(86399),
+    End = 
+	lists:flatten(
+	  io_lib:format("~4..0w-~2..0w-~2..0w ~2..0w:~2..0w:~2..0w",
+			[Year, Month, Day, Hour, Minute, Second])),
+    {Start, End}.
     
 day_of_next_month(CurrentYear, NextMonth, CurrentDay) ->
     %% ?DEBUG("CurrentDay ~p, NextMonth ~p, CurrentDay ~p", [CurrentYear, NextMonth, CurrentDay]),

@@ -13,7 +13,7 @@ init_sms() ->
 	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 0, \'会员提醒：欢迎光临{$var}，本次{$var}成功，消费金额{$var}，当前余额{$var}，累计积分{$var}，感谢您的惠顾！！\')">>
 	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 3, \'尊敬的VIP：欢迎光临{$var}，现赠与总价值{$var}元的优惠券{$var}张，{$var}天激活后可使用，请保管好该信息并及时消费。\')">>,
 	   %% <<"insert into zz_sms_template(merchant, type, content) values(15, 3, \'尊敬的VIP，现赠予总价值{$var}元的优惠券{$var}张，{$var}天后激活可在钻石女人、艾莱依、E主题、波司登、千仞岗使用！\')">>
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 4, \'亲爱的{$var}会员，花开一季，岁月一轮，祝您生日快乐；本店为您准备了生日礼品，等待您前来领取，当天全场优惠，一路相知，伴您左右！\')">>
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 4, \'尊敬的{$var}会员，花开一季，岁月一轮，祝您生日快乐，本店特意为您准备了礼品，感谢您的一路陪伴。{$var}祝！\')">>
 	  ],
     ?sql_utils:execute(transaction, Sqls, ok).
     
@@ -344,6 +344,7 @@ sms(swiming, Merchant, Phone, {Shop, Action, LeftSwiming, Expire}) ->
 
 sms(birth, Merchant, Phone, Shop) ->
     Params = string:strip(?to_s(Phone))
+	++ "," ++ ?to_s(Shop)
 	++ "," ++ ?to_s(Shop),
     ?DEBUG("params ~ts", [?to_b(Params)]),
     rocket_sms_send(zz, Merchant, ?BIRTH_NOTIFY, Phone, Params, fun() -> ok end).
@@ -698,8 +699,8 @@ check_merchant_balance(zz, Merchant) ->
 	    MerchantBalance = ?v(<<"balance">>, MerchantInfo),	
 	    Rate = ?v(<<"sms_rate">>, MerchantInfo),
 	    ?DEBUG("sms rate ~p, MerchantBalance ~p", [Rate, MerchantBalance]),
-	    %% case Rate == 0 orelse Rate > MerchantBalance of
-	    case Rate > MerchantBalance of
+	    case Rate == 0 orelse Rate > MerchantBalance of
+	    %% case Rate > MerchantBalance of
 		true  -> {error, ?err(sms_not_enought_blance, Merchant)};
 		false ->
 		    {ok, {Rate,

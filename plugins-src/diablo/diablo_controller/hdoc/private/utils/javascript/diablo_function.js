@@ -151,6 +151,8 @@ var diablo_match_stock_by_merchant = 3;
 var diablo_gift_month_and_score = 0;
 var diablo_gift_month_with_free = 1;
 var diablo_gift_score_only = 2;
+var diablo_gift_year_and_score = 3;
+var diablo_gift_year_with_free = 4;
 
 /*
  * bill mode

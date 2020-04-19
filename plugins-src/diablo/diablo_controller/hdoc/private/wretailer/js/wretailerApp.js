@@ -226,7 +226,9 @@ function wretailerConfig(angular) {
 	this.gift_rules = [
 	    {name: "按月需积分领取", id:0, remark: "每个月按积分仅能领取一次"},
 	    {name: "按月免费领取", id:1, remark: "每个月免费仅能领取一次"},
-	    {name: "按积分领取", id:2, remark: "按积分领取无限制"}
+	    {name: "按积分领取", id:2, remark: "按积分领取无限制"},
+	    {name: "按年需积分领取", id:3, remark: "每年按积分仅能领取一次"},
+	    {name: "按年免费领取", id:4, remark: "每年按积分仅能领取一次"}
 	];
 
 	this.gift_exchange_modes = [{name: "免费领取", id:0}, {name: "积分兑换", id:1}];
