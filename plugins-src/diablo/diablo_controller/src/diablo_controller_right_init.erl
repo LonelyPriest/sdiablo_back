@@ -449,7 +449,18 @@ init([]) ->
 	  <<"历吏库存分析">>, <<"analysis_history_stock">>, ?right_w_inventory},
 
 	 {?auto_balance_fix_stock, 
-	  <<"智能平库">>, <<"auto_balance_fix_stock">>, ?right_w_inventory}
+	  <<"智能平库">>, <<"auto_balance_fix_stock">>, ?right_w_inventory},
+
+	 {?new_stock_order,
+	  <<"新增采购定单">>, <<"new_stock_order">>, ?right_w_inventory},
+	 {?del_stock_order,
+	  <<"删除采购定单记录">>, <<"del_stock_order">>, ?right_w_inventory},
+	 {?update_stock_order,
+	  <<"修改采购定单记录">>, <<"update_stock_order">>, ?right_w_inventory},
+	 {?list_stock_order,
+	  <<"查询采购定单记录">>, <<"list_stock_order">>, ?right_w_inventory},
+	 {?list_stock_order_note,
+	  <<"查询采购定单明细">>, <<"list_stock_order_note">>, ?right_w_inventory}
 	],
 
     %% firm

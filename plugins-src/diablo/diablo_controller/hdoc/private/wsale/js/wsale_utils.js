@@ -571,10 +571,10 @@ var wsaleUtils = function(){
 	    if (pscores.length > 0){
 		var s = pscores[0];
 		if (angular.isDefined(s.score)) {
-		    score = Math.floor((diablo_round(s.money) - verificate) / s.score.balance) * s.score.score; 
+		    score = Math.floor((Math.floor(s.money) - verificate) / s.score.balance) * s.score.score; 
 		    for (var i=1, l=pscores.length; i<l; i++){
 			s = pscores[i];
-			score += Math.floor(diablo_round(s.money) / s.score.balance) * s.score.score; 
+			score += Math.floor(Math.floor(s.money) / s.score.balance) * s.score.score; 
 		    } 
 		} 
 	    }
@@ -1238,7 +1238,6 @@ var wsaleCalc = function(){
 		}
 	    }
 
-	    var pscores = [];
 	    for (var i=0, l=inventories.length; i<l; i++) {
 		var one = inventories[i];
 		var count = wsaleCalc.get_inventory_count(one, saleMode);
@@ -1277,9 +1276,9 @@ var wsaleCalc = function(){
 		}
 		
 		show_promotions = wsaleUtils.format_promotion(one, show_promotions);
-		if (one.sid !== diablo_invalid_index){
-		    pscores = wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
-		}
+		// if (one.sid !== diablo_invalid_index){
+		//     pscores = wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
+		// }
 	    }
 
 	    // calcuate with verificate
@@ -1290,36 +1289,66 @@ var wsaleCalc = function(){
 	    abs_pay = wsaleUtils.to_decimal(abs_pay);
 	    
 	    // console.log(should_pay);
-
 	    // reset score
-	    if (wsaleUtils.to_integer(score_discount) !== 0) {
-		pscores = [];
-		for (var i=0, l=inventories.length; i<l; i++) {
-		    var one = inventories[i];
-		    valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, one);
-		    // if (diablo_discount(one.rprice, one.tag_price) >= score_discount) {
+	    var pscores = [];
+	    for (var i=0, l=inventories.length; i<l; i++) {
+		var one = inventories[i];
+		valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, one);
+		if (wsaleUtils.to_integer(score_discount) !== 0) {
 		    if (diablo_yes === scoreDiscountPerStock) {
 			var ff = one.rprice * diablo_full_discount / (valid_price * one.discount);
 			// console.log(ff);
-			if (ff * diablo_full_discount >= score_discount) {
-			    if (one.sid !== diablo_invalid_index){
-				pscores = wsaleUtils.sort_score(
-				    one.score, one.promotion, one.calc, pscores);
-			    }
+			if (ff * diablo_full_discount < score_discount) {
+			    continue;
+			    // if (one.sid !== diablo_invalid_index){
+			    // 	pscores = wsaleUtils.sort_score(
+			    // 	    one.score, one.promotion, one.calc, pscores);
+			    // }
 			}
 		    } else {
-			if (diablo_discount(one.rprice, valid_price) >= score_discount) {
-			    if (one.sid !== diablo_invalid_index){
-				pscores = wsaleUtils.sort_score(
-				    one.score, one.promotion, one.calc, pscores);
-			    }
+			if (diablo_discount(one.rprice, valid_price) < score_discount) {
+			    continue;
+			    // if (one.sid !== diablo_invalid_index){
+			    // 	pscores = wsaleUtils.sort_score(
+			    // 	    one.score, one.promotion, one.calc, pscores);
+			    // }
 			}
 		    }
-		    
 		}
-	    } 
+		
+		if (one.sid !== diablo_invalid_index){
+		    pscores = wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
+		} 
+	    }
 	    
-	    score  = wsaleUtils.calc_with_score(pscores, verificate); 
+	    // if (wsaleUtils.to_integer(score_discount) !== 0) {
+	    // 	for (var i=0, l=inventories.length; i<l; i++) {
+	    // 	    var one = inventories[i];
+	    // 	    valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, one);
+	    // 	    // if (diablo_discount(one.rprice, one.tag_price) >= score_discount) {
+	    // 	    if (diablo_yes === scoreDiscountPerStock) {
+	    // 		var ff = one.rprice * diablo_full_discount / (valid_price * one.discount);
+	    // 		// console.log(ff);
+	    // 		if (ff * diablo_full_discount >= score_discount) {
+	    // 		    if (one.sid !== diablo_invalid_index){
+	    // 			pscores = wsaleUtils.sort_score(
+	    // 			    one.score, one.promotion, one.calc, pscores);
+	    // 		    }
+	    // 		}
+	    // 	    } else {
+	    // 		if (diablo_discount(one.rprice, valid_price) >= score_discount) {
+	    // 		    if (one.sid !== diablo_invalid_index){
+	    // 			pscores = wsaleUtils.sort_score(
+	    // 			    one.score, one.promotion, one.calc, pscores);
+	    // 		    }
+	    // 		}
+	    // 	    }
+		    
+	    // 	}
+	    // }
+	    
+	    // score  = wsaleUtils.calc_with_score(pscores, verificate);
+	    score  = wsaleUtils.calc_with_score(pscores, 0); 
 	    
 	    if (round === 1) {
 		if (should_pay >= 0) {

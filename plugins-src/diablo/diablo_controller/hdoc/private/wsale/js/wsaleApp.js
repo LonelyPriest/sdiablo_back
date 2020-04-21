@@ -1136,86 +1136,93 @@ function wsaleNewProvide(
     }
 
     $scope.gift_ticket = function() {
-	var callback = function(params) {
-	    console.log(params);
-	    // get all ticket
-	    var send_tickets = [];
-	    angular.forEach(params.tickets, function(t) {
-	    	if (t.plan.id !== diablo_invalid_index) {
-	    	    send_tickets.push({id      :t.plan.id,
-				       balance :t.plan.balance,
-				       count   :t.count,
-				       effect  :t.plan.effect,
-				       expire  :t.plan.expire});
-	    	}
-	    });
+	if (angular.isUndefined($scope.select.employee)) {
+	    diabloUtilsService.response(
+		false,
+		"会员赠券",
+		"赠券失败：" + wsaleService.error[2192]);
+	} else {	    
+	    var callback = function(params) {
+		console.log(params);
+		// get all ticket
+		var send_tickets = [];
+		angular.forEach(params.tickets, function(t) {
+	    	    if (t.plan.id !== diablo_invalid_index) {
+	    		send_tickets.push({id      :t.plan.id,
+					   balance :t.plan.balance,
+					   count   :t.count,
+					   effect  :t.plan.effect,
+					   expire  :t.plan.expire});
+	    	    }
+		});
+		
+		console.log(send_tickets);
+
+		diabloFilter.wretailer_gift_ticket({
+		    shop           :$scope.select.shop.id,
+		    shop_name      :$scope.select.shop.name,
+		    retailer       :$scope.select.retailer.id,
+		    employee       :$scope.select.employee.id,
+		    retailer_name  :$scope.select.retailer.name,
+		    retailer_phone :$scope.select.retailer.mobile,
+		    ticket         :send_tickets
+		}).then(function(result) {
+		    console.log(result);
+		    if (result.ecode === 0) {
+			$scope.has_gift_ticket = true;
+			dialog.response(
+			    true,
+			    "会员优惠卷赠送",
+			    "会员[" + $scope.select.retailer.name + "] 卷赠送成功！！"
+				+ function() {
+				    if (result.sms_code !== 0) {
+					var ERROR = require("diablo-error");
+					return "发送短消息失败：" + ERROR[result.sms_code];
+				    } 
+				    else return ""; 
+				}()
+			);
+		    } else {
+			dialog.set_error("会员电子券赠送", result.ecode);
+		    }
+		});
+	    };
+
+	    // get max send count
+	    var maxSend = 0, validPlans = [];
+	    for (var i=0, l=$scope.ticketPlans.length; i<l; i++) {
+		validPlans.push($scope.ticketPlans[i]);
+		if ($scope.ticketPlans[i].scount > maxSend) {
+		    maxSend = $scope.ticketPlans[i]; 
+		} 
+	    }; 
 	    
-	    console.log(send_tickets);
-
-	    diabloFilter.wretailer_gift_ticket({
-		shop           :$scope.select.shop.id,
-		shop_name      :$scope.select.shop.name,
-		retailer       :$scope.select.retailer.id,
-		employee       :$scope.select.employee.id,
-		retailer_name  :$scope.select.retailer.name,
-		retailer_phone :$scope.select.retailer.mobile,
-		ticket         :send_tickets
-	    }).then(function(result) {
-		console.log(result);
-		if (result.ecode === 0) {
-		    $scope.has_gift_ticket = true;
-		    dialog.response(
-			true,
-			"会员优惠卷赠送",
-			"会员[" + $scope.select.retailer.name + "] 卷赠送成功！！"
-			    + function() {
-				if (result.sms_code !== 0) {
-				    var ERROR = require("diablo-error");
-				    return "发送短消息失败：" + ERROR[result.sms_code];
-				} 
-				else return ""; 
-			    }()
-		    );
-		} else {
-		    dialog.set_error("会员电子券赠送", result.ecode);
-		}
-	    });
-	};
-
-	// get max send count
-	var maxSend = 0, validPlans = [];
-	for (var i=0, l=$scope.ticketPlans.length; i<l; i++) {
-	    validPlans.push($scope.ticketPlans[i]);
-	    if ($scope.ticketPlans[i].scount > maxSend) {
-		maxSend = $scope.ticketPlans[i]; 
-	    } 
-	}; 
-	
-	dialog.edit_with_modal(
-	    "gift-ticket.html",
-	    undefined,
-	    callback,
-	    undefined,
-	    {tickets: [],
-	     add_ticket: function(tickets, planes) {
-		 tickets.push({plan:planes[0], count:1});
-	     }, 
-	     delete_ticket: function(tickets) {
-		 tickets.splice(-1, 1);
-	     },
-	     check_ticket: function(tickets) {
-		 var invalid = false;
-		 for (var i=0, l=tickets.length; i<l; i++) {
-		     if (tickets[i].plan.id === diablo_invalid_index) {
-			 invalid = true;
-			 break;
+	    dialog.edit_with_modal(
+		"gift-ticket.html",
+		undefined,
+		callback,
+		undefined,
+		{tickets: [],
+		 add_ticket: function(tickets, planes) {
+		     tickets.push({plan:planes[0], count:1});
+		 }, 
+		 delete_ticket: function(tickets) {
+		     tickets.splice(-1, 1);
+		 },
+		 check_ticket: function(tickets) {
+		     var invalid = false;
+		     for (var i=0, l=tickets.length; i<l; i++) {
+			 if (tickets[i].plan.id === diablo_invalid_index) {
+			     invalid = true;
+			     break;
+			 } 
 		     } 
-		 } 
-		 return !invalid && tickets.length !== 0;
-	     },
-	     maxSend: maxSend,
-	     planes: [{id:-1, name:"请选择电子券金额"}].concat(validPlans)});
-    };
+		     return !invalid && tickets.length !== 0;
+		 },
+		 maxSend: maxSend,
+		 planes: [{id:-1, name:"请选择电子券金额"}].concat(validPlans)});
+	};
+    }
 
     var get_charge_by_shop = function(charges) {
 	var charge_with_shop;
@@ -2673,6 +2680,7 @@ function wsaleNewProvide(
     });
 
     $scope.$watch("select.verificate", function(newValue, oldValue){
+	if ($scope.setting.show_wprice) return;
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
 	// $scope.reset_payment(newValue);
 	$scope.re_calculate();

@@ -257,6 +257,7 @@ var diablo_key_retailer_trans_detail  = "q-retailer-trans-detail";
 var diablo_dkey_stock_price = 9;
 var diablo_dkey_stock_in  = 8;
 var diablo_dkey_stock_fix = 7;
+var diablo_dkey_stock_order = 6;
 
 /*
  * charge type

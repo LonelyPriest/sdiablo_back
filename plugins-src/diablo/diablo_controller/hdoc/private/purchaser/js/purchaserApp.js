@@ -292,6 +292,21 @@ function stockConfg(angular){
 		    {}, user, shop, brand, type, firm, s_group, color,
 		    std_executive, safety_category, fabric, size_spec, ptemplate, base)
             }).
+	    // order
+	    when('/order/new_order', {
+	    	templateUrl: '/private/purchaser/html/purchaser_inventory_order.html',
+	    	controller: 'purchaserOrderNewCtrl',
+	    	resolve: angular.extend(
+	    	    {}, user, brand, type, s_group, firm, employee, color, color_type,
+	    	    std_executive, safety_category, fabric, base)
+	    }).
+	    // when('/order/update_order', {
+	    // 	templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail_update.html',
+	    // 	controller: 'purchaserInventoryNewUpdateCtrl',
+	    // 	resolve: angular.extend(
+	    // 	    {}, user, brand, firm, type, employee, s_group, color,
+	    // 	    std_executive, safety_category, fabric, size_spec, ptemplate, base)
+	    // }).
 	    // adjust price
 	    when('/inventory_price', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_price.html',

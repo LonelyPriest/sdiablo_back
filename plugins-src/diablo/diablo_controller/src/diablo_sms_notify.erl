@@ -13,7 +13,9 @@ init_sms() ->
 	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 0, \'会员提醒：欢迎光临{$var}，本次{$var}成功，消费金额{$var}，当前余额{$var}，累计积分{$var}，感谢您的惠顾！！\')">>
 	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 3, \'尊敬的VIP：欢迎光临{$var}，现赠与总价值{$var}元的优惠券{$var}张，{$var}天激活后可使用，请保管好该信息并及时消费。\')">>,
 	   %% <<"insert into zz_sms_template(merchant, type, content) values(15, 3, \'尊敬的VIP，现赠予总价值{$var}元的优惠券{$var}张，{$var}天后激活可在钻石女人、艾莱依、E主题、波司登、千仞岗使用！\')">>
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 4, \'尊敬的{$var}会员，花开一季，岁月一轮，祝您生日快乐，本店特意为您准备了礼品，感谢您的一路陪伴。{$var}祝！\')">>
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 4, \'尊敬的{$var}会员，花开一季，岁月一轮，祝您生日快乐，本店特意为您准备了礼品，感谢您的一路陪伴。{$var}祝！\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 5, \'会员提醒：欢迎光临{$var}，本次{$var}成功，剩余次数{$var}，有效期截止日{$var}，感谢您的惠顾！！\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 6, \'尊敬的客户{$var}，短信充值成功，您已充值{$var}元，目前剩余短消息{$var}条，感谢您的使用！！\')">>
 	  ],
     ?sql_utils:execute(transaction, Sqls, ok).
     
@@ -318,29 +320,48 @@ sms(charge, {Merchant, Name, Phone}, Balance) ->
     Rate = ?v(<<"sms_rate">>, MerchantInfo),
     LeftBalance = ?v(<<"balance">>, MerchantInfo, 0), 
     Count = trunc(LeftBalance + Balance) div Rate, 
-    SMSTemplate   = "SMS_153716629",
-    SMSParams = ?to_s(ejson:encode(
-			{[{<<"name">>, <<Name/binary, <<"-">>/binary, Phone/binary>>},
-			  {<<"money">>, ?to_b(Balance div 100)},
-			  {<<"count">>, ?to_b(Count)} 
-			 ]})),
-    case send_sms(Phone, SMSTemplate, SMSParams) of
-    	{ok, {sms_send, Phone}} = OK->
-    	    {ok, OK};
-    	{error, {sms_center_not_found, Merchant}} ->
-    	    ?err(sms_center_not_found, Merchant);
-    	{error, _} ->
-    	    ?err(sms_send_failed, Phone)
+    %% SMSTemplate   = "SMS_153716629",
+    %% SMSParams = ?to_s(ejson:encode(
+    %% 			{[{<<"name">>, <<Name/binary, <<"-">>/binary, Phone/binary>>},
+    %% 			  {<<"money">>, ?to_b(Balance div 100)},
+    %% 			  {<<"count">>, ?to_b(Count)} 
+    %% 			 ]})),
+    %% case send_sms(Phone, SMSTemplate, SMSParams) of
+    %% 	{ok, {sms_send, Phone}} = OK->
+    %% 	    {ok, OK};
+    %% 	{error, {sms_center_not_found, Merchant}} ->
+    %% 	    ?err(sms_center_not_found, Merchant);
+    %% 	{error, _} ->
+    %% 	    ?err(sms_send_failed, Phone)
+    %% end.
+    Params = string:strip(?to_s(Phone))
+	++ "," ++ ?to_s(<<Name/binary, <<"-">>/binary, Phone/binary>>)
+	++ "," ++ ?to_s(Balance div 100)
+	++ "," ++ ?to_s(Count),
+    ?DEBUG("params ~ts", [Params]),
+    case get_sms_template(zz, ?SMS_CHARGE, Merchant) of
+	{ok, Template} -> 
+	    send_sms(zz, Phone, <<>>, Params, Template);
+	Error ->
+	    Error
     end.
+    
 
 sms(swiming, Merchant, Phone, {Shop, Action, LeftSwiming, Expire}) ->
-    SMSTemplate   = "SMS_146809919",
-    SMSParams = ?to_s(ejson:encode({[{<<"shop">>, Shop},
-				     {<<"action">>, action(Action)},
-				     {<<"lcount">>, limit_swiming(LeftSwiming)},
-				     {<<"expire">>, limit_swiming(Expire)}
-				    ]})),
-    start_sms(Merchant, Phone, SMSTemplate, SMSParams);
+    %% SMSTemplate   = "SMS_146809919",
+    %% SMSParams = ?to_s(ejson:encode({[{<<"shop">>, Shop},
+    %% 				     {<<"action">>, action(Action)},
+    %% 				     {<<"lcount">>, limit_swiming(LeftSwiming)},
+    %% 				     {<<"expire">>, limit_swiming(Expire)}
+    %% 				    ]})),
+    %% start_sms(Merchant, Phone, SMSTemplate, SMSParams);
+    Params = string:strip(?to_s(Phone))
+	++ "," ++ ?to_s(Shop)
+	++ "," ++ ?to_s(action(Action))
+	++ "," ++ ?to_s(limit_swiming(LeftSwiming))
+	++ "," ++ ?to_s(limit_swiming(Expire)),
+    ?DEBUG("params ~ts", [?to_b(Params)]),
+    rocket_sms_send(zz, Merchant, ?THEORETIC_CARD_SALE, Phone, Params, fun() -> ok end);
 
 sms(birth, Merchant, Phone, Shop) ->
     Params = string:strip(?to_s(Phone))
@@ -678,7 +699,9 @@ get_sms_template(zz, Action, Merchant, Templates) ->
 		   ?NORMAL_SALE -> ?v(<<"type">>, T) =:= 0;  %% sale
 		   ?NORMAL_REJECT_SALE -> ?v(<<"type">>, T) =:= 0;  %% reject sale
 		   ?NORMAL_TICKET -> ?v(<<"type">>, T) =:= 3;   %% ticket
-		   ?BIRTH_NOTIFY -> ?v(<<"type">>, T) =:= 4 %% birth
+		   ?BIRTH_NOTIFY -> ?v(<<"type">>, T) =:= 4; %% birth
+		   ?THEORETIC_CARD_SALE -> ?v(<<"type">>, T) =:= 5; %% birth
+		   ?SMS_CHARGE -> ?v(<<"type">>, T) =:= 6 %% sms charge
 	       end] of
 	FTemplates ->
 	    ?DEBUG("FTemplates ~p", [FTemplates]),

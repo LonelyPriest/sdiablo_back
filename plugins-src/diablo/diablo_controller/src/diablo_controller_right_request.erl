@@ -209,14 +209,21 @@ action(Session, Req, {"list_inventory_children"}) ->
 				?fix_w_inventory,
 				?check_w_inventory,
 				?list_new_w_inventory,
-				
+
+				%% transfer
 				?transfer_w_inventory,
 				?check_w_inventory_transfer,
-				?cancel_w_inventory_transfer 
+				?cancel_w_inventory_transfer,
+
+				%% order
+				?new_stock_order,
+				?del_stock_order,
+				?update_stock_order,
+				?list_stock_order,
+				?list_stock_order_note
 			       ]}, 
     
-    {ok, Children} = ?right_init:get_children(
-			children_only, [{<<"id">>, RightId}]),
+    {ok, Children} = ?right_init:get_children(children_only, [{<<"id">>, RightId}]),
 	
     
     FilterChildren = 

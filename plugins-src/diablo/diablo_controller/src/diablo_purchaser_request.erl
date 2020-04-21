@@ -230,8 +230,8 @@ action(Session, Req, {"filter_w_inventory_new"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     UTable = ?session:get(utable, Session),
     {struct, Fields} = ?v(<<"fields">>, Payload),
-    SortMode = ?v(<<"mode">>, Payload, ?SORT_BY_ID),
-    %% SortMode = ?v(<<"mode">>, Payload, ?SORT_BY_DATE), 
+    %% SortMode = ?v(<<"mode">>, Payload, ?SORT_BY_ID),
+    SortMode = ?v(<<"mode">>, Payload, ?SORT_BY_DATE), 
     NewPayload = proplists:delete(<<"mode">>, Payload),
 
     %% case
@@ -1832,7 +1832,7 @@ sidebar(Session) ->
 
 	    TransR = [{"inventory_new_detail", "采购记录", "glyphicon glyphicon-download"}],
 	    TransD = [{"inventory_rsn_detail", "采购明细", "glyphicon glyphicon-map-marker"}], 
-	    InvDetail = [{"inventory_detail",  "库存详情", "glyphicon glyphicon-book"}],
+	    InvDetail = [{"inventory_detail",  "库存详情", "glyphicon glyphicon-home"}],
 
 	    HistoryStock = 
 		case ?right_auth:authen(?analysis_history_stock, Session) of
@@ -1847,8 +1847,29 @@ sidebar(Session) ->
 			[{"inventory_price", "库存调价", "glyphicon glyphicon-sort"}]; 
 		    _ -> []
 		end, 
-	    %% InvPrice = [{"inventory_price", "库存调价", "glyphicon glyphicon-sort"}],
-
+	    %% InvPrice = [{"inventory_price", "库存调价", "glyphicon glyphicon-sort"}], 
+	    Order =
+                [{{"order", "采购定单", "glyphicon glyphicon-ok-sign"},
+                  authen_shop_action(
+                    {?new_stock_order, 
+                     "new_order",
+                     "新增定单",
+                     "glyphicon glyphicon-shopping-cart"},
+                    Shops)
+		  ++ authen_shop_action(
+		       {?list_stock_order, 
+			"list_stock_order",
+			"定单记录",
+			"glyphicon glyphicon-download"},
+		       Shops)
+		  ++ authen_shop_action(
+		       {?list_stock_order_note, 
+			"list_stock_order_note",
+			"定单明细",
+			"glyphicon glyphicon-map-marker"},
+		       Shops)
+                 }],
+	    
 	    Transfer =
                 [
                  {{"inventory", "调入调出", "glyphicon glyphicon-transfer"},

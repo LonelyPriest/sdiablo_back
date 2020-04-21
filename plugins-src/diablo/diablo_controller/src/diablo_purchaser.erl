@@ -3379,7 +3379,7 @@ handle_call({new_trans_export, Merchant, UTable, Conditions, Mode}, _From, State
     {_, C} = ?w_good_sql:filter_condition(inventory_new, Conditions, [], []),
     SortConditions = ?w_good_sql:sort_condition(w_inventory_new, Merchant, C),
 
-    Order = ?v(<<"mode">>, Mode, use_id),
+    Order = ?v(<<"mode">>, Mode, use_date),
     Sort  = case ?v(<<"sort">>, Mode) of
 		undefined -> 0;
 		_Sort -> _Sort
@@ -3484,7 +3484,7 @@ handle_call({new_trans_note_export, Merchant, UTable, Conditions}, _From, State)
     %% " right join w_inventory_new_detail_amount c on a.rsn=c.rsn"
     %% " and a.style_number=c.style_number and a.brand=c.brand"
 	" where "
-	++ ?utils:to_sqls(proplists, CorrectCondition) ++ " order by a.id desc) a"
+	++ ?utils:to_sqls(proplists, CorrectCondition) ++ " order by a.entry_date desc) a"
 
 	" left join brands b on a.brand_id=b.id"
     %% " left join colors c on a.color_id=c.id"

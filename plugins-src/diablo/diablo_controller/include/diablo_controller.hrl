@@ -104,12 +104,14 @@
 -define(TICKET_DISCARD_ALL, 1).
 
 
-%% sale action
+%% sms action
 -define(NORMAL_CHARGE, 0).
 -define(NORMAL_SALE, 1).
 -define(NORMAL_REJECT_SALE, 2).
 -define(NORMAL_TICKET, 3).
 -define(BIRTH_NOTIFY, 4).
+-define(THEORETIC_CARD_SALE, 5).
+-define(SMS_CHARGE, 6).
 
 %% bill mode
 -define(CASH, 0).
@@ -442,8 +444,12 @@
 -define(analysis_history_stock,             ?right_w_inventory + 37).
 -define(auto_balance_fix_stock,             ?right_w_inventory + 38).
 
-
-
+%% order
+-define(new_stock_order, ?right_w_inventory + 39).
+-define(del_stock_order, ?right_w_inventory + 40).
+-define(update_stock_order, ?right_w_inventory + 41).
+-define(list_stock_order, ?right_w_inventory + 42).
+-define(list_stock_order_note, ?right_w_inventory + 43).
 
 %% -define(set_stock_promotion,    ?right_w_inventory + 27).
 

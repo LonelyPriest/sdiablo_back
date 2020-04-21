@@ -173,6 +173,17 @@ condition(page_desc, {use_consume, Sort}, CurrentPage, ItemsPerPage) ->
 condition(page_desc, {use_level, Sort}, CurrentPage, ItemsPerPage) ->
     " order by a.level " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
+
+condition(page_desc, {use_ticket, Mode, Sort}, CurrentPage, ItemsPerPage) ->
+    " order by"
+	++ case Mode of
+	       0 -> " a.mtime ";
+	       1 -> " a.entry_date ";
+	       2 -> " a.ctime "
+	   end
+	++ ?MODULE:sort(Sort) 
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage).
 
 like_condition(style_number, MatchMode, Conditions, LikeKey) ->

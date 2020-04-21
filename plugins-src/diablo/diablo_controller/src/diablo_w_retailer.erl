@@ -2574,15 +2574,15 @@ handle_call({filter_custom_ticket_detail, Mode, Merchant, Conditions, CurrentPag
 	       1 ->
 		   ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime);
 	       2 ->
-		   case ?sql_utils:time_condition(StartTime, <<"ctime">>, ge) of
+		   case ?sql_utils:time_condition(StartTime, <<"a.ctime">>, ge) of
 		       [] -> [];
 		       T1 -> " and " ++ T1
-		   end ++ case ?sql_utils:time_condition(EndTime, <<"ctime">>, less) of
+		   end ++ case ?sql_utils:time_condition(EndTime, <<"a.ctime">>, less) of
 			      [] -> [];
 			      T2 -> " and " ++ T2
 			  end
 	   end
-	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+	++ ?sql_utils:condition(page_desc, {use_ticket, Mode, 0}, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
