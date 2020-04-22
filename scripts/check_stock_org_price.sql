@@ -80,8 +80,8 @@ set a.discount=b.discount;
 
 -- check stock
 select a.style_number, a.brand, a.amount, b.total from w_inventory a left join \
-(select style_number, brand, sum(total) as total from w_inventory_amount a where a.merchant=35 and shop=129 group by a.style_number, a.brand) b \
-on a.style_number=b.style_number and a.brand=b.brand where a.merchant=15 and a.shop=58 and a.amount!=b.total;
+(select style_number, brand, sum(total) as total from w_inventory_amount a where a.merchant=101 and shop=281 group by a.style_number, a.brand) b \
+on a.style_number=b.style_number and a.brand=b.brand where a.merchant=101 and a.shop=281 and a.amount!=b.total;
 
 select a.style_number, a.brand, a.total , b.amount from (select style_number, brand, sum(total) as total from w_inventory_amount where merchant=15 and shop=53 group by style_number, brand) a \
 left join (select style_number, brand, amount from w_inventory where merchant=15 and shop=53) b \

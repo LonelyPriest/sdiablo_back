@@ -204,7 +204,7 @@ function purchaserInventoryTransferCtrlProvide (
 	add.path         = src.path; 
 	// add.alarm_day    = src.alarm_day;
 	add.full_name    = add.style_number + "/" + add.brand + "/" + add.type; 
-	console.log(add); 
+	// console.log(add); 
 	return add;
     };
 
@@ -484,7 +484,7 @@ function purchaserInventoryTransferCtrlProvide (
     };
 
     var add_callback = function(params){
-	console.log(params.amounts); 
+	// console.log(params.amounts); 
 	var reject_total = 0, note = "";
 	angular.forEach(params.amounts, function(a){
 	    if (stockUtils.to_integer(a.reject_count) > 0){
@@ -894,7 +894,7 @@ function purchaserInventoryTransferCtrlProvide (
 			    $scope.inventories.unshift(add);
 			    add.order_id = $scope.inventories.length;
 			    $scope.re_calculate();
-			    console.log(add);
+			    // console.log(add);
 			} else {
 			    for (var j=0, k=stock.notes.length; j<k; j++) {
 				var n = stock.notes[j]; 
@@ -909,11 +909,11 @@ function purchaserInventoryTransferCtrlProvide (
 				$scope.inventories.unshift(add);
 				add.order_id = $scope.inventories.length;
 				$scope.re_calculate();
-				console.log(add);
+				// console.log(add);
 			    }
 			} 
 		    }
-		    console.log($scope.inventories);
+		    // console.log($scope.inventories);
 		    $scope.focus_by_element();
 		    
 		} else {

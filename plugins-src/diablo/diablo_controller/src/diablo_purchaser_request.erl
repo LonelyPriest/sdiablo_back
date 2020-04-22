@@ -1555,18 +1555,18 @@ action(Session, Req, {"get_stock_by_shop"}, Payload) ->
     UTable = ?session:get(utable, Session),
 
     Shop = ?v(<<"shop">>, Payload),
-    %% stock > 0
+    %% stock =/= 0 
     Conditions = [{<<"shop">>, Shop},
-		  {<<"stock">>, 0}],
+		  {<<"stock">>, 2}],
     UseMode = [{<<"mode">>, mode(7)}, {<<"sort">>, 1}],
     
-    case ?w_inventory:export(stock, {Merchant, UTable}, Payload, UseMode) of
+    case ?w_inventory:export(stock, {Merchant, UTable}, Conditions, UseMode) of
 	{ok, []} ->
-	    ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
+	    ?utils:respond(200, Req, ?err(wsale_export_no_date, Merchant));
 	{ok, Transes} ->
 	    case ?w_inventory:export(stock_note, {Merchant, UTable}, Conditions, []) of
 		[] ->
-		    ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
+		    ?utils:respond(200, Req, ?err(wsale_export_no_date, Merchant));
 		{ok, Notes} ->
 		    %% ?DEBUG("transes ~p", [Transes]),
 		    %% ?DEBUG("notes ~p", [Notes]),
@@ -1576,7 +1576,7 @@ action(Session, Req, {"get_stock_by_shop"}, Payload) ->
 					   ?v(<<"amount">>, S) + Acc
 				   end, 0, Transes),
 		    ?DEBUG("stock total ~p", [StockTotal]),
-
+		    
 		    StockNoteTotal = lists:foldr(
 				       fun({N}, Acc) ->
 					       ?v(<<"total">>, N) + Acc
@@ -1589,22 +1589,25 @@ action(Session, Req, {"get_stock_by_shop"}, Payload) ->
 					  {<<"style_number">>, <<"brand_id">>, <<"shop_id">>},
 					  Notes,
 					  dict:new()),
-			    ?DEBUG("SortNotes ~p", [SortNotes]),
-
+			    %% ?DEBUG("SortNotes ~p", [SortNotes]), 
 			    Details = 
 				lists:foldr(
 				  fun({S}, Acc) ->
-					  StyleNumber = ?v(<<"style_number">>, S),
-					  BrandId     = ?to_b(?v(<<"brand_id">>, S)),
-					  ShopId      = ?to_b(?v(<<"shop_id">>, S)),
-					  Key = <<StyleNumber/binary, BrandId/binary, ShopId/binary>>,
-					  case dict:find(Key, SortNotes) of
-					      {ok, NS} ->
-						  %% ?DEBUG("NS ~p", [NS]),
-						  %% ?DEBUG("S ~p", [S]),
-						  [{S ++ [{<<"notes">>, NS}]}] ++ Acc;
-					      error ->
-						  Acc
+					  case ?v(<<"amount">>, S) < 0 of
+					      true -> Acc;
+					      false ->
+						  StyleNumber = ?v(<<"style_number">>, S),
+						  BrandId     = ?to_b(?v(<<"brand_id">>, S)),
+						  ShopId      = ?to_b(?v(<<"shop_id">>, S)),
+						  Key = <<StyleNumber/binary, BrandId/binary, ShopId/binary>>,
+						  case dict:find(Key, SortNotes) of
+						      {ok, NS} ->
+							  %% ?DEBUG("NS ~p", [NS]),
+							  %% ?DEBUG("S ~p", [S]),
+							  [{S ++ [{<<"notes">>, NS}]}] ++ Acc;
+						      error ->
+							  Acc
+						  end
 					  end
 				  end, [], Transes),
 
