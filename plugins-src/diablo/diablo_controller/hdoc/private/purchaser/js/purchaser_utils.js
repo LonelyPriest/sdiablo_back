@@ -1662,25 +1662,24 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     var hpx_price = this.template.hpx_price === 0 ? this.template.hpx_each : this.template.hpx_price;
     var font_price = stockUtils.to_integer(this.template.font_price); 
-    if (this.template.p_virprice && 0 !== this.to_i(this.stock.vir_price)) {
-	line = diablo_trim(this.template.vir_price);
-	if (line) line += ":"; 
-	this.start_print(line, top, this.left, iwpx, hpx_price, 0, pSecond, pThird, startSecond, startThird);
+    // if (this.template.p_virprice && 0 !== this.to_i(this.stock.vir_price)) {
+    // 	line = diablo_trim(this.template.vir_price);
+    // 	if (line) line += ":"; 
+    // 	this.start_print(line, top, this.left, iwpx, hpx_price, 0, pSecond, pThird, startSecond, startThird);
 	
-	line = "￥" + this.stock.vir_price.toString(); 
-	var offset_virprice = this.to_i(this.template.offset_virprice);
-	top = this.start_print(line,
-			       top,
-			       this.left + offset_virprice,
-			       iwpx,
-			       hpx_price,
-			       font_price,
-			       pSecond,
-			       pThird,
-			       startSecond + offset_virprice,
-			       startThird + offset_virprice);
-    } 
-
+    // 	line = "￥" + this.stock.vir_price.toString(); 
+    // 	var offset_virprice = this.to_i(this.template.offset_virprice);
+    // 	top = this.start_print(line,
+    // 			       top,
+    // 			       this.left + offset_virprice,
+    // 			       iwpx,
+    // 			       hpx_price,
+    // 			       font_price,
+    // 			       pSecond,
+    // 			       pThird,
+    // 			       startSecond + offset_virprice,
+    // 			       startThird + offset_virprice);
+    // } 
     if (this.template.p_tagprice) {
 	line = diablo_trim(this.template.tag_price);
 	if (this.stock.state === 3 && diablo_trim(this.template.my_price)) {
@@ -1771,6 +1770,26 @@ stockPrintU.prototype.printBarcode2 = function() {
 
 	top += this.template.hpx_barcode;
     }
+
+    // vir price
+    if (this.template.p_virprice && 0 !== this.to_i(this.stock.vir_price)) {
+    	line = diablo_trim(this.template.vir_price);
+    	if (line) line += ":"; 
+    	this.start_print(line, top, this.left, iwpx, hpx_price, 0, pSecond, pThird, startSecond, startThird);
+    
+    	line = "￥" + this.stock.vir_price.toString(); 
+    	var offset_virprice = this.to_i(this.template.offset_virprice);
+    	top = this.start_print(line,
+    			       top,
+    			       this.left + offset_virprice,
+    			       iwpx,
+    			       hpx_price,
+    			       font_price,
+    			       pSecond,
+    			       pThird,
+    			       startSecond + offset_virprice,
+    			       startThird + offset_virprice);
+    } 
 
     if (this.template.solo_date) {
 	line = shift_date;

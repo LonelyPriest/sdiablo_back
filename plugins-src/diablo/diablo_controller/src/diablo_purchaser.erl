@@ -3532,14 +3532,18 @@ handle_call({stock_export, Merchant, UTable, Conditions, Mode}, _From, State) ->
 	       end,
     Sql =
 	"select a.id"
+	", a.bcode"
 	", a.style_number"
 	", a.brand as brand_id"
 	", a.type as type_id"
+	", a.s_group"
+	", a.free"
+	", a.year"
 	", a.sex"
 	", a.season"
 	", a.amount"
-	", a.firm as firm_id"
-	", a.year"
+	", a.firm as firm_id" 
+	", a.path"
 
 	", a.org_price"
 	", a.ediscount"
@@ -3564,7 +3568,8 @@ handle_call({stock_export, Merchant, UTable, Conditions, Mode}, _From, State) ->
 	++ ?sql_utils:condition(
 	      proplists, ?utils:correct_condition(<<"a.">>, RealyConditions, []))
 	++ ExtraCondtion
-	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
+    %% ++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
+	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime)
 	++ " order by " ++ OrderFun(Order) ++ " " ++ ?sql_utils:sort(Sort),
 	
 	%% ++ " order by a.id desc",
@@ -3575,7 +3580,8 @@ handle_call({stock_export, Merchant, UTable, Conditions, Mode}, _From, State) ->
 handle_call({stock_note_export, Merchant, UTable, Conditions, _Mode}, _From, State) ->
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions), 
     RealyConditions = ?w_good_sql:realy_conditions(Merchant, NewConditions),
-
+    ExtraCondtion = ?w_good_sql:sort_condition(stock_note, NewConditions, <<"b.">>),
+    
     {C1, C2} = 
 	lists:foldr(
 	  fun({<<"firm">>, _} = C, {Stock, Note}) ->
@@ -3599,21 +3605,32 @@ handle_call({stock_note_export, Merchant, UTable, Conditions, _Mode}, _From, Sta
     %% ExtraCondtion = ?w_good_sql:sort_condition(stock, NewConditions, <<"a.">>), 
     Sql = case C1 of
 	      [] ->
-		  "select id"
-		      ", style_number"
-		      ", brand"
-		      ", color"
-		      ", size, total, merchant, shop"
+		  "select a.id"
+		      ", a.style_number"
+		      ", a.brand as brand_id"
+		      
+		      ", a.merchant"
+		      ", a.shop as shop_id"
+		      
+		      ", b.color"
+		      ", b.size"
+		      ", b.total" 
 		  %% " from w_inventory_amount"
-		      " from" ++ ?table:t(stock_note, Merchant, UTable)
-		      ++ " where merchant=" ++ ?to_s(Merchant)
-		      ++ ?sql_utils:condition(proplists, C2);
+		      " from" ++ ?table:t(stock, Merchant, UTable) ++ " a,"
+		      ++ ?table:t(stock_note, Merchant, UTable) ++ " b"
+		      ++ " where a.merchant=b.merchant"
+		      ++ " and a.shop=b.shop"
+		      ++ " and a.style_number=b.style_number"
+		      ++ " and a.brand=b.brand"
+		      ++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"b.">>, C2))
+		      ++ ExtraCondtion;
 	      _ ->
 		  "select a.id"
 		      ", a.style_number"
-		      ", a.brand"
+		      ", a.brand as brand_id"
+		      
 		      ", a.merchant"
-		      ", a.shop"
+		      ", a.shop as shop_id"
 		      
 		      ", b.color"
 		      ", b.size"
@@ -3627,8 +3644,9 @@ handle_call({stock_note_export, Merchant, UTable, Conditions, _Mode}, _From, Sta
 		      " and a.brand=b.brand"
 		      " and a.merchant=b.merchant"
 		      " and a.shop=b.shop"
-		      " and " ++ ?utils:to_sqls(proplists, ?utils:correct_condition(<<"a.">>, C1))
+		      ++ " and " ++ ?utils:to_sqls(proplists, ?utils:correct_condition(<<"a.">>, C1))
 		      ++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"b.">>, C2))
+		      ++ ExtraCondtion 
 	  end,
 		      
     Reply = ?sql_utils:execute(read, Sql),

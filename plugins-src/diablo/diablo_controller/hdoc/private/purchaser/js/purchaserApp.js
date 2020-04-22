@@ -635,6 +635,11 @@ function stockConfg(angular){
 	    return http.save(
 		{operation: "cancel_w_inventory_transfer"}, {rsn:rsn}).$promise;
 	};
+
+	this.get_stock_by_shop = function(shop) {
+	    return http.save(
+		{operation: "get_stock_by_shop"}, {shop:shop}).$promise;
+	};
 	
 	/*
 	 * promotion 

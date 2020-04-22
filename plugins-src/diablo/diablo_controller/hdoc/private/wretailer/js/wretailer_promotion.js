@@ -431,12 +431,54 @@ function wretailerGiftCtrlProvide(
 	    undefined,
 	    callback,
 	    undefined,
-	    {rule: $scope.rules[0],
+	    {mode: 0,
+	     rule: $scope.rules[0],
 	     rules:$scope.rules,
 	     pattern:$scope.pattern,
 	     score: 0,
 	     show_orgprice: $scope.right.show_orgprice}); 
     };
+
+    $scope.update_gift = function(g) {
+	console.log(g);
+	var callback = function(params) {
+	    console.log(params);
+	    wretailerService.update_gift(
+		{id: g.id,
+		 name: diablo_get_modified(diablo_trim(params.name), g.name),
+		 org_price: diablo_get_modified(params.org_price, g.org_price),
+		 tag_price: diablo_get_modified(params.tag_price, g.tag_price),
+		 count: diablo_get_modified(params.count, g.total),
+		 rule: diablo_get_modified(params.rule.id, g.rule_id),
+		 score: diablo_get_modified(retailerUtils.to_integer(params.score), g.score)}
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true, "礼品编辑", "会员礼品编辑成功！！", undefined, $scope.refresh);
+		} else {
+		    dialog.set_error("礼品编辑", result.ecode); 
+		}
+	    });
+	};
+	
+	dialog.edit_with_modal(
+	    "new-gift.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {mode: 1,
+	     code: g.code,
+	     name: g.name,
+	     org_price: g.org_price,
+	     tag_price: g.tag_price,
+	     count: g.total,
+	     rule: diablo_get_object(g.rule_id, $scope.rules),
+	     rules:$scope.rules,
+	     pattern:$scope.pattern,
+	     score: g.score,
+	     show_orgprice: $scope.right.show_orgprice}); 
+    }; 
 
     $scope.get_employee = function(shop_id) {
 	var validEmployees = filterEmployee.filter(function(e) {

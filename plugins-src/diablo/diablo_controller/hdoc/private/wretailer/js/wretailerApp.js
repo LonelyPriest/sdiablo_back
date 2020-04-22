@@ -621,10 +621,23 @@ function wretailerConfig(angular) {
 		 org_price: gift.org_price,
 		 tag_price: gift.tag_price,
 		 count:gift.count,
-		 py:   diablo_pinyin(gift.name),
+		 py:   angular.isUndefined(gift.name) ? undefined : diablo_pinyin(gift.name),
 		 rule: gift.rule,
 		 score:gift.score}).$promise;
 	};
+
+	this.update_gift = function(gift) {
+	    return http.save(
+		{operation: "modify_w_gift"},
+		{id: gift.id,
+		 name: gift.name,
+		 org_price: gift.org_price,
+		 tag_price: gift.tag_price,
+		 count:gift.count,
+		 py:   angular.isUndefined(gift.name) ? undefined : diablo_pinyin(gift.name),
+		 rule: gift.rule,
+		 score:gift.score}).$promise;
+	}
 
 	this.filter_gift = function(match, fields, currentPage, itemsPerpage){
 	    return http.save(

@@ -460,7 +460,9 @@ init([]) ->
 	 {?list_stock_order,
 	  <<"查询采购定单记录">>, <<"list_stock_order">>, ?right_w_inventory},
 	 {?list_stock_order_note,
-	  <<"查询采购定单明细">>, <<"list_stock_order_note">>, ?right_w_inventory}
+	  <<"查询采购定单明细">>, <<"list_stock_order_note">>, ?right_w_inventory}, 
+	 {?transfer_w_inventory_fast,
+	  <<"店铺一键调出">>, <<"transfer_w_inventory_fast">>, ?right_w_inventory}
 	],
 
     %% firm
@@ -1053,6 +1055,7 @@ pass_action(wholesaler) ->
      <<"gen_stock_barcode_all">>,
      <<"copy_w_stock">>,
      <<"get_stock_note">>,
+     <<"get_stock_by_shop">>,
      %% <<"update_w_inventory_batch">>,
 
      %% inventory new

@@ -490,6 +490,8 @@ error(purchaser_good_in_used, StyleNumber) ->
     {2020, "the good is used:" ++ ?to_s(StyleNumber)};
 error(not_enought_stock, Stocks) ->
     {2021, "not enought stock:" ++ ?to_s(Stocks)};
+error(stock_diff_detail_and_note, Shop) ->
+    {2022, "stock detail not equal stock note:" ++ ?to_s(Shop)};
 
 
 

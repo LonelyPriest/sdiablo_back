@@ -2695,8 +2695,10 @@ function wsaleNewProvide(
 	    for(var i=0, l=$scope.inventories.length; i<l; i++){
 		var s = $scope.inventories[i];
 		s.$update = false;
-		s.fdiscount = s.discount;
-		s.fprice = diablo_price(s.tag_price, s.fdiscount); 
+		s.o_fprice = s.fprice;
+		s.o_fdiscount = s.fdiscount;
+		// s.fdiscount = s.discount;
+		// s.fprice = diablo_price(s.tag_price, s.fdiscount); 
 	    }	    
 	} else {
 	    // var totalPay = 0;
@@ -2714,12 +2716,15 @@ function wsaleNewProvide(
 	    // }
 	    // console.log($scope.select.base_pay, $scope.select.should_pay); 
 	    $scope.select.verificate = $scope.select.base_pay - newValue;
+	    // console.log($scope.select.base_pay, newValue, $scope.select.verificate);
 	    // use original
 	    for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    	var s = $scope.inventories[i];
 		s.$update = false;
-	    	s.fdiscount = s.discount;
-		s.fprice = diablo_price(s.tag_price, s.fdiscount);
+		s.o_fprice = s.fprice;
+		s.o_fdiscount = s.fdiscount;
+	    	// s.fdiscount = s.discount;
+		// s.fprice = diablo_price(s.tag_price, s.fdiscount);
 	    }
 	    // $scope.select.verificate = $scope.select.should_pay - newValue;
 	}

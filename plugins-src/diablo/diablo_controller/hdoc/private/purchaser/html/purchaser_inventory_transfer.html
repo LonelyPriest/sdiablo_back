@@ -10,7 +10,12 @@
 	  <div class="btn-group">
 	    <button type="button" class="btn red"
 		    x-ng-click="go_back()">返回
-	      <i class="glyphicon glyphicon-circle-arrow-left"></i></button> 
+	      <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+	    <button x-ng-if="stock_right.transfer_w_stock_fast"
+		    type="button"
+		    class="btn blue purple-stripe"
+		    x-ng-click="transfer_by_shop()">整店
+	      <i class="glyphicon glyphicon-map-marker"></i></button>
 	    <button class="btn btn-success purple-stripe"
 		    x-ng-disabled="disable_save()"
 		    x-ng-click="save_inventory()">保存
@@ -254,7 +259,10 @@
 		  <tr class="text-center" x-ng-repeat="inv in inventories"> 
 		    <td>{{inv.order_id}}</td> 
 		    <td x-ng-if="base_settings.scan_mode" class="col-md-2 text-left vert-align">
-		      <div x-ng-bind="inv.full_bcode"></div> 
+		      <div>
+			<span x-ng-if="inv.full_bcode">{{inv.full_bcode}}</span>
+			<span x-ng-if="!inv.full_bcode">{{inv.bcode}}</span>
+		      </div> 
 	  	  </td>
 		    
 		    <td class="col-md-2 text-left vert-align">

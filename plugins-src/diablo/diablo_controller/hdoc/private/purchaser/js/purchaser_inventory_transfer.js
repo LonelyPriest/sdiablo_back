@@ -34,10 +34,10 @@ function purchaserInventoryTransferCtrlProvide (
     $scope.pattern = {discount:diabloPattern.discount};
 
     var authen = new diabloAuthen(user.type, user.right, user.shop);
-    $scope.stock_right = authen.authenStockRight(); 
+    $scope.stock_right = authen.authenStockRight();
+    console.log($scope.stock_right);
 
-    $scope.calc_row = stockUtils.calc_row;
-
+    $scope.calc_row = stockUtils.calc_row; 
     $scope.init_base_setting = function(shopId) {
 	$scope.base_settings.check_orgprice_of_transfer = stockUtils.stock_mode(shopId, base).check_t_price;
 	$scope.base_settings.check_firm_of_transfer = stockUtils.stock_mode(shopId, base).check_t_firm;
@@ -874,6 +874,60 @@ function purchaserInventoryTransferCtrlProvide (
 	//     }
 	// }, 1000);
     };
+
+    $scope.transfer_by_shop = function() {
+	console.log($scope.select.shop);
+	var callback = function() {
+	    purchaserService.get_stock_by_shop($scope.select.shop.id).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    $scope.refresh();
+		    for (var i=0, l=result.data.length; i<l; i++) {
+			var stock = result.data[i];
+			if (stock.free === 0) {
+			    var add = {$new:false, edit:true}; 
+			    $scope.copy_select(add, stock); 
+			    add.free_color_size = true;
+			    add.total = stock.amount;
+			    add.reject = stock.amount;
+			    add.amounts = [{reject_count:stock.amount, cid:0, size:0}];
+			    $scope.inventories.unshift(add);
+			    add.order_id = $scope.inventories.length;
+			    $scope.re_calculate();
+			    console.log(add);
+			} else {
+			    for (var j=0, k=stock.notes.length; j<k; j++) {
+				var n = stock.notes[j]; 
+				var add = {$new:false, edit:true}; 
+				$scope.copy_select(add, stock); 
+				add.free_color_size = false;
+				add.total = stock.amount;
+				add.reject = n.total;
+				add.amounts = [{reject_count:n.total, cid:n.color, size:n.size}];
+				var r = add_callback({amounts:add.amounts});
+				add.note = r.note;
+				$scope.inventories.unshift(add);
+				add.order_id = $scope.inventories.length;
+				$scope.re_calculate();
+				console.log(add);
+			    }
+			} 
+		    }
+		    console.log($scope.inventories);
+		    $scope.focus_by_element();
+		    
+		} else {
+		    dialog.set_error("整店移仓", result.ecode);
+		}
+		
+	    });
+	}
+
+	dialog.request(
+	    "整店移仓",
+	    "整店移仓容量导库存误差，确定要整店移仓吗？",
+	    callback, undefined, undefined); 
+    }
     
 };
 

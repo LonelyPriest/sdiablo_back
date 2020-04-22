@@ -571,11 +571,11 @@ var wsaleUtils = function(){
 	    if (pscores.length > 0){
 		var s = pscores[0];
 		if (angular.isDefined(s.score)) {
-		    score = Math.floor((Math.floor(s.money) - verificate) / s.score.balance) * s.score.score; 
+		    score = Math.floor((diablo_round(s.money) - verificate) / s.score.balance) * s.score.score; 
 		    for (var i=1, l=pscores.length; i<l; i++){
 			s = pscores[i];
-			score += Math.floor(Math.floor(s.money) / s.score.balance) * s.score.score; 
-		    } 
+			score += Math.round(Math.floor(s.money) / s.score.balance) * s.score.score; 
+		    }
 		} 
 	    }
 	    
@@ -1267,7 +1267,8 @@ var wsaleCalc = function(){
 		
 		one.calc = one.fprice * count; 
 		should_pay += one.calc;
-		
+
+		// console.log(one);
 		// base_pay
 		if (one.$update) {
 		    base_pay += diablo_price(valid_price * count, one.discount);

@@ -25,7 +25,7 @@
 -export([score/2, score/3, ticket/2, ticket/3, ticket/4, get_ticket/3, get_ticket/4, make_ticket/3]).
 -export([bank_card/3]).
 -export([filter/4, filter/6]).
--export([gift/3]).
+-export([gift/3, gift/4]).
 -export([match/3, syn/2, syn/3, get/2, card/3, sms/2]).
 
 -define(SERVER, ?MODULE). 
@@ -231,9 +231,14 @@ threshold_card(update_expire, Merchant, Card, Expire) ->
 gift(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {add_gift, Merchant, Attrs});
+
 gift(exchange, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {exchange_gift, Merchant, Attrs}).
+
+gift(update, Merchant, GiftId, Attrs) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {update_gift, Merchant, GiftId, Attrs}).
 
 filter(total_retailer, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -3145,6 +3150,21 @@ handle_call({add_gift, Merchant, Attrs}, _From, State) ->
 		Error
 	end,
     {reply, Reply, State};
+
+handle_call({update_gift, Merchant, GiftId, Attrs}, _From, State) ->
+    ?DEBUG("update_gift: merchant ~p, GiftId ~p, Attrs ~p", [Merchant, GiftId, Attrs]),
+    Updates = ?utils:v(name, string, ?v(<<"name">>, Attrs))
+	++ ?utils:v(org_price, float, ?v(<<"org_price">>, Attrs))
+	++ ?utils:v(tag_price, float, ?v(<<"tag_price">>, Attrs))
+	++ ?utils:v(total, integer, ?v(<<"count">>, Attrs))
+	++ ?utils:v(rule, integer, ?v(<<"rule">>, Attrs)) 
+	++ ?utils:v(py, string, ?v(<<"py">>, Attrs)),
+
+    Sql = "update w_gift set " ++ ?utils:to_sqls(proplists, comma, Updates)
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(GiftId),
+    Reply = ?sql_utils:execute(write, Sql, GiftId),
+    {reply, Reply, State}; 
 
 handle_call({exchange_gift, Merchant, Attrs}, _From, State) ->
     ?DEBUG("exchange_gift: merchant ~p, attrs ~p", [Merchant, Attrs]),

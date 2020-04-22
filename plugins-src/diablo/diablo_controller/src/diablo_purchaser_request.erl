@@ -1549,6 +1549,75 @@ action(Session, Req, {"export_w_inventory_fix_note"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"get_stock_by_shop"}, Payload) ->
+    ?DEBUG("print_stock: session ~p, payload ~p", [Session, Payload]),
+    Merchant    = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+
+    Shop = ?v(<<"shop">>, Payload),
+    %% stock > 0
+    Conditions = [{<<"shop">>, Shop},
+		  {<<"stock">>, 0}],
+    UseMode = [{<<"mode">>, mode(7)}, {<<"sort">>, 1}],
+    
+    case ?w_inventory:export(stock, {Merchant, UTable}, Payload, UseMode) of
+	{ok, []} ->
+	    ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
+	{ok, Transes} ->
+	    case ?w_inventory:export(stock_note, {Merchant, UTable}, Conditions, []) of
+		[] ->
+		    ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
+		{ok, Notes} ->
+		    %% ?DEBUG("transes ~p", [Transes]),
+		    %% ?DEBUG("notes ~p", [Notes]),
+		    %% check
+		    StockTotal = lists:foldr(
+				   fun({S}, Acc) ->
+					   ?v(<<"amount">>, S) + Acc
+				   end, 0, Transes),
+		    ?DEBUG("stock total ~p", [StockTotal]),
+
+		    StockNoteTotal = lists:foldr(
+				       fun({N}, Acc) ->
+					       ?v(<<"total">>, N) + Acc
+				       end, 0, Notes),
+		    ?DEBUG("stock note total ~p", [StockNoteTotal]), 
+		    case StockTotal =:= StockNoteTotal of
+			true ->
+			    SortNotes = stock_note(
+					  to_dict,
+					  {<<"style_number">>, <<"brand_id">>, <<"shop_id">>},
+					  Notes,
+					  dict:new()),
+			    ?DEBUG("SortNotes ~p", [SortNotes]),
+
+			    Details = 
+				lists:foldr(
+				  fun({S}, Acc) ->
+					  StyleNumber = ?v(<<"style_number">>, S),
+					  BrandId     = ?to_b(?v(<<"brand_id">>, S)),
+					  ShopId      = ?to_b(?v(<<"shop_id">>, S)),
+					  Key = <<StyleNumber/binary, BrandId/binary, ShopId/binary>>,
+					  case dict:find(Key, SortNotes) of
+					      {ok, NS} ->
+						  %% ?DEBUG("NS ~p", [NS]),
+						  %% ?DEBUG("S ~p", [S]),
+						  [{S ++ [{<<"notes">>, NS}]}] ++ Acc;
+					      error ->
+						  Acc
+					  end
+				  end, [], Transes),
+
+			    %% ?DEBUG("Details ~p", [Details]),
+			    
+			    ?utils:respond(200, object, Req,
+					   {[{<<"ecode">>, 0},
+					     {<<"data">>, Details}]});
+			false ->
+			    ?utils:respond(200, Req, ?err(stock_diff_detail_and_note, Shop))
+		    end
+	    end
+    end;
 
 action(Session, Req, {"print_w_inventory_transfer"}, Payload) ->
     ?DEBUG("print_stock_tranasfer: session ~p, payload ~p", [Session, Payload]),
@@ -1718,7 +1787,7 @@ export(stock_note,
 			DoFun = fun(C) -> ?utils:write(Fd, C) end, 
 			SortStockS = stock_note(
 				       to_dict,
-				       {<<"style_number">>, <<"brand">>, <<"shop">>},
+				       {<<"style_number">>, <<"brand_id">>, <<"shop_id">>},
 				       StockNotes,
 				       dict:new()),
 			csv_head(

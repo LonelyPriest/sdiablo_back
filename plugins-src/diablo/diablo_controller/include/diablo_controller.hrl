@@ -451,6 +451,8 @@
 -define(list_stock_order, ?right_w_inventory + 42).
 -define(list_stock_order_note, ?right_w_inventory + 43).
 
+-define(transfer_w_inventory_fast, ?right_w_inventory + 44).
+
 %% -define(set_stock_promotion,    ?right_w_inventory + 27).
 
 %% firm

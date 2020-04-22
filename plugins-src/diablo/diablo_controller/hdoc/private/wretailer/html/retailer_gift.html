@@ -91,7 +91,7 @@
 		      <!-- 	<i class="glyphicon glyphicon-transfer"></i> -->
 		      <!-- </button> -->
 		      <button x-ng-if="right.modify_gift" class="btn diablo-button yellow"
-		      	      x-ng-click="modify_gift(g)">修改
+		      	      x-ng-click="update_gift(g)">修改
 			<i class="glyphicon glyphicon-edit"></i>
 		      </button>
 		      <button x-ng-if="right.delete_gift" class="btn diablo-button red"
@@ -157,6 +157,7 @@
 		     required
 		     capitalize
 		     x-ng-edit
+		     x-ng-readonly="params.mode===1"
 		     name="code"
 		     x-ng-pattern="params.pattern.code" 
 		     x-ng-model="params.code"/>

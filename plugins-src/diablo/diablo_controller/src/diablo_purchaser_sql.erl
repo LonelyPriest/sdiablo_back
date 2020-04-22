@@ -2892,11 +2892,20 @@ sort_condition(stock, Conditions, Prefix) ->
 	    [] -> [];
 	    ?YES -> " and "  ++ ?to_s(Prefix) ++ "state=3";
 	    ?NO -> " and "  ++ ?to_s(Prefix) ++ "state in (-1, 0, 1, 2)"
-	end .
-	
-		 
+	end;
+
+sort_condition(stock_note, Conditions, Prefix) ->
+    case ?v(<<"stock">>, Conditions, []) of
+	[] -> [];
+	0 -> " and " ++ ?to_s(Prefix) ++ "total>0";
+	1 -> " and " ++ ?to_s(Prefix) ++ "total=0";
+	2 -> " and " ++ ?to_s(Prefix) ++ "total!=0" 
+    end.
 
 sort_condition(stock, Conditions) ->
+    sort_condition(stock, Conditions, []);
+
+sort_condition(stock_note, Conditions) ->
     sort_condition(stock, Conditions, []).
 
 filter_condition(inventory_new, [], Acc1, Acc2) ->

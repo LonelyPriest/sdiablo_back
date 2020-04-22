@@ -1199,6 +1199,16 @@ action(Session, Req, {"add_w_gift"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"modify_w_gift", Id}, Payload) ->
+    ?DEBUG("modify_w_gift: session ~p, Id ~p, payload ~p", [Session, Id, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    case ?w_retailer:gift(update, Merchant, Id, Payload) of
+	{ok, Id} ->
+	    ?utils:respond(200, Req, ?succ(add_retailer_gift, Id));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"list_w_gift"}, Payload) ->
     ?DEBUG("list_w_gift: session ~p, payload ~p", [Session, Payload]),
     Merchant  = ?session:get(merchant, Session),
