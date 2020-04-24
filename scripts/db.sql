@@ -89,6 +89,8 @@ create table shops
 
     bcode_friend       VARCHAR(255) default '' not null,
     bcode_pay          VARCHAR(255) default '' not null,
+
+    sms_sign         VARCHAR(32) not null default '',
     
     merchant           INTEGER default -1, -- which merchant belong to
     deleted            INTEGER default 0, -- 0: no;  1: yes
@@ -1192,6 +1194,7 @@ create table w_inventory_transfer_detail(
     free           TINYINT default 0,  -- free color and free size
     year           YEAR(4),
 
+    vir_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99 
     discount       DECIMAL(4, 1)  default 100, -- max: 100

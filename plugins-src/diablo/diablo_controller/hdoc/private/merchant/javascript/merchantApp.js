@@ -24,6 +24,10 @@ function merchantConfig(angular){
 		templateUrl: '/private/merchant/html/merchant_new.html',
 		controller: 'merchantNewCtrl'
 	    }).
+	    when('/shop_detail', {
+		templateUrl: '/private/merchant/html/m_shop_detail.html',
+		controller: 'merchantShopDetailCtrl'
+	    }).
 	    when('/merchant_sms_rate', {
 		templateUrl: '/private/merchant/html/merchant_sms.html',
 		controller: 'merchantSMSCtrl'
@@ -114,10 +118,13 @@ function merchantConfig(angular){
 		{merchant: merchantId, rate: rate}).$promise;
 	};
 
-	this.new_sign = function(merchantId, sign){
+	this.new_sign = function(merchantId, shopId, mode, sign){
 	    return merchant.save(
 		{operation: "new_sms_sign"},
-		{merchant: merchantId, sign: sign}).$promise;
+		{merchant: merchantId,
+		 shop: shopId,
+		 mode: mode,
+		 sign: sign}).$promise;
 	};
 
 	this.charge_sms = function(merchantId, name, mobile, balance) {
@@ -129,6 +136,10 @@ function merchantConfig(angular){
 	this.list_sms_center = function(){
 	    return merchant.query({operation: "list_merchant_sms_center"}).$promise;
 	};
+
+	this.list_shop = function() {
+	    return merchant.query({operation: "list_merchant_shop"}).$promise;
+	};
     });
 
 
@@ -138,7 +149,7 @@ function merchantConfig(angular){
 	
 	$scope.refresh = function(){
 	    merchantService.list().$promise.then(function(merchants){
-		console.log(merchants);
+		// console.log(merchants);
 		angular.forEach(merchants, function(m){
 		    m.type_name = merchantService.get_type(m.type).chinese;
 		})
@@ -248,7 +259,9 @@ function merchantConfig(angular){
 	$scope.new_sms_sign = function(merchant) {
 	    var callback = function(params){
 		console.log(params);
-		merchantService.new_sign(merchant.id, params.sign).then(function(result){
+		merchantService.new_sign(
+		    merchant.id, diablo_default_shop, 0, params.sign
+		).then(function(result){
 		    console.log(result);
 		    if (result.ecode === 0){
 			dialog.response_with_callback(
@@ -256,7 +269,7 @@ function merchantConfig(angular){
 			    "新增短信签名",
 			    "商家 " + merchant.name + " 短信签名创建成功！！",
 	    		    undefined,
-			    function(){merchant.sign = params.sign});  
+			    function(){merchant.sms_sign = params.sign});  
 		    } else {
 			dialog.response(
 	    		    false,
@@ -271,7 +284,7 @@ function merchantConfig(angular){
 		undefined,
 		callback,
 		undefined, 
-		{name:merchant.name, sign: merchant.sign})
+		{name:merchant.name, sign: merchant.sms_sign})
 	};
     });
 
@@ -355,7 +368,9 @@ function merchantConfig(angular){
 	$scope.new_sms_sign = function(merchant) {
 	    var callback = function(params){
 		console.log(params);
-		merchantService.new_sign(merchant.id, params.sign).then(function(result){
+		merchantService.new_sign(
+		    merchant.id, diablo_default_shop, 0, params.sign
+		).then(function(result){
 		    console.log(result);
 		    if (result.ecode === 0){
 			dialog.response_with_callback(
@@ -398,6 +413,50 @@ function merchantConfig(angular){
 	};
 
 	$scope.refresh();
+    });
+
+    merchantApp.controller("merchantShopDetailCtrl", function(
+	$scope, $routeParams, diabloUtilsService, merchantService){
+	var dialog = diabloUtilsService;
+	
+	$scope.refresh = function(){
+	    merchantService.list_shop().then(function(shops){
+		// console.log(merchants); 
+		$scope.shops = shops;
+		diablo_order(shops);
+	    })
+	}; 
+	$scope.refresh();	
+	$scope.new_sms_sign = function(shop) {
+	    var callback = function(params){
+		console.log(params);
+		merchantService.new_sign(
+		    shop.merchant_id, shop.id, 1, params.sign
+		).then(function(result){
+		    console.log(result);
+		    if (result.ecode === 0){
+			dialog.response_with_callback(
+	    		    true,
+			    "新增短信签名",
+			    "店铺 " + shop.name + " 短信签名创建成功！！",
+	    		    undefined,
+			    function(){shop.sms_sign = params.sign});  
+		    } else {
+			dialog.response(
+	    		    false,
+			    "新增短信签名",
+	    		    "新增短信签名失败：" + merchantService.error[result.ecode]);
+		    }
+		});
+	    };
+	    
+	    dialog.edit_with_modal(
+		"new-sign.html",
+		undefined,
+		callback,
+		undefined, 
+		{name:shop.name, sign: shop.sms_sign})
+	};
     });
 
     // merchantApp.controller("merchantCtrl", function($scope){});

@@ -794,6 +794,7 @@ handle_call({list_retailer, Merchant, Conditions, Mode}, _From, State) ->
 	", a.comment"
 
 	", b.name as shop"
+	", b.sms_sign as sign"
 	
 	" from w_retailer a"
 	" left join shops b on a.shop=b.id"

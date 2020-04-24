@@ -483,7 +483,6 @@ start_link(Name) ->
 %%%===================================================================
 %%% gen_server callbacks
 %%%===================================================================
-
 init([]) ->
     {ok, #state{}}.
 
@@ -2592,7 +2591,7 @@ handle_call({gen_barcode, AutoBarcode, Merchant, UTable, Shop, StyleNumber, Bran
 	", c.feather as feather_json" 
 	
     %% " from w_inventory a"
-	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
+	" from" ++ ?table:t(good, Merchant, UTable) ++ " a"
 	++ " left join inv_types b on a.type=b.id"
 	++ " left join" ++ ?table:t(good_extra, Merchant, UTable) ++ " c"
 	" on a.merchant=c.merchant and a.style_number=c.style_number and a.brand=c.brand"
@@ -2601,7 +2600,7 @@ handle_call({gen_barcode, AutoBarcode, Merchant, UTable, Shop, StyleNumber, Bran
     %% " on a.style_number=c.style_number and a.brand=c.brand and a.merchant=c.merchant"
 	
 	" where a.merchant=" ++ ?to_s(Merchant)
-	++ " and a.shop=" ++ ?to_s(Shop)
+    %% ++ " and a.shop=" ++ ?to_s(Shop)
 	++ " and a.style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 	++ " and a.brand=" ++ ?to_s(Brand),
     
@@ -2631,7 +2630,7 @@ handle_call({gen_barcode, AutoBarcode, Merchant, UTable, Shop, StyleNumber, Bran
 		    ?DEBUG("barcode ~p", [Barcode]),
 
 		    Sql0 = "select bcode, style_number, brand"
-			" from" ++ ?table:t(stock, Merchant, UTable)
+			" from" ++ ?table:t(good, Merchant, UTable)
 			++ " where merchant=" ++ ?to_s(Merchant)
 			++ " and bcode=\'" ++ ?to_s(Barcode) ++ "\'",
 		    
@@ -2639,6 +2638,12 @@ handle_call({gen_barcode, AutoBarcode, Merchant, UTable, Shop, StyleNumber, Bran
 			{ok, []} ->
 			    %% use syn all stock's barcode in different shop
 			    Sqls = ["update" ++ ?table:t(stock, Merchant, UTable)
+				    ++ " set bcode=\'" ++ ?to_s(Barcode) ++ "\'"
+				    ++ " where merchant=" ++ ?to_s(Merchant)
+				    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+				    ++ " and brand=" ++ ?to_s(Brand),
+
+				    "update" ++ ?table:t(stock_transfer_detail, Merchant, UTable)
 				    ++ " set bcode=\'" ++ ?to_s(Barcode) ++ "\'"
 				    ++ " where merchant=" ++ ?to_s(Merchant)
 				    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
@@ -2696,11 +2701,11 @@ handle_call({reset_barcode, AutoBarcode, Merchant, UTable, Shop, StyleNumber, Br
 
 	", b.bcode as tbcode"
 	%% " from w_inventory a"
-	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
+	" from" ++ ?table:t(good, Merchant, UTable) ++ " a"
 	" left join inv_types b on a.type=b.id"
 	
 	" where a.merchant=" ++ ?to_s(Merchant)
-	++ " and a.shop=" ++ ?to_s(Shop)
+    %% ++ " and a.shop=" ++ ?to_s(Shop)
 	++ " and a.style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 	++ " and a.brand=" ++ ?to_s(Brand),
 
@@ -2734,6 +2739,12 @@ handle_call({reset_barcode, AutoBarcode, Merchant, UTable, Shop, StyleNumber, Br
 		    Sqls = ["update" ++ ?table:t(stock, Merchant, UTable)
 			    ++ " set bcode=\'" ++ ?to_s(Barcode) ++ "\'"
 			    " where merchant=" ++ ?to_s(Merchant)
+			    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+			    ++ " and brand=" ++ ?to_s(Brand),
+
+			    "update" ++ ?table:t(stock_transfer_detail, Merchant, UTable)
+			    ++ " set bcode=\'" ++ ?to_s(Barcode) ++ "\'"
+			    ++ " where merchant=" ++ ?to_s(Merchant)
 			    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 			    ++ " and brand=" ++ ?to_s(Brand),
 
@@ -2803,6 +2814,12 @@ handle_call({reset_good_barcode, AutoBarcode, Merchant, UTable, StyleNumber, Bra
 			    Sqls = ["update" ++ ?table:t(good, Merchant, UTable)
 				    ++ " set bcode=\'" ++ ?to_s(Barcode) ++ "\'"
 				    " where merchant=" ++ ?to_s(Merchant)
+				    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+				    ++ " and brand=" ++ ?to_s(Brand),
+
+				    "update" ++ ?table:t(stock_transfer_detail, Merchant, UTable)
+				    ++ " set bcode=\'" ++ ?to_s(Barcode) ++ "\'"
+				    ++ " where merchant=" ++ ?to_s(Merchant)
 				    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 				    ++ " and brand=" ++ ?to_s(Brand),
 
@@ -3545,6 +3562,7 @@ handle_call({stock_export, Merchant, UTable, Conditions, Mode}, _From, State) ->
 	", a.firm as firm_id" 
 	", a.path"
 
+	", a.vir_price"
 	", a.org_price"
 	", a.ediscount"
 	", a.tag_price"

@@ -2031,8 +2031,8 @@ sidebar(Session) ->
 			level_1_menu,
 			Record ++ Reject ++ TransR ++ TransD ++ InvDetail ++ HistoryStock ++ InvPrice),
 	    Level2 = ?menu:sidebar(
-			level_2_menu, InvMgr ++ Transfer ++ GoodMgr ++ PromotionMgr),
-
+			%% level_2_menu, Order ++ InvMgr ++ Transfer ++ GoodMgr ++ PromotionMgr),
+			level_2_menu, InvMgr ++ Transfer ++ GoodMgr ++ PromotionMgr), 
 	    Level1 ++ Level2
     end.
 

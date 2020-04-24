@@ -732,6 +732,14 @@ alter table w_inventory_good drop column category;
 alter table w_inventory_good drop column fabric;
 alter table w_inventory_good drop column feather;
 
+--2020-04-23
+alter table w_inventory_transfer_detail add column vir_price DECIMAL(10, 2) default 0 before org_price;
+
+update w_inventory_transfer_detail_101 a inner join w_inventory_good_101 b on a.style_number=b.style_number and a.brand=b.brand set a.vir_price=b.vir_price
+
+--2020-04-24
+alter table shops add column sms_sign VARCHAR(32) not null default '' after bcode_pay;
+
 --2020-03-27
 alter table w_sale add column account INTEGER default -1 after rsn;
 

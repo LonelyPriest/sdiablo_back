@@ -148,6 +148,7 @@ function shopDetailCtrlProvide(
 		    address:      s.address,
 		    open_date:    s.open_date,
 		    entry_date:   s.entry_date,
+		    sms_sign:     s.sms_sign,
 
 		    bcode_friend: s.bcode_friend ? s.bcode_friend + "?" + Math.random() : undefined,
 		    bcode_pay:    s.bcode_pay ? s.bcode_pay + "?" + Math.random() : undefined,

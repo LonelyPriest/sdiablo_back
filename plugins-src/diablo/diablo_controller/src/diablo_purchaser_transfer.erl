@@ -29,6 +29,7 @@ amount_transfer(transfer_from, RSN, Merchant, UTable, Shop, TShop, Datetime, Inv
     Season      = ?v(<<"season">>, Inv),
     Firm        = ?v(<<"firm">>, Inv),
 
+    VirPrice    = ?v(<<"vir_price">>, Inv),
     OrgPrice    = ?v(<<"org_price">>, Inv),
     TagPrice    = ?v(<<"tag_price">>, Inv),
     EDiscount   = ?v(<<"ediscount">>, Inv),
@@ -149,7 +150,7 @@ amount_transfer(transfer_from, RSN, Merchant, UTable, Shop, TShop, Datetime, Inv
 			 ", s_group"
 			 ", free"
 			 ", year"
-			 ", org_price, tag_price, discount, ediscount"
+			 ", vir_price, org_price, tag_price, discount, ediscount"
 			 %% ", xdiscount, xprice"
 			 ", path"
 			 ", merchant"
@@ -170,7 +171,7 @@ amount_transfer(transfer_from, RSN, Merchant, UTable, Shop, TShop, Datetime, Inv
 			 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
 			 ++ ?to_s(Free) ++ ","
 			 ++ ?to_s(Year) ++ ","
-			 
+			 ++ ?to_s(VirPrice) ++ ","
 			 ++ case XSale =:= ?YES andalso XMaster =:= ?YES
 				%% andalso ShopType =:= ?REPERTORY
 				%% andalso TShopType =:= ?SHOP
@@ -307,6 +308,7 @@ check_transfer(Merchant, UTable, FShop, TShop, CheckProps) ->
 	", s_group"
 	", free"
 	", year"
+	", vir_price"
     	", org_price"
 	", tag_price"
 	", discount"
@@ -343,7 +345,8 @@ check_transfer(Merchant, UTable, FShop, TShop, CheckProps) ->
 				      ?utils:current_time(year);
 				  CurYear -> CurYear
 			      end,
-		
+
+		VirPrice    = ?v(<<"vir_price">>, Transfer),
 		OrgPrice    = ?v(<<"org_price">>, Transfer),
 		TagPrice    = ?v(<<"tag_price">>, Transfer),
 		Discount    = ?v(<<"discount">>, Transfer),
@@ -381,7 +384,7 @@ check_transfer(Merchant, UTable, FShop, TShop, CheckProps) ->
 			 ++ "(rsn"
 			 ", bcode, style_number, brand, firm, type, sex, season, year"
 			 ", amount, s_group, free, promotion, score"
-			 ", org_price, ediscount, tag_price, discount"
+			 ", vir_price, org_price, ediscount, tag_price, discount"
 			 ", path, alarm_day, shop, merchant"
 			 ", last_sell, change_date, entry_date)"
 			 " values("
@@ -398,7 +401,9 @@ check_transfer(Merchant, UTable, FShop, TShop, CheckProps) ->
 			 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
 			 ++ ?to_s(Free) ++ ","
 			 ++ ?to_s(-1) ++ ","
-			 ++ ?to_s(DefaultScore) ++ "," 
+			 ++ ?to_s(DefaultScore) ++ ","
+			 
+			 ++ ?to_s(VirPrice) ++ "," 
 			 ++ ?to_s(OrgPrice) ++ "," 
 			 ++ ?to_s(EDiscount) ++ "," 
 			 ++ ?to_s(TagPrice) ++ ","

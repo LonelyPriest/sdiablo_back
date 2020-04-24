@@ -1564,6 +1564,7 @@ inventory(transfer_rsn_groups, transfer, {Merchant, UTable}, Conditions, PageFun
         ", b.free"
 	", b.year"
 	", b.amount"
+	", b.vir_price"
 	", b.tag_price"
 	", b.org_price"
     %% ", b.xprice"

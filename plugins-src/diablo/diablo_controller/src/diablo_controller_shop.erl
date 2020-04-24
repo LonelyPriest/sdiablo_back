@@ -20,7 +20,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([shop/3, shop/4, lookup/1, lookup/2]).
+-export([shop/1, shop/2, shop/3, shop/4, lookup/1, lookup/2]).
 -export([region/2, region/3, region/4]).
 -export([cost_class/2, cost_class/3, cost_class/4, cost/3, cost/4, cost/6]).
 
@@ -30,15 +30,22 @@
 -define(tbl_shop, "shops").
 
 
--record(state, {}).
+-record(state, {info :: dict()}).
 
 %%%===================================================================
 %%% API
 %%%===================================================================
+shop(list_info) ->
+    gen_server:call(?MODULE, list_info).
+shop(list_info, ShopId) ->
+    gen_server:call(?MODULE, {list_info, ShopId}).
+
 shop(new, Merchant, Attrs) ->
     gen_server:call(?MODULE, {new_shop, Merchant, Attrs});
 shop(get, Merchant, ShopId) ->
     gen_server:call(?MODULE, {get_shop, Merchant, ShopId});
+shop(get_sign, Merchant, ShopId) ->
+    gen_server:call(?MODULE, {get_shop_sign, Merchant, ShopId});
 shop(delete, {Merchant, UTable}, ShopId) ->
     gen_server:call(?MODULE, {delete_shop, Merchant, UTable, ShopId}).
 
@@ -115,7 +122,24 @@ start_link() ->
 %%% gen_server callbacks
 %%%===================================================================
 init([]) ->
-    {ok, #state{}}.
+    %% Sql = "select id, name, sms_sign from shops order by id",
+    %% case ?sql_utils:execute(read, Sql) of
+    %% 	{ok, []} ->
+    %% 	    {ok, #state{}};
+    %% 	{ok, Shops} ->
+    %% 	    Info = 
+    %% 		lists:foldr(
+    %% 		  fun(S, Dict)->
+    %% 			  Key = ?v(<<"id">>, S),
+    %% 			  Name = ?v(<<"name">>, S),
+    %% 			  Sign = ?v(<<"sms_sign">>, S), 
+    %% 			  dict:store(Key, [{<<"name">>, Name}, {<<"sign">>, Sign}], Dict)
+    %% 		  end, dict:new(), Shops),
+    %% 	    {ok, #state{info=Info}};
+    %% 	_ ->
+    %% 	    {ok, #state{}}
+    %% end.
+    {ok, #state{info=dict:new()}}.
 
 handle_call({new_shop, Merchant, Props}, _From, State)->
     ?DEBUG("new shop with props ~p", [Props]),
@@ -178,10 +202,23 @@ handle_call({delete_shop, Merchant, UTable, ShopId}, _From, State) ->
     end;
 
 handle_call({get_shop, Merchant, ShopId}, _From, State) ->
-    Sql = "select id, name, pay_cd from shops"
+    Sql = "select id, name, sms_sign, pay_cd from shops"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and id=" ++ ?to_s(ShopId),
     Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({get_shop_sign, Merchant, ShopId}, _From, State) ->
+    Sql = "select id, name, sms_sign from shops"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(ShopId),
+    Reply = 
+	case ?sql_utils:execute(s_read, Sql) of
+	    {ok, Shop} ->
+		{?v(<<"name">>, Shop), ?v(<<"sms_sign">>, Shop)};
+	    _ ->
+		{ShopId, []}
+	end,
     {reply, Reply, State};
 
 handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
@@ -298,6 +335,7 @@ handle_call({list_shop, Merchant, Conditions}, _From, State) ->
 	", a.bcode_friend"
 	", a.bcode_pay"
 	", a.pay_cd"
+	", a.sms_sign"
 	", a.entry_date"
 	++ " from shops a" 
 	++ " where "
@@ -683,6 +721,18 @@ handle_call({filter_daily_cost, Merchant, CurrentPage, ItemsPerPage, Conditions}
 	++ ?sql_utils:condition(page_desc, {use_datetime, 0}, CurrentPage, ItemsPerPage),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
+
+handle_call(list_info, _From, #state{info=Dict} = State) ->
+    List = dict:to_list(Dict),
+    {reply, List, State};
+
+handle_call({list_info, ShopId}, _From, #state{info=Dict} = State) ->
+    Info = 
+	case dict:find(ShopId, Dict) of
+	    {ok, V} -> V;
+	    error -> []
+	end,
+    {reply, Info, State};
 
 handle_call(_Request, _From, State) ->
     ?WARN("receive unkown request ~p", [_Request]),

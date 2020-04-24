@@ -4,6 +4,7 @@
 -include("diablo_controller.hrl").
 
 -export([sms_notify/2, sign/1, zz_sms/1, sms/3, sms/4, init_sms/0, sms_once/4, check_sms_rate/1]).
+-export([check_merchant_balance/2]).
 
 -define(zz_sms_account, <<"N3001234">>).
 -define(zz_sms_password, <<"dLZJfzK5Mc7a9d">>).
@@ -20,10 +21,10 @@ init_sms() ->
     ?sql_utils:execute(transaction, Sqls, ok).
     
 
-sms_notify(Merchant, {Shop, Phone, Action, Money, RetailerBalance, Score}) ->
+sms_notify(Merchant, {ShopId, Phone, Action, Money, RetailerBalance, Score}) ->
     ?DEBUG("sms_notify: merchants ~p, shop ~p, phone ~p, action ~p, money ~p"
 	   ", rbalance ~p score ~p",
-	   [Merchant, Shop, Phone, Action, Money, RetailerBalance, Score]),
+	   [Merchant, ShopId, Phone, Action, Money, RetailerBalance, Score]),
     try
 	case ?w_user_profile:get(merchant, Merchant) of
 	    {ok, []} -> ?err(sms_rate_not_found, Merchant);
@@ -35,18 +36,24 @@ sms_notify(Merchant, {Shop, Phone, Action, Money, RetailerBalance, Score}) ->
 		case Rate > MerchantBalance of
 		    true  -> ?err(sms_not_enought_blance, Merchant);
 		    false ->
+			{ShopName, ShopSign} = ?shop:shop(get_sign, Merchant, ShopId),
+			
 			Result = 
 			    case ?v(<<"sms_team">>, MerchantInfo) of
 				0 ->
 				    sms_once(aliqin, 
 					     Merchant,
-					     {Shop, Phone, Action, Money, RetailerBalance, Score});
+					     {ShopName, Phone, Action, Money, RetailerBalance, Score});
 				1 ->
-				    Sign = ?v(<<"sms_sign">>, MerchantInfo),
+
+				    Sign = case ShopSign == [] orelse ShopSign == <<>> of
+					       true -> ?v(<<"sms_sign">>, MerchantInfo);
+					       _ -> ShopSign
+					   end, 
 				    sms_once(zz,
 					     Merchant,
 					     Sign,
-					     {Shop, Phone, Action, Money, RetailerBalance, Score})
+					     {ShopName, Phone, Action, Money, RetailerBalance, Score})
 			    end,
 
 			case Result of 
@@ -228,9 +235,9 @@ sms(promotion, Merchant, Phone) ->
     SMSTemplate = "SMS_167400277",
     start_sms(Merchant, Phone, SMSTemplate, []);
 
-sms(ticket, {Merchant, Shop, Retailer, Phone}, {Balance, Count, MinEffect}) ->
+sms(ticket, {Merchant, ShopId, Retailer, Phone}, {Balance, Count, MinEffect}) ->
     ?DEBUG("sms ticket: merchant ~p, retailer ~p, phone ~p, balance ~p, count ~p, effect ~p",
-	  [Merchant, Retailer, Phone, Balance, Count, MinEffect]),
+	   [Merchant, Retailer, Phone, Balance, Count, MinEffect]),
     %% case check_merchant_balance(zz, Merchant) of
     %% 	{ok, {Rate, Team, Sign}} ->
     %% 	    case Team of
@@ -275,7 +282,7 @@ sms(ticket, {Merchant, Shop, Retailer, Phone}, {Balance, Count, MinEffect}) ->
     %% 	    end;
     %% 	{error, CheckBalanceError} -> CheckBalanceError
     %% end,
-
+    {ShopName, ShopSign} = ?shop:shop(get_sign, Merchant, ShopId),
     Callback =
 	fun() ->
 		{SMSTemplate, SMSParams} = 
@@ -289,7 +296,7 @@ sms(ticket, {Merchant, Shop, Retailer, Phone}, {Balance, Count, MinEffect}) ->
 			_ ->
 			    {"SMS_168285336",
 			     ?to_s(ejson:encode(
-				     {[{<<"shop">>, Shop},
+				     {[{<<"shop">>, ShopName},
 				       {<<"user">>, Retailer},
 				       {<<"money">>, ?to_b(Balance)},
 				       {<<"count">>, ?to_b(Count)}
@@ -306,13 +313,13 @@ sms(ticket, {Merchant, Shop, Retailer, Phone}, {Balance, Count, MinEffect}) ->
 		      ++ "," ++ ?to_s(MinEffect);
 	    _ ->
 		string:strip(?to_s(Phone))
-		    ++ "," ++ ?to_s(Shop) 
+		    ++ "," ++ ?to_s(ShopName) 
 		    ++ "," ++ ?to_s(Balance)
 		    ++ "," ++ ?to_s(Count)
 		    ++ "," ++ ?to_s(MinEffect)
 	end,
     ?DEBUG("params ~ts", [?to_b(ZZParams)]),
-    rocket_sms_send(zz, Merchant, ?NORMAL_TICKET, Phone, ZZParams, Callback);
+    rocket_sms_send(zz, Merchant, ShopSign, ?NORMAL_TICKET, Phone, ZZParams, Callback);
 		
 sms(charge, {Merchant, Name, Phone}, Balance) ->
     {ok, MerchantInfo} = ?w_user_profile:get(merchant, Merchant),
@@ -347,7 +354,7 @@ sms(charge, {Merchant, Name, Phone}, Balance) ->
     end.
     
 
-sms(swiming, Merchant, Phone, {Shop, Action, LeftSwiming, Expire}) ->
+sms(swiming, Merchant, Phone, {ShopId, Action, LeftSwiming, Expire}) ->
     %% SMSTemplate   = "SMS_146809919",
     %% SMSParams = ?to_s(ejson:encode({[{<<"shop">>, Shop},
     %% 				     {<<"action">>, action(Action)},
@@ -355,20 +362,21 @@ sms(swiming, Merchant, Phone, {Shop, Action, LeftSwiming, Expire}) ->
     %% 				     {<<"expire">>, limit_swiming(Expire)}
     %% 				    ]})),
     %% start_sms(Merchant, Phone, SMSTemplate, SMSParams);
+    {ShopName, ShopSign} = ?shop:shop(get_sign, Merchant, ShopId),
     Params = string:strip(?to_s(Phone))
-	++ "," ++ ?to_s(Shop)
+	++ "," ++ ?to_s(ShopName)
 	++ "," ++ ?to_s(action(Action))
 	++ "," ++ ?to_s(limit_swiming(LeftSwiming))
 	++ "," ++ ?to_s(limit_swiming(Expire)),
     ?DEBUG("params ~ts", [?to_b(Params)]),
-    rocket_sms_send(zz, Merchant, ?THEORETIC_CARD_SALE, Phone, Params, fun() -> ok end);
+    rocket_sms_send(zz, Merchant, ShopSign, ?THEORETIC_CARD_SALE, Phone, Params, fun() -> ok end);
 
-sms(birth, Merchant, Phone, Shop) ->
+sms(birth, Merchant, Phone, {Shop, Sign}) ->
     Params = string:strip(?to_s(Phone))
 	++ "," ++ ?to_s(Shop)
 	++ "," ++ ?to_s(Shop),
     ?DEBUG("params ~ts", [?to_b(Params)]),
-    rocket_sms_send(zz, Merchant, ?BIRTH_NOTIFY, Phone, Params, fun() -> ok end).
+    rocket_sms_send(zz, Merchant, Sign, ?BIRTH_NOTIFY, Phone, Params, fun() -> ok end).
 
 start_sms(Merchant, Phone, SMSTemplate, SMSParams) ->
     case check_sms_rate(Merchant) of
@@ -700,7 +708,7 @@ get_sms_template(zz, Action, Merchant, Templates) ->
 		   ?NORMAL_REJECT_SALE -> ?v(<<"type">>, T) =:= 0;  %% reject sale
 		   ?NORMAL_TICKET -> ?v(<<"type">>, T) =:= 3;   %% ticket
 		   ?BIRTH_NOTIFY -> ?v(<<"type">>, T) =:= 4; %% birth
-		   ?THEORETIC_CARD_SALE -> ?v(<<"type">>, T) =:= 5; %% birth
+		   ?THEORETIC_CARD_SALE -> ?v(<<"type">>, T) =:= 5; %% card sale
 		   ?SMS_CHARGE -> ?v(<<"type">>, T) =:= 6 %% sms charge
 	       end] of
 	FTemplates ->
@@ -721,7 +729,7 @@ check_merchant_balance(zz, Merchant) ->
 	    ?DEBUG("MerchantInfo ~p", [MerchantInfo]),
 	    MerchantBalance = ?v(<<"balance">>, MerchantInfo),	
 	    Rate = ?v(<<"sms_rate">>, MerchantInfo),
-	    ?DEBUG("sms rate ~p, MerchantBalance ~p", [Rate, MerchantBalance]),
+	    %% ?DEBUG("sms rate ~p, MerchantBalance ~p", [Rate, MerchantBalance]),
 	    case Rate == 0 orelse Rate > MerchantBalance of
 	    %% case Rate > MerchantBalance of
 		true  -> {error, ?err(sms_not_enought_blance, Merchant)};
@@ -781,15 +789,19 @@ reset_merchant_balance(zz, Merchant, SMSRatee) ->
 	    {?SUCCESS, Merchant}
     end.
 
-rocket_sms_send(zz, Merchant, Action, Phone, MsgParams, TeamCallback) ->
+rocket_sms_send(zz, Merchant, ShopSign, Action, Phone, MsgParams, TeamCallback) ->
     case check_merchant_balance(zz, Merchant) of
 	{ok, {Rate, Team, Sign}} ->
 	    case Team of
 		0 -> TeamCallback();
 		1 ->
 		    case get_sms_template(zz, Action, Merchant) of
-			{ok, Template} -> 
-			    case send_sms(zz, Phone, Sign, MsgParams, Template) of
+			{ok, Template} ->
+			    RealySign = case ShopSign == [] orelse ShopSign == <<>> of
+					    true -> Sign;
+					    _ -> ShopSign
+					end,
+			    case send_sms(zz, Phone, RealySign, MsgParams, Template) of
 				{ok, Phone} ->
 				    reset_merchant_balance(zz, Merchant, Rate);
 				{error, SendError} -> SendError

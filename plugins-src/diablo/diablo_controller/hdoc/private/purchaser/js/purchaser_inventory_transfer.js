@@ -197,6 +197,7 @@ function purchaserInventoryTransferCtrlProvide (
 	add.year         = src.year;
 	add.sex          = src.sex;
 	add.season       = src.season;
+	add.vir_price    = src.vir_price;
 	add.org_price    = src.org_price;
 	add.tag_price    = src.tag_price;
 	add.ediscount    = src.ediscount;
@@ -357,7 +358,8 @@ function purchaserInventoryTransferCtrlProvide (
 		    sex         : add.sex,
 		    season      : add.season,
 		    firm        : add.firm_id,
-		    
+
+		    vir_price   : add.vir_price,
 		    org_price   : add.org_price,
 		    tag_price   : add.tag_price,
 		    ediscount   : add.ediscount,

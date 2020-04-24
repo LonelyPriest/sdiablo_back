@@ -221,7 +221,7 @@ handle_cast({birth, TriggerTime}, #state{merchant=Merchants, birth_of_merchant=B
 			  %% ?DEBUG("CronTask ~p", [CronTask]),
 			  [?cron:cron(CronTask)|Acc] 
 		  end, [], Merchants),
-	    %% end, [], [1]),
+			  %% end, [], [36]),
 	    %% ?DEBUG("new auto sms ~p", [NewTasks]),
 	    {noreply, State#state{birth_of_merchant=NewTasks}};
 	_ -> {noreply, State}
@@ -661,15 +661,13 @@ task(auto_sms_at_birth, Datetime, Merchants) when is_list(Merchants) ->
 		  fun(M, Acc) ->
 			  [task(auto_sms_at_birth, Datetime, M)|Acc]
 		  end, [], Merchants),
-    ?DEBUG("auto_sms_at_birth: Phones ~p", [MerchantPhones]),
-
+    %% ?DEBUG("auto_sms_at_birth: Phones ~p", [MerchantPhones]), 
     lists:foreach(
       fun({Merchant, Info}) ->
 	      lists:foreach(
-		fun({Phone, Shop})->
-			%% send sms
-			%% ?DEBUG("sms send phone ~p", [Phone]),
-			?notify:sms(birth, Merchant, Phone, Shop)
+		fun({Phone, Shop, Sign})->
+			%% send sms 
+			?notify:sms(birth, Merchant, Phone, {Shop, Sign})
 		end, Info)
       end, MerchantPhones);
 
@@ -703,7 +701,9 @@ task(auto_sms_at_birth, Datetime, Merchant) when is_number(Merchant)->
 					  case Month =:= ?to_i(MonthOfBirth)
 					      andalso Day =:= ?to_i(DayOfBirth) of
 					      true ->
-						  [?v(<<"mobile">>, Retailer)|Acc];
+						  [{?v(<<"mobile">>, Retailer),
+						    ?v(<<"shop">>, Retailer),
+						    ?v(<<"sign">>, Retailer)}|Acc];
 					      false ->
 						  Acc
 					  end;
@@ -712,7 +712,9 @@ task(auto_sms_at_birth, Datetime, Merchant) when is_number(Merchant)->
 					      andalso LunarDay =:= ?to_i(DayOfBirth) of
 					      true ->
 						  [{?v(<<"mobile">>, Retailer),
-						    ?v(<<"shop">>, Retailer)}|Acc];
+						    ?v(<<"shop">>, Retailer),
+						    ?v(<<"sign">>, Retailer)
+						   }|Acc];
 					      false ->
 						  Acc
 					  end
@@ -761,8 +763,7 @@ task(stastic_per_shop, Datetime, Merchants) when is_list(Merchants)->
     SqlsOfAllMerchant=
 	gen_report(stastic_per_shop,
 		   {YestodayStart, YestodayEnd, FormatDatetime}, Merchants), 
-    %% ?DEBUG("SqlsOfAllMerchant ~p", [SqlsOfAllMerchant]),
-    
+    %% ?DEBUG("SqlsOfAllMerchant ~p", [SqlsOfAllMerchant]), 
     lists:foreach(
       fun({_M, Sqls}) ->
 	      case length(Sqls) =:= 0 of

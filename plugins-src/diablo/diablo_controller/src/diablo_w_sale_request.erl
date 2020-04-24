@@ -2212,14 +2212,16 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
 				    
 				    case Vip =:= true andalso SMS =:= 1 of
 					true ->
-					    ShopName =
-						case ?w_user_profile:get(shop, Merchant, ShopId) of
-						    {ok, []} -> ShopId;
-						    {ok, [{Shop}]} -> ?v(<<"name">>, Shop)
-						end,
+					    %% {ShopName, ShopSign} =
+					    %% 	case ?w_user_profile:get(shop, Merchant, ShopId) of
+					    %% 	    {ok, []} -> ShopId;
+					    %% 	    {ok, [{Shop}]} ->
+					    %% 		{?v(<<"name">>, Shop, []),
+					    %% 		 ?v(<<"sign">>, Shop, [])}
+					    %% 	end,
 					    ?notify:sms_notify(
 					       Merchant,
-					       {ShopName, Phone, 1, ShouldPay, Balance, Score});
+					       {ShopId, Phone, 1, ShouldPay, Balance, Score});
 					false ->
 					    %% ?w_user_profile:update(sysretailer, Merchant),
 					    {0, none} 
@@ -2513,11 +2515,11 @@ sys_vip_of_shop(Merchant, Shop) ->
 send_sms(Merchant, Action, ShopId, Retailer, ShouldPay) ->
     try 
 	%% {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
-	ShopName = case ?w_user_profile:get(shop, Merchant, ShopId) of
-			     {ok, []} -> [];
-			     {ok, [{Shop}]} ->
-				 ?v(<<"name">>, Shop, [])
-			 end,
+	%% {ShopName, ShopSign} = case ?w_user_profile:get(shop, Merchant, ShopId) of
+	%% 			   {ok, []} -> [];
+	%% 			   {ok, [{Shop}]} ->
+	%% 			       {?v(<<"name">>, Shop, []), ?v(<<"sign">>, Shop, [])}
+	%% 		       end,
 	%% {ok, Retailer} = ?w_retailer:get(retailer, Merchant, RetailerId),
 	RetailerId = ?v(<<"id">>, Retailer),
 	Phone = ?v(<<"mobile">>, Retailer, []),
@@ -2539,7 +2541,7 @@ send_sms(Merchant, Action, ShopId, Retailer, ShouldPay) ->
 	    true -> 
 		?notify:sms_notify(
 		   Merchant,
-		   {ShopName, Phone, Action, abs(ShouldPay), Balance, Score});
+		   {ShopId, Phone, Action, abs(ShouldPay), Balance, Score});
 	    false -> {0, none} 
 	end
     catch

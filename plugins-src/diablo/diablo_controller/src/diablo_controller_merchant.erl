@@ -20,7 +20,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([merchant/2, merchant/3, lookup/0, lookup/1, sms/1, sms/2, sms/3]).
+-export([merchant/2, merchant/3, lookup/0, lookup/1, sms/1, sms/2, sms/3, sms/5, shop/1]).
 
 -define(SERVER, ?MODULE). 
 -define(tbl_merchant, "merchants").
@@ -47,6 +47,9 @@ lookup() ->
 lookup(Condition) ->
     gen_server:call(?MODULE, {lookup, Condition}).
 
+shop(list) ->
+    gen_server:call(?MODULE, list_shop).
+
 sms(list) ->
     gen_server:call(?MODULE, list_sms);
 sms(list_center) ->
@@ -63,9 +66,10 @@ sms(list_template, Merchant) ->
 sms(new_rate, Merchant, Rate) ->
     gen_server:call(?MODULE, {new_sms_rate, Merchant, Rate});
 sms(charge, Merchant, Balance) ->
-    gen_server:call(?MODULE, {charge_sms, Merchant, Balance});
-sms(new_sign, Merchant, Sign) ->
-    gen_server:call(?MODULE, {new_sms_sign, Merchant, Sign}).
+    gen_server:call(?MODULE, {charge_sms, Merchant, Balance}).
+
+sms(new_sign, Merchant, Shop, Mode, Sign) ->
+    gen_server:call(?MODULE, {new_sms_sign, Merchant, Shop, Mode, Sign}).
 
 
 start_link() ->
@@ -280,60 +284,63 @@ handle_call({new_sms_rate, Merchant, Rate}, _From, State) ->
 	    {reply, Error, State}
     end;
 
-handle_call({new_sms_sign, Merchant, SignName}, _From, State) ->
-    Sql0 = "select id, sms_sign from merchants"
-	" where id=" ++ ?to_s(Merchant)
-	++ " and sms_sign=\'" ++ ?to_s(SignName) ++ "\'",
-    case ?sql_utils:execute(s_read, Sql0) of
-	{ok, []} ->
-	    %% Timestamp = ?utils:current_time(timestamp),
-	    %% Account = ?ZZ_SMS_ACCOUNT ++ ?ZZ_SMS_PASSWORD ++ Timestamp,
-	    %% MD5Sign = crypto:hash(md5, Account),
-	    %% ?DEBUG("MD5Sing ~p", [MD5Sign]),
-	    %% AppId = "49",
-	    %% Params = {[{<<"username">>, ?to_b(?ZZ_SMS_ACCOUNT)},
-	    %% 	       {<<"timestamp">>, ?to_b(Timestamp)},
-	    %% 	       {<<"signature">>, ?to_b(MD5Sign)},
-	    %% 	       {<<"appid">>, ?to_b(AppId)},
-	    %% 	       {<<"signature_name">>, ?to_b(SignName)}
-	    %% 	      ]},
-	    %% Body = ?to_s(ejson:encode(Params)), 
+handle_call({new_sms_sign, Merchant, Shop, Mode, SignName}, _From, State) ->
+    Reply = 
+	case Mode of
+	    0 ->
+		Sql0 = "select id, sms_sign from merchants"
+		    " where id=" ++ ?to_s(Merchant)
+		    ++ " and sms_sign=\'" ++ ?to_s(SignName) ++ "\'",
+		case ?sql_utils:execute(s_read, Sql0) of
+		    {ok, []} -> 
+			Sql = "update merchants set sms_sign=\'" ++ ?to_s(SignName) ++ "\'"
+			    ++ " where id=" ++ ?to_s(Merchant),
+			?sql_utils:execute(write, Sql, Merchant);
+		    {ok, _SMS} ->
+			{error, ?err(sms_sign_exist, Merchant)};
+		    Error ->
+			Error
 
-	    %% case httpc:request(
-	    %% 	   post, {?ZZ_SMS_SIGN ++ "/signatureAdd",
-	    %% 		  [], [], Body}, [], []) of
-	    %% 	{ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
-	    %% 	    ?DEBUG("Reply ~ts", [Reply]),
-	    %% 	    {struct, Result} = mochijson2:decode(Reply), 
-	    %% 	    ?DEBUG("sms result ~p", [Result]),
-	    %% 	    case ?v(<<"status">>, Result) of
-	    %% 		<<"success">> ->
-	    %% 		    Sql = "update merchants set sms_sign=\'" ++ ?to_s(SignName) ++ "\'"
-	    %% 			++ " where id=" ++ ?to_s(Merchant),
-	    %% 		    Reply = ?sql_utils:execute(write, Sql, Merchant),
-	    %% 		    {reply, Reply, State};
-	    %% 		_ ->
-	    %% 		    ?INFO("add sms sign failed: ~ts", [?v(<<"msg">>, Result)]),
-	    %% 		    {error, {failed_to_add_sms_sign, ?v(<<"code">>, Result)}}
-	    %% 	    end;
-	    %% 	{error, Reason} ->
-	    %% 	    {error, {http_failed, Reason}}
-	    %% end;
-	    Sql = "update merchants set sms_sign=\'" ++ ?to_s(SignName) ++ "\'"
-		++ " where id=" ++ ?to_s(Merchant),
-	    Reply = ?sql_utils:execute(write, Sql, Merchant),
-	    {reply, Reply, State}; 
-	{ok, _SMS} ->
-	    {reply, {error, ?err(sms_sign_exist, Merchant)}, State}; 
-	Error ->
-	    {reply, Error, State}
-    end;
+		end;
+	    1 ->
+		Sql0 = "select id, sms_sign from shops"
+		    " where id=" ++ ?to_s(Shop)
+		    ++ " and sms_sign=\'" ++ ?to_s(SignName) ++ "\'",
+		case ?sql_utils:execute(s_read, Sql0) of
+		    {ok, []} -> 
+			Sql = "update shops set sms_sign=\'" ++ ?to_s(SignName) ++ "\'"
+			    ++ " where id=" ++ ?to_s(Shop),
+			?sql_utils:execute(write, Sql, Merchant);
+		    {ok, _SMS} ->
+			{error, ?err(sms_sign_exist, Merchant)};
+		    Error ->
+			Error
+
+		end
+	end, 
+    {reply, Reply, State};
 
 handle_call({charge_sms, Merchant, Balance}, _From, State) ->
     Sql = "update merchants set balance=balance+" ++ ?to_s(Balance)
 	++ " where id=" ++ ?to_s(Merchant),
 
     Reply = ?sql_utils:execute(write, Sql, Merchant),
+    {reply, Reply, State};
+
+handle_call(list_shop, _From, State) ->
+    Sql = "select a.id"
+	", a.name"
+	", a.address"
+	", a.sms_sign"
+	", a.merchant as merchant_id"
+	", a.entry_date"
+	
+	", b.name as merchant"
+	", b.sms_sign as sign2"
+	" from shops a, merchants b"
+	" where a.merchant=b.id"
+	" order by a.merchant",
+    Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
 handle_call(_Request, _From, State) ->

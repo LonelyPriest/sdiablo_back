@@ -464,7 +464,8 @@ action(Session, Req, {"new_threshold_card_sale", Id}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     CardRule = ?v(<<"rule">>, Payload, -1),
     Mobile   = ?v(<<"mobile">>, Payload),
-    Shop     = ?v(<<"shop_name">>, Payload),
+    %% Shop     = ?v(<<"shop_name">>, Payload),
+    ShopId     = ?v(<<"shop">>, Payload),
     case 
 	case ?to_i(CardRule) of
 	    ?INVALID_OR_EMPTY ->
@@ -502,7 +503,7 @@ action(Session, Req, {"new_threshold_card_sale", Id}, Payload) ->
 			   ?succ(new_threshold_card_sale, RSN),
 			   [{<<"rsn">>, ?to_b(RSN)}, {<<"sms_code">>, 0}]);
 		    1 ->
-			{SMSCode, _} = ?notify:sms(swiming, Merchant, Mobile, {Shop, 1, LeftSwiming, Expire}),
+			{SMSCode, _} = ?notify:sms(swiming, Merchant, Mobile, {ShopId, 1, LeftSwiming, Expire}),
 			?utils:respond(200,
 				       Req,
 				       ?succ(new_recharge, RSN),
@@ -624,10 +625,10 @@ action(Session, Req, {"new_recharge"}, Payload) ->
     ?DEBUG("new_recharge with session ~p, payload ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
     ShopId = ?v(<<"shop">>, Payload),
-    ShopName = case ?w_user_profile:get(shop, Merchant, ShopId) of
-		   {ok, []} -> ShopId;
-		   {ok, [{Shop}]} -> ?v(<<"name">>, Shop)
-	       end,
+    %% {ShopName, ShopSign} = case ?w_user_profile:get(shop, Merchant, ShopId) of
+    %% 			       {ok, []} -> ShopId;
+    %% 			       {ok, [{Shop}]} -> {?v(<<"name">>, Shop), ?v(<<"sign">>, Shop, [])}
+    %% 	       end,
 
     ChargeId    = ?v(<<"charge">>, Payload),
     case ?w_user_profile:get(charge, Merchant, ChargeId) of
@@ -644,7 +645,7 @@ action(Session, Req, {"new_recharge"}, Payload) ->
 				?utils:respond(200, Req, ?succ(new_recharge, SN), [{<<"sms_code">>, 0}]);
 			    1 ->
 				{SMSCode, _} =
-				    ?notify:sms_notify(Merchant, {ShopName, Mobile, 0, CBalance, Balance, Score}),
+				    ?notify:sms_notify(Merchant, {ShopId, Mobile, 0, CBalance, Balance, Score}),
 				?utils:respond(200,
 					       Req,
 					       ?succ(new_recharge, SN),
@@ -1042,7 +1043,7 @@ action(Session, Req, {"gift_ticket"}, Payload) ->
     WithRSN         = ?v(<<"rsn">>, Payload, []),
 
     ShopId   = ?v(<<"shop">>, Payload),
-    ShopName = ?v(<<"shop_name">>, Payload),
+    %% ShopName = ?v(<<"shop_name">>, Payload),
 
     GiftFun =
 	fun() ->
@@ -1063,7 +1064,7 @@ action(Session, Req, {"gift_ticket"}, Payload) ->
 				    {SMSCode, _} = 
 					?notify:sms(
 					   ticket,
-					   {Merchant, ShopName, RetailerName, RetailerPhone},
+					   {Merchant, ShopId, RetailerName, RetailerPhone},
 					   {Balance, Count, MinEffect}),
 				    ?utils:respond(
 				       200, Req, ?succ(new_ticket_plan, RetailerId),

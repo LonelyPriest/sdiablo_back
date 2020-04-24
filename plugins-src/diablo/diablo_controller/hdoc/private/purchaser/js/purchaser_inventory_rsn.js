@@ -1205,7 +1205,6 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
 		{templates: $scope.templates,
 		 check_only: stockUtils.check_select_only});
 	}
-	
     };
     
     $scope.export_to = function() {

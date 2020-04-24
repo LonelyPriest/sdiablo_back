@@ -45,8 +45,9 @@
 		    <th>区域</th>
 		    <th>类型</th>
 		    <!-- <th x-ng-show="authen_list_repo">所属仓库</th> -->
-		    <th>开张日期</th>
+		    <th>开张日期</th> 
 		    <th>创建日期</th>
+		    <th>短信鉴名</th>
 		    <th>微信群</th>
 		    <th>收款码</th>
 		    <th>操作</th>
@@ -93,6 +94,7 @@
 		    
 		    <td>{{shop.open_date}}</td>
 		    <td>{{shop.entry_date}}</td>
+		    <td>{{shop.sms_sign}}</td>
 		    <td><image x-ng-show="shop.bcode_friend"
 			       class="img-responsive img-thumbnail"
 			       ng-src="{{shop.bcode_friend}}"></image></td>
@@ -117,9 +119,9 @@
 		      <button class="btn diablo-button btn-warning"
 			      x-ng-click="edit_shop(shop)">修改
 			<i class="glyphicon glyphicon-edit"></i></button>
-		      <button class="btn diablo-button red"
-			      x-ng-click="delete_shop(shop)">删除
-			<i class="glyphicon glyphicon-erase"></i></button>
+		      <!-- <button class="btn diablo-button red" -->
+		      <!-- 	      x-ng-click="delete_shop(shop)">删除 -->
+		      <!-- 	<i class="glyphicon glyphicon-erase"></i></button> -->
 		    </td>
 
 		  </tr>
