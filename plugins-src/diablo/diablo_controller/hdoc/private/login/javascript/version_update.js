@@ -1,5 +1,11 @@
 var version_update = function(){
     var updates = [
+	{date: "2020-04-25",
+	 content:
+	 ["次卡充值时，消费次数可修改，以避免次卡充值方案过多",
+	  "库存移仓增加草稿，以避免移仓数据丢失"
+	 },
+	
 	{date: "2020-04-19",
 	 content:
 	 ["增加需按年领取的会员礼品",

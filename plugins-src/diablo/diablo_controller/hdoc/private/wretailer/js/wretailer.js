@@ -427,12 +427,13 @@ function wretailerDetailCtrlProvide(
 		    } else {
 			return 0;
 		    }
-		} else if (diablo_theoretic_charge === promotion.rule_id) {
-		    return retailerUtils.to_integer(promotion.cstime);
-		} else if (diablo_balance_limit_charge === promotion.rule_id) {
-		    return retailerUtils.to_integer(promotion.sbalance);
 		}
-		return 0;
+		// else if (diablo_theoretic_charge === promotion.rule_id) {
+		//     return retailerUtils.to_integer(promotion.cstime);
+		// } else if (diablo_balance_limit_charge === promotion.rule_id) {
+		//     return retailerUtils.to_integer(promotion.sbalance);
+		// }
+		return retailerUtils.to_integer(params.sbalance);
 		// else if (diablo_times_charge === promotion.rule_id) {
 		//     return Math.floor(charge_balance / promotion.xtime);
 		// } else {
@@ -442,7 +443,8 @@ function wretailerDetailCtrlProvide(
 
 	    var ctime, stime, goods;
 	    if (promotion.rule_id === diablo_theoretic_charge) {
-		ctime = retailerUtils.to_integer(promotion.ctime) + retailerUtils.to_integer(promotion.cstime);
+		// ctime = retailerUtils.to_integer(promotion.ctime) + retailerUtils.to_integer(promotion.cstime);
+		ctime = retailerUtils.to_integer(params.ctime);
 		goods = params.goods.filter(function(g) {
 		    return angular.isDefined(g.select) && g.select;
 		})
@@ -560,6 +562,7 @@ function wretailerDetailCtrlProvide(
 		 goods: card_goods,
 		 card: 0,
 		 wxin: 0,
+		 ctime: 0, 
 		 sbalance: 0,
 		 stime:  $.now(),
 		 period: undefined,

@@ -1078,7 +1078,8 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
     Cash     = ?v(<<"cash">>, Attrs, 0),
     Card     = ?v(<<"card">>, Attrs, 0),
     Wxin     = ?v(<<"wxin">>, Attrs, 0),
-    CBalance = ?to_i(Cash) + ?to_i(Card) + ?to_i(Wxin), 
+    CBalance = ?to_i(Cash) + ?to_i(Card) + ?to_i(Wxin),
+    CTime    = ?v(<<"ctime">>, Attrs, 0), 
     SBalance = ?v(<<"send_balance">>, Attrs, 0),
     Goods    = ?v(<<"good">>, Attrs, []),
 
@@ -1115,10 +1116,24 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 
 	    RechargeDetailSql =
 		fun(CardNo, EndDate) ->
-			"insert into w_charge_detail(rsn, csn"
-			    ", merchant, shop, employ, cid, retailer"
-			    ", ledate, lbalance, cbalance, sbalance"
-			    ", cash, card, wxin, stock, comment, entry_date) values("
+			"insert into w_charge_detail(rsn"
+			    ", csn"
+			    ", merchant"
+			    ", shop"
+			    ", employ"
+			    ", cid"
+			    ", retailer"
+			    ", ledate"
+			    ", lbalance"
+			    ", cbalance"
+			    ", ctime" 
+			    ", sbalance"
+			    ", cash"
+			    ", card"
+			    ", wxin"
+			    ", stock"
+			    ", comment"
+			    ", entry_date) values("
 			    ++ "\'" ++ ?to_s(SN) ++ "\',"
 			    ++ "\'" ++ ?to_s(CardNo) ++ "\',"
 			    ++ ?to_s(Merchant) ++ ","
@@ -1128,7 +1143,8 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 			    ++ ?to_s(Retailer) ++ ","
 			    ++ "\'" ++ format_date(EndDate) ++ "\',"
 			    ++ ?to_s(CurrentBalance) ++ ","
-			    ++ ?to_s(CBalance) ++ "," 
+			    ++ ?to_s(CBalance) ++ ","
+			    ++ ?to_s(CTime) ++ "," 
 			    ++ ?to_s(SBalance) ++ ","
 			    ++ ?to_s(Cash) ++ ","
 			    ++ ?to_s(Card) ++ ","
@@ -1207,11 +1223,18 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 		    %% ?w_user_profile:update(retailer, Merchant),
 		    {reply, Reply, State};
 		false  ->
-		    CTime       = ?v(<<"ctime">>, Attrs, -1),
 		    StartDate   = ?v(<<"stime">>, Attrs, ?INVALID_DATE),
 		    Period      = ?v(<<"period">>, Attrs, 0), 
 
-		    Sql01 = "select id, csn, retailer, ctime, edate, cid, rule, deleted from w_card"
+		    Sql01 = "select id"
+			", csn"
+			", retailer"
+			", ctime"
+			", edate"
+			", cid"
+			", rule"
+			", deleted"
+			" from w_card"
 			" where merchant=" ++ ?to_s(Merchant)
 			++ " and retailer=" ++ ?to_s(Retailer)
 			++ " and cid=" ++ ?to_s(ChargeId),
@@ -1299,7 +1322,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					 ?BALANCE_LIMIT_CHARGE ->
 					     ?to_s(CBalance + SBalance);
 					 _ ->
-					     ?to_s(CTime) 
+					     ?to_s(CTime + SBalance)
 				     end ++ ","
 				  ++ "\'" ++ format_date(Year, Month, Date) ++ "\',"
 				  ++ "\'" ++ format_date(EndDate) ++ "\',"
@@ -1354,7 +1377,9 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				 case Rule of
 				     ?THEORETIC_CHARGE ->
 					 case HasDeleted of
-					     ?NO -> "update w_card set ctime=ctime+" ++ ?to_s(CTime);
+					     ?NO ->
+						 "update w_card set ctime=ctime+"
+						     ++ ?to_s(CTime + SBalance);
 					     ?YES ->
 						 "update w_card set ctime=" ++ ?to_s(CTime)
 						     ++ ", deleted=" ++ ?to_s(?NO)
@@ -1503,7 +1528,8 @@ handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo, ChargePromotio
 		    %% ?DEBUG("ChargeId ~p", [ChargeId]),
 		    case Rule of
 			?THEORETIC_CHARGE ->
-			    CTime = ?v(<<"ctime">>, ChargePromotion),
+			    %% CTime = ?v(<<"ctime">>, ChargePromotion),
+			    CTime = ?v(<<"ctime">>, RechargeInfo),
 			    STime = ?v(<<"sbalance">>, RechargeInfo),
 			    %% ?DEBUG("CTime ~p, STime ~p", [CTime, STime]),
 			    CardGoods = 
@@ -1583,7 +1609,7 @@ handle_call({list_recharge, Merchant, Conditions}, _From, State) ->
 	", a.employ as employee_id"
 	", a.cid"
 	", a.retailer as retailer_id"
-	", a.lbalance, a.cbalance, a.sbalance, a.cash, a.card, a.wxin"
+	", a.lbalance, a.cbalance, a.ctime, a.sbalance, a.cash, a.card, a.wxin"
 	", a.comment, a.entry_date"
 	
 	", b.name as retailer, b.mobile"
@@ -1612,6 +1638,7 @@ handle_call({get_recharge, Merchant, RechargeId}, _From, State) ->
 	", a.cid"
 	", a.ledate"
 	", a.cbalance"
+	", a.ctime"
 	", a.sbalance"
 	", a.stock"
 	", b.balance"
@@ -1626,8 +1653,9 @@ handle_call({last_recharge, Merchant, RetailerId}, _From, State) ->
 	", a.rsn"
 	", a.cid as charge_id"
 	", a.shop as shop_id"
-	", cbalance"
-	", sbalance"
+	", a.cbalance"
+	", a.ctime"
+	", a.sbalance"
 	", a.retailer as retailer_id" 
 	" from w_charge_detail a"
 	" where a.merchant=" ++ ?to_s(Merchant)
@@ -2332,7 +2360,7 @@ handle_call({filter_charge_detail, Merchant, Conditions, CurrentPage, ItemsPerPa
 	", a.cid"
 	", a.retailer as retailer_id"
 	", a.ledate, a.lbalance"
-	", a.cbalance, a.sbalance, a.cash, a.card, a.wxin"
+	", a.cbalance, a.ctime, a.sbalance, a.cash, a.card, a.wxin"
 	", a.stock" 
 	", a.comment"
 	", a.entry_date"

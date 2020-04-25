@@ -607,7 +607,8 @@
 		    class="form-control"
 		    x-ng-model="params.retailer.select_charge"
 		    x-ng-options="c as c.name for c in charges"
-		    x-ng-change="params.charge=params.retailer.select_charge.charge">
+		    x-ng-change="params.charge=params.retailer.select_charge.charge;
+				 params.ctime=params.retailer.select_charge.ctime">
 	    </select>
 	  </div>
 	</div>
@@ -690,7 +691,7 @@
 		      || params.retailer.select_charge.rule_id===7" class="form-group">
 	  <span class="col-md-3 col-sm-3 col-xs-3 control-label"> 赠送金额</span>
 	  <div class="col-md-8 col-sm-8 col-xs-8">
-	    <input type="text"
+	    <input type="number" step="1"
 		   class="form-control fg-red"
 		   x-ng-edit
 		   x-ng-model="params.sbalance" /> 
@@ -702,10 +703,11 @@
 	    消费次数
 	  </span>
 	  <div class="col-md-8 col-sm-8 col-xs-8">
-	    <input type="text"
+	    <input type="number" step="1"
 		   class="form-control fg-red"
-		   value="{{params.retailer.select_charge.ctime}}"
-		   readonly /> 
+		   x-ng-model="params.ctime"
+		   x-ng-init="params.ctime=params.retailer.select_charge.ctime"
+		   x-ng-edit /> 
 	  </div> 
 	</div>
 
@@ -715,10 +717,11 @@
 	    <input type="number"
 		   step="1"
 		   class="form-control fg-red"
-		   x-ng-model="params.retailer.select_charge.cstime"
+		   x-ng-edit
+		   x-ng-model="params.sbalance"
 		   x-ng-change="params.calc_card_count(params.goods,
-				params.retailer.select_charge.ctime,
-				params.retailer.select_charge.cstime)"
+				params.ctime,
+				params.sbalance)"
 		   x-ng-pattern="pattern.number"/> 
 	  </div> 
 	</div>
@@ -736,8 +739,8 @@
 			  <input id="{{g.id}}" type="checkbox"
 				 x-ng-model="g.select"
 				 x-ng-click="params.calc_card_count(params.goods,
-					     params.retailer.select_charge.ctime,
-					     params.retailer.select_charge.cstime)"/>
+					     params.ctime,
+					     params.sbalance)"/>
 			  <label for="{{g.id}}"></label>
 			</div>
 		      </td>

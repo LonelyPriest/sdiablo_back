@@ -740,6 +740,11 @@ update w_inventory_transfer_detail_101 a inner join w_inventory_good_101 b on a.
 --2020-04-24
 alter table shops add column sms_sign VARCHAR(32) not null default '' after bcode_pay;
 
+--2020-04-25
+alter table w_charge_detail add column ctime integer not null default 0 after cbalance;
+update w_charge_detail a inner join \
+(select id, rule, ctime from w_charge where merchant=22 and rule=2) b on a.cid=b.id set a.ctime=b.ctime;
+
 --2020-03-27
 alter table w_sale add column account INTEGER default -1 after rsn;
 

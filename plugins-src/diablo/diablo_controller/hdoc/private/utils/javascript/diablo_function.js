@@ -258,6 +258,7 @@ var diablo_dkey_stock_price = 9;
 var diablo_dkey_stock_in  = 8;
 var diablo_dkey_stock_fix = 7;
 var diablo_dkey_stock_order = 6;
+var diablo_dkey_stock_transfer = 5;
 
 /*
  * charge type

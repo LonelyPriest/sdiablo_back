@@ -86,6 +86,7 @@
 		    <th>现金</th>
 		    <th>刷卡</th>
 		    <th>微信</th>
+		    <th class="info">购买次数</th>
 		    <th class="info">赠送金额/次数</th>
 		    <th class="danger">累计余额</th>
 		    <th>货品</th> 
@@ -116,6 +117,12 @@
 		    <td class="bg-magenta">{{c.cash}}</td>
 		    <td class="bg-orange">{{c.card}}</td>
 		    <td class="bg-teal">{{c.wxin}}</td>
+		    <td>
+		      <div x-ng-switch on="c.charge.rule_id">
+			<span x-ng-switch-when=2>{{c.ctime}}</span> 
+			<span x-ng-switch-default>-</span>
+		      </div>
+		    </td>
 		    <td>{{c.sbalance}}</td>
 		    <td>{{c.accbalance}}</td>
 		    <td>

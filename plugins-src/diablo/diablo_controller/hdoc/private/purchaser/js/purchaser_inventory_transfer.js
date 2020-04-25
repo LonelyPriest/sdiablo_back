@@ -4,7 +4,7 @@
 function purchaserInventoryTransferCtrlProvide (
     $scope, $q, $timeout, dateFilter, diabloPattern, diabloUtilsService,
     diabloFilter, diabloNormalFilter, 
-    purchaserService, user, filterShop, filterFirm, filterEmployee,
+    localStorageService, purchaserService, user, filterShop, filterFirm, filterEmployee,
     filterSizeGroup, filterColor, base){
     $scope.response_title = "库存移仓"; 
     // console.log(user); 
@@ -28,7 +28,7 @@ function purchaserInventoryTransferCtrlProvide (
     $scope.focus             = {barcode: false, style_number:false, transfer: false};
 
     $scope.go_back = function(){
-	diablo_goto_page("#inventory/inventory_transfer_detail");
+	diablo_goto_page("#inventory/inventory_transfer_from_detail");
     };
 
     $scope.pattern = {discount:diabloPattern.discount};
@@ -102,6 +102,8 @@ function purchaserInventoryTransferCtrlProvide (
 	$scope.get_valid_employee();
 	$scope.init_base_setting($scope.select.shop.id); 
 	$scope.get_transfer_shop();
+
+	sDraft.change_key(undefined, $scope.select.shop.id, $scope.select.employee.id);
 	$scope.focus_good_or_barcode();
 	// if ($scope.base_settings.q_prompt === diablo_frontend){
 	//     $scope.get_all_prompt_inventory();
@@ -160,6 +162,75 @@ function purchaserInventoryTransferCtrlProvide (
 	event.stopPropagation();
 	$scope.isOpened = true;
     };
+
+    $scope.get_employee = function(){
+	var select = stockUtils.get_login_employee(
+	    $scope.select.shop.id, user.loginEmployee, filterEmployee); 
+	$scope.select.employee = select.login;
+	$scope.employees = select.filter; 
+    };
+    $scope.get_employee();
+
+    /*
+     * draft
+     */
+    var gen_draft = function() {
+	return new stockDraft(
+	    localStorageService,
+	    undefined,
+	    $scope.select.shop.id,
+	    $scope.select.employee.id,
+	    diablo_dkey_stock_transfer)
+    };
+
+    var sDraft = gen_draft();
+    $scope.disable_draft = function(){
+	if (sDraft.keys().length === 0) return true; 
+	if ($scope.inventories.length !== 1) return true; 
+	return false;
+    };
+
+    
+    $scope.list_draft = function(){
+	var draft_filter = function(keys){
+	    return keys.map(function(k){
+		var p = k.split("-");
+		return {sn:k,
+			shop:diablo_get_object(parseInt(p[1]), $scope.shops),
+			employee:diablo_get_object(p[2], filterEmployee)
+		       }
+	    });
+	};
+
+	var select = function(draft, resource){
+	    // console.log(draft);
+	    $scope.select.employee = diablo_get_object(draft.employee.id, filterEmployee);
+	    $scope.select.shop = diablo_get_object(draft.shop.id, $scope.shops);
+	    $scope.get_employee();
+	    // $scope.select.frim = diablo_get_object(draft.firm.id, $scope.firms);
+	    $scope.inventories = angular.copy(resource);
+	    // for (var i=0, l=$scope.inventories.length; i<l; i++){
+	    // 	var inv = $scope.inventories[i];
+	    // 	if (diablo_invalid_firm !== inv.firm_id){
+	    // 	    $scope.select.firm = diablo_get_object(inv.firm_id, $scope.firms);
+	    // 	    break;
+	    // 	}
+	    // }
+	    
+	    // $scope.inventories.unshift({$edit:false, $new:true});
+	    $scope.disable_refresh = false;
+	    $scope.re_calculate();
+	    $scope.focus_by_element(); 
+	};
+
+	sDraft.select(diabloUtilsService, "inventory-transfer-draft.html", draft_filter, select); 
+    };
+
+    // list first draft
+    // console.log(sDraft); 
+    if (sDraft.keys().length !== 0) {
+	$scope.list_draft();
+    }
 
     // $scope.today = function(){
     // 	return now;
@@ -602,6 +673,7 @@ function purchaserInventoryTransferCtrlProvide (
 		    // order
 		    $scope.inventories.unshift(inv); 
 		    inv.order_id = $scope.inventories.length;
+		    sDraft.save($scope.inventories.filter(function(r){return !r.$new}));
 		    
 		    $scope.row_change_xdiscount(inv); 
 		    $scope.re_calculate();
@@ -734,6 +806,7 @@ function purchaserInventoryTransferCtrlProvide (
 	}
 
 	$scope.re_calculate();
+	sDraft.save($scope.inventories.filter(function(r){return !r.$new}));
 	$scope.focus_by_element();
 	// $scope.focus_good_or_barcode();
     };
@@ -780,6 +853,8 @@ function purchaserInventoryTransferCtrlProvide (
 		
 		$scope.row_change_xdiscount(inv);
 		$scope.re_calculate();
+		sDraft.save($scope.inventories.filter(function(r){return !r.$new}));
+		
 		$scope.focus_by_element();
 		
 		if (angular.isDefined(updateCallback) && angular.isFunction(updateCallback))
@@ -812,7 +887,8 @@ function purchaserInventoryTransferCtrlProvide (
 	    $scope.row_change_xdiscount(inv);
 	    $scope.re_calculate();
 	    console.log(inv);
-	    // $scope.focus_good_or_barcode();
+	    // $scope.focus_good_or_barcode()
+	    sDraft.save($scope.inventories.filter(function(r){return !r.$new}));
 	    $scope.focus_by_element();
 	} 
 	// reset

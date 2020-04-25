@@ -1455,6 +1455,7 @@ create table w_charge_detail(
     ledate          DATE default 0,   -- last expire date where charge rule = [3, 4, 5] 
     lbalance        INTEGER not null default 0, -- last balance
     cbalance        INTEGER not null default 0, -- charge balance
+    ctime           INTEGER not null default 0, -- consume count of threshold card 
     sbalance        INTEGER not null default 0, -- send balance
     cash            INTEGER not null default 0, -- cash
     card            INTEGER not null default 0, -- card

@@ -11,15 +11,22 @@
 	    <button type="button" class="btn red"
 		    x-ng-click="go_back()">返回
 	      <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
-	    <button x-ng-if="stock_right.transfer_w_stock_fast"
-		    type="button"
-		    class="btn blue purple-stripe"
-		    x-ng-click="transfer_by_shop()">整店
-	      <i class="glyphicon glyphicon-map-marker"></i></button>
+	    <!-- <button x-ng-if="stock_right.transfer_w_stock_fast" -->
+	    <!-- 	    type="button" -->
+	    <!-- 	    class="btn yellow purple-stripe" -->
+	    <!-- 	    x-ng-click="transfer_by_shop()">整店 -->
+	    <!--   <i class="glyphicon glyphicon-map-marker"></i></button> -->
+
+	    <button class="btn blue purple-stripe" 
+		    x-ng-disabled="disable_draft()"
+		    x-ng-click="list_draft()">草稿
+	      <i class="glyphicon glyphicon-send"></i></button>
+	    
 	    <button class="btn btn-success purple-stripe"
 		    x-ng-disabled="disable_save()"
 		    x-ng-click="save_inventory()">保存
 	      <i class="glyphicon glyphicon-save"></i></button>
+	    
 	    <button class="btn btn-danger purple-stripe"
 		    x-ng-disabled="disable_refresh()"
 		    x-ng-click="refresh()">下一单
@@ -577,6 +584,49 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary" x-ng-click="ok()">保存</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="inventory-transfer-draft.html">
+  <div class="modal-body">
+    <div class="table-responsive">
+      <table class="table table-bordered
+		    table-striped table-condensed table-advanced">
+	<thead>
+	  <tr>
+	    <th></th>
+	    <th>单号</th>
+	    <!-- <th>厂商</th> -->
+	    <th>店铺</th>
+	    <th>店员</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr x-ng-repeat="d in params.drafts">
+	    <td class="vert-align">
+	      <div class="checkbox checkbox-danger checkbox-circle">
+		<input id={{d.sn}}
+		       type="checkbox"
+		       x-ng-model="d.select"
+		       x-ng-click="params.select(params.drafts, d)"/>
+		<label for={{d.sn}}></label>
+	      </div>
+	    </td>
+	    <td>{{d.sn}}</td>
+	    <!-- <td>{{d.firm.name}}</td> -->
+	    <td>{{d.shop.name}}</td> 
+	    <td>{{d.employee.name}}</td>
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="!params.valid(params.drafts)"
+	    x-ng-click="ok()">确定</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
 </script>
