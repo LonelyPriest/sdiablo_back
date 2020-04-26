@@ -704,6 +704,9 @@
 		   class="form-control fg-red"
 		   x-ng-model="params.ctime"
 		   x-ng-init="params.ctime=params.retailer.select_charge.ctime"
+		   x-ng-change="params.calc_card_count(params.goods,
+				params.ctime,
+				params.sbalance)"
 		   x-ng-edit /> 
 	  </div> 
 	</div>
@@ -808,7 +811,8 @@
 
   <div class="modal-footer"> 
     <button class="btn btn-primary"
-	    x-ng-disabled="cForm.$invalid || (params.retailer.select_charge.rule_id===2 && !params.check_good(params.goods))"
+	    x-ng-disabled="cForm.$invalid || (params.retailer.select_charge.rule_id===2
+			   && !params.check_good(params.goods, params.ctime))"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>

@@ -441,13 +441,17 @@ function wretailerDetailCtrlProvide(
 		// }
 	    }();
 
-	    var ctime, stime, goods;
+	    var ctime, stime, goods, gtime = 0;
 	    if (promotion.rule_id === diablo_theoretic_charge) {
 		// ctime = retailerUtils.to_integer(promotion.ctime) + retailerUtils.to_integer(promotion.cstime);
 		ctime = retailerUtils.to_integer(params.ctime);
 		goods = params.goods.filter(function(g) {
 		    return angular.isDefined(g.select) && g.select;
-		})
+		});
+
+		for (var i=0, l=goods.length; i<l; i++) {
+		    gtime += retailerUtils.to_integer(goods[i].count);
+		}
 	    }
 		
 
@@ -456,6 +460,11 @@ function wretailerDetailCtrlProvide(
 	    if (diablo_giving_charge === promotion.rule_id
 		&& send_balance !== 0 && send_balance !== retailerUtils.to_integer(params.sbalance)) {
 		dialog.set_error("会员充值", 2172);
+	    } else if (diablo_theoretic_charge === promotion.rule_id
+		       && (retailerUtils.to_integer(ctime) === 0
+			   || (angular.isDefined(goods) && goods.length === 0)
+			   || retailerUtils.to_integer(gtime) === 0)) {
+		dialog.set_error("会员充值", 2173);
 	    } else {
 		wretailerService.new_recharge({
 		    shop:           params.retailer.select_shop.id, 
@@ -593,14 +602,18 @@ function wretailerDetailCtrlProvide(
 			 goods[last_select].count += all_times % good_count;
 		     }
 		 }, 
-		 check_good: function(goods) {
+		 check_good: function(goods, ctime) {
 		     var valid = false;
-		     for (var i=0, l=goods.length; i<l; i++) {
-			 if (angular.isDefined(goods[i].select) && goods[i].select) {
-		     	     valid = true;
-			     break;
-		     	 }
-		     }
+		     if (ctime === 0) {
+			 valid = false;
+		     } else {
+			 for (var i=0, l=goods.length; i<l; i++) {
+			     if (angular.isDefined(goods[i].select) && goods[i].select) {
+		     		 valid = true;
+				 break;
+		     	     }
+			 }
+		     } 
 		     return valid;
 		 }
 		}
