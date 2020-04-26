@@ -2412,6 +2412,7 @@ function wsaleNewProvide(
 	    || $scope.select.aliPay > diablo_max_sale_money
 	    || $scope.select.card > diablo_max_sale_money) {
 	    diabloUtilsService.set_error("销售开单", 2197);
+	    $scope.has_saved = false;
 	    return;
 	}
 

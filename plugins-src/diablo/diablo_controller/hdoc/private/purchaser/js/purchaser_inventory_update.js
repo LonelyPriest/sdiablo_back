@@ -687,8 +687,15 @@ function purchaserInventoryNewUpdateCtrlProvide (
 			+ add.order_id + "]：" + purchaserService.error[2092]
 		    	+ "款号：" + add.style_number + "！！", 
 		    undefined);
+		$scope.has_saved = false;
 		return;
 	    };
+
+	    if (add.update_directory) {
+		diabloUtilsService.set_error("采购单编辑", 2198);
+		$scope.has_saved = false;
+		return; 
+	    }
 	    
 	    added.push({
 		style_number   : add.style_number,

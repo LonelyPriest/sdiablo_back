@@ -1,6 +1,6 @@
 
 -- check stock org_price,  inventory and inventory_new_detail
-select a.style_number, a.brand, a.amount, a.org_price, a.nprice, a.nprice*a.amount from (select a.style_number, a.brand, a.amount, a.org_price, b.org_price as nprice from (select style_number, brand, amount, org_price from w_inventory where merchant=3 and org_price=0) a, (select style_number, brand, org_price from w_inventory_new_detail where merchant=3) b where a.style_number=b.style_number and a.brand=b.brand and a.org_price != b.org_price) a;
+select a.style_number, a.brand, a.amount, a.org_price, a.nprice, a.nprice*a.amount from (select a.style_number, a.brand, a.amount, a.org_price, b.org_price as nprice from (select style_number, brand, amount, org_price from w_inventory where merchant=43 and org_price=0) a, (select style_number, brand, org_price from w_inventory_new_detail where merchant=43) b where a.style_number=b.style_number and a.brand=b.brand and a.org_price != b.org_price) a;
 
 select a.style_number, a.brand, a.amount, a.org_price, b.org_price as nprice from (select style_number, brand, amount, org_price from w_inventory where merchant=3 and org_price=0) a, (select style_number, brand, org_price from w_inventory_new_detail where merchant=3) b where a.style_number=b.style_number and a.brand=b.brand and a.org_price!=b.org_price;
 
@@ -41,8 +41,8 @@ left join (select a.rsn, a.amount from (select rsn, sum(amount) as amount from w
 */
 select x.rsn, x.total, x.amount from \
 (select a.rsn, b.style_number, b.brand, a.total, b.amount from w_inventory_new a left join \
-(select rsn, style_number, brand, sum(amount) as amount from w_inventory_new_detail where rsn like 'm-23-s-93-%' group by rsn) b on \
-a.rsn=b.rsn where a.rsn like 'm-23-s-93-%') x where x.total!=x.amount;
+(select rsn, style_number, brand, sum(amount) as amount from w_inventory_new_detail where rsn like 'm-43-s-146-%' group by rsn) b on \
+a.rsn=b.rsn where a.rsn like 'm-43-s-146-%') x where x.total!=x.amount;
 
 select a.rsn, a.style_number, a.brand, a.total, b.amount from \
 (select rsn, style_number, brand, sum(total) as total from w_inventory_new_detail_amount where rsn like 'm-23-s-93-%' group by rsn) a left join \
@@ -80,11 +80,11 @@ set a.discount=b.discount;
 
 -- check stock
 select a.style_number, a.brand, a.amount, b.total from w_inventory a left join \
-(select style_number, brand, sum(total) as total from w_inventory_amount a where a.merchant=101 and shop=281 group by a.style_number, a.brand) b \
-on a.style_number=b.style_number and a.brand=b.brand where a.merchant=101 and a.shop=281 and a.amount!=b.total;
+(select style_number, brand, sum(total) as total from w_inventory_amount a where a.merchant=43 and shop=146 group by a.style_number, a.brand) b \
+on a.style_number=b.style_number and a.brand=b.brand where a.merchant=43 and a.shop=146 and a.amount!=b.total;
 
-select a.style_number, a.brand, a.total , b.amount from (select style_number, brand, sum(total) as total from w_inventory_amount where merchant=15 and shop=53 group by style_number, brand) a \
-left join (select style_number, brand, amount from w_inventory where merchant=15 and shop=53) b \
+select a.style_number, a.brand, a.total , b.amount from (select style_number, brand, sum(total) as total from w_inventory_amount where merchant=43 and shop=146 group by style_number, brand) a \
+left join (select style_number, brand, amount from w_inventory where merchant=43 and shop=146) b \
 on a.style_number=b.style_number and a.brand=b.brand;
 
 select a.merchant, a.shop, a.style_number, a.brand, a.amount, b.total from w_inventory a \

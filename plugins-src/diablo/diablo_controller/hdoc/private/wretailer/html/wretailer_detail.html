@@ -628,8 +628,7 @@
 		     name="charge"
 		     placeholder="请输入充值金额"
 		     x-ng-model="params.charge"
-		     x-ng-init="params.charge=params.retailer.select_charge.charge"
-		     x-ng-pattern="params.pattern.number"/>
+		     x-ng-init="params.charge=params.retailer.select_charge.charge" />
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div> 
 	    <div ng-show="cForm.charge.$invalid && !cForm.charge.$pristine"> 
@@ -652,8 +651,7 @@
 		     ng-edit
 		     name="card"
 		     placeholder="请输入刷卡金额"
-		     x-ng-model="params.card"
-		     x-ng-pattern="params.pattern.number"/>
+		     x-ng-model="params.card" />
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	    <div ng-show="cForm.card.$invalid && !cForm.card.$pristine"> 
@@ -676,8 +674,7 @@
 		     ng-edit
 		     name="wxin"
 		     placeholder="请输入刷卡金额"
-		     x-ng-model="params.wxin"
-		     x-ng-pattern="params.pattern.number"/>
+		     x-ng-model="params.wxin" />
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	    <div ng-show="cForm.wxin.$invalid && !cForm.wxin.$pristine"> 

@@ -1391,7 +1391,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				     ?QUARTER_UNLIMIT_CHARGE ->
 					 NextQuarter =
 					     date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date}),
-					 "update w_card set edate=\'" ++ format_date(NextQuarter)
+					 "update w_card set edate=\'" ++ format_date(NextQuarter) ++ "\'"
 					     ++ case HasDeleted of
 						    ?YES -> ", deleted=" ++ ?to_s(?NO);
 						    ?NO -> []

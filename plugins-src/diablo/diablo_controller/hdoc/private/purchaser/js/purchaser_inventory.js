@@ -694,7 +694,7 @@ function purchaserInventoryNewCtrlProvide (
 		path        : add.path,
 		alarm_day   : add.alarm_day,
 		total       : add.total,
-		score       : add.state === 3 ? diablo_invalid : $scope.select.shop.score_id 
+		score       : add.state === 3 && $scope.base_settings.no_score_with_promotion ? diablo_invalid : $scope.select.shop.score_id 
 	    })
 	};
 

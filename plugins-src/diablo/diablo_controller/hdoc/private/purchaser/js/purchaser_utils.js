@@ -97,7 +97,8 @@ var stockUtils = function(){
 		hide_discount:  default_hide(hide.charAt(12)),
 		hide_unit:      default_hide(hide.charAt(13)),
 		hide_barcode:   default_hide(hide.charAt(14)),
-		hide_feather:   default_hide(hide.charAt(15))
+		hide_feather:   default_hide(hide.charAt(15)),
+		no_score_with_promotion: default_hide(hide.charAt(16))
 	    }
 	    
 	},
