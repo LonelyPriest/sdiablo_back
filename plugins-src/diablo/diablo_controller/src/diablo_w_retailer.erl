@@ -1168,7 +1168,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 			    end ++ ","
 			    ++ "\'" ++ ?to_s(Comment) ++ "\'," 
 			    ++ "\'" ++ ?to_s(Entry) ++ "\')"
-		end,
+		end, 
 
 	    case Rule =:= ?GIVING_CHARGE orelse Rule =:= ?TIMES_CHARGE of
 		true ->
@@ -1226,6 +1226,21 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 		    StartDate   = ?v(<<"stime">>, Attrs, ?INVALID_DATE),
 		    Period      = ?v(<<"period">>, Attrs, 0), 
 
+		    ChildTheoreticCardSql =
+			fun(CardSN, CardGood, ConsumeCount) ->
+				"insert into w_child_card(csn"
+				    ", retailer"
+				    ", good, ctime, merchant, shop, entry_date)"
+				    " values("
+				    ++ "\'" ++ ?to_s(CardSN) ++ "\',"
+				    ++ ?to_s(Retailer) ++ ","
+				    ++ ?to_s(CardGood) ++ ","
+				    ++ ?to_s(ConsumeCount) ++ ","
+				    ++ ?to_s(Merchant) ++ ","
+				    ++ ?to_s(Shop) ++ ","
+				    ++ "\'" ++ ?to_s(Entry) ++ "\')"
+			end,
+		    
 		    Sql01 = "select id"
 			", csn"
 			", retailer"
@@ -1282,20 +1297,20 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				       "-",
 				       ?inventory_sn:sn(wretailer_card_sn, Merchant)]),
 
-				ChildTheoreticCardSql =
-				    fun(CardGood, ConsumeCount) ->
-					    "insert into w_child_card(csn"
-						", retailer"
-						", good, ctime, merchant, shop, entry_date)"
-						" values("
-						++ "\'" ++ ?to_s(CardSN) ++ "\',"
-						++ ?to_s(Retailer) ++ ","
-						++ ?to_s(CardGood) ++ ","
-						++ ?to_s(ConsumeCount) ++ ","
-						++ ?to_s(Merchant) ++ ","
-						++ ?to_s(Shop) ++ ","
-						++ "\'" ++ ?to_s(Entry) ++ "\')"
-				    end,
+				%% ChildTheoreticCardSql =
+				%%     fun(CardSN, CardGood, ConsumeCount) ->
+				%% 	    "insert into w_child_card(csn"
+				%% 		", retailer"
+				%% 		", good, ctime, merchant, shop, entry_date)"
+				%% 		" values("
+				%% 		++ "\'" ++ ?to_s(CardSN) ++ "\',"
+				%% 		++ ?to_s(Retailer) ++ ","
+				%% 		++ ?to_s(CardGood) ++ ","
+				%% 		++ ?to_s(ConsumeCount) ++ ","
+				%% 		++ ?to_s(Merchant) ++ ","
+				%% 		++ ?to_s(Shop) ++ ","
+				%% 		++ "\'" ++ ?to_s(Entry) ++ "\')"
+				%%     end,
 				
 				{new_card,
 				 [case Rule of
@@ -1331,12 +1346,13 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				  ++ ?to_s(Merchant) ++ ","
 				  ++ ?to_s(Shop) ++ "," 
 				  ++ "\'" ++ ?to_s(Entry) ++ "\')"]
-				 
+
 				 ++ case Rule of
 					?THEORETIC_CHARGE ->
 					    lists:foldr(
 					      fun({struct, Good}, Acc) ->
 						      [ChildTheoreticCardSql(
+							 CardSN,
 							 ?v(<<"id">>, Good),
 							 ?v(<<"count">>, Good)) | Acc]
 					      end, [], Goods);
@@ -1359,8 +1375,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					_ ->
 					    case HasDeleted of
 						?YES -> ?utils:to_date(date, StartDate);
-						?NO ->
-						    ?utils:big_date(date, StartDate, EndDate)
+						?NO -> ?utils:big_date(date, StartDate, EndDate)
 					    end
 				    end,
 				?DEBUG("Year ~p, Month ~p, Date ~p", [Year, Month, Date]),
@@ -1375,7 +1390,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					 RechargeDetailSql(CardSN, ?utils:to_date(date, EndDate))
 				 end, 
 				 case Rule of
-				     ?THEORETIC_CHARGE ->
+				     ?THEORETIC_CHARGE -> 
 					 case HasDeleted of
 					     ?NO ->
 						 "update w_card set ctime=ctime+"
@@ -1440,14 +1455,30 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					?THEORETIC_CHARGE ->
 					    lists:foldr(
 					      fun({struct, Good}, Acc) ->
+						      GoodId = ?v(<<"id">>, Good), 
 						      GoodCount = ?v(<<"count">>, Good),
-						      GoodId = ?v(<<"id">>, Good),
-						      ["update w_child_card set "
-						       "ctime=ctime+" ++ ?to_s(GoodCount)
-						       ++ " where csn=\'" ++ ?to_s(CardSN) ++ "\'"
-						       ++ " and merchant=" ++ ?to_s(Merchant)
-						       ++ " and retailer=" ++ ?to_s(Retailer)
-						       ++ " and good=" ++ ?to_s(GoodId)|Acc]
+						      case ?sql_utils:execute(
+							   s_read,
+							   "select csn, good, retailer, merchant"
+							   " from w_child_card"
+							   " where csn=\'" ++ ?to_s(CardSN) ++ "\'"
+							   ++ " and retailer=" ++ ?to_s(Retailer)
+							   ++ " and good=" ++ ?to_s(GoodId))
+						      of
+							  {ok, []} ->
+							      [ChildTheoreticCardSql(
+								 CardSN,
+								 GoodId,
+								 GoodCount) | Acc];
+							  {ok, _E} -> 
+							      ["update w_child_card set "
+							       "ctime=ctime+" ++ ?to_s(GoodCount)
+							       ++ " where csn=\'"
+							       ++ ?to_s(CardSN) ++ "\'"
+							       ++ " and merchant=" ++ ?to_s(Merchant)
+							       ++ " and retailer=" ++ ?to_s(Retailer)
+							       ++ " and good=" ++ ?to_s(GoodId)|Acc]
+						      end
 					      end, [], Goods);
 					%% ?BALANCE_LIMIT_CHARGE ->
 					%%     ["update w_retailer set balance=balance+"
