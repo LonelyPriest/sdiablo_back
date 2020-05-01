@@ -742,10 +742,8 @@ function purchaserInventoryNewCtrlProvide (
 		$scope.disable_refresh = false; 
 		diabloUtilsService.response_with_callback(
 		    true, "新增库存", "新增库存成功！！单号：" + state.rsn,
-		    $scope, function(){
-			sDraft.remove();
-			$scope.refresh();
-		    })
+		    undefined,
+		    function(){sDraft.remove(); $scope.refresh()})
 	    } else {
 		diabloUtilsService.response_with_callback(
 	    	    false,

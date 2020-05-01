@@ -478,11 +478,12 @@ function purchaserInventoryTransferCtrlProvide (
 	}).then(function(state){
 	    console.log(state);
 	    if (state.ecode == 0){
+		// delete draft 
 	    	dialog.response_with_callback(
 	    	    true,
 		    "库存转移", "库存转移成功！！单号：" + state.rsn,
 		    undefined,
-		    $scope.refresh);
+		    function() {sDraft.remove(); $scope.refresh()})
 	    } else{
 	    	dialog.response_with_callback(
 	    	    false,

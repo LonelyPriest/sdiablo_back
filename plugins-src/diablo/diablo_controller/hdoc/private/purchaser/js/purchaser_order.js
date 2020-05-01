@@ -49,7 +49,7 @@ function purchaserOrderNewCtrlProvide (
 	return stockUtils.get_prompt_firm(prompt, $scope.firms)};
     
     $scope.today = function(){
-	return $.now();
+	return diablo_now_datetime();
     };
     
     $scope.q_typeahead = function(shopId, base){
@@ -86,11 +86,9 @@ function purchaserOrderNewCtrlProvide (
     
     $scope.refresh = function(){
 	$scope.inventories = [];
-	$scope.inventories.push({$edit:false, $new:true}); 
 	$scope.select.total   = 0;
 	$scope.select.comment = undefined;
 	
-	$scope.select.surplus = 0; 
 	$scope.disable_refresh = true;
 	$scope.has_saved = false;
 
@@ -103,7 +101,6 @@ function purchaserOrderNewCtrlProvide (
 
     // init
     $scope.inventories = [];
-    $scope.inventories.push({$edit:false, $new:true});
     $scope.stock_at_first = undefined; 
 
     $scope.select = {
@@ -151,7 +148,7 @@ function purchaserOrderNewCtrlProvide (
     // console.log(sDraft);
     $scope.disable_draft = function(){
 	if (sDraft.keys().length === 0) return true; 
-	if ($scope.inventories.length !== 1) return true; 
+	if ($scope.inventories.length !== 0) return true; 
 	return false;
     };
     
@@ -169,12 +166,10 @@ function purchaserOrderNewCtrlProvide (
 	};
 
 	var select = function(draft, resource){
-	    // $scope.select.employee = diablo_get_object(draft.employee.id, $scope.employees);
 	    // console.log(draft);
 	    $scope.select.employee = diablo_get_object(draft.employee.id, filterEmployee);
 	    $scope.select.shop = diablo_get_object(draft.shop.id, $scope.shops);
 	    $scope.get_employee();
-	    // $scope.select.frim = diablo_get_object(draft.firm.id, $scope.firms);
 	    $scope.inventories = angular.copy(resource);
 	    for (var i=0, l=$scope.inventories.length; i<l; i++){
 		var inv = $scope.inventories[i];
@@ -184,7 +179,6 @@ function purchaserOrderNewCtrlProvide (
 		}
 	    }
 	    
-	    $scope.inventories.unshift({$edit:false, $new:true});
 	    $scope.disable_refresh = false;
 	    $scope.re_calculate();
 
@@ -261,19 +255,7 @@ function purchaserOrderNewCtrlProvide (
 	    diabloUtilsService,
 	    "新增货品",
 	    $scope.on_select_good_new,
-	    function() {});
-	    
-	    // diabloFilter.get_good_by_barcode(bcode).then(function(result) {
-	    // 	console.log(result);
-	    // 	if (result.ecode === 0) {
-	    // 	    if (!diablo_is_empty(result.data))
-	    // 		$scope.on_select_good_new(result.data);
-	    // 	} else {
-	    // 	    dialog.set_error("新增货品", result.ecode);
-	    // 	}
-	    // });
-	// }
-	
+	    function() {}); 
     };
     
     var copy_select = function(add, src){
@@ -335,7 +317,7 @@ function purchaserOrderNewCtrlProvide (
 	// console.log($scope.inventories); 
 	// has been added
 	var existStock = undefined;
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
 		&& item.brand_id  === $scope.inventories[i].brand_id){
 		existStock = $scope.inventories[i]; 
@@ -351,17 +333,11 @@ function purchaserOrderNewCtrlProvide (
 	    }
 	    
 	    if (item.firm_id !== $scope.inventories[i].firm_id){
-		diabloUtilsService.response_with_callback(
+		diabloUtilsService.response(
 		    false,
 		    "新增定单",
 		    "新增定单失败：" + purchaserService.error[2093],
-		    $scope,
-		    function(){
-			$scope.inventories[0] = {$edit:false, $new:true};
-			if ($scope.tab_active[1].active){
-			    $scope.reset_style_number();
-			}
-		    });
+		    undefined);
 		return;
 	    };
 	}
@@ -377,7 +353,8 @@ function purchaserOrderNewCtrlProvide (
 	// $scope.auto_focus("sale");
 	
 	// add at first allways 
-	$scope.stock_at_first = $scope.inventories[0];
+	// $scope.stock_at_first = $scope.inventories[0];
+	$scope.stock_at_first = {$edit:false, $new:true};
 	copy_select($scope.stock_at_first, item); 
 	console.log($scope.stock_at_first);
 	if (angular.isDefined(existStock)) {
@@ -425,7 +402,7 @@ function purchaserOrderNewCtrlProvide (
      */
     $scope.disable_save = function(){
 	// save one time only
-	return $scope.has_saved || $scope.inventories.length === 1; 
+	return $scope.has_saved || $scope.inventories.length === 0; 
     }; 
     
     $scope.save_inventory = function(){
@@ -448,7 +425,7 @@ function purchaserOrderNewCtrlProvide (
 	$scope.re_calculate();
 	
 	var added = [];
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
 	    var select_firm = stockUtils.invalid_firm($scope.select.firm);
 	    if (diablo_yes === $scope.base_settings.stock_with_firm
@@ -594,7 +571,6 @@ function purchaserOrderNewCtrlProvide (
     
     var add_callback = function(params){
 	// console.log(params);
-	// delete empty
 	var new_amount = [];
 	for(var i=0, l=params.amount.length; i<l; i++){
 	    var amount = params.amount[i]
@@ -634,7 +610,7 @@ function purchaserOrderNewCtrlProvide (
 	    sDraft.save($scope.inventories.filter(function(r){return !r.$new}));
 	    // add new line
 	    // console.log("add new line");
-	    $scope.inventories.unshift({$edit:false, $new:true}); 
+	    $scope.inventories.unshift(inv); 
 	    $scope.disable_refresh = false;
 	    // reset barcode
 	    $scope.good.bcode = undefined;
@@ -760,7 +736,7 @@ function purchaserOrderNewCtrlProvide (
 	// console.log($scope.inventories)
 
 	// var deleteIndex = -1;
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    if(inv.order_id === $scope.inventories[i].order_id){
 		break;
 	    }
@@ -769,7 +745,7 @@ function purchaserOrderNewCtrlProvide (
 	$scope.inventories.splice(i, 1); 
 	
 	// reorder
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    $scope.inventories[i].order_id = l - i;
 	}
 	
@@ -890,6 +866,7 @@ function purchaserOrderNewCtrlProvide (
     };
 
     $scope.on_select_sprice = function($item, $model, $label) {
+	// 1: yes
 	if ($model.id === 1) $scope.good.discount = 100;
     };
     
@@ -950,10 +927,6 @@ function purchaserOrderNewCtrlProvide (
 	    $scope.select_grouped_color(callback, inv.colors); 
 	}
     };
-
-    // $scope.add_exist_stock_size = function(inv) {
-	
-    // };
     
     /*
      * update inventory
@@ -1156,20 +1129,7 @@ function purchaserOrderNewCtrlProvide (
 	} 
     };
 
-    $scope.is_same_good = false;
-    
-    /*
-     * color
-     */
-    // $scope.gcolors = [{type:"红色", tid:1
-    // 		  colors:[{name:"深红", id:1},
-    // 			  {name:"粉红", id:2}]},
-    // 		 {type:"蓝色", tid:2
-    // 		  colors:[{name:"深蓝", id:3},
-    // 			  {name:"浅蓝", id:4}]}, 
-    
-    // 		];
-
+    $scope.is_same_good = false; 
     $scope.gcolors = [];
     var dialog = diabloUtilsService;
 

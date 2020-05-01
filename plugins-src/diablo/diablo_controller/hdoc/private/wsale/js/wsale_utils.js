@@ -967,7 +967,7 @@ var wsaleCalc = function(){
 			    } 
 			    totalPay += uPrice * count; 
 			    // payAll += stock.tag_price * count;
-			    payAll += stock.valid_price * count;
+			    payAll += valid_price * count;
 			}); 
 			totalPay = wsaleUtils.to_decimal(totalPay);
 
