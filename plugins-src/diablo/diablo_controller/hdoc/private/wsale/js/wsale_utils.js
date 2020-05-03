@@ -751,6 +751,7 @@ var wsaleUtils = function(){
 
 	isVip:function(selectRetailer, customRetailer, sysRetailers) {
 	    return  selectRetailer.id !== customRetailer
+		&& selectRetailer.type_id !== 2
 		&& sysRetailers.filter(function(r) {return selectRetailer.id === r.id}).length === 0
 	},
 
