@@ -934,7 +934,7 @@ function wretailerDetailCtrlProvide(
 };
 
 function wretailerChargeDetailCtrlProvide(
-    $scope, diabloFilter, diabloUtilsService, localStorageService, wretailerService,
+    $scope, diabloFilter, dateFilter, diabloUtilsService, localStorageService, wretailerService,
     filterEmployee, filterCharge, user, base){
 
     var dialog = diabloUtilsService;
@@ -1036,16 +1036,15 @@ function wretailerChargeDetailCtrlProvide(
     };
 
     $scope.update_recharge = function(recharge) {
-	console.log(recharge)
-
+	console.log(recharge) 
 	var callback = function(params){
 	    console.log(params);
-
 	    var update = {
 		id: recharge.id,
 		employee: diablo_get_modified(params.recharge.employee, recharge.employee),
 		shop: diablo_get_modified(params.recharge.select_shop.id, recharge.shop_id),
-		comment: diablo_get_modified(params.comment, recharge.comment)
+		comment: diablo_get_modified(params.comment, recharge.comment),
+		datetime: diablo_get_modified(diablo_format_datetime(dateFilter, params.datetime), recharge.entry_date)
 	    };
 
 	    console.log(update);
@@ -1073,7 +1072,8 @@ function wretailerChargeDetailCtrlProvide(
 	var payload = {
 	    shops:     $scope.shops,
 	    recharge:  recharge,
-	    employees: employees
+	    employees: employees,
+	    datetime:  diablo_set_datetime(recharge.entry_date)
 	};
 	
 	dialog.edit_with_modal("update-recharge.html", undefined, callback, undefined, payload);

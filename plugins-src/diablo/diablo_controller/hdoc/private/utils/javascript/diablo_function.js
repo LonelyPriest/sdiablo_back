@@ -784,6 +784,15 @@ var diablo_get_time = function(date){
     }
 };
 
+var diablo_format_datetime = function(dateFilter, datetime) {
+    if (angular.isDate(datetime)) {
+	return dateFilter(datetime, "yyyy-MM-dd HH:mm:ss");
+    } else if (angular.isString(datetime)) {
+	return datetime;
+    } 
+    return datetime;
+};
+
 var diablo_array_last = function(arrary) {
     return arrary[arrary.length - 1];
 };
@@ -980,12 +989,14 @@ var diablo_get_modified = function(newValue, oldValue){
 	return newValue !== oldValue ? newValue : undefined;
     else if (angular.isDate(newValue))
 	return newValue.getTime() !== oldValue.getTime()
-	    ? dateFilter($scope.bill_date, "yyyy-MM-dd HH:mm:ss") : undefined; 
+	    ? dateFilter(newValue, "yyyy-MM-dd HH:mm:ss") : undefined; 
     else if (angular.isObject(newValue))
 	return newValue.id !== oldValue.id ? newValue.id : undefined;
     else
 	return newValue !== oldValue ? newValue : undefined;
 };
+
+
 
 diablo_get_image_from_url = function(url) {
     return url.replace(/^data:image\/(png|jpg);base64,/, "");

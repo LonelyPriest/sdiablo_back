@@ -1618,9 +1618,11 @@ handle_call({update_recharge, Merchant, {ChargeId, Attrs}}, _From, State) ->
     Employee = ?v(<<"employee">>, Attrs),
     Shop = ?v(<<"shop">>, Attrs),
     Comment = ?v(<<"comment">>, Attrs),
+    EntryDate = ?v(<<"datetime">>, Attrs),
 
     Updates = ?utils:v(employ, string, Employee)
 	++ ?utils:v(shop, integer, Shop)
+	++ ?utils:v(entry_date, string, EntryDate)
 	++ ?utils:v(comment, string, Comment),
     
     Sql0 = "update w_charge_detail set "
@@ -2405,7 +2407,8 @@ handle_call({filter_charge_detail, Merchant, Conditions, CurrentPage, ItemsPerPa
 	" where a.merchant=" ++ ?to_s(Merchant) 
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
-	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+    %% ++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+	++ ?sql_utils:condition(page_desc, {use_datetime, 0}, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
