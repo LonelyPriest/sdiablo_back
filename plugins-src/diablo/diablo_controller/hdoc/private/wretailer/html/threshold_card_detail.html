@@ -118,7 +118,11 @@
 			<i class="glyphicon glyphicon-yen"></i>
 
 			<button x-ng-if="right.master
-					 && (c.rule_id===3||c.rule_id===4||c.rule_id===5||c.rule_id===6)"
+					 && (c.rule_id===3
+					 ||c.rule_id===4
+					 ||c.rule_id===5
+					 ||c.rule_id===6
+					 ||c.rule_id===7)"
 				class="btn diablo-button yellow"
 				x-ng-click="update_card_expire(c)">修改
 			<i class="glyphicon glyphicon-edit"></i>

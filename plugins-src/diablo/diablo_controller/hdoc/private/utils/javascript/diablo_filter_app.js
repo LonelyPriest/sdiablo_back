@@ -547,8 +547,11 @@ function filterProvider(){
 		).$promise.then(function(invs){
 		    return invs.map(function(inv){
 			return angular.extend(
-			    inv, {name:inv.style_number
-				  + "/" + inv.brand + "/" + inv.type + "/" + inv.tag_price})
+			    inv,
+			    {name:inv.style_number
+			     + "/" + inv.brand
+			     + "/" + inv.type
+			     + (inv.vir_price ? "/" + inv.vir_price.toString() : "") + "/" + inv.tag_price.toString()})
 		    })
 		})
 	    },
