@@ -318,6 +318,13 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.get_employee();
     };
 
+    $scope.pvp_calc_tagprice = function() {
+	if (0 !== stockUtils.to_integer($scope.good.vir_price)
+	    && $scope.good.vir_price > stockUtils.to_integer($scope.good.tag_price)) {
+	    $scope.good.tag_price = diablo_round(diablo_price($scope.good.vir_price, $scope.base_settings.pvp))
+	}
+    };
+
     $scope.get_setting($scope.select.shop.id);
 
     // console.log($scope.base_settings);

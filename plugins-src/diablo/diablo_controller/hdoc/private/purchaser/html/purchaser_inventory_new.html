@@ -806,7 +806,8 @@
 			     placeholder="支持二位小数"
 			     x-ng-pattern="/^\d+(.\d{1,2})?$/"
 			     x-ng-enter=""
-			     x-ng-model="good.vir_price"/>
+			     x-ng-model="good.vir_price"
+			     x-ng-change="good.vir_price && pvp_calc_tagprice()"/>
 		      <span class="input-group-addon bg-white fg-red">*</span> 
 		    </div>
 		    <div ng-if="form.gForm.vir_price.$invalid && !form.gForm.vir_price.$pristine">

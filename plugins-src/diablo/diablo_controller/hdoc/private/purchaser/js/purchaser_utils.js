@@ -98,7 +98,10 @@ var stockUtils = function(){
 		hide_unit:      default_hide(hide.charAt(13)),
 		hide_barcode:   default_hide(hide.charAt(14)),
 		hide_feather:   default_hide(hide.charAt(15)),
-		no_score_with_promotion: default_hide(hide.charAt(16))
+		no_score_with_promotion: default_hide(hide.charAt(16)),
+		pvp: stockUtils.to_integer(hide.charAt(17)) * 10
+		    + stockUtils.to_integer(hide.charAt(18))
+		
 	    }
 	    
 	},

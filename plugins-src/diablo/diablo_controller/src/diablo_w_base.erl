@@ -929,7 +929,8 @@ sys_config() ->
 	      %% [14]: hide barcode
 	      %% [15]: hide feather
 	      %% [16]: none score with promotion 0:yes, 1:no
-	      {"h_stock",         "入库字段隐藏",         "0001"++"1011"++"1111"++"0111"++"1", "0"}, 
+	      %% [17-18]: tag_price : vir_price 00 -> none
+	      {"h_stock",         "入库字段隐藏",         "0001"++"1011"++"1111"++"0111"++"100", "0"}, 
 	      {"s_member",        "会员区域隔离",         "0",   "0"},
 	      {"s_employee",      "营业员必选",           "0",   "0"},
 
