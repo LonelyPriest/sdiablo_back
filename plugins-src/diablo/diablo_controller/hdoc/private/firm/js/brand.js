@@ -183,7 +183,7 @@ function brandDetailCtrlProvide(
 	    firmService.update_brand(
 		{name:   params.brand.name,
 		 id:     brand.id,
-		 firm:   params.brand.firm.id,
+		 firm:   params.brand.firm && params.brand.firm.id ? params.brand.firm.id : diablo_invalid_index,
 		 remark: params.brand.remark}
 	    ).then(function(result){
 		if (result.ecode === 0){

@@ -67,14 +67,14 @@ pay(wwt, Merchant, MchntCd, PayCode, Moneny) ->
 		  post,
 		  {?to_s(Path) ++ "?" ++ "sign=" ++ ?to_s(SignMD5),
 		   [], [], JsonBody}, [], []) of
-		{ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
+		%% {ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
+		{ok, {{"HTTP/1.1", 200, _}, _Head, Reply}} -> 
 		    ?DEBUG("Head ~p, Reply ~ts", [_Head, Reply]),
-		    {struct, Result} = mochijson2:decode(Reply),
+		    {struct, Result} = mochijson2:decode(Reply), 
 		    ?DEBUG("pay result ~p", [Result]),
 		    Code = ?v(<<"code">>, Result),
 		    Info = ?v(<<"msg">>, Result),
-		    ?DEBUG("code ~p, msg ~ts", [Code, Info]),
-
+		    ?DEBUG("code ~p, msg ~ts", [Code, Info]), 
 		    case Code of
 			0 ->
 			    {struct, Data} = ?v(<<"data">>, Result),
@@ -93,7 +93,7 @@ pay(wwt, Merchant, MchntCd, PayCode, Moneny) ->
 			    {error, Code, MchntOrder}
 		    end;
 		{error, Reason} ->
-		    ?INFO("sms send http failed, Reason ~p", [Reason]),
+		    ?INFO("pay sacn send http failed, Reason ~p", [Reason]),
 		    {error, pay_http_failed, Reason}
 	    end
     end .
@@ -133,7 +133,7 @@ pay(wwt_query, MchntCd, MchntOrder) ->
 	  post,
 	  {?to_s(Path) ++ "?" ++ "sign=" ++ ?to_s(SignMD5),
 	   [], [], JsonBody}, [], []) of
-	{ok, {{"HTTP/1.1", 200, "OK"}, Head, Reply}} ->
+	{ok, {{"HTTP/1.1", 200, _}, Head, Reply}} ->
 	    ?DEBUG("Head ~p, Reply ~ts", [Head, Reply]),
 	    {struct, Result} = mochijson2:decode(Reply),
 	    ?DEBUG("query pay order_no ~p with result:~p", [MchntOrder, Result]),
