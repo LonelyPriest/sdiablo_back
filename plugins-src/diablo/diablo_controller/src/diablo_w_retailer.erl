@@ -1263,7 +1263,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					_ ->
 					    ?utils:big_date(date, current_date(), StartDate)
 				    end,
-
+				?DEBUG("Year ~p, Month ~p, Date ~p", [Year, Month, Date]),
 				EndDate = 
 				    case Rule of
 					?THEORETIC_CHARGE ->
@@ -1366,20 +1366,23 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				};
 			    
 			    {ok, OCard} ->
-				EndDate = ?v(<<"edate">>, OCard, ?INVALID_DATE),
+				?DEBUG("old card ..., startDate ~p", [StartDate]),
+				EndDate = ?utils:big_date(date, current_date(), StartDate),
+				?DEBUG("EndDate ~p", [EndDate]),
 				HasDeleted = ?v(<<"deleted">>, OCard, ?NO),
 				%% {Year, Month, Date} = ?utils:to_date(date, EndDate),
 				{Year, Month, Date} =
 				    case Rule of
 					?THEORETIC_CHARGE -> ?INVALID_DATE;
-					_ ->
-					    case HasDeleted of
-						?YES -> ?utils:to_date(date, StartDate);
-						?NO -> ?utils:big_date(date, StartDate, EndDate)
-					    end
+					_ -> 
+					    %% %% case HasDeleted of
+					    %% %% 	?YES -> ?utils:to_date(date, StartDate);
+					    %% %% 	?NO -> ?utils:big_date(date, StartDate, EndDate)
+					    %% %% end
+					    %% current_date()
+					    EndDate
 				    end,
-				?DEBUG("Year ~p, Month ~p, Date ~p", [Year, Month, Date]),
-
+				?DEBUG("Year ~p, Month ~p, Date ~p", [Year, Month, Date]), 
 				CardSN = ?v(<<"csn">>, OCard),
 				
 				{exist_card,
@@ -1427,12 +1430,17 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 						       ?NO -> []
 						   end;
 				     ?BALANCE_LIMIT_CHARGE ->
-					 UYear = (Period + Month) div 12,
-					 UMonth = (Period + Month) rem 12,
-					 NextPeriod =
-					     {Year + UYear,
-					      UMonth,
-					      day_of_next_month(Year + UYear, UMonth, Date)},
+					 NextPeriod = 
+					     case Period of
+						 12 -> {Year + 1, Month, Date};
+						 _ ->
+						     UYear = (Period + Month) div 12,
+						     UMonth = (Period + Month) rem 12,
+						     {Year + UYear,
+						      UMonth,
+						      day_of_next_month(Year + UYear, UMonth, Date)}
+					 end,
+					 ?DEBUG("NextPeriod ~p", [NextPeriod]),
 					 "update w_card set "
 					     ++ case HasDeleted of
 						    ?NO -> "ctime=ctime+";
@@ -3554,7 +3562,7 @@ year(begin_to_now, Year, Month, Day) ->
     {Start, End}.
     
 day_of_next_month(CurrentYear, NextMonth, CurrentDay) ->
-    %% ?DEBUG("CurrentDay ~p, NextMonth ~p, CurrentDay ~p", [CurrentYear, NextMonth, CurrentDay]),
+    ?DEBUG("CurrentDay ~p, NextMonth ~p, CurrentDay ~p", [CurrentYear, NextMonth, CurrentDay]),
     Days = calendar:last_day_of_the_month(CurrentYear, NextMonth),
     case CurrentDay > Days of
 	true -> Days; 
@@ -3563,6 +3571,7 @@ day_of_next_month(CurrentYear, NextMonth, CurrentDay) ->
 
 current_date() ->
     {{Year, Month, Date}, {_, _, _}} = calendar:now_to_local_time(erlang:now()),
+    ?DEBUG("Year ~p, Month ~p, Date ~p", [Year, Month, Date]),
     {Year, Month, Date}.
 
 format_date(Year, Month, Date) ->

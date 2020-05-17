@@ -86,10 +86,23 @@ to_date(datetime, Datetime) ->
     <<YYMMDD:10/binary, _/binary>> = Datetime,
     to_date(date, YYMMDD);
 
-to_date(date, Date) ->
+
+to_date(date, Date) when is_binary(Date) -> 
+    [Y, M, D] = string:tokens(?to_s(Date), "-"),
+    {?to_i(Y), ?to_i(M), ?to_i(D)};
+to_date(date, Date) when is_list(Date)->
     SDate = ?to_s(Date),
     [Y, M, D] = string:tokens(SDate, "-"),
-    {?to_i(Y), ?to_i(M), ?to_i(D)}.
+    {?to_i(Y), ?to_i(M), ?to_i(D)};
+to_date(date, Date) when is_tuple(Date)->
+    Date.
+
+
+small_date(date, {Y, M, D}, {Y1, M1, D1}) ->
+    case calendar:date_to_gregorian_days({Y, M, D}) < calendar:date_to_gregorian_days({Y1, M1, D1}) of
+	true -> {Y, M, D};
+	false -> {Y1, M1, D1}
+    end.
 
 big_date(date, {Y, M, D}, {Y1, M1, D1}) ->
     case calendar:date_to_gregorian_days({Y, M, D}) > calendar:date_to_gregorian_days({Y1, M1, D1}) of
