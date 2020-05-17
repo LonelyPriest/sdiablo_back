@@ -64,7 +64,7 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
 
     this.ch_name_address = /^[\u4e00-\u9fa5A-Za-z0-9\-_\s]+$/;
 
-    this.ch_en_num_beside_underline_bars = /^[\u4e00-\u9fa5A-Za-z0-9\-_]{4,20}$/;
+    this.ch_en_num_beside_underline_bars = /^[\u4e00-\u9fa5A-Za-z0-9\-_\/]{4,20}$/;
 
     // this.style_number = /^[A-Za-z0-9\-\#]{2,20}$/;
     this.style_number = /^[A-Za-z0-9\u4e00-\u9fa5\-\#\/]{2,20}$/

@@ -415,6 +415,7 @@ function wsaleUpdateRejectCtrlProvide(
 	    
 	    withdraw:       $scope.select.withdraw, 
 	    should_pay:     setv($scope.select.should_pay),
+	    base_pay:       setv($scope.select.base_pay),
 	    comment:        sets($scope.select.comment),
 	    
 	    // old_shop:       $scope.old_select.shop.id,
@@ -542,6 +543,8 @@ function wsaleUpdateRejectCtrlProvide(
 	$scope.select.total     = calc.total; 
 	$scope.select.abs_total = calc.abs_total;
 	$scope.select.should_pay= calc.should_pay;
+	$scope.select.base_pay  = calc.base_pay;
+	$scope.select.abs_pay   = calc.abs_pay;
 	$scope.select.score     = calc.score;
 	$scope.select.pscores   = calc.pscores; 
 	$scope.reset_score();
