@@ -1234,37 +1234,42 @@ var diabloHelp = function(){
 
 	correct_barcode: function(original, auto_barcode) {
 	    var correct, cuted;
-	    if (1 === auto_barcode) {
-		var code_len = original.length; 
-		if (original.startsWith('1')) {
-		    correct = original; 
-		    cuted = original.substr(0, original.length - diablo_barcode_lenth_of_color_size);
-		}
-		else if (original.startsWith('00')) {
-		    correct = original.substr(1, original.length - 1); 
-		    // cuted = correct;
-		    cuted = original;
-		}
-		else if (original.startsWith('01') && original.length > 14 ) {
-		    correct = original.substr(1, original.length - 1); 
-		    cuted = original.substr(1, original.length - diablo_ext_barcode_lenth_of_color_size - 1);
-		} 
-		else {
-		    correct = original,
-		    cuted = original;
-		} 
+	    if (original.length <= 6) {
+		correct = original;
+		cuted = original;
 	    } else {
-		if (original.startsWith('00')) {
-		    correct = original.substr(1, original.length - 1); 
-		    cuted = original.substr(1, original.length - diablo_barcode_lenth_of_color_size -1); 
-		}
-		else if (original.startsWith('0')) {
-		    correct = original.substr(1, original.length - 1); 
-		    cuted = original.substr(1, original.length - diablo_barcode_lenth_of_color_size -1); 
-		}
-		else {
-		    correct = original; 
-		    cuted = original.substr(0, original.length - diablo_barcode_lenth_of_color_size);
+		if (1 === auto_barcode) {
+		    var code_len = original.length; 
+		    if (original.startsWith('1')) {
+			correct = original; 
+			cuted = original.substr(0, original.length - diablo_barcode_lenth_of_color_size);
+		    }
+		    else if (original.startsWith('00')) {
+			correct = original.substr(1, original.length - 1); 
+			// cuted = correct;
+			cuted = original;
+		    }
+		    else if (original.startsWith('01') && original.length > 14 ) {
+			correct = original.substr(1, original.length - 1); 
+			cuted = original.substr(1, original.length - diablo_ext_barcode_lenth_of_color_size - 1);
+		    } 
+		    else {
+			correct = original,
+			cuted = original;
+		    } 
+		} else {
+		    if (original.startsWith('00')) {
+			correct = original.substr(1, original.length - 1); 
+			cuted = original.substr(1, original.length - diablo_barcode_lenth_of_color_size -1); 
+		    }
+		    else if (original.startsWith('0')) {
+			correct = original.substr(1, original.length - 1); 
+			cuted = original.substr(1, original.length - diablo_barcode_lenth_of_color_size -1); 
+		    }
+		    else {
+			correct = original; 
+			cuted = original.substr(0, original.length - diablo_barcode_lenth_of_color_size);
+		    }
 		}
 	    }
 	    

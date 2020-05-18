@@ -1690,7 +1690,7 @@ stockPrintU.prototype.printBarcode2 = function() {
     			       startThird + offset_virprice);
     }
     
-    if (this.template.p_tagprice) {
+    if (1 === this.template.p_tagprice) {
 	line = diablo_trim(this.template.tag_price);
 	if (this.stock.state === 3 && diablo_trim(this.template.my_price)) {
 	    line = diablo_trim(this.template.my_price);
@@ -1779,6 +1779,73 @@ stockPrintU.prototype.printBarcode2 = function() {
 	}
 
 	top += this.template.hpx_barcode;
+    }
+
+    if (2 === this.template.p_tagprice) {
+	top += 5;
+	line = diablo_trim(this.template.tag_price);
+	if (this.stock.state === 3 && diablo_trim(this.template.my_price)) {
+	    line = diablo_trim(this.template.my_price);
+	}
+	
+	if (line) line += ":" ;
+	this.start_print(line, top, this.left, iwpx, hpx_price, 0, pSecond, pThird, startSecond, startThird);
+
+	line = line2 = line3 = "￥" + this.stock.tag_price.toString();
+
+	
+	var offset_tagprice = this.to_i(this.template.offset_tagprice);
+	if (this.stock.state === 3 && diablo_trim(this.template.my_price)) {
+	    offset_tagprice = this.to_i(this.template.offset_myprice);
+	}
+
+	this.start_print(line,
+			 top,
+			 this.left + offset_tagprice,
+			 iwpx,
+			 this.template.hpx_price,
+			 this.template.font_price,
+			 pSecond,
+			 pThird,
+			 startSecond + offset_tagprice,
+			 startThird + offset_tagprice);
+
+	if (this.template.color && !this.template.solo_color) {
+	    line = this.trim_color(this.first.color);
+	    if (pSecond)
+		line2 = this.trim_color(this.second.color);;
+	    if (pThird)
+		line3 = this.trim_color(this.third.color);;
+	}
+	
+	if (this.template.size && !this.template.solo_size) {
+	    line = line + " " + this.trim_empty_size(this.first.size);
+	    if (pSecond)
+		line2 = line2 + " " + this.trim_empty_size(this.second.size);
+	    if (pThird)
+		line3 = line3 + " " + this.trim_empty_size(this.third.size);
+	}
+
+	if (this.template.color && !this.template.solo_color && !this.template.size_color
+	    || this.template.size && !this.template.solo_size) {
+	    var offset_color = this.to_i(this.template.offset_color) + offset_tagprice;
+	    if (diablo_trim(line)) {
+		this.LODOP.ADD_PRINT_TEXT(top, this.left + offset_color, iwpx, hpx_price, line);
+		this.set_print_font_size(this.template.font_size);
+	    }
+
+	    if (pSecond && diablo_trim(line)) {
+		this.LODOP.ADD_PRINT_TEXT(top, startSecond + offset_color, iwpx, hpx_price, line2);
+		this.set_print_font_size(this.template.font_size); 
+	    }
+
+	    if (pThird && diablo_trim(line)) {
+		this.LODOP.ADD_PRINT_TEXT(top, startThird + offset_color, iwpx, hpx_price, line3);
+		this.set_print_font_size(this.template.font_size); 
+	    } 
+	}
+
+	top += hpx_price;
     }
 
     // vir price

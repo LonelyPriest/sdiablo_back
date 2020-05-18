@@ -12,7 +12,6 @@
 -compile(export_all).
 -import(diablo_import_from_csv, [read_line/2, stock/3]).
 
-
 import(Merchant, Shop, Path) -> 
     ?INFO("current path ~p", [file:get_cwd()]),
     {ok, Device} = file:open(Path, [read]), 
@@ -25,16 +24,14 @@ import(member, Merchant, Shop, Path) ->
     {ok, Device} = file:open(Path, [read]),
     Content = read_line(Device, []),
     file:close(Device),
-
-
     {{Year, Month, Date}, {H, M, S}} = calendar:now_to_local_time(erlang:now()),
-    %% Time = lists:flatten(io_lib:format("~2..0w:~2..0w:~2..0w", [H, M, S])),
+    Time = lists:flatten(io_lib:format("~2..0w:~2..0w:~2..0w", [H, M, S])),
 
-    Datetime = 
-	lists:flatten(
-	  io_lib:format("~4..0w-~2..0w-~2..0w ~2..0w:~2..0w:~2..0w",
-			[Year, Month, Date, H, M, S])),
-    insert_into_member(Merchant, Shop, Datetime, Content, [], []).
+    %% Datetime = 
+    %% 	lists:flatten(
+    %% 	  io_lib:format("~4..0w-~2..0w-~2..0w ~2..0w:~2..0w:~2..0w",
+    %% 			[Year, Month, Date, H, M, S])),
+    insert_into_member(Merchant, Shop, Time, Content, [], []).
 
 insert_into_db(Merchant, Shop, [], _Count, Content) ->
     case Content of
@@ -63,7 +60,7 @@ new(Merchant, Shop, Content) ->
 	     ?inventory_sn:sn(w_inventory_new_sn, Merchant)),
 
     Sql = "select id, number from employees where merchant=" ++ ?to_s(Merchant)
-	++ " and shop=" ++ ?to_s(Shop)
+    %% ++ " and shop=" ++ ?to_s(Shop)
 	++ " order by id limit 1",
 
     {ok, Employee} = ?sql_utils:execute(s_read, Sql),
@@ -82,8 +79,10 @@ gen_sql([], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost) ->
 
 gen_sql([H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost) ->
     ?DEBUG("H ~p", [H]),
-    {_OrderId, StyleNumber, Total, ShiftDate, CostOfDecimal, TagPriceOfDecimal} = H,
+    {BCode, StockInfo, ShiftDate, Total, CostOfDecimal, TagPriceOfDecimal} = H,
 
+    RealBCode = parse_bcode(BCode, <<>>), 
+    ?DEBUG("RealBCode ~p", [RealBCode]),
     TagPrice = case TagPriceOfDecimal of
 		   <<>> -> 0;
 		   _ -> ?to_f(TagPriceOfDecimal)
@@ -93,18 +92,32 @@ gen_sql([H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost)
 	       <<>> -> 0;
 	       _ -> ?to_f(CostOfDecimal)
 	   end,
-
-    Discount = 100, 
-    {ok, BrandId} = ?attr:brand(new, Merchant, brand(xw)),
-    {Type, Sex} = parse_type(StyleNumber), 
-    {ok, TypeId} =
-	case ?attr:type(new, Merchant, [{<<"name">>, Type}]) of
-	    {ok_exist, _TypeId} ->
-		{ok, _TypeId};
-	    {ok, _TypeId} ->
-		{ok, _TypeId}
+    
+    Discount = 100,
+    {ParseSN, NewBrand} = parse_style_number(StockInfo, <<>>, <<>>),
+    NewSN = 
+	case ParseSN of
+	    <<>> -> RealBCode;
+	    _ -> ParseSN
 	end,
 
+    {ok, BrandId} = 
+	case NewBrand of
+	    <<>> -> ?attr:brand(new, Merchant, [{<<"name">>, <<"衣世界">>}]);
+	_ ->
+	    ?attr:brand(new, Merchant, [{<<"name">>, NewBrand}])
+	end,
+    %% {Type, Sex} = parse_type(StyleNumber), 
+    %% {ok, TypeId} =
+    %% 	case ?attr:type(new, Merchant, [{<<"name">>, Type}]) of
+    %% 	    {ok_exist, _TypeId} ->
+    %% 		{ok, _TypeId};
+    %% 	    {ok, _TypeId} ->
+    %% 		{ok, _TypeId}
+    %% 	end,
+    TypeId = 23379,
+    %% TypeId = 23315,
+    ?DEBUG("ShiftDate ~p", [ShiftDate]),
     {Year, P1} = parse_date(ShiftDate, <<>>),
     {Month, P2} = parse_date(P1, <<>>),
     {Date, <<>>} = parse_date(P2, <<>>), 
@@ -119,25 +132,26 @@ gen_sql([H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost)
     EDiscount = stock(ediscount, ?to_f(Cost), ?to_f(TagPrice)),
     %% InventoryExist = ?sql_utils:execute(s_read, Sql0),
 
-    Sql0 = "select id, style_number, brand from w_inventory"
-	" where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
+    Sql0 = "select id, style_number, brand from w_inventory_71"
+	" where style_number=\"" ++ ?to_s(NewSN) ++ "\""
 	++ " and brand=" ++ ?to_s(BrandId) 
 	++ " and shop=" ++ ?to_s(Shop)
 	++ " and merchant=" ++ ?to_s(Merchant),
     Sql1 = 
 	case ?sql_utils:execute(s_read, Sql0) of
 	    {ok, []} ->
-		["insert into w_inventory(rsn"
-		 ", style_number, brand, type, sex, season, amount, year"
+		["insert into" ++ ?table:t(stock, Merchant, 1) ++ "(rsn"
+		 ", BCode, style_number, brand, type, sex, season, amount, year"
 		 ", org_price, tag_price, ediscount, discount"
 		 ", alarm_day, shop, merchant"
 		 ", entry_date)"
 		 " values("
 		 ++ "\"" ++ ?to_s(-1) ++ "\","
-		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
+		 ++ "\"" ++ string:strip(?to_s(RealBCode)) ++ "\","
+		 ++ "\"" ++ ?to_s(NewSN) ++ "\","
 		 ++ ?to_s(BrandId) ++ ","
 		 ++ ?to_s(TypeId) ++ ","
-		 ++ ?to_s(Sex) ++ ","
+		 ++ ?to_s(0) ++ ","
 		 ++ ?to_s(Season) ++ ","
 		 ++ ?to_s(Total) ++ ","
 		 ++ ?to_s(Year) ++ ","
@@ -148,9 +162,9 @@ gen_sql([H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost)
 		 ++ ?to_s(7) ++ ","
 		 ++ ?to_s(Shop) ++ ","
 		 ++ ?to_s(Merchant) ++ ","
-		 ++ "\"" ++ ?to_s(Datetime) ++ "\")"]; 
+		 ++ "\"" ++ ?to_s(NewShiftDate) ++ "\")"]; 
 	    {ok, R} ->
-		["update w_inventory set"
+		["update" ++ ?table:t(stock, Merchant, 1) ++ " set"
 		 " amount=amount+" ++ ?to_s(Total) 
 		 ++ " where id=" ++ ?to_s(?v(<<"id">>, R))]; 
 	    {error, Error} ->
@@ -159,24 +173,25 @@ gen_sql([H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost)
 
 
     Sql20 = "select id, rsn, style_number, brand"
-	" from w_inventory_new_detail"
-	" where rsn=\'" ++ ?to_s(RSN) ++ "\'"
-	" and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+	%% " from w_inventory_new_detail"
+	" from" ++ ?table:t(stock_new_detail, Merchant, 1)
+	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+	" and style_number=\'" ++ ?to_s(NewSN) ++ "\'"
 	" and brand=" ++ ?to_s(BrandId),
 
     Sql2 = 
 	case ?sql_utils:execute(s_read, Sql20) of
 	    {ok, []} ->
-		["insert into w_inventory_new_detail(rsn, style_number"
+		["insert into" ++ ?table:t(stock_new_detail, Merchant, 1) ++ "(rsn, style_number"
 		 ", brand, type, sex, season, amount"
 		 ", year"
 		 ", org_price, tag_price, ediscount, discount"
 		 ", merchant, shop, entry_date) values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
-		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
+		 ++ "\"" ++ ?to_s(NewSN) ++ "\","
 		 ++ ?to_s(BrandId) ++ ","
 		 ++ ?to_s(TypeId) ++ ","
-		 ++ ?to_s(Sex) ++ ","
+		 ++ ?to_s(0) ++ ","
 		 ++ ?to_s(Season) ++ ","
 		 ++ ?to_s(Total) ++ "," 
 		 ++ ?to_s(Year) ++ "," 
@@ -189,7 +204,9 @@ gen_sql([H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost)
 		 ++ ?to_s(Shop) ++ ","
 		 ++ "\"" ++ ?to_s(Datetime) ++ "\")"];
 	    {ok, R20} ->
-		["update w_inventory_new_detail set amount=amount+" ++ ?to_s(Total) 
+		["update"
+		 ++ ?table:t(stock_new_detail, Merchant, 1)
+		 ++ " set amount=amount+" ++ ?to_s(Total) 
 		 %% ++ ", entry_date=" ++ "\"" ++ ?to_s(ShiftDate) ++ "\"" 
 		 ++ " where id=" ++ ?to_s(?v(<<"id">>, R20))];
 	    {error, Error20} ->
@@ -199,8 +216,9 @@ gen_sql([H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost)
     NewFun =
 	fun(_Attr, Acc) -> 
 		Sql00 = "select id, style_number, brand, color, size"
-		    " from w_inventory_amount"
-		    " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
+		    %% " from w_inventory_amount"
+		    " from" ++ ?table:t(stock_note, Merchant, 1)
+		    ++ " where style_number=\"" ++ ?to_s(NewSN) ++ "\""
 		    ++ " and brand=" ++ ?to_s(BrandId)
 		    ++ " and color=0"
 		    ++ " and size=0"
@@ -209,9 +227,10 @@ gen_sql([H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost)
 
 		Sql01 =
 		    "select id, style_number, brand, color, size"
-		    " from w_inventory_new_detail_amount"
-		    " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
-		    ++ " and style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
+		    %% " from w_inventory_new_detail_amount"
+		    " from" ++ ?table:t(stock_new_note, Merchant, 1)
+		    ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+		    ++ " and style_number=\"" ++ ?to_s(NewSN) ++ "\""
 		    ++ " and brand=" ++ ?to_s(BrandId)
 		    ++ " and color=0"
 		    ++ " and size=0",
@@ -220,21 +239,21 @@ gen_sql([H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost)
 
 		[case ?sql_utils:execute(s_read, Sql00) of
 		     {ok, []} ->
-			 "insert into w_inventory_amount(rsn"
-			     ", style_number, brand, color, size"
+			 "insert" ++ ?table:t(stock_note, Merchant, 1)
+			     ++ "(rsn, style_number, brand, color, size"
 			     ", shop, merchant, total, entry_date)"
 			     " values("
 			     ++ "\"" ++ ?to_s(-1) ++ "\","
-			     ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
+			     ++ "\"" ++ ?to_s(NewSN) ++ "\","
 			     ++ ?to_s(BrandId) ++ ","
 			     ++ ?to_s(0) ++ ","
 			     ++ "\'" ++ ?to_s(0)  ++ "\',"
 			     ++ ?to_s(Shop)  ++ ","
 			     ++ ?to_s(Merchant) ++ ","
 			     ++ ?to_s(Total) ++ "," 
-			     ++ "\"" ++ ?to_s(Datetime) ++ "\")"; 
+			     ++ "\"" ++ ?to_s(NewShiftDate) ++ "\")"; 
 		     {ok, R00} ->
-			 "update w_inventory_amount set"
+			 "update" ++ ?table:t(stock_note, Merchant, 1) ++ " set"
 			     " total=total+" ++ ?to_s(Total) 
 			     ++ " where id=" ++ ?to_s(?v(<<"id">>, R00));
 		     {error, E00} ->
@@ -243,11 +262,12 @@ gen_sql([H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost)
 
 		 case ?sql_utils:execute(s_read, Sql01) of
 		     {ok, []} ->
-			 "insert into w_inventory_new_detail_amount(rsn"
-			     ", style_number, brand, color, size"
+			 %% "insert into w_inventory_new_detail_amount(rsn"
+			 "insert into" ++ ?table:t(stock_new_note, Merchant, 1)
+			     ++ "(rsn, style_number, brand, color, size"
 			     ", total, merchant, shop, entry_date) values("
 			     ++ "\"" ++ ?to_s(RSN) ++ "\","
-			     ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
+			     ++ "\"" ++ ?to_s(NewSN) ++ "\","
 			     ++ ?to_s(BrandId) ++ ","
 			     ++ ?to_s(0) ++ ","
 			     ++ "\'" ++ ?to_s(0)  ++ "\',"
@@ -256,7 +276,7 @@ gen_sql([H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost)
 			     ++ ?to_s(Shop) ++ "," 
 			     ++ "\"" ++ ?to_s(Datetime) ++ "\")";
 		     {ok, R01} ->
-			 "update w_inventory_new_detail_amount"
+			 "update" ++ ?table:t(stock_new_note, Merchant, 1) ++ " set"
 			     " set total=total+" ++ ?to_s(Total)
 			 %% ++ ", entry_date=" ++ ?to_s(Datetime)
 			     ++ " where id=" ++ ?to_s(?v(<<"id">>, R01));
@@ -267,21 +287,22 @@ gen_sql([H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost)
 
     Sql3 = lists:foldr(NewFun, [], [H]),
 
-    Sql40 = "select style_number, brand from w_inventory_good"
-	" where merchant=" ++ ?to_s(Merchant)
-	++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+    Sql40 = "select style_number, brand from" ++ ?table:t(good, Merchant, 1)
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and style_number=\'" ++ ?to_s(NewSN) ++ "\'"
 	++ " and brand=" ++ ?to_s(BrandId),
 
     Sql4 = 
 	case ?sql_utils:execute(s_read, Sql40) of
 	    {ok, []} ->
-		["insert into w_inventory_good"
-		 "(style_number, sex, color, year, season, type, size, s_group, free"
+		["insert" ++ ?table:t(good, Merchant, 1)
+		 ++ "(BCode, style_number, sex, color, year, season, type, size, s_group, free"
 		 ", brand, firm, org_price, tag_price, ediscount, discount"
 		 ", alarm_day, merchant, change_date, entry_date"
 		 ") values("
-		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
-		 ++ ?to_s(Sex) ++ ","
+		 ++ "\"" ++ string:strip(?to_s(RealBCode)) ++ "\","
+		 ++ "\"" ++ ?to_s(NewSN) ++ "\","
+		 ++ ?to_s(0) ++ ","
 		 ++ "\"" ++ ?to_s(0) ++ "\","
 		 ++ ?to_s(Year) ++ ","
 		 ++ ?to_s(Season) ++ "," 
@@ -297,8 +318,8 @@ gen_sql([H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost)
 		 ++ ?to_s(Discount) ++ ","
 		 ++ ?to_s(7) ++ ","
 		 ++ ?to_s(Merchant) ++ ","
-		 ++ "\"" ++ ?to_s(Datetime) ++ "\","
-		 ++ "\"" ++ ?to_s(Datetime) ++ "\")"];
+		 ++ "\"" ++ ?to_s(NewShiftDate) ++ "\","
+		 ++ "\"" ++ ?to_s(NewShiftDate) ++ "\")"];
 	    {ok, _} ->
 		[];
 	    {error, E04} ->
@@ -312,8 +333,8 @@ gen_sql([H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost)
 	    AllCost + ?to_f(Cost) * ?to_i(Total)).
 
 w_inventory_new(RSN, Employee, Merchant, Shop, Datetime, ShouldPay, Total)->
-    ["insert into w_inventory_new("
-     "rsn, employ, shop, merchant, should_pay, total, type, entry_date) values("
+    ["insert into" ++ ?table:t(stock_new, Merchant, 1)
+     ++ "(rsn, employ, shop, merchant, should_pay, total, type, entry_date) values("
      ++ "\"" ++ ?to_s(RSN) ++ "\","
      ++ "\"" ++ ?to_s(Employee) ++ "\","
      ++ ?to_s(Shop) ++ ","
@@ -482,33 +503,37 @@ gen_shift_datetime() ->
     
 
 
-insert_into_member(Merchant, _Shop, _Datetime, [], _Sort, Acc) -> 
+insert_into_member(Merchant, _Shop, _Time, [], _Sort, Acc) -> 
     ?DEBUG("Sqls ~p", [lists:reverse(Acc)]),
     {ok, Merchant} = ?sql_utils:execute(transaction, lists:reverse(Acc), Merchant);
 
-insert_into_member(Merchant, Shop, Datetime, [H|T], Sort, Acc) ->
+insert_into_member(Merchant, Shop, Time, [H|T], Sort, Acc) ->
     ?DEBUG("H ~p", [H]),
     %% {RName, Phone, Birth} = H,
-    {RName, Phone, _InShop, _Score, _Consume, Birth, _Date} = H,
+    {RName, Phone, Score, Date} = H,
     ?DEBUG("size RName ~p", [size(RName)]),
 
-    NewBirth = case Birth of
-		   <<>> -> <<"0000-00-00">>;
-		   _ ->
-		       {BirthMonth, _BirthDate} = parse_birth(Birth, <<>>),
-		       BirthDate = pack_date(_BirthDate),
-		       << <<"2018-">>/binary, BirthMonth/binary, <<"-">>/binary, BirthDate/binary>>
-	       end,
+    %% NewBirth = case Birth of
+    %% 		   <<>> -> <<"0000-00-00">>;
+    %% 		   _ ->
+    %% 		       {BirthMonth, _BirthDate} = parse_birth(Birth, <<>>),
+    %% 		       BirthDate = pack_date(_BirthDate),
+    %% 		       << <<"2018-">>/binary, BirthMonth/binary, <<"-">>/binary, BirthDate/binary>>
+    %% 	       end,
+    NewBirth = <<"0000-00-00">>,
     ?DEBUG("NewBirth ~p", [NewBirth]),
 
+    Datetime = ?to_s(Date) ++ " " ++ ?to_s(Time),
+    ?DEBUG("Datetime ~p", [Datetime]),
+
     IsExist = 
-	case [ P || {_, P, _, _, _, _, _} <- Sort, P =:= Phone ] of
+	case [ P || {_, P, _, _} <- Sort, P =:= Phone ] of
 	    [] -> false;
 	    _ -> true
 	end,
 
     case size(Phone) =/= 11 orelse IsExist of
-	true -> insert_into_member(Merchant, Shop, Datetime, T, Sort, Acc);
+	true -> insert_into_member(Merchant, Shop, Time, T, Sort, Acc);
 	false -> 
 	    Sql0 = "select id, name, mobile from w_retailer"
 		" where merchant=" ++ ?to_s(Merchant)
@@ -536,17 +561,36 @@ insert_into_member(Merchant, Shop, Datetime, [H|T], Sort, Acc) ->
 		    Sql = ["insert into w_retailer("
 			   "name, score, consume, mobile, shop, merchant, Birth, entry_date)"
 			   " values ("
-			   ++ "\'" ++ unicode:characters_to_list(UName) ++ "\',"
-			   ++ ?to_s(0) ++ ","
+			   ++ "\'" ++ ?to_s(UName) ++ "\',"
+			   ++ ?to_s(Score) ++ ","
 			   ++ ?to_s(0) ++ "," 
 			   ++ "\"" ++ ?to_s(Phone) ++ "\","
 			   ++ ?to_s(Shop) ++ ","
 			   ++ ?to_s(Merchant) ++ ","
 			   ++ "\"" ++ ?to_s(NewBirth) ++ "\","
-			   ++ "\"" ++ ?to_s(Datetime) ++ "\")"],
+			   ++ "\"" ++  ?to_s(Datetime) ++ "\")"],
 		    ?DEBUG("Sql ~p", [Sql]),
-		    insert_into_member(Merchant, Shop, Datetime, T, [H|Sort], Sql ++ Acc);
+		    insert_into_member(Merchant, Shop, Time, T, [H|Sort], Sql ++ Acc);
 		{ok, _R} -> 
-		    insert_into_member(Merchant, Shop, Datetime, T, [H|Sort], Acc)
+		    insert_into_member(Merchant, Shop, Time, T, [H|Sort], Acc)
 	    end
     end.
+
+
+parse_style_number(<<>>, SN, Brand)->
+    {SN, Brand};
+parse_style_number(<<H, T/binary>>, SN, Brand) when H > 127 -> 
+    parse_style_number(T, SN, <<Brand/binary, H>>);
+parse_style_number(<<H, T/binary>>, SN, Brand)->
+    parse_style_number(T, <<SN/binary, H>>, Brand).
+
+parse_bcode(<<>>, BCode) ->
+    ?DEBUG("bcode size ~p", [BCode]),
+    case size(BCode) =< 3 of
+	true -> << <<"0">>/binary, BCode/binary>>;
+	false -> BCode
+    end;
+parse_bcode(<<H, T/binary>>, BCode) when H < 58 ->
+    parse_bcode(T, <<BCode/binary, H>>);
+parse_bcode(<<_H, T/binary>>, BCode) ->
+    parse_bcode(T, BCode).

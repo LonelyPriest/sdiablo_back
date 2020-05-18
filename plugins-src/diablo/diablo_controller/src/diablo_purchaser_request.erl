@@ -1283,25 +1283,29 @@ action(Session, Req, {"get_stock_by_barcode"}, Payload) ->
     %% 128C code's lenght should be odd
     <<ZZ:2/binary, _/binary>> = Barcode,
     <<_Z:1/binary, SCode/binary>> = Barcode, 
-    NewBarcode = 
-	case AutoBarcode of
-	    ?YES -> 
-		case ZZ of
-		    <<"00">> ->
-			SCode;
-		    <<"0", _T/binary>> ->
-			SCode;
-		    _ ->
-			Barcode
-		end;
-	    ?NO ->
-		case ZZ of
-		    <<"00">> ->
-			SCode;
-		    <<"0", _T/binary>> ->
-			SCode;
-		    _ ->
-			Barcode
+    NewBarcode =
+	case size(Barcode) =< 6 of
+	    true -> Barcode;
+	    false ->
+		case AutoBarcode of
+		    ?YES -> 
+			case ZZ of
+			    <<"00">> ->
+				SCode;
+			    <<"0", _T/binary>> ->
+				SCode;
+			    _ ->
+				Barcode
+			end;
+		    ?NO ->
+			case ZZ of
+			    <<"00">> ->
+				SCode;
+			    <<"0", _T/binary>> ->
+				SCode;
+			    _ ->
+				Barcode
+			end
 		end
     end,
     
