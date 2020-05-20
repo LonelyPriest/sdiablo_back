@@ -704,6 +704,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", offset_fabric"
 	", offset_fabric3"
 	", offset_feather"
+	", offset_barcode"
 	
 	", barcode"
 	", w_barcode"
@@ -806,6 +807,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(offset_fabric, integer, ?v(<<"offset_fabric">>, Attrs))
 	++  ?utils:v(offset_fabric3, integer, ?v(<<"offset_fabric3">>, Attrs))
 	++  ?utils:v(offset_feather, integer, ?v(<<"offset_feather">>, Attrs))
+	++  ?utils:v(offset_barcode, integer, ?v(<<"offset_barcode">>, Attrs))
 
 	++  ?utils:v(barcode, integer, ?v(<<"barcode">>, Attrs))
 	++  ?utils:v(w_barcode, integer, ?v(<<"w_barcode">>, Attrs))

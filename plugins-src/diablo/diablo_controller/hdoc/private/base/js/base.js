@@ -1009,7 +1009,7 @@ function goodPrintTemplateCtrlProvide(
 	     
 	     , "offset_size", "offset_color"
 	     , "offset_tagprice", "offset_virprice" , "offset_myprice"
-	     , "offset_label" , "offset_type", "offset_fabric", "offset_fabric3", "offset_feather"
+	     , "offset_label" , "offset_type", "offset_fabric", "offset_fabric3", "offset_feather", "offset_barcode"
 
 	     , "printer", "dual_print"
 	     

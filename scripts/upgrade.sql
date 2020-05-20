@@ -752,6 +752,9 @@ alter table w_sale add column account INTEGER default -1 after rsn;
 alter table w_retailer add column lunar TINYINT default 0 after birth;
 
 
+alter table print_template add column offset_barcode TINYINT default 0 after offset_feather;
+
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 
