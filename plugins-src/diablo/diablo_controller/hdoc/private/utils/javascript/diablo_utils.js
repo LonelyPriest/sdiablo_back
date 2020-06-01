@@ -1167,6 +1167,11 @@ diabloUtils.service("diabloUtilsService", function($uibModal){
 	this.response(false, title, ERROR[ecode], undefined);
     };
 
+    this.set_error_with_callback = function(title, ecode, callback) {
+	var ERROR = require("diablo-error");
+	this.response_with_callback(false, title, ERROR[ecode], undefined, callback);
+    }
+
     this.set_batch_error = function(title, ecode) {
 	var ERROR = require("diablo-batch-error");
 	this.response(false, title, ERROR[ecode], undefined);

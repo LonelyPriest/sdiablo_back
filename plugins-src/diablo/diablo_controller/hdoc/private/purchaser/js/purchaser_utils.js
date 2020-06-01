@@ -943,24 +943,25 @@ stockPrintU.prototype.setCodeFirm = function(code) {
 stockPrintU.prototype.start_print = function(
     line, top, left, width, hpx, fontSize, printSecond, printThird, startSecond, startThird) {
     if (angular.isDefined(line) && diablo_trim(line)) {
-	this.LODOP.ADD_PRINT_TEXT(top, left, width, hpx === 0 ? this.template.hpx_each : hpx, line); 
 	var size = stockUtils.to_integer(fontSize);
+	var h = hpx === 0 ? this.template.hpx_each : hpx;
+	this.LODOP.ADD_PRINT_TEXT(top, left, width, h, line); 
 	if (size !== 0)
 	    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", size);
 
 	if (printSecond) {
-	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, width, hpx, line);
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, width, h, line);
 	    if (size !== 0)
 		this.LODOP.SET_PRINT_STYLEA(0, "FontSize", size);
 	}
 
 	if (printThird) {
-	    this.LODOP.ADD_PRINT_TEXT(top, startThird, width, hpx, line);
+	    this.LODOP.ADD_PRINT_TEXT(top, startThird, width, h, line);
 	    if (size !== 0)
 		this.LODOP.SET_PRINT_STYLEA(0, "FontSize", size);
 	}
 	
-	return top + hpx;
+	return top + h;
     }
     
     return top; 
@@ -1409,18 +1410,36 @@ stockPrintU.prototype.printBarcode2 = function() {
     if (this.template.style_number) {
 	line = "款号:";
 	if (2 === this.template.style_number) line="";
+
+	if (line) {
+	    this.start_print(
+		line,
+		top,
+		this.left,
+		iwpx,
+		this.template.hpx_each,
+		0,
+		pSecond, pThird, startSecond, startThird);
+	}
 	
 	if (this.solo_snumber && this.stock.style_number.length > this.len_snumber) {
 	    // first line
-	    line += this.stock.style_number.substr(0, this.len_snumber);
+	    line = this.stock.style_number.substr(0, this.len_snumber);
 	    top = this.start_print(
-		line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird); 
+		line,
+		top,
+		this.left + stockUtils.to_integer(this.template.offset_sn),
+		iwpx,
+		stockUtils.to_integer(this.template.hpx_sn),
+		stockUtils.to_integer(this.template.font_sn),
+		pSecond,
+		pThird,
+		startSecond + stockUtils.to_integer(this.template.offset_sn),
+		startThird + stockUtils.to_integer(this.template.offset_sn)); 
 
 	    // second line
-	    line = "     ";
-	    if (2 === this.template.style_number) line="";
-	    
-	    line += this.stock.style_number.substr(this.len_snumber, this.stock.style_number.length);
+	    // if (2 === this.template.style_number) line=""; 
+	    line = this.stock.style_number.substr(this.len_snumber, this.stock.style_number.length);
 	    if (this.template.expire && this.stock.expire_date !== diablo_none) {
 		line += this.stock.expire_date.split(diablo_date_seprator).join("");
 	    }
@@ -1433,18 +1452,18 @@ stockPrintU.prototype.printBarcode2 = function() {
 		top = this.start_print(
 		    line,
 		    top,
-		    this.left,
+		    this.left + stockUtils.to_integer(this.template.offset_sn),
 		    iwpx,
-		    this.template.hpx_each,
-		    0,
+		    stockUtils.to_integer(this.template.hpx_sn),
+		    stockUtils.to_integer(this.template.font_sn),
 		    pSecond,
 		    pThird,
-		    startSecond,
-		    startThird);
+		    startSecond + stockUtils.to_integer(this.template.offset_sn),
+		    startThird + stockUtils.to_integer(this.template.offset_sn));
 	    }	    
 	} 
 	else {
-	    line += this.stock.style_number; 
+	    line = this.stock.style_number; 
 	    if (this.template.expire && this.stock.expire_date !== diablo_none) {
 		line += this.stock.expire_date.split(diablo_date_seprator).join("");
 	    }
@@ -1454,7 +1473,16 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    }
 
 	    top = this.start_print(
-		line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird); 
+		line,
+		top,
+		this.left + stockUtils.to_integer(this.template.offset_sn),
+		iwpx,
+		this.template.hpx_each,
+		stockUtils.to_integer(this.template.font_sn),
+		pSecond,
+		pThird,
+		startSecond + stockUtils.to_integer(this.template.offset_sn),
+		startThird + stockUtils.to_integer(this.template.offset_sn)); 
 	}
     }
 

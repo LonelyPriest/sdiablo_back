@@ -990,14 +990,14 @@ function goodPrintTemplateCtrlProvide(
 	     , "level", "executive", "category", "fabric", "feather"
 	     
 	     , "font", "font_name", "font_executive", "font_category"
-	     , "font_price", "font_size", "font_fabric", "font_feather",
-	     "font_label", "font_type"
+	     , "font_price", "font_size", "font_fabric", "font_feather"
+	     , "font_label", "font_type", "font_sn"
 	     
 	     , "bold" 
 	     , "solo_brand", "solo_color", "solo_size", "solo_date"
 	     
 	     , "hpx_each", "hpx_executive", "hpx_category", "hpx_fabric", "hpx_feather"
-	     , "hpx_price", "hpx_size", "hpx_barcode", "hpx_label", "hpx_type"
+	     , "hpx_price", "hpx_size", "hpx_barcode", "hpx_label", "hpx_type", "hpx_sn"
 	     
 	     , "hpx_top", "hpx_left", "second_space"
 	     
@@ -1009,7 +1009,8 @@ function goodPrintTemplateCtrlProvide(
 	     
 	     , "offset_size", "offset_color"
 	     , "offset_tagprice", "offset_virprice" , "offset_myprice"
-	     , "offset_label" , "offset_type", "offset_fabric", "offset_fabric3", "offset_feather", "offset_barcode"
+	     , "offset_label" , "offset_type", "offset_fabric", "offset_fabric3"
+	     , "offset_feather", "offset_barcode", "offset_sn"
 
 	     , "printer", "dual_print"
 	     

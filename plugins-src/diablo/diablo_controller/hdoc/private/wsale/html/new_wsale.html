@@ -134,13 +134,15 @@
 	  	  </td>
 		  
 		  <td class="col-md-2 text-left vert-align">
-		    <span>{{inv.full_name}}</span> 
+		    <span class={{color_negative_sale(inv.negative)}}>{{inv.full_name}}</span>
 		  </td> 
 		  
-		  <td class="vert-align">{{inv.total}}</td> 
+		  <td class="vert-align">
+		    <span class={{color_negative_sale(inv.negative)}}>{{inv.total}}</span>
+		  </td> 
 		  <td class="col-md-1 vert-align">
 		    <!-- <div x-ng-if="select.sysVip"> -->
-		    <div>
+		    <div class={{color_negative_sale(inv.negative)}}>
 		      <span x-ng-if="inv.vir_price>inv.tag_price" x-ng-bind="inv.vir_price"></span>
 		      <span x-ng-if="inv.vir_price<=inv.tag_price" x-ng-bind="inv.tag_price"></span>
 		    </div>
@@ -148,12 +150,15 @@
 		  </td>
 
 		  <!--discount-->
-		  <td x-ng-if="!right.m_discount" class="vert-align">{{inv.fdiscount}}</td>
+		  <td x-ng-if="!right.m_discount" class="vert-align">
+		    <span class={{color_negative_sale(inv.negative)}}>{{inv.fdiscount}}</span>
+		  </td>
 		  
 		  <td x-ng-if="right.m_discount" class="col-md-1 vert-align">
-		    <div x-ng-if="!inv.free_update">{{inv.fdiscount}}</div>
-		    <form name="inv.form.fdiscount"
-			  x-ng-if="!inv.$new && inv.free_update">
+		    <div x-ng-if="!inv.free_update" class={{color_negative_sale(inv.negative)}}>
+		      {{inv.fdiscount}}
+		    </div>
+		    <form name="inv.form.fdiscount" x-ng-if="!inv.$new && inv.free_update">
 		      <div ng-class="{'has-error': inv.form.fdiscount.$invalid && !inv.form.fdiscount.$pristine}">
 			<input class="form-control"
 			       type="number" step="0.1"
@@ -168,11 +173,12 @@
 		  </td>
 		  
 		  <td x-ng-if="!right.m_price" class="vert-align">
-		    <div x-ng-if="(inv.fprice===0 || inv.fprice)">{{inv.fprice}}</div>
+		    <div x-ng-if="(inv.fprice===0 || inv.fprice)"
+			 class={{color_negative_sale(inv.negative)}}>{{inv.fprice}}</div>
 		  </td>
 		  
 		  <td x-ng-if="right.m_price" class="col-md-1 vert-align">
-		    <div ng-if="!inv.free_update">
+		    <div x-ng-if="!inv.free_update" class={{color_negative_sale(inv.negative)}}>
 		      <div x-ng-if="(inv.fprice===0 || inv.fprice)">{{inv.fprice}}</div>
 		    </div>
 		    <form name="inv.form.fprice" x-ng-if="!inv.$new && inv.free_update">
@@ -194,7 +200,7 @@
 
 		  <!-- sell count-->
 		  <td class="vert-align col-md-1">
-		    <div x-ng-if="!inv.free_update">
+		    <div x-ng-if="!inv.free_update" class={{color_negative_sale(inv.negative)}}>
 		      <span x-ng-bind="inv.sell"></span> 
 		    </div>
 		    <form name="inv.form.sell" x-ng-if="!inv.$new && inv.free_update">
@@ -218,7 +224,9 @@
 
 		  <!-- <td class="vert-align"><span class="fg-red">{{inv.rprice}}<span></td>  -->
 		  <!-- <td class="vert-align"><span class="fg-red">{{inv.rdiscount}}</span></td>  -->
-		  <td class="vert-align"><span>{{inv.calc}}</span></td>
+		  <td class="vert-align">
+		    <span class={{color_negative_sale(inv.negative)}}>{{inv.calc}}</span>
+		  </td>
 		  <td class="vert-align">
 		    <div x-ng-if="!inv.free_color_size">
 		      <span x-ng-bind="inv.note" class="bg-blue"></span>

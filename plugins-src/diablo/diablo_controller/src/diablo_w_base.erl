@@ -657,6 +657,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", font_feather"
 	", font_label"
 	", font_type"
+	", font_sn"
     %% ", font_vprice"
 	
 	", bold"
@@ -676,6 +677,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", hpx_barcode"
 	", hpx_label"
 	", hpx_type"
+	", hpx_sn"
 
 	", hpx_top"
 	", hpx_left"
@@ -705,6 +707,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", offset_fabric3"
 	", offset_feather"
 	", offset_barcode"
+	", offset_sn"
 	
 	", barcode"
 	", w_barcode"
@@ -760,6 +763,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(font_feather, integer, ?v(<<"font_feather">>, Attrs))
 	++  ?utils:v(font_label, integer, ?v(<<"font_label">>, Attrs))
 	++  ?utils:v(font_type, integer, ?v(<<"font_type">>, Attrs))
+	++  ?utils:v(font_sn, integer, ?v(<<"font_sn">>, Attrs))
     %% ++  ?utils:v(font_vprice, integer, ?v(<<"font_vprice">>, Attrs))
 	
 	++  ?utils:v(bold, integer, ?v(<<"bold">>, Attrs))
@@ -779,6 +783,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(hpx_barcode, integer, ?v(<<"hpx_barcode">>, Attrs))
 	++  ?utils:v(hpx_label, integer, ?v(<<"hpx_label">>, Attrs))
 	++  ?utils:v(hpx_type, integer, ?v(<<"hpx_type">>, Attrs))
+	++  ?utils:v(hpx_sn, integer, ?v(<<"hpx_sn">>, Attrs))
 
 	++  ?utils:v(hpx_top, integer, ?v(<<"hpx_top">>, Attrs))
 	++  ?utils:v(hpx_left, integer, ?v(<<"hpx_left">>, Attrs))
@@ -808,6 +813,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(offset_fabric3, integer, ?v(<<"offset_fabric3">>, Attrs))
 	++  ?utils:v(offset_feather, integer, ?v(<<"offset_feather">>, Attrs))
 	++  ?utils:v(offset_barcode, integer, ?v(<<"offset_barcode">>, Attrs))
+	++  ?utils:v(offset_sn, integer, ?v(<<"offset_sn">>, Attrs))
 
 	++  ?utils:v(barcode, integer, ?v(<<"barcode">>, Attrs))
 	++  ?utils:v(w_barcode, integer, ?v(<<"w_barcode">>, Attrs))
@@ -875,7 +881,7 @@ sys_config(shop) ->
      %% {"dual_barcode",      "双排条码",           "0",    "0"},
 
      {"r_discount",        "会员折扣模式",       "0000", "0"},
-     {"scan_only",         "扫码模式",           "0000", "0"}
+     {"scan_only",         "扫码模式",           "0000000111", "0"}
     ].
     
 sys_config() ->
@@ -1068,11 +1074,14 @@ sys_config() ->
 	      %%[4]:foucs styleNumber when barcode use
 	      %%[5]:show tag_price in stock transfer
 	      %%[6]:xsale mode only used to batch sale transfer
-	      %%[7]:stock_transfer mode
+	      %%[7]:stock transfer mode
 	      %%    0-> common transfer 
 	      %%    1-> fast transfer no dialog pop
 	      %%[8]:check stock when stock transfer 0:uncheck, 1:check
-	      {"scan_only",         "扫码模式",           "000000011", "0"},
+	      %%[9]:stock reject mode
+	      %%    0 -> common reject
+	      %%    1 -> fast reject
+	      {"scan_only",         "扫码模式",           "0000000111", "0"},
 	      %% {"auto_level",        "会员自动升级",       "0",    "0"},
 	      {"maling_rang",       "抹零范围",           "3",    "0"},
 	      %% 1: clothes mode, 2: child mode, 3: home mode

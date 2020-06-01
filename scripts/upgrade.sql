@@ -754,6 +754,16 @@ alter table w_retailer add column lunar TINYINT default 0 after birth;
 
 alter table print_template add column offset_barcode TINYINT default 0 after offset_feather;
 
+--2020-05-21
+alter table w_sale_detail add column exist integer not null default 0 after total;
+alter table w_sale_detail add column negative tinyint not null default 0 after exist;
+alter table w_sale_detail_amount add column exist integer not null default 0 after total;
+
+--2020-06-01
+alter table print_template add column font_sn TINYINT default 0 after font_type;
+alter table print_template add column offset_sn TINYINT default 38 after offset_barcode;
+alter table print_template add column hpx_sn TINYINT default 0 after hpx_type;
+
 
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;

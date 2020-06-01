@@ -2532,7 +2532,8 @@ amount_reject(RSN, Merchant, UTable, Shop, Firm, Datetime, Inv, Amounts) ->
 	fun({struct, Attr}, Acc) ->
 		Color = ?v(<<"cid">>, Attr),
 		Size  = ?v(<<"size">>, Attr),
-		Count = ?v(<<"reject_count">>, Attr), 
+		%% Count = ?v(<<"reject_count">>, Attr),
+		Count = ?v(<<"count">>, Attr), 
 		
 		["update" ++ ?table:t(stock_note, Merchant, UTable)
 		 ++ " set total=total-" ++ ?to_s(Count) 

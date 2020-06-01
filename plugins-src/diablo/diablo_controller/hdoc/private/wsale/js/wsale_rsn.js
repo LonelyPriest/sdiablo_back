@@ -344,8 +344,17 @@ function wsaleRsnDetailCtrlProvide (
 	    }
 	}
 	return undefined;
-    }; 
+    };
 
+    var get_amount_exist = function(cid, size, amounts){
+	for(var i=0, l=amounts.length; i<l; i++){
+	    if (amounts[i].cid === cid && amounts[i].size === size){
+		return amounts[i].exist;
+	    }
+	}
+	return undefined;
+    };
+    
     var sort_amounts_by_color = function(colors, amounts){
 	console.log(amounts);
 	return colors.map(function(c){
@@ -370,10 +379,11 @@ function wsaleRsnDetailCtrlProvide (
 		{colors:        inv.colors,
 		 sizes:         inv.order_sizes,
 		 amounts:       inv.amounts,
-		 total:         inv.total, 
+		 total:         inv.total,
 		 path:          inv.path,
 		 colspan:       inv.sizes.length + 1,
 		 get_amount:    get_amount,
+		 get_amount_exist: get_amount_exist,
 		 row_total:     function(cid){
 		     return color_sorts.filter(function(s){
 			 return cid === s.cid
@@ -406,6 +416,7 @@ function wsaleRsnDetailCtrlProvide (
 		 path:       inv.path,
 		 colspan:    inv.sizes.length + 1,
 		 get_amount: get_amount,
+		 get_amount_exist: get_amount_exist,
 		 row_total:  function(cid){
 		     return color_sorts.filter(function(s){
 			 return cid === s.cid

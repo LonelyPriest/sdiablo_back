@@ -996,6 +996,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", font_feather"
 		", font_label"
 		", font_type"
+		", font_sn"
 	    %% ", font_vprice"
 		
 		", bold"
@@ -1015,6 +1016,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", hpx_barcode"
 		", hpx_label"
 		", hpx_type"
+		", hpx_sn"
 
 		", hpx_top"
 		", hpx_left"
@@ -1044,6 +1046,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", offset_fabric3"
 		", offset_feather"
 		", offset_barcode"
+		", offset_sn"
 
 		", barcode"
 		", w_barcode"
@@ -1093,6 +1096,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% font_feather
 		++ ?to_s(0) ++ ","      %% font_label
 		++ ?to_s(0) ++ ","      %% font_type
+		++ ?to_s(0) ++ ","      %% font_sn
 	    %% ++ ?to_s(0) ++ ","      %% font_vprice
 		
 		++ ?to_s(?NO) ++ ","    %% bold
@@ -1112,6 +1116,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% hpx_barcode
 		++ ?to_s(0) ++ ","      %% hpx_label
 		++ ?to_s(0) ++ ","      %% hpx_type
+		++ ?to_s(0) ++ ","      %% hpx_sn
 		
 		++ ?to_s(5) ++ ","      %% hpx_top
 		++ ?to_s(10) ++ ","     %% hpx_left
@@ -1125,13 +1130,13 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% size_color
 		++ ?to_s(0) ++ ","      %% firm_date
 
-		++ "\'\'" ++ ","      %% tag_price
-		++ "\'\'" ++ ","      %% vir_price
-		++ "\'\'" ++ ","      %% my_price
-		++ "\'\'" ++ ","      %% self_brand
+		++ "\'\'" ++ ","        %% tag_price
+		++ "\'\'" ++ ","        %% vir_price
+		++ "\'\'" ++ ","        %% my_price
+		++ "\'\'" ++ ","        %% self_brand
 		
 		++ ?to_s(0) ++ ","      %% offset_size
-		++ ?to_s(40) ++ ","      %% offset_color
+		++ ?to_s(40) ++ ","     %% offset_color
 		++ ?to_s(0) ++ ","      %% offset_tagprice
 		++ ?to_s(0) ++ ","      %% offset_virprice
 		++ ?to_s(0) ++ ","      %% offset_myprice
@@ -1141,6 +1146,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(50) ++ ","     %% offset_fabric3
 		++ ?to_s(50) ++ ","     %% offset_feather
 		++ ?to_s(0) ++ ","      %% offset_barcode
+		++ ?to_s(0) ++ ","      %% offset_sn
 
 		++ ?to_s(?YES) ++ ","   %% barcode
 		++ ?to_s(0) ++ ","      %% w_barcode

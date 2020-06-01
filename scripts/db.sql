@@ -1399,6 +1399,8 @@ create table w_sale_detail(
     in_datetime    DATETIME default 0,
     
     total          INTEGER default 0,
+    exist          INTEGER not null default 0,
+    negative       TINYINT default not null 0,
     promotion      INTEGER not null default -1, -- promotion
     score          INTEGER not null default -1, -- score
 
@@ -1431,6 +1433,7 @@ create table w_sale_detail_amount(
     brand          INTEGER default -1,
     color          INTEGER default -1,
     size           VARCHAR(8) default null, -- S/26, M/27....
+    exist          INTEGER not null default 0,
     total          INTEGER default 0,
     entry_date     DATETIME default 0,
     merchant       INTEGER default -1,

@@ -104,6 +104,8 @@ small_date(date, {Y, M, D}, {Y1, M1, D1}) ->
 	false -> {Y1, M1, D1}
     end.
 
+big_date(date, {Y,M,D}, ?INVALID_DATE) ->
+    {Y, M, D}; 
 big_date(date, {Y, M, D}, {Y1, M1, D1}) ->
     case calendar:date_to_gregorian_days({Y, M, D}) > calendar:date_to_gregorian_days({Y1, M1, D1}) of
 	true -> {Y, M, D};

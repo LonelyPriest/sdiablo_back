@@ -2666,11 +2666,12 @@ stock(check, Action, Total, CalcTotal, [{struct, Inv}|T]) ->
     DCount      = lists:foldr(
 		    fun({struct, A}, Acc)->
 			    %% ?INFO("style number ~p, A ~p", [StyleNumber, A]),
-			    case Action of
-				?NEW_INVENTORY -> ?v(<<"count">>, A) + Acc;
-				?REJECT_INVENTORY -> ?v(<<"reject_count">>, A) + Acc;
-				?TRANSFER_INVENTORY -> ?v(<<"count">>, A) + Acc
-			    end
+			    ?v(<<"count">>, A) + Acc
+			    %% case Action of
+			    %% 	?NEW_INVENTORY -> ?v(<<"count">>, A) + Acc;
+			    %% 	?REJECT_INVENTORY -> ?v(<<"reject_count">>, A) + Acc;
+			    %% 	?TRANSFER_INVENTORY -> ?v(<<"count">>, A) + Acc
+			    %% end
 		    end, 0, Amounts), 
 
     case StyleNumber of

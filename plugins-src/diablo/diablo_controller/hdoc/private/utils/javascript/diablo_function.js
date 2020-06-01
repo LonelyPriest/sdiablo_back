@@ -1207,7 +1207,8 @@ var diabloHelp = function(){
 		    sorts.push({cid     :inv.color_id,
 				size    :inv.size,
 				alarm_a :inv.alarm_a,
-				count   :inv.amount})
+				exist   :diablo_set_integer(inv.exist),
+				count   :diablo_set_integer(inv.amount)})
 		}; 
 	    });
 

@@ -1245,6 +1245,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 			", csn"
 			", retailer"
 			", ctime"
+			", sdate"
 			", edate"
 			", cid"
 			", rule"
@@ -1366,9 +1367,10 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				};
 			    
 			    {ok, OCard} ->
-				?DEBUG("old card ..., startDate ~p", [StartDate]),
-				EndDate = ?utils:big_date(date, current_date(), StartDate),
-				?DEBUG("EndDate ~p", [EndDate]),
+				%% ?DEBUG("old card ..., startDate ~p", [StartDate]),
+				LastEndDate = ?v(<<"edate">>, OCard),
+				BeginDate = ?utils:big_date(date, current_date(), ?v(<<"sdate">>, OCard)), 
+				?DEBUG("BeginDate ~p", [BeginDate]),
 				HasDeleted = ?v(<<"deleted">>, OCard, ?NO),
 				%% {Year, Month, Date} = ?utils:to_date(date, EndDate),
 				{Year, Month, Date} =
@@ -1380,7 +1382,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					    %% %% 	?NO -> ?utils:big_date(date, StartDate, EndDate)
 					    %% %% end
 					    %% current_date()
-					    EndDate
+					    BeginDate
 				    end,
 				?DEBUG("Year ~p, Month ~p, Date ~p", [Year, Month, Date]), 
 				CardSN = ?v(<<"csn">>, OCard),
@@ -1390,7 +1392,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				     ?THEORETIC_CHARGE ->
 					 RechargeDetailSql(CardSN, ?INVALID_DATE);
 				     _ ->
-					 RechargeDetailSql(CardSN, ?utils:to_date(date, EndDate))
+					 RechargeDetailSql(CardSN, ?utils:to_date(date, LastEndDate))
 				 end, 
 				 case Rule of
 				     ?THEORETIC_CHARGE -> 
@@ -1451,11 +1453,12 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				     case Rule of
 					 ?THEORETIC_CHARGE -> [];
 					 _ ->
-					     case ?utils:compare_date(date, StartDate, EndDate) of 
-						 true ->
-						     ", sdate=\'" ++ ?to_s(StartDate) ++ "\'";
-						 false -> []
-					     end
+					     %% case ?utils:compare_date(date, StartDate, EndDate) of 
+					     %% 	 true ->
+					     %% 	     ", sdate=\'" ++ ?to_s(StartDate) ++ "\'";
+					     %% 	 false -> []
+					     %% end
+					     ", sdate=\'" ++ ?to_s(StartDate) ++ "\'"
 				     end
 				 ++ " where id=" ++ ?to_s(?v(<<"id">>, OCard))]
 				 

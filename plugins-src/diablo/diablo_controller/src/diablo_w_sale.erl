@@ -908,8 +908,14 @@ handle_call({rsn_detail, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("rsn_detail with merchant ~p, Conditions ~p",
 	   [Merchant, Conditions]),
     C = ?utils:to_sqls(proplists, Conditions),
-    Sql = "select id, rsn, style_number, brand as brand_id, color as color_id"
-	", size, total as amount"
+    Sql = "select id"
+	", rsn"
+	", style_number"
+	", brand as brand_id"
+	", color as color_id"
+	", size"
+	", total as amount"
+	", exist"
     %% " from w_sale_detail_amount"
 	" from" ++ ?table:t(sale_note, Merchant, UTable)
 	++ " where " ++ C, 
@@ -2254,6 +2260,8 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 		      new    -> ?v(<<"sell_total">>, Inventory);
 		      reject -> -?v(<<"sell_total">>, Inventory) 
 		  end,
+    Exist       = ?v(<<"stock">>, Inventory),
+    Negative    = ?v(<<"negative">>, Inventory),
     Promotion   = ?v(<<"promotion">>, Inventory, -1),
     Score       = ?v(<<"score">>, Inventory, -1),
     Free        = ?v(<<"free">>, Inventory),
@@ -2312,7 +2320,9 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 		 ", firm"
 		 ", year"
 		 ", in_datetime"
+		 ", exist"
 		 ", total"
+		 ", negative"
 		 ", promotion"
 		 ", score"
 		 ", org_price"
@@ -2337,8 +2347,10 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 		 ++ ?to_s(Season) ++ ","
 		 ++ ?to_s(Firm) ++ ","
 		 ++ ?to_s(Year) ++ ","
-		 ++ "\'" ++ ?to_s(InDatetime) ++ "\'," 
+		 ++ "\'" ++ ?to_s(InDatetime) ++ "\',"
+		 ++ ?to_s(Exist) ++ "," 
 		 ++ ?to_s(Total) ++ ","
+		 ++ ?to_s(Negative) ++ ","
 		 ++ ?to_s(Promotion) ++ ","
 		 ++ ?to_s(Score) ++ ","
 		 
@@ -2378,7 +2390,7 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 			  new -> ?v(<<"sell_count">>, A);
 			  reject -> -?v(<<"reject_count">>, A)
 		      end,
-
+		  
 		  Sql01 = "select rsn, style_number, brand, color, size"
 		      " from"
 		      %% " w_sale_detail_amount"
@@ -2401,13 +2413,22 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 			   "insert into"
 			       %% " w_sale_detail_amount"
 			       ++ ?table:t(sale_note, Merchant, UTable)
-			       ++ "(rsn, style_number, brand, color, size"
-			       ", total, merchant, shop, entry_date) values("
+			       ++ "(rsn"
+			       ", style_number"
+			       ", brand"
+			       ", color"
+			       ", size"
+			       ", exist"
+			       ", total"
+			       ", merchant"
+			       ", shop"
+			       ", entry_date) values("
 			       ++ "\"" ++ ?to_s(RSN) ++ "\","
 			       ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 			       ++ ?to_s(Brand) ++ ","
 			       ++ ?to_s(Color) ++ ","
 			       ++ "\"" ++ ?to_s(Size) ++ "\","
+			       ++ ?to_s(?v(<<"exist">>, A)) ++ ","
 			       ++ ?to_s(Count) ++ ","
 			       ++ ?to_s(Merchant) ++ ","
 			       ++ ?to_s(Shop) ++ ","
@@ -2721,6 +2742,7 @@ sale_new(rsn_groups, MatchMode, {Merchant, UTable}, Conditions, PageFun) ->
 	", b.s_group"
 	", b.free"
 	", b.total"
+	", b.negative"
 	", b.promotion as pid"
 	", b.score as sid"
 	", b.org_price"

@@ -586,8 +586,12 @@ function wsaleNewProvide(
     // init
     $scope.sale = {barcode:undefined, style_number:undefined};
     $scope.inventories = [];
+
+    $scope.color_negative_sale = function(negative) {
+    	return negative ? "bg-red" : "";
+    };
     
-    var dialog = diabloUtilsService;
+    var dialog = diabloUtilsService; 
     
     var get_setting = function(shopId){
 	$scope.setting.check_sale    = wsaleUtils.check_sale(shopId, base);
@@ -1642,7 +1646,7 @@ function wsaleNewProvide(
 	
 	$scope.select.form.cardForm.$invalid  = false;
 	$scope.select.form.cashForm.$invalid  = false;
-	$scope.select.form.wForm.$invalid  = false; 
+	if ($scope.setting.show_wprice) $scope.select.form.wForm.$invalid  = false; 
 
 	$scope.select.rsn             = undefined;
 	$scope.select.cash            = undefined;
@@ -2360,7 +2364,9 @@ function wsaleNewProvide(
 		var new_a = {
 		    cid:        a.cid,
 		    size:       a.size, 
-		    sell_count: wsaleUtils.to_integer(amounts[i].sell_count)}; 
+		    sell_count: wsaleUtils.to_integer(amounts[i].sell_count),
+		    exist:      a.count
+		}; 
 		sale_amounts.push(new_a); 
 	    }
 	}; 
@@ -2431,6 +2437,7 @@ function wsaleNewProvide(
 	
 	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
+	    console.log(add);
 	    var sell_total = wsaleUtils.to_integer(add.sell); 
 	    var index = index_of_sale(add, added)
 	    // console.log(index);
@@ -2501,6 +2508,7 @@ function wsaleNewProvide(
 		    all_tagprice: wsaleUtils.to_decimal(add.tag_price * sell_total),
 		    
 		    stock       : add.total,
+		    negative    : add.negative ? diablo_yes : diablo_no,
 		    
 		    path        : sets(add.path), 
 		    sizes       : add.sizes,
@@ -2828,11 +2836,12 @@ function wsaleNewProvide(
 
     var add_callback = function(params){
 	console.log(params.amounts); 
-	var sell_total = 0, note = "";
+	var sell_total = 0, note = "", negative = false;
 	angular.forEach(params.amounts, function(a){
 	    if (angular.isDefined(a.sell_count) && a.sell_count){
 		sell_total += wsaleUtils.to_integer(a.sell_count);
 		note += diablo_find_color(a.cid, filterColor).cname + a.size + ";"
+		if (a.sell_count > a.count) negative = true;
 	    }
 	}); 
 
@@ -2840,7 +2849,8 @@ function wsaleNewProvide(
 		sell:        sell_total,
 		fdiscount:   params.fdiscount,
 		fprice:      params.fprice,
-		note:        note};
+		note:        note,
+		negative:    negative};
     };
 
     var free_stock_not_enought = function(stock) {
@@ -3081,6 +3091,7 @@ function wsaleNewProvide(
 		    inv.fdiscount  = result.fdiscount;
 		    inv.fprice     = result.fprice;
 		    inv.note       = result.note;
+		    inv.negative   = result.negative;
 		    after_add();
 		};
 
@@ -3330,7 +3341,8 @@ function wsaleNewProvide(
 	    inv.sell       = result.sell;
 	    inv.fdiscount  = result.fdiscount;
 	    inv.fprice     = result.fprice;
-	    inv.note       = result.note; 
+	    inv.note       = result.note;
+	    inv.negative   = result.negative;
 
 	    // inv.note 
 	    // save
