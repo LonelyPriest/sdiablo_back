@@ -442,8 +442,8 @@ check_transfer(Merchant, UTable, FShop, TShop, CheckProps) ->
 			 ++ case Good of
 				[] -> ?to_s(0);
 				_ -> ?to_s(?v(<<"state">>, Good, 0))
-			    end
-			 ++ "\"" ++ ?to_s(Path) ++ "\","
+			    end  ++ ","
+			 ++ "\'" ++ ?to_s(Path) ++ "\',"
 			 ++ ?to_s(AlarmDay) ++ ","
 			 ++ ?to_s(TShop) ++ ","
 			 ++ ?to_s(Merchant) ++ ","
