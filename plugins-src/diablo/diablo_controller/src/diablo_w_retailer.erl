@@ -3682,13 +3682,15 @@ sms(promotion, Merchant) ->
 		
 ticket_condition(custome, [], Acc) ->
     Acc;
-ticket_condition(custome, [{<<"ticket_state">>, State}|T], Acc) ->
-    ticket_condition(custome, T, [{<<"state">>, State}|Acc]);
-ticket_condition(custome, [{<<"ticket_pshop">>, State}|T], Acc) ->
-    ticket_condition(custome, T, [{<<"in_shop">>, State}|Acc]);
-ticket_condition(custome, [{<<"ticket_plan">>, State}|T], Acc) ->
-    ticket_condition(custome, T, [{<<"plan">>, State}|Acc]);
-ticket_condition(custome, [{<<"ticket_batch">>, State}|T], Acc) ->
-    ticket_condition(custome, T, [{<<"batch">>, State}|Acc]);
+ticket_condition(custome, [{<<"ticket_state">>, Value}|T], Acc) ->
+    ticket_condition(custome, T, [{<<"state">>, Value}|Acc]);
+ticket_condition(custome, [{<<"ticket_pshop">>, Value}|T], Acc) ->
+    ticket_condition(custome, T, [{<<"in_shop">>, Value}|Acc]);
+ticket_condition(custome, [{<<"ticket_cshop">>, Value}|T], Acc) ->
+    ticket_condition(custome, T, [{<<"shop">>, Value}|Acc]);
+ticket_condition(custome, [{<<"ticket_plan">>, Value}|T], Acc) ->
+    ticket_condition(custome, T, [{<<"plan">>, Value}|Acc]);
+ticket_condition(custome, [{<<"ticket_batch">>, Value}|T], Acc) ->
+    ticket_condition(custome, T, [{<<"batch">>, Value}|Acc]);
 ticket_condition(custome, [H|T], Acc) ->
     ticket_condition(custome, T, [H|Acc]).

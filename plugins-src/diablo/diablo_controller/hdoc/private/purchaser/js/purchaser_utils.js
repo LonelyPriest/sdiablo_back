@@ -100,8 +100,8 @@ var stockUtils = function(){
 		hide_feather:   default_hide(hide.charAt(15)),
 		no_score_with_promotion: default_hide(hide.charAt(16)),
 		pvp: stockUtils.to_integer(hide.charAt(17)) * 10
-		    + stockUtils.to_integer(hide.charAt(18))
-		
+		    + stockUtils.to_integer(hide.charAt(18)),
+		print_label_dialog: stockUtils.to_integer(hide.charAt(19)) 
 	    }
 	    
 	},

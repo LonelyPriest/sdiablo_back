@@ -2348,9 +2348,15 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 		 ++ ?to_s(Firm) ++ ","
 		 ++ ?to_s(Year) ++ ","
 		 ++ "\'" ++ ?to_s(InDatetime) ++ "\',"
-		 ++ ?to_s(Exist) ++ "," 
+		 ++ case Action of
+			new -> ?to_s(Exist);
+			reject -> ?to_s(0)
+		    end ++ "," 
 		 ++ ?to_s(Total) ++ ","
-		 ++ ?to_s(Negative) ++ ","
+		 ++ case Action of
+			new -> ?to_s(Negative);
+			reject -> ?to_s(0)
+		    end ++ ","
 		 ++ ?to_s(Promotion) ++ ","
 		 ++ ?to_s(Score) ++ ","
 		 
@@ -2428,7 +2434,10 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 			       ++ ?to_s(Brand) ++ ","
 			       ++ ?to_s(Color) ++ ","
 			       ++ "\"" ++ ?to_s(Size) ++ "\","
-			       ++ ?to_s(?v(<<"exist">>, A)) ++ ","
+			       ++ case Action of
+				   new -> ?to_s(?v(<<"exist">>, A));
+				   reject -> ?to_s(0)
+			       end ++ ","
 			       ++ ?to_s(Count) ++ ","
 			       ++ ?to_s(Merchant) ++ ","
 			       ++ ?to_s(Shop) ++ ","

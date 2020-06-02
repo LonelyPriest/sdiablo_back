@@ -127,6 +127,14 @@
 	    </select>
 	  </span>
 
+	  <span x-ng-switch-when="ticket_cshop">
+	    <select type="text" class="form-control"
+		    x-ng-model="f.value"
+	  	    x-ng-options="s as s.name for s in prompt.ticket_cshop"
+		    x-ng-init="f.value=f.value ? f.value : prompt.ticket_cshop[0]">
+	    </select>
+	  </span>
+
 	  <span x-ng-switch-when="ticket_plan">
 	    <input type="text" class="form-control" placeholder="请输入优惠券方案"
 		   x-ng-model="f.value"

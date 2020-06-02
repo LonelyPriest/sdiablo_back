@@ -3051,7 +3051,7 @@ function wsaleNewProvide(
 	    if(inv.free === 0){
 		$scope.auto_focus("sell");
 		inv.free_color_size = true;
-		inv.amounts = [{cid:0, size:0}];
+		inv.amounts = [{cid:0, size:0, count:inv.total}];
 		inv.sell = 1; 
 		$scope.auto_save_free(inv);
 	    } else{

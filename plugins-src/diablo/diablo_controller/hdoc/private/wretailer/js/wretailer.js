@@ -1313,6 +1313,7 @@ function wretailerCustomTicketDetailCtrlProvide(
     });
     diabloFilter.add_field("ticket_state", retailerUtils.ticket_state());
     diabloFilter.add_field("ticket_pshop", filterShop);
+    diabloFilter.add_field("ticket_cshop", filterShop);
     diabloFilter.add_field("ticket_plan",  filterTicketPlan);
     diabloFilter.add_field("ticket_batch", []);
     

@@ -771,7 +771,7 @@ function purchaserInventoryRejectCtrlProvide(
 			    after_add(false); 
 			} 
 		    } else {
-			start_transfer();
+			start_reject();
 		    } 
 		} else {
 		    for (var i=0, l=inv.amounts.length; i<l; i++) {

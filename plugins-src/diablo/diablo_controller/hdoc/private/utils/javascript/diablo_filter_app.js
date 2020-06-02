@@ -374,6 +374,9 @@ function filterProvider(){
 		} else if (name === 'ticket_batch') {
 		    _filter.fields.push({name:"ticket_batch", chinese:"优惠券券号"});
 		    _prompt.ticket_batch = promptValues;
+		} else if (name === 'ticket_cshop') {
+		    _filter.fields.push({name:"ticket_cshop", chinese:"消费店铺"});
+		    _prompt.ticket_cshop = promptValues;
 		} else if (name === 'score') {
 		    _filter.fields.push({name:"score", chinese:"积分方案"});
 		    _prompt.score = promptValues;
