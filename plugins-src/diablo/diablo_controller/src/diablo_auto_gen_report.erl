@@ -590,7 +590,7 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
 			       " and score<" ++ ?to_s(?v(<<"score">>, H))
 		       end
 		    ++ ?sql_utils:condition(proplists, NewConditions)
-		    ++ " and type!=" ++ ?to_s(?SYSTEM_RETAILER)
+		    ++ " and type in (0, 1)"
 		    ++ " and deleted=0",
 		case ?sql_utils:execute(read, Sql) of
 		    {ok, []} -> [];

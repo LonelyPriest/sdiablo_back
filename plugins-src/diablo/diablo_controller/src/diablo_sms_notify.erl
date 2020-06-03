@@ -181,7 +181,7 @@ sms_once(zz, Merchant, Sign, {Shop, Phone, Action, Money, Balance, Score}) ->
     case ?w_user_profile:get(sms_template, Merchant) of
 	{ok, []} -> {error, {sms_template_not_found, Merchant}};
 	{ok, Templates} ->
-	    ?DEBUG("templates ~p", [Templates]),
+	    %% ?DEBUG("templates ~p", [Templates]),
 	    %% filter
 	    [Template] = get_sms_template(zz, Action, Merchant, Templates),
 	    ?DEBUG("template ~p", [Template]),

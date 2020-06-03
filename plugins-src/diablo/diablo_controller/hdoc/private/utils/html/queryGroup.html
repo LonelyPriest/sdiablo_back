@@ -387,6 +387,18 @@
 	    </form>
 	  </span>
 
+	  <span x-ng-switch-when="rprice">
+	    <form name="dForm">
+	      <div ng-class="{'has-error':rForm.$invalid && !rForm.$pristine}">
+		<input type="number" step="1"
+		       disable-key
+		       class="form-control" placeholder="成交价"
+		       x-ng-model="f.value"
+		       x-ng-pattern="/^\d+$/" />
+	      </div>
+	    </form>
+	  </span>
+
 	  <span x-ng-switch-when="msell">
 	    <form name="mForm">
 	      <div ng-class="{'has-error':mForm.$invalid && !mForm.$pristine}">
@@ -435,6 +447,17 @@
 	  </span>
 
 	  <span x-ng-switch-when="mscore">
+	    <form name="sForm">
+	      <div ng-class="{'has-error':sForm.$invalid && !sForm.$pristine}">
+		<input type="number" step="1"
+		       disable-key
+		       class="form-control" placeholder="请输入累计积分"
+		       x-ng-model="f.value" />
+	      </div>
+	    </form>
+	  </span>
+
+	  <span x-ng-switch-when="lscore">
 	    <form name="sForm">
 	      <div ng-class="{'has-error':sForm.$invalid && !sForm.$pristine}">
 		<input type="number" step="1"

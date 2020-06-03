@@ -310,6 +310,8 @@ function filterProvider(){
 		    _filter.fields.push({name:"mdiscount", chinese:"折扣大于"}); 
 		} else if (name === 'ldiscount'){
 		    _filter.fields.push({name:"ldiscount", chinese:"折扣小于"});
+		} else if (name === 'rprice'){
+		    _filter.fields.push({name:"rprice", chinese:"成交价"});
 		} else if (name === 'tag_price'){
 		    _filter.fields.push({name:"tag_price", chinese:"吊牌价"});
 		} else if (name === 'org_price'){
@@ -345,9 +347,12 @@ function filterProvider(){
 		    _filter.fields.push({name:"mconsume", chinese:"消费大于"});
 		    _prompt.mconsume = promptValues;
 		} else if (name ==='mscore') {
-		    _filter.fields.push({name:"mscore", chinese:"积分大于"});
+		    _filter.fields.push({name:"mscore", chinese:"积分>="});
 		    _prompt.mscore = promptValues;
-		}else if (name === 'account'){
+		} else if (name ==='lscore') {
+		    _filter.fields.push({name:"lscore", chinese:"积分<="});
+		    _prompt.lscore = promptValues;
+		} else if (name === 'account'){
 		    _filter.fields.push({name:"account", chinese:"收银员"});
 		    _prompt.account = promptValues;
 		} else if (name === 'level'){

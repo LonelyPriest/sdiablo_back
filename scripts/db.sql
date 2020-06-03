@@ -473,7 +473,7 @@ create table w_retailer
     shop            INTEGER default -1,
     draw            INTEGER default -1, -- with draw strategy
     merchant        INTEGER default -1, -- which merchant belong to
-    type            TINYINT default 0,  -- 0: common, 1: charge
+    type            TINYINT default 0,  -- 0: common, 1: charge, 2: system, 3: no sms retailer
     py              VARCHAR(8) default null,
     id_card         VARCHAR(18) default null,
     intro           INTEGER default -1,

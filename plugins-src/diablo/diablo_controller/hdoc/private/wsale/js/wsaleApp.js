@@ -2530,6 +2530,7 @@ function wsaleNewProvide(
 	// console.log(im_print);
 	var base = {
 	    retailer:       $scope.select.retailer.id,
+	    retailer_type:  $scope.select.retailer.type_id,
 	    vip:            wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
 	    shop:           $scope.select.shop.id,
 	    datetime:       dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),

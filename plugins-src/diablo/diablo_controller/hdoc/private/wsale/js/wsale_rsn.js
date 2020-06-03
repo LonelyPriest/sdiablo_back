@@ -142,7 +142,7 @@ function wsaleRsnDetailCtrlProvide (
     diabloFilter.add_field("sex",      diablo_sex2object);
     diabloFilter.add_field("season",   diablo_season2objects);
     diabloFilter.add_field("year",     diablo_full_year); 
-    diabloFilter.add_field("firm",     filterFirm);
+    diabloFilter.add_field("firm",     filterFirm); 
     diabloFilter.add_field("shop",     $scope.shops); 
     diabloFilter.add_field("retailer", function(viewValue){
 	return wsaleUtils.match_retailer_phone(
@@ -152,7 +152,8 @@ function wsaleRsnDetailCtrlProvide (
 	    $scope.setting.solo_retailer)
     }); 
     diabloFilter.add_field("employee",  filterEmployee);
-    diabloFilter.add_field("account",     []);
+    diabloFilter.add_field("rprice",    []);
+    diabloFilter.add_field("account",   []);
     diabloFilter.add_field("sell_type", sell_type);
     diabloFilter.add_field("rsn",       $scope.match_rsn);
     diabloFilter.add_field("org_price", []);
@@ -160,6 +161,7 @@ function wsaleRsnDetailCtrlProvide (
     diabloFilter.add_field("ldiscount", []);
     diabloFilter.add_field("lsell",     []);
     diabloFilter.add_field("msell",     []);
+    diabloFilter.add_field("rprice",    []);
    
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();

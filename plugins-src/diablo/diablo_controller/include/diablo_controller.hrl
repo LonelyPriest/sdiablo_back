@@ -75,6 +75,7 @@
 -define(COMMON_RETAILER, 0).
 -define(CHARGE_RETAILER, 1).
 -define(SYSTEM_RETAILER, 2).
+-define(NO_SMS_RETAILER, 3).
 
 -define(FIRM_BILL, 9).
 -define(INVALID_OR_EMPTY, -1).

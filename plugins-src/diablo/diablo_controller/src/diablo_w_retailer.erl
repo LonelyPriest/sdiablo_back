@@ -2208,12 +2208,15 @@ handle_call({total_retailer, Merchant, Conditions}, _From, State) ->
     Month = ?v(<<"month">>, Conditions, []),
     Date  = ?v(<<"date">>, Conditions, []),
     MScore = ?v(<<"mscore">>, Conditions, []),
+    LScore = ?v(<<"lscore">>, Conditions, []),
     SortConditions = lists:keydelete(
-		       <<"mscore">>, 1,
+		       <<"lscore">>, 1,
 		       lists:keydelete(
-			 <<"month">>, 1,
-			 lists:keydelete(<<"date">>, 1, NewConditions))),
-
+			 <<"mscore">>, 1,
+			 lists:keydelete(
+			   <<"month">>, 1,
+			   lists:keydelete(<<"date">>, 1, NewConditions)))),
+    
     Sql = "select count(*) as total"
 	", sum(balance) as balance"
 	", sum(consume) as consume"
@@ -2233,6 +2236,11 @@ handle_call({total_retailer, Merchant, Conditions}, _From, State) ->
 	       [] -> [];
 	       _ ->
 		   " and score>=" ++ ?to_s(MScore)
+	   end
+	++ case LScore of
+	       [] -> [];
+	       _ ->
+		   " and score<=" ++ ?to_s(LScore)
 	   end
 	++ ?sql_utils:condition(proplists, SortConditions),
 
@@ -2291,12 +2299,15 @@ handle_call({{filter_retailer, Order, Sort},
     Month = ?v(<<"month">>, Conditions, []),
     Date  = ?v(<<"date">>, Conditions, []),
     MScore = ?v(<<"mscore">>, Conditions, []),
+    LScore = ?v(<<"lscore">>, Conditions, []),
     SortConditions = lists:keydelete(
-		       <<"a.mscore">>, 1,
+		       <<"a.lscore">>, 1,
 		       lists:keydelete(
-			 <<"a.month">>, 1,
+			 <<"a.mscore">>, 1,
 			 lists:keydelete(
-			   <<"a.date">>, 1, NewConditions))), 
+			   <<"a.month">>, 1,
+			   lists:keydelete(
+			     <<"a.date">>, 1, NewConditions)))), 
     
     Sql = "select a.id"
 	", a.merchant" 
@@ -2340,6 +2351,11 @@ handle_call({{filter_retailer, Order, Sort},
 	       [] -> [];
 	       _ ->
 		   " and a.score>=" ++ ?to_s(MScore)
+	   end
+	++ case LScore of
+	       [] -> [];
+	       _ ->
+		   " and a.score<=" ++ ?to_s(LScore)
 	   end 
     %% ++ " and a.deleted=" ++ ?to_s(?NO)
 	++ ?sql_utils:condition(page_desc, {Order, Sort}, CurrentPage, ItemsPerPage),

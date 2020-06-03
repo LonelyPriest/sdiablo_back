@@ -2177,6 +2177,7 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
     ShouldPay        = ?v(<<"should_pay">>, Base),
     %% RetailerId       = ?v(<<"retailer">>, Base),
     Vip              = ?v(<<"vip">>, Base, false),
+    RetailerType     = ?v(<<"retailer_type">>, Base, 0),
     ShopId           = ?v(<<"shop">>, Base), 
 
     Datetime         = ?v(<<"datetime">>, Base),
@@ -2210,7 +2211,7 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
 				    %% SysVips  = sys_vip_of_shop(Merchant, ShopId),
 				    %% ?DEBUG("SysVips ~p, Retailer ~p", [SysVips, Retailer]),
 				    
-				    case Vip =:= true andalso SMS =:= 1 of
+				    case Vip andalso RetailerType =/= 3 andalso SMS =:= 1 of
 					true ->
 					    %% {ShopName, ShopSign} =
 					    %% 	case ?w_user_profile:get(shop, Merchant, ShopId) of
@@ -2308,22 +2309,39 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
 
 start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props) ->
     case ?w_sale:sale(reject, {Merchant, UTable}, lists:reverse(Invs), Props) of 
-	{{ok, RSN}, Shop, RetailerId, RetailerType, BackWithdraw} ->
-	    case BackWithdraw =/= 0 of
+	{{ok, RSN}, Shop, RetailerId, RetailerType, BackWithdraw} -> 
+	    %% case BackWithdraw =/= 0 of
+	    %% 	true ->
+	    %% 	    %% query agign to obtain the correct infomation
+	    %% 	    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, RetailerId),
+	    %% 	    {SMSCode, _} = send_sms(Merchant, 2, Shop, Retailer, BackWithdraw),
+	    %% 	    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+	    %% 			   [{<<"rsn">>, ?to_b(RSN)},
+	    %% 			    {<<"sms_code">>, SMSCode}]); 
+	    %% 	false ->
+	    %% 	    case RetailerType =:= ?SYSTEM_RETAILER of
+	    %% 		true -> ?w_user_profile:update(sysretailer, Merchant);
+	    %% 		false -> ok
+	    %% 	    end,
+	    %% 	    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+	    %% 			   [{<<"rsn">>, ?to_b(RSN)}])
+	    %% end;
+	    case BackWithdraw == 0
+		orelse RetailerType =:= ?SYSTEM_RETAILER
+		orelse RetailerType =:= ?NO_SMS_RETAILER of
 		true ->
-		    %% query agign to obtain the correct infomation
-		    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, RetailerId),
-		    {SMSCode, _} = send_sms(Merchant, 2, Shop, Retailer, BackWithdraw),
-		    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
-				   [{<<"rsn">>, ?to_b(RSN)},
-				    {<<"sms_code">>, SMSCode}]); 
-		false ->
 		    case RetailerType =:= ?SYSTEM_RETAILER of
 			true -> ?w_user_profile:update(sysretailer, Merchant);
 			false -> ok
 		    end,
 		    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
-				   [{<<"rsn">>, ?to_b(RSN)}])
+				   [{<<"rsn">>, ?to_b(RSN)}]);
+		false ->
+		    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, RetailerId),
+		    {SMSCode, _} = send_sms(Merchant, 2, Shop, Retailer, BackWithdraw),
+		    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+				   [{<<"rsn">>, ?to_b(RSN)},
+				    {<<"sms_code">>, SMSCode}])
 	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
