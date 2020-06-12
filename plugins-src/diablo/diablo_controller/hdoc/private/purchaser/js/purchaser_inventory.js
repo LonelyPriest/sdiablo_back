@@ -404,6 +404,7 @@ function purchaserInventoryNewCtrlProvide (
 	add.org_price    = src.org_price;
 	add.vir_price    = src.vir_price;
 	add.tag_price    = src.tag_price;
+	add.draw         = src.draw;
 	add.ediscount    = src.ediscount;
 	add.discount     = src.discount;
 	
@@ -683,7 +684,8 @@ function purchaserInventoryNewCtrlProvide (
 		
 		vir_price   : diablo_set_float(add.vir_price),
 		org_price   : diablo_set_float(add.org_price),
-		tag_price   : diablo_set_float(add.tag_price), 
+		tag_price   : diablo_set_float(add.tag_price),
+		draw        : diablo_set_float(add.draw),
 		ediscount   : diablo_set_float(add.ediscount),
 		discount    : diablo_set_float(add.discount),
 		state       : add.state,
@@ -1390,6 +1392,8 @@ function purchaserInventoryNewCtrlProvide (
 	// season:false,
 	vir_price:false,
 	tag_price:false,
+	draw: false,
+	
 	discount:false,
 	color:false,
 	size:false,
@@ -1872,7 +1876,8 @@ function purchaserInventoryNewCtrlProvide (
 	sex       : $scope.sex2objs[stockUtils.d_sex($scope.select.shop.id, base)],
 	vir_price : 0,
 	org_price : 0, 
-	tag_price : 0, 
+	tag_price : 0,
+	draw      : 0,
 	ediscount : 0,
 	discount  : 100,
 	sprice    : $scope.yes_no[0],
@@ -1917,6 +1922,7 @@ function purchaserInventoryNewCtrlProvide (
 	good.org_price = $scope.good.org_price;
 	good.vir_price = $scope.good.vir_price;
 	good.tag_price = $scope.good.tag_price;
+	good.draw      = $scope.good.draw;
 	good.discount  = $scope.good.discount; 
 	good.ediscount = $scope.good.ediscount;
 	good.sprice    = stockUtils.get_object_id($scope.good.sprice);
@@ -2072,6 +2078,7 @@ function purchaserInventoryNewCtrlProvide (
 			org_price: good.org_price,
 			vir_price: good.vir_price,
 			tag_price: good.tag_price,
+			draw:      good.draw,
 			ediscount: good.ediscount,
 			state:     stockUtils.to_integer(good.sprice) === 1 ? 3 : diablo_invalid_index,
 			discount:  good.discount,
@@ -2202,7 +2209,8 @@ function purchaserInventoryNewCtrlProvide (
 	    year:      $scope.good.year,
 	    season:    $scope.season2objs[stockUtils.valid_season(current_month)],
 	    org_price: $scope.good.org_price,
-	    tag_price: $scope.good.tag_price, 
+	    tag_price: $scope.good.tag_price,
+	    draw: undefined,
 	    ediscount: $scope.good.ediscount, 
 	    discount:  $scope.good.discount,
 	    alarm_day: -1,
@@ -2226,7 +2234,8 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.form.gForm.style_number.$pristine = true;
 	$scope.form.gForm.brand.$pristine = true;
 	$scope.form.gForm.type.$pristine = true;
-	$scope.form.gForm.tag_price.$pristine = true; 
+	$scope.form.gForm.tag_price.$pristine = true;
+	$scope.form.gForm.draw.$pristine = true;
 	$scope.form.gForm.discount.$pristine  = true;
 	// $scope.form.gForm.alarm.$pristine     = true;
 	// $scope.image = undefined;
@@ -2347,6 +2356,7 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.setting.saler_stock     = stockUtils.saler_stock(diablo_default_shop, base);
     $scope.setting.gift_sale       = stockUtils.gift_sale(diablo_default_shop, base);
     $scope.setting.print_access    = stockUtils.print_num(user.loginShop, base);
+    angular.extend($scope.setting, stockUtils.stock_in_hide_mode(user.loginShop, base));
     // if (needCLodop()) loadCLodop(print_mode.protocal); 
     
     // var hide_mode  = stockUtils.stock_in_hide_mode(diablo_default_shop, base); 
@@ -2359,9 +2369,10 @@ function purchaserInventoryDetailCtrlProvide(
     // $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base); 
     $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
     $scope.setting.dual_barcode = stockUtils.dual_barcode_print(user.loginShop, base);
+    console.log($scope.setting);
 
     $scope.printU = new stockPrintU($scope.setting.auto_barcode, $scope.setting.dual_barcode);
-    $scope.printU.setPrinter($scope.setting.printer_barcode); 
+    $scope.printU.setPrinter($scope.setting.printer_barcode);
     /*
      * pagination 
      */
@@ -3221,7 +3232,9 @@ function purchaserInventoryDetailCtrlProvide(
 		tag_price  :diablo_get_modified(params.tag_price, inv.tag_price),
 		discount   :diablo_get_modified(params.discount, inv.discount),
 		contailer  :diablo_get_modified(params.contailer, inv.contailer),
-		score      :params.is_score.id === 1 ? undefined : params.is_score.id
+		score      :params.is_score.id === 1 ? undefined : params.is_score.id,
+		vir_price  :diablo_get_modified(params.vir_price, inv.vir_price),
+		draw       :diablo_get_modified(params.draw, inv.draw)
 	    };
 
 	    console.log(update);
@@ -3258,6 +3271,8 @@ function purchaserInventoryDetailCtrlProvide(
 		    var org_price = get_modified(update.org_price, inv.org_price);
 		    var discount  = get_modified(update.discount, inv.discount);
 		    var contailer = get_modified(update.contailer, inv.contailer);
+		    var vir_price = get_modified(update.vir_price, inv.vir_price);
+		    var draw      = get_modified(update.draw, inv.draw);
 		    var s = "修改价格成功！！"
 		    
 			+ "[吊牌价" + tag_price.toString() + "；" 
@@ -3274,6 +3289,8 @@ function purchaserInventoryDetailCtrlProvide(
 			    inv.org_price = org_price;
 			    inv.discount  = discount;
 			    inv.ediscount = stockUtils.ediscount(org_price, tag_price);
+			    inv.vir_price = vir_price;
+			    inv.draw      = draw;
 			    inv.contailer = contailer;
 			    inv.sid       = update.score === 0 ? -1 : inv.sid;
 			    console.log(inv);}); 
@@ -3297,14 +3314,18 @@ function purchaserInventoryDetailCtrlProvide(
 		style_number :inv.style_number,
 		brand        :inv.brand.name,
 		org_price    :inv.org_price,
+		vir_price    :inv.vir_price,
 		tag_price    :inv.tag_price,
 		discount     :inv.discount,
+		draw         :inv.draw,
 		contailer    :inv.contailer,
 		yes_no       :yes_no,
 		is_score     :yes_no[0],
 		is_sprice    :yes_no[0],
-		stock_contailer : $scope.setting.stock_contailer,
-		update_orgprice: $scope.stock_right.show_orgprice
+		stock_contailer: $scope.setting.stock_contailer,
+		update_orgprice: $scope.stock_right.show_orgprice,
+		hide_vprice  :$scope.setting.hide_vprice,
+		hide_draw    :$scope.setting.hide_draw
 	    }
 	);
     };

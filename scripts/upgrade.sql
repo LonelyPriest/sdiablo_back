@@ -764,6 +764,10 @@ alter table print_template add column font_sn TINYINT default 0 after font_type;
 alter table print_template add column offset_sn TINYINT default 38 after offset_barcode;
 alter table print_template add column hpx_sn TINYINT default 0 after hpx_type;
 
+--2020-06-10
+alter table w_inventory add column draw DECIMAL(10, 2) default 0 after tag_price;
+alter table w_inventory_good add column draw DECIMAL(10, 2) default 0 after tag_price;
+
 
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;

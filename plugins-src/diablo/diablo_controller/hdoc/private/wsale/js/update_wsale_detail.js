@@ -453,7 +453,14 @@ function wsaleUpdateDetailCtrlProvide(
 				&& parseInt(a.sell_count) !== 0){
 				return true;
 			    }
+			}).map(function(a) {
+			    return {
+				cid: a.cid,
+				size: a.size,
+				sell_count: a.sell_count,
+				exist: a.count}
 			})
+			
 		    }}(),
 		
 		sell_total     : parseInt(add.reject),
@@ -470,6 +477,9 @@ function wsaleUpdateDetailCtrlProvide(
 		rdiscount      : add.rdiscount,
 		path           : add.path,
 		comment        : add.comment,
+
+		stock          : add.total,
+		negative       : 0,
 
 		// sizes          : add.sizes,
 		s_group        : add.s_group,

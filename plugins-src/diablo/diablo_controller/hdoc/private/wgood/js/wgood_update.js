@@ -666,7 +666,8 @@ function wgoodUpdateCtrlProvide(
 	update_good.season    = good.season.id; 
 	update_good.org_price = stockUtils.to_float(good.org_price);
 	update_good.vir_price = stockUtils.to_float(good.vir_price);
-	update_good.tag_price = stockUtils.to_float(good.tag_price); 
+	update_good.tag_price = stockUtils.to_float(good.tag_price);
+	update_good.draw      = stockUtils.to_float(good.draw);
 	update_good.ediscount = stockUtils.to_integer(good.ediscount);
 	update_good.discount  = stockUtils.to_integer(good.discount);
 	update_good.alarm_day = stockUtils.to_integer(good.alarm_day);

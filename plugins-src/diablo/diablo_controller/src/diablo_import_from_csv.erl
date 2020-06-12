@@ -15,6 +15,41 @@
 
 -compile(export_all).
 
+gen_charge(merchant, Merchant) ->
+    {ok, Charge} = ?w_user_profile:get(charge, Merchant, 332),
+    
+    Sql = "select id, score, balance from w_retailer where merchant=" ++ ?to_s(Merchant)
+	++ " and type=1"
+	++ " and balance > 0",
+    case ?sql_utils:execute(read, Sql) of
+	{ok, []} -> [];
+	{ok, Retailers} -> 
+	    lists:foreach(
+	      fun(R) ->
+		      RetailerId = ?v(<<"id">>, R),
+		      Balance = ?v(<<"balance">>, R),
+		      Attrs = [{<<"shop">>, 325},
+			       {<<"retailer">>, RetailerId},
+			       {<<"employee">>, <<"00000001">>},
+			       {<<"charge_balance">>, 0},
+			       {<<"send_balance">>, Balance},
+			       {<<"cash">>,0},
+			       {<<"card">>,0},
+			       {<<"wxin">>,0},
+			       {<<"charge">>, 332}],
+		      case ?w_retailer:retailer(last_recharge, Merchant, RetailerId) of
+			  {ok, []} ->
+			      ?w_retailer:charge(recharge, Merchant, {Attrs, Charge}),
+			      Sql1 = "update w_retailer set balance=balance-" ++ ?to_s(Balance)
+				  ++ " where merchant=" ++ ?to_s(Merchant)
+				  ++ " and id=" ++ ?to_s(RetailerId),
+			      ?sql_utils:execute(write, Sql1, ok);
+			  {ok, _LastCharge} -> 
+			      ok
+		      end
+	      end, Retailers)
+    end.
+
 delete(member_not_used, Merchant) ->
     Sql = "select id, merchant from w_retailer where merchant=" ++ ?to_s(Merchant)
 	++ " and id>11883 and id<18912",
@@ -68,10 +103,10 @@ insert_into_member(Merchant, _Datetime, _Time, [], _Sort, Acc) ->
     {ok, Merchant} = ?sql_utils:execute(transaction, lists:reverse(Acc), Merchant);
 
 insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
-    {RName, Phone, Shop, Score, Consume, Birth, Date} = H,
+    {RName, Phone, Shop, Score, Consume, Balance, Birth, Date} = H,
     ?DEBUG("H ~p", [H]),
     NewShop = case Shop of
-		  <<>> -> 88;
+		  <<>> -> 325;
 		  _ -> Shop
 	      end,
     NewScore = case Score of
@@ -82,6 +117,11 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
     NewConsume = case Consume of
 		     <<>> -> 0;
 		     _ -> Consume
+		 end,
+
+    NewBalance = case Balance of
+		     <<>> -> 0;
+		     _ -> round(?to_f(string:strip(?to_s(Balance))))
 		 end,
 
     NewBirth = case Birth of
@@ -97,7 +137,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
     ?DEBUG("NewBirth ~p", [NewBirth]),
 
     IsExist = 
-	case [ P || {_, P, _, _, _, _, _} <- Sort, P =:= Phone ] of
+	case [ P || {_, P, _, _, _, _, _, _} <- Sort, P =:= Phone ] of
 	    [] -> false;
 	    _ -> true
 	end,
@@ -145,14 +185,16 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 			    end, 
 
 		    Sql = ["insert into w_retailer("
-			   "name, score, consume, mobile, shop, merchant, Birth, entry_date)"
+			   "name, score, consume, balance, mobile, shop, merchant, Birth, entry_date)"
 			   " values ("
 			   ++ "\"" ++ ?to_s(UName) ++ "\","
 			   ++ ?to_s(NewScore) ++ ","
-			   ++ ?to_s(NewConsume) ++ "," 
+			   ++ ?to_s(NewConsume) ++ ","
+			   ++ ?to_s(NewBalance) ++ "," 
 			   ++ "\"" ++ ?to_s(Phone) ++ "\","
 			   ++ ?to_s(NewShop) ++ ","
 			   ++ ?to_s(Merchant) ++ ","
+			   %% ++ ?to_s(1) ++ ","
 			   ++ "\"" ++ ?to_s(NewBirth) ++ "\","
 			   ++ "\"" ++ ?to_s(Entry) ++ "\")"],
 		    insert_into_member(Merchant, Datetime, Time, T, [H|Sort], Sql ++ Acc);

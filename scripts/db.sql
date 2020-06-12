@@ -856,6 +856,7 @@ create table w_inventory_good
     vir_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
+    draw             DECIMAL(10, 2) default 0, -- max: 99999999.99
     ediscount        DECIMAL(4, 1), -- max: 100, discount of entry
     discount         DECIMAL(4, 1), -- max: 100, discount of sell
     path             VARCHAR(255) default null, -- the image path
@@ -931,6 +932,7 @@ create table w_inventory
     vir_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
+    draw             DECIMAL(10, 2) default 0, -- max: 99999999.99
     
     ediscount        DECIMAL(4, 1), -- max: 100, discount of entry
     discount         DECIMAL(4, 0), -- max: 100

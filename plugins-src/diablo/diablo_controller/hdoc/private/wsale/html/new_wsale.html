@@ -109,6 +109,9 @@
 		  <!-- <th class="text-center">成交价</th> -->
 		  <!-- <th class="text-center">折扣率</th>  -->
 		  <th class="text-center">合计</th>
+		  <th x-ng-if="setting.fixed_draw
+			       && select.retailer.type_id===1
+			       && select.retailer.balance!==0" class="text-center">提现</th>
 		  <th class="text-center">色/码</th>
 		  <th class="text-center">操作</th>
 		</tr>
@@ -227,6 +230,11 @@
 		  <td class="vert-align">
 		    <span class={{color_negative_sale(inv.negative)}}>{{inv.calc}}</span>
 		  </td>
+		  <td  x-ng-if="setting.fixed_draw
+			       && select.retailer.type_id===1
+			       && select.retailer.balance!==0" class="vert-align">
+		    <span class={{color_negative_sale(inv.negative)}}>{{inv.draw}}</span>
+		  </td>
 		  <td class="vert-align">
 		    <div x-ng-if="!inv.free_color_size">
 		      <span x-ng-bind="inv.note" class="bg-blue"></span>
@@ -286,6 +294,9 @@
 		  <td colspan="2"></td>
 		  <td class="vert-align">{{select.abs_total}}</td> 
 		  <td class="vert-align">{{select.should_pay}}</td>
+		  <td x-ng-if="setting.fixed_draw
+			       && select.retailer.type_id===1
+			       && select.retailer.balance!==0" class="vert-align" x-ng-bind=select.can_draw></td>
 		  <td></td>
 		  <td></td>
 		  <!-- <td colspan="2">{{select.score}}</td> -->

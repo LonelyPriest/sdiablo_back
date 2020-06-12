@@ -15,7 +15,8 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
     Year        = ?v(<<"year">>, Attrs),
     OrgPrice    = ?v(<<"org_price">>, Attrs, 0),
     VirPrice    = ?v(<<"vir_price">>, Attrs, 0), 
-    TagPrice    = ?v(<<"tag_price">>, Attrs, 0), 
+    TagPrice    = ?v(<<"tag_price">>, Attrs, 0),
+    Draw        = ?v(<<"draw">>, Attrs, 0), 
     EDiscount   = ?v(<<"ediscount">>, Attrs, 100),
     SPrice      = case ?v(<<"sprice">>, Attrs, ?INVALID_OR_EMPTY) of
 		      1 -> 3;
@@ -81,6 +82,7 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 	", org_price"
 	", vir_price"
 	", tag_price"
+	", draw"
 	", ediscount"
 	", discount"
 	", state"
@@ -115,6 +117,7 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 	++ ?to_s(OrgPrice) ++ ","
 	++ ?to_s(VirPrice) ++ ","
 	++ ?to_s(TagPrice) ++ ","
+	++ ?to_s(Draw) ++ ","
 	++ ?to_s(EDiscount) ++ ","
 	++ ?to_s(Discount) ++ ","
 	++ ?to_s(SPrice) ++ ","
@@ -512,6 +515,7 @@ good_match(style_number_with_firm, Merchant, UTable, StyleNumber, Firm) ->
 	", a.org_price"
 	", a.vir_price"
 	", a.tag_price"
+	", a.draw"
 	", a.ediscount"
 	", a.discount"
 	", a.state"
@@ -576,6 +580,7 @@ good_match(all_style_number_with_firm, Merchant, UTable, StartTime, Firm) ->
 	", a.org_price"
 	", a.vir_price"
 	", a.tag_price"
+	", a.draw"
 	", a.ediscount"
 	", a.discount"
 	", a.state"
@@ -643,6 +648,7 @@ inventory(abstract, {Merchant, UTable}, Shop, [{S1, B1}|T] = _Conditions) ->
 	", a.org_price"
 	", a.vir_price"
 	", a.tag_price"
+	", a.draw"
 	", a.ediscount"
 	", a.discount"
 	", a.path"
@@ -717,6 +723,7 @@ inventory({group_detail, MatchMode}, {Merchant, UTable}, Conditions, PageFun) ->
 	", a.tag_price"
 	", a.ediscount"
 	", a.discount"
+	", a.draw"
 	", a.path"
 	", a.alarm_day"
 	", a.contailer"
@@ -871,7 +878,9 @@ inventory({update_batch, MatchMode}, {Merchant, UTable}, Attrs, Conditions) ->
     TagPrice  = ?v(<<"tag_price">>, Attrs),
     Discount  = ?v(<<"discount">>, Attrs),
     Imbalance = ?v(<<"imbalance">>, Attrs),
-    Contailer = ?v(<<"contailer">>, Attrs), 
+    Contailer = ?v(<<"contailer">>, Attrs),
+    VirPrice  = ?v(<<"vir_price">>, Attrs),
+    CanDraw   = ?v(<<"draw">>, Attrs), 
     Score = case ?v(<<"score">>, Attrs) of
 		0 -> -1;
 		_ -> undefined
@@ -889,6 +898,8 @@ inventory({update_batch, MatchMode}, {Merchant, UTable}, Attrs, Conditions) ->
 	    true ->
 		?utils:v(org_price, float, OrgPrice)
 		    ++ ?utils:v(tag_price, float, TagPrice)
+		    ++ ?utils:v(vir_price, float, VirPrice)
+		    ++ ?utils:v(draw, float, CanDraw)
 		    ++ ?utils:v(state, integer, State); 
 	    false ->
 		[]
@@ -1687,6 +1698,7 @@ inventory_match(all_inventory, Merchant, UTable, Shop, Conditions) ->
 	", a.score as sid"
 	", a.org_price"
 	", a.tag_price"
+	", a.draw"
 	", a.ediscount"
 	", a.discount"
 	", a.state"
@@ -1774,6 +1786,7 @@ inventory_match(Merchant, UTable, StyleNumber, Shop, Firm) ->
 	", a.org_price"
 	", a.vir_price" 
 	", a.tag_price"
+	", a.draw"
 	", a.ediscount"
 	", a.discount"
 	
@@ -1821,6 +1834,7 @@ inventory_match(all_reject, Merchant, UTable, Shop, Firm, StartTime) ->
 	
 	", a.org_price"
 	", a.tag_price"
+	", a.draw"
 	", a.ediscount"
 	", a.discount"
 	
@@ -1865,6 +1879,7 @@ get_inventory(barcode, Merchant, UTable, Shop, Firm, Barcode, ExtraConditions) -
 	", a.org_price"
 	", a.vir_price"
 	", a.tag_price"
+	", a.draw"
 	", a.ediscount"
 	", a.discount" 
 	", a.amount"
@@ -2110,6 +2125,7 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
     OrgPrice    = ?v(<<"org_price">>, Inv, 0),
     VirPrice    = ?v(<<"vir_price">>, Inv, 0),
     TagPrice    = ?v(<<"tag_price">>, Inv, 0),
+    Draw        = ?v(<<"draw">>, Inv, 0),
     %% EDiscount   = ?v(<<"ediscount">>, Inv),
     EDiscount   = stock(ediscount, OrgPrice, TagPrice), 
     %% ?DEBUG("ediscount ~p", [EDiscount]), 
@@ -2162,6 +2178,7 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 		  ", org_price"
 		  ", vir_price"
 		  ", tag_price"
+		  ", draw"
 		  ", ediscount"
 		  ", discount"
 		  ", path"
@@ -2201,6 +2218,7 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 		  ++ ?to_s(OrgPrice) ++ ","
 		  ++ ?to_s(VirPrice) ++ ","
 		  ++ ?to_s(TagPrice) ++ ","
+		  ++ ?to_s(Draw) ++ ","
 		  ++ ?to_s(EDiscount) ++ ","
 		  ++ ?to_s(Discount) ++ ","
 		  ++ "\"" ++ ?to_s(Path) ++ "\","
@@ -2231,6 +2249,7 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 			    ", org_price=" ++ ?to_s(OrgPrice)
 				++ ", ediscount=" ++ ?to_s(EDiscount)
 				++ ", tag_price=" ++ ?to_s(TagPrice)
+				 ++ ", draw=" ++ ?to_s(Draw)
 				++ ", discount=" ++ ?to_s(Discount);
 				%% ++ ", contailer=" ++ ?to_s(Contailer)
 				%% ++ ", alarm_a=" ++ ?to_s(Alarm_a); 
@@ -2425,6 +2444,7 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 				++ " set org_price=" ++ ?to_s(OrgPrice)
 				++ ", ediscount=" ++ ?to_s(EDiscount)
 				++ ", tag_price=" ++ ?to_s(TagPrice)
+				++ ", draw=" ++ ?to_s(Draw)
 				++ ", discount=" ++ ?to_s(Discount)
 				++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 				++ " and brand=" ++ ?to_s(Brand) 
@@ -2440,6 +2460,7 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 				++ ", ediscount=" ++ ?to_s(EDiscount)
 				++ ", vir_price="  ++ ?to_s(VirPrice)
 				++ ", tag_price=" ++ ?to_s(TagPrice)
+				++ ", draw=" ++ ?to_s(Draw)
 				++ ", discount=" ++ ?to_s(Discount)
 				++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 				++ " and brand=" ++ ?to_s(Brand) 

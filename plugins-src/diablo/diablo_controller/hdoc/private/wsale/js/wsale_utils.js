@@ -906,6 +906,7 @@ var wsaleCalc = function(){
 	    var abs_pay      = 0;
 	    var score        = 0;
 	    var valid_price  = 0;
+	    var can_draw     = 0;
 	    
 	    var vipDiscountMode    = wsaleUtils.to_integer(vipMode.charAt(0));
 	    var virPriceMode       = wsaleUtils.to_integer(vipMode.charAt(2));
@@ -1213,7 +1214,7 @@ var wsaleCalc = function(){
 	    if (diablo_sale === saleMode && isVip && diablo_no !== vipDiscountMode) {
 		for (var i=0, l=inventories.length; i<l; i++) {
 		    // promotion first
-		    var one = inventories[i];
+		    var one = inventories[i]; 
 		    // console.log(one);
 		    if (one.state !== 3 && wsaleCalc.in_promotion_stock(one, stocksSortWithPromotion)) {
 			if (one.pid !== diablo_invalid_index) {
@@ -1254,6 +1255,8 @@ var wsaleCalc = function(){
 		abs_total  += Math.abs(wsaleUtils.to_integer(count));
 		abs_pay    += one.vir_price > one.tag_price ? one.vir_price * count : one.tag_price * count;
 
+		if (diablo_sale === saleMode && isVip) can_draw += one.draw * count;
+
 		// if (round === 2) {
 		//     one.fprice = diablo_round(one.fprice);
 		//     one.fdiscount = diablo_discount(one.fprice, one.tag_price);
@@ -1287,8 +1290,9 @@ var wsaleCalc = function(){
 	    // console.log(verificate);
 	    should_pay = wsaleCalc.calc_discount_of_verificate(inventories, saleMode, should_pay, verificate);
 	    should_pay = wsaleUtils.to_decimal(should_pay); 
-	    base_pay = wsaleUtils.to_decimal(base_pay);
-	    abs_pay = wsaleUtils.to_decimal(abs_pay);
+	    base_pay   = wsaleUtils.to_decimal(base_pay);
+	    abs_pay    = wsaleUtils.to_decimal(abs_pay);
+	    can_draw   = wsaleUtils.to_decimal(can_draw); 
 	    
 	    // console.log(should_pay);
 	    // reset score
@@ -1357,21 +1361,28 @@ var wsaleCalc = function(){
 		    should_pay = diablo_round(should_pay);
 		    base_pay   = diablo_round(base_pay);
 		    abs_pay    = diablo_round(abs_pay);
+		    can_draw   = diablo_round(can_draw);
 		} else {
 		    should_pay = -diablo_round(Math.abs(should_pay));
-		    base_pay = -diablo_round(Math.abs(base_pay));
-		    abs_pay = -diablo_round(Math.abs(abs_pay));
+		    base_pay   = -diablo_round(Math.abs(base_pay));
+		    abs_pay    = -diablo_round(Math.abs(abs_pay));
+		    can_draw   = -diablo_round(Math.abs(can_draw));
 		}
 	    } else if (round === 2) {
 		
 	    } else {
-		should_pay = wsaleUtils.to_decimal(should_pay);
+		// no round
+		
+		// should_pay = should_pay;
+		// base_pay   = base_pay;
+		// can_draw   = can_draw;
 	    }
 	    
 	    return {
 		total:      total,
 		abs_total:  abs_total,
 		should_pay: should_pay,
+		can_draw:   can_draw,
 		base_pay:   base_pay,
 		abs_pay:    abs_pay,
 		score:      score,

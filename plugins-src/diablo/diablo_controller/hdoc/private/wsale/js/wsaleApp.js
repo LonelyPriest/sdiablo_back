@@ -568,6 +568,7 @@ function wsaleNewProvide(
 	abs_total:    0,
 	has_pay:      0,
 	should_pay:   0,
+	can_draw:     0,
 	base_pay:     0,
 	abs_pay:      0,
 	score:        0,
@@ -630,6 +631,7 @@ function wsaleNewProvide(
 	$scope.setting.pay_scan = wsaleUtils.to_integer(sale_mode.charAt(24));
 	$scope.setting.disableWithDraw = wsaleUtils.to_integer(sale_mode.charAt(25));
 	$scope.setting.interval_print = wsaleUtils.to_integer(sale_mode.charAt(27));
+	$scope.setting.fixed_draw = wsaleUtils.to_integer(sale_mode.charAt(28));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
 
 	$scope.print_setting = {
@@ -961,7 +963,7 @@ function wsaleNewProvide(
 	diabloFilter.check_retailer_charge(
 	    $scope.select.retailer.id,
 	    $scope.select.shop.id,
-	    $scope.select.should_pay,
+	    $scope.setting.fixed_draw ? $scope.select.can_draw : $scope.select.should_pay,
 	    $scope.select.surplus,
 	    $scope.select.retailer.draw_id
 	).then(function(result) {
@@ -1669,6 +1671,7 @@ function wsaleNewProvide(
 	$scope.select.abs_total    = 0;
 	$scope.select.has_pay      = 0;
 	$scope.select.should_pay   = 0;
+	$scope.select.can_draw     = 0;
 	$scope.select.base_pay     = 0;
 	$scope.select.abs_pay      = 0;
 	$scope.select.score        = 0;
@@ -1852,6 +1855,7 @@ function wsaleNewProvide(
 	add.tag_price    = src.tag_price; 
 	add.discount     = src.discount;
 	add.vir_price    = src.vir_price;
+	add.draw         = src.draw;
 	
 	add.path         = src.path; 
 	add.s_group      = src.s_group;
@@ -2767,6 +2771,7 @@ function wsaleNewProvide(
 	$scope.select.total        = 0;
 	$scope.select.abs_total    = 0;
 	$scope.select.should_pay   = 0;
+	$scope.select.can_draw     = 0;
 	$scope.select.base_pay     = 0;
 	$scope.select.abs_pay      = 0;
 	$scope.select.score        = 0;
@@ -2787,14 +2792,15 @@ function wsaleNewProvide(
 	
 	console.log(calc);
 	// console.log($scope.show_promotions);
-	$scope.select.total     = calc.total; 
-	$scope.select.abs_total = calc.abs_total;
-	$scope.select.should_pay= calc.should_pay;
-	$scope.select.base_pay  = calc.base_pay;
-	$scope.select.abs_pay   = calc.abs_pay;
-	$scope.select.score     = calc.score; 
-	$scope.select.pscores   = calc.pscores;
-	$scope.select.charge    = $scope.select.should_pay - $scope.select.has_pay;
+	$scope.select.total      = calc.total; 
+	$scope.select.abs_total  = calc.abs_total;
+	$scope.select.should_pay = calc.should_pay;
+	$scope.select.can_draw   = calc.can_draw;
+	$scope.select.base_pay   = calc.base_pay;
+	$scope.select.abs_pay    = calc.abs_pay;
+	$scope.select.score      = calc.score; 
+	$scope.select.pscores    = calc.pscores;
+	$scope.select.charge     = $scope.select.should_pay - $scope.select.has_pay;
 
 	// if ($scope.setting.show_wprice) {
 	//     $scope.select.verificate = 0;

@@ -885,6 +885,28 @@
 		  </div>
 		</div>
 
+		<div x-ng-if="!base_settings.hide_draw" class="form-group diablo-good-form-group">
+		  <label class="col-sm-3 col-md-3 control-label">提现额度</label>
+		  <div class="col-sm-6 col-md-6"> 
+		    <div class="input-group">
+		      <input class="form-control"
+			     type="number" step="0.01" 
+			     name="draw"
+			     required
+			     disable-key
+			     x-ng-edit 
+			     placeholder="商品可提现金额，支持二位小数"
+			     x-ng-pattern="/^\d+(.\d{1,2})?$/"
+			     x-ng-enter=""
+			     x-ng-model="good.draw"/>
+		      <span class="input-group-addon bg-white fg-red">*</span> 
+		    </div>
+		    <div ng-if="form.gForm.draw.$invalid && !form.gForm.draw.$pristine">
+		      <span style="color:red">格式（dd.dd）支持二位小数</span>
+		    </div>
+		  </div> 
+		</div>
+
 		<div x-ng-if="!base_settings.hide_color && (base_settings.hide_barcode || !good.bcode)"
 		     class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">颜色</label>
