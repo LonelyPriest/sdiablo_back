@@ -1283,7 +1283,10 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 						_ ->
 						    UYear = (Period div 12)
 							+ ((Period rem 12 + Month) div 12),
-						    UMonth = (Period + Month) rem 12,
+						    UMonth = case (Period + Month) rem 12 of
+								 0 -> 12;
+								 _UMonth ->_UMonth
+							     end,
 						    {Year + UYear,
 						     UMonth,
 						     day_of_next_month(UYear, UMonth, Date)}
@@ -1437,11 +1440,15 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 						 12 -> {Year + 1, Month, Date};
 						 _ ->
 						     UYear = (Period + Month) div 12,
-						     UMonth = (Period + Month) rem 12,
+						     %% UMonth = (Period + Month) rem 12,
+						     UMonth = case (Period + Month) rem 12 of
+								  0 -> 12;
+								  _UMonth ->_UMonth
+							      end,
 						     {Year + UYear,
 						      UMonth,
 						      day_of_next_month(Year + UYear, UMonth, Date)}
-					 end,
+					     end,
 					 ?DEBUG("NextPeriod ~p", [NextPeriod]),
 					 "update w_card set "
 					     ++ case HasDeleted of
@@ -3581,7 +3588,7 @@ year(begin_to_now, Year, Month, Day) ->
     {Start, End}.
     
 day_of_next_month(CurrentYear, NextMonth, CurrentDay) ->
-    ?DEBUG("CurrentDay ~p, NextMonth ~p, CurrentDay ~p", [CurrentYear, NextMonth, CurrentDay]),
+    ?DEBUG("CurrentYear ~p, NextMonth ~p, CurrentDay ~p", [CurrentYear, NextMonth, CurrentDay]),
     Days = calendar:last_day_of_the_month(CurrentYear, NextMonth),
     case CurrentDay > Days of
 	true -> Days; 

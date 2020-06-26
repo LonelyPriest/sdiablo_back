@@ -228,6 +228,25 @@ function wgoodConfig(){
 	};
 
 	/*
+	 * commision
+	 */
+	this.new_commision = function(name, rule, balance, flat) {
+	    return http.save(
+		{operation: "new_w_commision"},
+		{name:name, rule:rule, balance:balance, flat:flat}).$promise;
+	};
+
+	this.list_commision = function() {
+	    return http.query({operation: "list_w_commision"}).$promise;
+	};
+
+	this.update_commision = function(name, rule, balance, flat) {
+	    return http.save(
+		{operation: "update_w_commision"},
+		{name:name, rule:rule, balance:balance, flat:flat}).$promise;
+	};
+
+	/*
 	 * barcode
 	 */
 	this.reset_barcode = function(style_number, brand) {

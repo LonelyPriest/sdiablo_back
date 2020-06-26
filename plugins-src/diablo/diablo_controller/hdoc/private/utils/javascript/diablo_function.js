@@ -188,6 +188,11 @@ var diablo_bsale_print_cs_mode ="00011111110";
 var diablo_stock_mode = "1111111";
 
 /*
+ * stock gift_mode
+ */
+var diablo_gift_mode = "00"
+
+/*
  * batch mode
  */
 var diablo_batch_mode = "01111111";

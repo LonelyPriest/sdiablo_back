@@ -2520,6 +2520,9 @@ function purchaserInventoryDetailCtrlProvide(
 			d.type  = diablo_get_object(d.type_id, filterType);
 			d.firm  = diablo_get_object(d.firm_id, filterFirm);
 			d.promotion = diablo_get_object(d.pid, filterPromotion);
+			d.bargin_price = stockUtils.to_integer(d.state.charAt(0));
+			d.gift  = stockUtils.to_integer(d.state.charAt(1));
+			    
 			d.score = diablo_get_object(d.sid, filterScore);
 			d.calc  = diablo_float_mul(d.org_price, d.amount);
 

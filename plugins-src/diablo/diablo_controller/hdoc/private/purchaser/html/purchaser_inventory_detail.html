@@ -170,8 +170,8 @@
 			<td>{{inv.sell}}</td>
 
 			<td>
-			  <div x-ng-switch on="inv.state">
-			    <span x-ng-switch-when=3>是</span>
+			  <div x-ng-switch on="inv.bargin_price">
+			    <span x-ng-switch-when=1>是</span>
 			    <span x-ng-switch-default>否</span>
 			  </div>
 			</td>
@@ -257,12 +257,12 @@
 				<a href="javascript:;" x-ng-click="update_price(inv)">价格修改</a>
 				<a href="javascript:;" x-ng-click="offering_stock(inv)">特价标识</a>
 			      </li>
+			      <li x-ng-if="setting.gift_sale && stock_right.gift_stock">
+				<a href="javascript:;" x-ng-click="gift_stock(inv)">赠送标识</a>
+			      </li>
 			      <li>
 				<a href="javascript:;" x-ng-click="update_stock(inv)">属性修改</a>
-			      </li>
-			      <li x-ng-if="setting.gift_sale && stock_right.gift_stock">
-				<a href="javascript:;" x-ng-click="gift_stock(inv)">赠送标识设置</a>
-			      </li>
+			      </li> 
 			      <li>
 				<a href="javascript:;" x-ng-click="copy_stock(inv)">复制货品</a>
 			      </li> 

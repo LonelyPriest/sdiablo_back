@@ -19,8 +19,8 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
     Draw        = ?v(<<"draw">>, Attrs, 0), 
     EDiscount   = ?v(<<"ediscount">>, Attrs, 100),
     SPrice      = case ?v(<<"sprice">>, Attrs, ?INVALID_OR_EMPTY) of
-		      1 -> 3;
-		      _ -> ?INVALID_OR_EMPTY
+		      ?YES -> ?BARGIN_PRICE;
+		      _ -> ?NORMAL_PRICE
 		  end,
     Discount    = ?v(<<"discount">>, Attrs, 100),
     Colors      = ?v(<<"colors">>, Attrs, [?FREE_COLOR]),
@@ -120,7 +120,7 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 	++ ?to_s(Draw) ++ ","
 	++ ?to_s(EDiscount) ++ ","
 	++ ?to_s(Discount) ++ ","
-	++ ?to_s(SPrice) ++ ","
+	++ "\'" ++ ?to_s(SPrice) ++ "\',"
 	++ "\'" ++ ?to_s(Path) ++ "\',"
 	
 	%% ++ ?to_s(Level) ++ ","
@@ -887,10 +887,11 @@ inventory({update_batch, MatchMode}, {Merchant, UTable}, Attrs, Conditions) ->
 	    end,
     
     State = case ?v(<<"sprice">>, Attrs) of
-		0 -> 0;
-		1 -> 3;
-		_ -> undefined
-	    end,
+    		0 -> 0;
+    		1 -> 3;
+    		_ -> undefined
+    	    end,
+    %% {State, Len} = calc_update_stock_state(Attrs, [], 0),
 
     %% ?DEBUG("imbalance ~p", [Imbalance]),
     UpdateOfGood =
@@ -912,7 +913,7 @@ inventory({update_batch, MatchMode}, {Merchant, UTable}, Attrs, Conditions) ->
 
     ?DEBUG("UpdateOfGood ~p, UpdateOfStock ~p", [UpdateOfGood, UpdateOfStock]),
 
-    ["update" ++ ?table:t(stock, Merchant, UTable)
+    ["update" ++ ?table:t(stock, Merchant, UTable) 
      ++ " set " ++ ?utils:to_sqls(proplists, comma, UpdateOfStock)
      ++ case Imbalance =:= undefined orelse Imbalance == 0 of
 	    true -> 
@@ -2130,7 +2131,7 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
     EDiscount   = stock(ediscount, OrgPrice, TagPrice), 
     %% ?DEBUG("ediscount ~p", [EDiscount]), 
     Discount    = ?v(<<"discount">>, Inv, 100),
-    SPrice      = ?v(<<"state">>, Inv, ?INVALID_OR_EMPTY),
+    SPrice      = ?v(<<"state">>, Inv, ?NORMAL_PRICE),
     Path        = ?v(<<"path">>, Inv, []),
     AlarmDay    = ?v(<<"alarm_day">>, Inv, -1),
     Unit        = ?v(<<"unit">>, Inv, 0),
@@ -2224,7 +2225,7 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 		  ++ "\"" ++ ?to_s(Path) ++ "\","
 		  ++ ?to_s(AlarmDay) ++ ","
 		  ++ ?to_s(Shop) ++ ","
-		  ++ ?to_s(SPrice) ++ ","
+		  ++ "\'" ++ ?to_s(SPrice) ++ "\',"
 		  ++ ?to_s(Contailer) ++ ","
 		  ++ ?to_s(Alarm_a) ++ ","
 		  ++ ?to_s(Unit) ++ "," 
@@ -3083,4 +3084,6 @@ gen_barcode(self_barcode, Merchant, Year, Season, Type) ->
 	++ ?to_s(?to_i(Season) + 1)
 	++ ?to_s(Type)
 	++ ?utils:pack_flow(Flow, 0).
-	
+
+
+

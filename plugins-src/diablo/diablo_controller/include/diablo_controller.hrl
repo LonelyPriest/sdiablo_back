@@ -159,6 +159,10 @@
 %% sms
 -define(SMS_NOTIFY, <<"0000">>).
 
+%% price
+-define(BARGIN_PRICE, 3).
+-define(NORMAL_PRICE, -1).
+
 %% sort
 -define(SORT_BY_ID, 0).
 -define(SORT_BY_DATE, 1).
@@ -204,6 +208,8 @@
 -define(TICKET_EFFECT_NEVER, 9999).
 
 -define(ONE_MONTH, 30).
+
+-define(STOCK_STATE_ORDER, [<<"sprice">>, <<"commision">>, <<"gift">>]).
 
 %% pagination
 -define(DEFAULT_ITEMS_PERPAGE, 5).
@@ -513,6 +519,11 @@
 -define(update_w_type, ?right_w_good + 18).
 -define(reset_w_good_barcode, ?right_w_good + 19).
 
+-define(new_w_commision, ?right_w_good + 20).
+-define(del_w_commision, ?right_w_good + 21).
+-define(update_w_commision, ?right_w_good + 22).
+-define(list_w_commision, ?right_w_good + 23).
+
 %% report
 -define(daily_wreport,   ?right_w_report + 1).
 -define(stock_stastic,   ?right_w_report + 2).
@@ -768,6 +779,7 @@
 	  color       = [] :: list(), 
 	  good        = [] :: list(),
 	  promotion   = [] :: list(),
+	  commision   = [] :: list(),
 	  charge      = [] :: list(),
 	  score       = [] :: list(),
 	  sms_template= [] :: list(),

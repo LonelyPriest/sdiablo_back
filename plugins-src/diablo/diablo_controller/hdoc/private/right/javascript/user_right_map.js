@@ -38,7 +38,10 @@ var rightAuthen = {
 	return {
 	    update_w_good : rightAuthen.root_right._good + 3,
 	    delete_w_good : rightAuthen.root_right._good + 4,
-	    new_promotion:  rightAuthen.root_right._good + 11 
+	    new_promotion:  rightAuthen.root_right._good + 11,
+	    new_commision:  rightAuthen.root_right._good + 20,
+	    del_commision:  rightAuthen.root_right._good + 21,
+	    update_commision: rightAuthen.root_right._good + 22,
 	}
     },
 
@@ -387,7 +390,11 @@ diabloAuthen.prototype.authenGoodRight = function() {
     return {
 	show_orgprice         :this.showOrgprice(), 
 	update_w_good         :this.updateGood(),
-	delete_w_good         :this.deleteGood()
+	delete_w_good         :this.deleteGood(),
+	new_w_promotion       :this.authenGood('new_promotion'),
+	new_w_commision       :this.authenGood('new_commision'),
+	update_w_commision    :this.authenGood('update_commision'),
+	del_w_commision       :this.authenGood('del_commision'),
 	// update_oprice_stock_out :this.updateOrgPriceOnStockOut()
     }
 };

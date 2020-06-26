@@ -15,7 +15,7 @@
 
 %% API
 -export([start_link/1]).
--export([promotion/3, promotion/2]).
+-export([promotion/3, promotion/2, commision/3, commision/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -37,6 +37,12 @@ promotion(update, Merchant, Attrs) ->
 
 promotion(list, Merchant) ->
     gen_server:call(?SERVER(Merchant), {list_promotion, Merchant}).
+
+commision(new, Merchant, Attrs) ->
+    gen_server:call(?SERVER(Merchant), {new_commision, Merchant, Attrs}).
+commision(list, Merchant) ->
+    gen_server:call(?SERVER(Merchant), {list_commision, Merchant}).
+    
 
 
 start_link(Name) ->
@@ -239,6 +245,60 @@ handle_call({list_promotion, Merchant}, _From, State) ->
 	", entry"
 	
 	" from w_promotion"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " order by id desc",
+
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({new_commision, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("new_commision:merchant ~p, attrs ~p", [Merchant, Attrs]),
+    Name = ?v(<<"name">>, Attrs),
+    Rule = ?v(<<"rule">>, Attrs),
+    Balance = ?v(<<"balance">>, Attrs),
+    Flat = ?v(<<"flat">>, Attrs),
+    
+    Sql0 = "select id, name from w_commision"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
+
+    Reply = 
+	case ?sql_utils:execute(s_read, Sql0) of
+	    {ok, []} ->
+		Sql = "insert into w_commision("
+		    "name"
+		    ", merchant"
+		    ", rule"
+		    ", balance"
+		    ", flat"
+		    ", entry) values("
+		    ++ "\'" ++ ?to_s(Name) ++ "\',"
+		    ++ ?to_s(Merchant) ++ ","
+		    ++ ?to_s(Rule) ++ ","
+		    ++ ?to_s(Balance) ++ ","
+		    ++ ?to_s(Flat) ++ ","
+		    ++ "\'" ++ ?utils:current_time(localtime) ++ "\')",
+		Result = ?sql_utils:execute(insert, Sql),
+		case Result of
+		    {ok, _} -> ?w_user_profile:update(commision, Merchant);
+		    _ -> error
+		end,
+		    Result;
+	    {ok, R} ->
+		{error, ?err(commision_exist, ?v(<<"id">>, R))};
+	    Error ->
+		Error
+	end,
+    {reply, Reply, State};
+
+handle_call({list_commision, Merchant}, _From, State) ->
+    Sql = "select id"
+	", name"
+	", rule as rule_id"
+	", balance"
+	", flat"
+	", entry"
+	" from w_commision"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " order by id desc",
 

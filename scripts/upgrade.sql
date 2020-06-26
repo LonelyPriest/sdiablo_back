@@ -768,6 +768,18 @@ alter table print_template add column hpx_sn TINYINT default 0 after hpx_type;
 alter table w_inventory add column draw DECIMAL(10, 2) default 0 after tag_price;
 alter table w_inventory_good add column draw DECIMAL(10, 2) default 0 after tag_price;
 
+--2020-06-14
+alter table w_inventory modify column state VARCHAR(16) not null default 0;
+alter table w_inventory_good modify column state VARCHAR(16) not null default 0;
+alter table w_sale modify column reject VARCHAR(16) not null default 0;
+
+alter table w_inventory add column commision INTEGER not null default -1;
+
+alter table w_inventory drop column gift;
+alter table w_sale drop column negative;
+update w_inventory set state=0 where state=-1;
+update w_inventory set state=1 where state=3;
+-- alter table w_sale_detail drop column reject;
 
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;

@@ -264,6 +264,12 @@ function stockConfg(angular){
 		controller: 'stockPromotionDetail' ,
 		resolve: angular.extend({}, user) 
 	    }).
+	    // commision
+	    when('/promotion/commision_detail', {
+		templateUrl: '/private/purchaser/html/stock_commision_detail.html',
+		controller: 'stockCommisionDetail' ,
+		resolve: angular.extend({}, user) 
+	    }).
 	    //transfer
             when('/inventory/inventory_transfer', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_transfer.html',
@@ -391,11 +397,16 @@ function stockConfg(angular){
 	    {name: "M件N折",   id:3, remakr: "一件8折二件7折"},
 	    {name: "M件减N",   id:4, remakr: "一件少50二件少100"},
 	    {name: "M件N钱",   id:5, remakr: "一件100二件80"},
-	];
+	]; 
 
 	this.promotion_prules = [
 	    {id:0, name: "针对折后价促销"},
 	    {id:1, name: "针对吊牌价促销"}
+	];
+
+	this.commision_rules = [
+	    {id:0, name: "按商品定额提成"},
+	    {id:1, name: "按商品售价百分比提成"}
 	];
 	
 	this.export_type = {trans:0, trans_note:1, stock:2, shift:3, shift_note:4};
@@ -651,7 +662,7 @@ function stockConfg(angular){
 		 promotion: promotion,
 		 score:     score}).$promise;
 	};
-
+	
 	/*
 	 * update batch
 	 */

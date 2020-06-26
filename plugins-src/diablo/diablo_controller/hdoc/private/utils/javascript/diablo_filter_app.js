@@ -559,7 +559,9 @@ function filterProvider(){
 			    {name:inv.style_number
 			     + "/" + inv.brand
 			     + "/" + inv.type
-			     + (inv.vir_price ? "/" + inv.vir_price.toString() : "") + "/" + inv.tag_price.toString()})
+			     // + (inv.vir_price ? "/" + inv.vir_price.toString() : "") + "/" + inv.tag_price.toString()
+			     + "/" + inv.tag_price.toString()
+			    })
 		    })
 		})
 	    },

@@ -1,0 +1,169 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  提成方案
+	</div>	
+
+	<div class="actions">
+	  <div class="btn-group btn-group-solid">
+	    <button x-ng-if="right.new_w_commision"
+		    class="btn btn-success purple-stripe"
+		    x-ng-click="new_commision()">新增<i class="glyphicon glyphicon-plus"></i>
+	    </button> 
+
+	    <button class="btn blue reload purple-stripe"
+		    x-ng-click="refresh()">刷新
+	      <i class="icon icon-spinner fg-white"></i></button>
+	  </div>
+	</div> 
+      </div>
+
+      <!--BEGIN table container-->
+      <div class="portlet-body">
+	<div class="table-toolbar"> 
+	</div>
+		  
+	<!--BEGN portlet body--> 
+	<div class="portlet-body">
+	  <!--BEGIN panel-->
+	  <div class="panel panel-default">
+	    <!--EBGIN table responsive-->
+	    <div class="table-responsive">
+	      <!--BEGIN member table--> 
+	      <table class="table table-bordered table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>序号</th>
+		    <th>名称</th>
+		    <th>规则</th>
+		    <th>提成金额/百分比</th>
+		    <th>非定价提成百分比</th> 
+		    <th>创建日期</th>
+		    <th>操作</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr ng-repeat="m in commisions">
+		    <td>{{m.order_id}}</td> 
+		    <td>{{m.name}}</td>
+		    <td>{{m.rule.name}}</td>
+		    <td>{{m.balance}}</td>
+		    <td>{{m.flat}}</td>
+		    <td>{{m.entry}}</td> 
+		    <td>
+                      <button class="btn diablo-button btn-warning"
+			 x-ng-click="update_commision(m)">修改
+			<i class="glyphicon glyphicon-edit"></i></button>
+                      <button class="btn diablo-button btn-danger"
+			 x-ng-click="delete_commision(m)">删除
+			<i class="glyphicon glyphicon-erase"></i></button>
+		    </td>
+		    
+		  </tr>
+		</tbody>
+		
+	      </table> <!--END VM table-->
+	    </div> <!--END table responsive-->
+
+	  </div> <!--END panel-->
+	</div> <!--END portlet body-->
+      </div> <!--END table container-->
+      
+    </div>
+  </div>
+</div>
+
+<script type="text/ng-template" id="new-commision.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title"><span class="label label-sm label-primary">新增提成方案</span></h4>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal" name="mForm" novalidate> 
+      <div class="form-body">
+	    <!--Name-->
+	    <div class="form-group">
+	      <label class="col-sm-2 col-md-2 control-label">名称</label> 
+	      <div class="col-sm-8 col-md-8">
+		<div class="input-group">
+		  <div ng-class="{'has-error':mForm.name.$invalid && !mForm.name.$pristine}">
+		    <input type="text"
+			   class="form-control"
+			   name="name"
+			   required
+			   placeholder="请输入方案名称"
+			   x-ng-pattern="params.pattern.name"
+			   x-ng-model="params.commision.name"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div>
+		<div>
+		  <div ng-show="mForm.name.$invalid && !mForm.name.$pristine">
+		    <span class="fg-red">中文，字母，数字，不支持特殊字符</span>
+		  </div> 
+		</div>
+	      </div> 
+	    </div>
+
+	    <!--balance-->
+	    <div class="form-group">
+	      <label class="col-sm-2 col-md-2 control-label">规则</label>
+	      <div class="col-sm-8 col-md-8">
+		<select class="form-control"
+			x-ng-model="params.commision.rule"
+			x-ng-options="r as r.name for r in params.rules"> 
+		</select>
+	      </div> 
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-sm-2 col-md-2 control-label">金额/百分比</label>
+	      <div class="col-sm-8 col-md-8">
+		<input type="number"
+		       step=1
+		       class="form-control"
+		       name="balance"
+		       placeholder="请输入提成金额/百分比"
+		       x-ng-model="params.commision.balance"/>
+	      </div>
+	      <div ng-show="mForm.balance.$invalid && !mForm.balance.$pristine">
+		<span class="fg-red">请输入整数，百分比不能超过100</span>
+	      </div> 
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-sm-2 col-md-2 control-label">非定价提成百分比</label>
+	      <div class="col-sm-8 col-md-8">
+		<input type="number"
+		       step=1
+		       class="form-control"
+		       name="flat"
+		       placeholder="请输入百分比"
+		       x-ng-model="params.commision.flat"/>
+	      </div>
+	      <div ng-show="mForm.flat.$invalid && !mForm.flat.$pristine">
+		<span class="fg-red">请输入整数，百分比不能超过100</span>
+	      </div> 
+	    </div> 
+	  </div> 
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="mForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+  
+</script>

@@ -765,6 +765,20 @@ create table w_promotion(
     
 ) default charset=utf8;
 
+create table w_commision(
+   id              INTEGER AUTO_INCREMENT,
+   name            VARCHAR(64) not null,
+   merchant        INTEGER not null default -1, 
+   rule            TINYINT not null default -1, -- 0: fixed 1: percent
+   balance         INTEGER not null default 0, -- fixed money when type==1, percent value when type==2
+   flat            TINYINT not null default -1, -- when not enought sale, commision percent
+   entry           DATETIME default 0,
+   deleted         INTEGER default 0, -- 0: no;  1: yes 
+   
+   unique  key uk  (merchant, name),
+   primary key     (id)
+) default charset=utf8;
+
 create table w_ticket(
     id              INTEGER AUTO_INCREMENT,
     batch           INTEGER not null,
@@ -862,7 +876,8 @@ create table w_inventory_good
     path             VARCHAR(255) default null, -- the image path
     alarm_day        TINYINT default -1,  -- the days of alarm
     unit             TINYINT default 0,  -- the days of alarm
-    state            TINYINT default -1, -- 3:promotion
+    -- state            TINYINT default -1, -- 3:promotion
+    state            VARCHAR(16) default 0, -- [1]->promotion price, [2]->gift, [3] commision type
     --
     contailer        INTEGER default -1,
     alarm_a          INTEGER default 0,
@@ -928,6 +943,7 @@ create table w_inventory
 
     promotion        INTEGER not null default -1, -- promotion
     score            INTEGER not null default -1, -- score
+    commision        INTEGER not null default -1, -- commision
 
     vir_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
@@ -954,8 +970,9 @@ create table w_inventory
 
     --
     shop             INTEGER default -1,
-    state            TINYINT default 0,  -- 3:special price
-    gift             TINYINT default 0,
+    -- state            TINYINT default 0,  -- 3:special price
+    state            VARCHAR(16) default 0, -- [1]->promotion price, [2] gift
+    -- gift             TINYINT default 0,
 
     merchant         INTEGER default -1,
     
@@ -1402,7 +1419,7 @@ create table w_sale_detail(
     
     total          INTEGER default 0,
     exist          INTEGER not null default 0,
-    negative       TINYINT default not null 0,
+    -- negative       TINYINT default not null 0,
     promotion      INTEGER not null default -1, -- promotion
     score          INTEGER not null default -1, -- score
 
@@ -1415,7 +1432,11 @@ create table w_sale_detail(
     fprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
     rprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
 
-    -- 0: sale normal, 1: has been reject
+    -- [1] 0->sale normal; 1-> has been reject
+    -- [2] 0->sale with enought stock; 1:sale with negative stock 
+    -- [3] 0->normal stock; 1->promotion stock
+    -- [4] 0->commision type 
+    -- [5] 0->none ticket; 1:ticket with stock
     reject         TINYINT not null default 0,
     path           VARCHAR(255) default null, -- the image path
     comment        VARCHAR(127) default null,

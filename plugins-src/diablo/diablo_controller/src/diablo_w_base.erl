@@ -964,8 +964,8 @@ sys_config() ->
 	      %% [14]: show whole price on sale
 	      %% [15]: print discount on sale
 	      %% [16-17]: threshold discount of score 00:none
-	      %% [18]: gift good on sale directly 0: onoe, 1:send good directly
-	      %% [19]: gift_ticket 0: gift ticket on sale direct, 1:gift ticket with rsn
+	      %% [18]: gift good on sale directly 0: none, 1:send good directly
+	      %% [19]: gift_ticket 0: gift ticket on sale direct, 1:gift ticket with sale recode
 	      %% [20]: charge special 0: none, 1:special stock can charge
 	      %% [21]: allowed multi ticket 0:limit, 1:allowed
 	      %% [22]: gift ticket strategy 0:only one max ticket, 1:greed strategy
@@ -1072,6 +1072,8 @@ sys_config() ->
 	      {"r_discount",        "会员折扣模式",       "0000",    "0"},
 	      
 	      %% {"r_level",        "会员等级模式",       "0",    "0"},
+	      %% [0]: 0->gift none, 1->use gift mode
+	      %% [1]: 0->commision none, 1-> commision mode
 	      {"gift_sale",         "开单赠送模式",       "0",    "0"},
 	      %%[0]:scan sale only
 	      %%[1]:add scan mode when stock_in

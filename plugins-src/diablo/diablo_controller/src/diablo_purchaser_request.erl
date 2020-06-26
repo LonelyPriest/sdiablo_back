@@ -1162,12 +1162,16 @@ action(Session, Req, {"update_w_inventory_batch"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     UTable = ?session:get(utable, Session),
     
-    {struct, Conditions} = ?value(<<"condition">>, Payload),
+    {struct, Conditions} = ?value(<<"condition">>, Payload), 
     {struct, Attrs} = ?value(<<"attrs">>, Payload, []),
     Match = ?v(<<"match">>, Payload, 'and'),
+    CType = ?v(<<"ctype">>, Conditions),
+    SType = ?v(<<"type">>, Conditions),
+    ConditionsWithCType = ?w_sale_request:replace_condition_with_ctype(Merchant, CType, SType, Conditions),
+    ?DEBUG("ConditionsWithCType ~p", [ConditionsWithCType]),
     
     case ?w_inventory:purchaser_inventory(
-	    {update_batch, ?to_a(Match)}, {Merchant, UTable}, Attrs , Conditions) of
+	    {update_batch, ?to_a(Match)}, {Merchant, UTable}, Attrs , ConditionsWithCType) of
 	{ok, Merchant} ->
 	    ?utils:respond(
 	       200,
@@ -2015,21 +2019,23 @@ sidebar(Session) ->
 
 
 	    PromotionMgr =
-		[{{"promotion", "促销定价",
+		[{{"promotion", "促销提成",
 		   "glyphicon glyphicon-superscript"},
 		  case ?right_auth:authen(?new_w_promotion, Session) of
 		      {ok, ?new_w_promotion} ->
 			  [{"promotion_new",
-			    "新增方案", "glyphicon glyphicon-plus"}];
+			    "促销方案", "glyphicon glyphicon-plus"}];
 		      _ -> []
 		  end 
-		  ++ case ?right_auth:authen(?list_w_promotion, Session) of
-			 {ok, ?list_w_promotion} ->
-			     [{"promotion_detail",
-			       "方案详情", "glyphicon glyphicon-book"}];
+		  ++ [{"promotion_detail", "促销详情", "glyphicon glyphicon-book"}]
+
+		  ++ case ?right_auth:authen(?new_w_commision, Session) of
+			 {ok, ?new_w_commision} ->
+			     [{"commision_detail",
+			       "提成方案", "glyphicon glyphicon-plus"}];
 			 _ -> []
 		     end 
-		 }],
+		 }], 
 
 	    Level1 = ?menu:sidebar(
 			level_1_menu,

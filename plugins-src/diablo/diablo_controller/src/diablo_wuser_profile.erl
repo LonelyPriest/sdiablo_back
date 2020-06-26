@@ -85,6 +85,8 @@ get(color, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_color_profile, Merchant});
 get(promotion, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_promotion, Merchant});
+get(commision, Merchant) ->
+    gen_server:call(?SERVER(Merchant), {get_commision, Merchant});
 get(charge, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_charge, Merchant});
 get(score, Merchant) ->
@@ -179,7 +181,9 @@ update(color, Merchant) ->
 update(size_group, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_sizegroup, Merchant});
 update(promotion, Merchant) ->
-    gen_server:cast(?SERVER(Merchant), {update_promotion, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_promotion, Merchant}); 
+update(commision, Merchant) ->
+    gen_server:cast(?SERVER(Merchant), {update_commision, Merchant}); 
 update(charge, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_charge, Merchant});
 update(score, Merchant) ->
@@ -235,6 +239,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 	{ok, Colors}       = ?attr:color(w_list, Merchant),
 
 	{ok, Promotions}   = ?promotion:promotion(list, Merchant),
+	{ok, Commisions}   = ?promotion:commision(list, Merchant),
 	{ok, Charges}      = ?w_retailer:charge(list, Merchant),
 	{ok, Scores}       = ?w_retailer:score(list, Merchant),
 
@@ -270,6 +275,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 				  color_type  = ColorTypes,
 				  color       = Colors,
 				  promotion   = Promotions,
+				  commision   = Commisions,
 				  charge      = Charges,
 				  score       = Scores,
 
@@ -852,6 +858,12 @@ handle_call({get_promotion, Merchant, PId}, _From, State) ->
 			       end, Select), 
     {reply, {ok, SelectPromotion}, State};
 
+%% promotion
+handle_call({get_commision, Merchant}, _From, State) ->
+    MS = ms(Merchant, commision),
+    Select = select(MS, fun() -> ?promotion:commision(list, Merchant) end),
+    {reply, {ok, Select}, State};
+
 handle_call({get_charge, Merchant}, _From, State) ->
     MS = ms(Merchant, charge),
     Select = select(MS, fun() -> ?w_retailer:charge(list, Merchant) end),
@@ -1230,6 +1242,10 @@ handle_cast({Update, Merchant}, State) ->
 			{ok, Promotions}
 			    = ?promotion:promotion(list, Merchant),
 			Profile#wuser_profile{promotion=Promotions};
+		    update_commision ->
+			{ok, Commisions}
+			    = ?promotion:commision(list, Merchant),
+			Profile#wuser_profile{commision=Commisions}; 
 		    update_charge ->
 			{ok, Charges} = ?w_retailer:charge(list, Merchant), 
 			Profile#wuser_profile{charge=Charges};
@@ -1407,6 +1423,13 @@ ms(Merchant, promotion) ->
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
      }];
+
+ms(Merchant, commision) ->
+    [{{'$1', #wuser_profile{merchant='$1', commision='$2', _='_'}},
+      [{'==', '$1', ?to_i(Merchant)}],
+      ['$2']
+     }];
+
 ms(Merchant, charge) ->
     [{{'$1', #wuser_profile{merchant='$1', charge='$2', _='_'}},
       [{'==', '$1', ?to_i(Merchant)}],

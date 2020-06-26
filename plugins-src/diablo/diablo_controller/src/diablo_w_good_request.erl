@@ -58,6 +58,11 @@ action(Session, Req, {"list_w_promotion"}) ->
     ?DEBUG("list_w_promotion with session ~p", [Session]),
     Merchant = ?session:get(merchant, Session),
     batch_responed(fun()->?w_user_profile:get(promotion, Merchant) end, Req);
+
+action(Session, Req, {"list_w_commision"}) ->
+    ?DEBUG("list_w_commision with session ~p", [Session]),
+    Merchant = ?session:get(merchant, Session),
+    batch_responed(fun()->?w_user_profile:get(commision, Merchant) end, Req);
     
 action(Session, Req, {"list_w_good"}) ->
     ?DEBUG("list_purchaser_good with session ~p", [Session]),
@@ -545,6 +550,22 @@ action(Session, Req, {"update_w_promotion"}, Payload) ->
 	    ?w_user_profile:update(promotion, Merchant),
 	    ?utils:respond(
 	       200, Req, ?succ(update_promotion, PId), {<<"id">>, PId});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+%%
+%% commision
+%%
+action(Session, Req, {"new_w_commision"}, Payload) ->
+    ?DEBUG("new_w_commision with session ~p~nPayload ~p", [Session, Payload]),
+
+    Merchant  = ?session:get(merchant, Session),
+
+    case ?promotion:commision(new, Merchant, Payload) of 
+	{ok, PId} ->
+	    ?utils:respond(
+	       200, Req, ?succ(new_promotion, PId), {<<"id">>, PId});
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;

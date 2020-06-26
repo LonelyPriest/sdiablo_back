@@ -111,13 +111,8 @@ function stockPromotionDetailProvide(
 	})
     };
 
-    $scope.good_right = {
-	new_promotion: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.good_action()['new_promotion'],
-	    user.right
-	)
-    };
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.good_right = authen.authenGoodRight();
 
     $scope.refresh();
 
@@ -195,7 +190,119 @@ function stockPromotionDetailProvide(
     
 };
 
+function stockCommisionDetailProvide(
+    $scope, dateFilter, diabloPattern, diabloUtilsService,
+    purchaserService, wgoodService, user){
+    // $scope.shops = user.sortShops; 
+    $scope.pattern = {
+	name        :diabloPattern.ch_en_num_beside_underline_bars,
+	number      :diabloPattern.number
+    }; 
+    $scope.rules  = purchaserService.commision_rules;
+    
+    var dialog = diabloUtilsService;
+
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenGoodRight(); 
+    console.log($scope.right);
+    
+    $scope.refresh = function(){
+	wgoodService.list_commision().then(function(commisions){
+	    console.log(commisions);
+	    
+	    angular.forEach(commisions, function(m){
+		m.rule = diablo_get_object(m.rule_id, $scope.rules);
+	    });
+
+	    diablo_order(commisions); 
+	    $scope.commisions = commisions;
+	    
+	})
+    };
+    
+    $scope.new_commision = function(){
+	var callback = function(params) {
+	    console.log(params);
+	    var c = params.commision;
+	    if (1 === c.rule.id && 100 < c.balance) {
+		dialog.set_error("新增提成方案失败", 2057);
+	    } else {
+		wgoodService.new_commision(
+		    c.name, c.rule.id, c.balance, c.flat
+		).then(function(result) {
+		    console.log(result);
+		    if (result.ecode === 0) {
+			dialog.response_with_callback(
+			    true,
+			    "新增提成方案",
+			    "新增提成方案 [" + c.name + "] 成功",
+			    undefined,
+			    $scope.refresh
+			);
+		    } else {
+			dialog.set_error("新增提成方案", result.ecode);
+		    }
+		});
+	    } 
+	};
+	
+	dialog.edit_with_modal(
+	    'new-commision.html',
+	    undefined,
+	    callback,
+	    undefined,
+	    {commision:{rule:$scope.rules[0]},
+	     rules:$scope.rules,
+	     pattern: $scope.pattern});
+    };
+
+    $scope.update_commision = function(commision) {
+	console.log(commision);
+	var callback = function(params) {
+	    console.log(params);
+	    var c = params.commision;
+	    
+	    if (1 === c.rule.id && 100 < c.balance) {
+		dialog.set_error("新增提成方案失败", 2057);
+	    } else {
+		wgoodService.update_commision(
+		    c.name, c.rule.id, c.balance, c.flat
+		).then(function(result) {
+		    console.log(result);
+		    if (result.ecode === 0) {
+			dialog.response_with_callback(
+			    true,
+			    "新增提成方案",
+			    "新增提成方案 [" + c.name + "] 成功",
+			    undefined,
+			    $scope.refresh
+			);
+		    } else {
+			dialog.set_error("新增提成方案", result.ecode);
+		    }
+		});
+	    }
+	}
+
+	dialog.edit_with_modal(
+	    'new-commision.html',
+	    undefined,
+	    callback,
+	    undefined,
+	    {commision:{
+		name:commision.name,
+		rule:commision.rule,
+		balance:commision.balance,
+		flat:commision.flat
+	    },
+	     rules:$scope.rules,
+	     pattern: $scope.pattern});
+    }
+    
+};
+
 define(["purchaserApp"], function(app){
     app.controller("stockPromotionNew", stockPromotionNewProvide);
     app.controller("stockPromotionDetail", stockPromotionDetailProvide);
+    app.controller("stockCommisionDetail", stockCommisionDetailProvide);
 });

@@ -566,7 +566,13 @@ init([]) ->
 	 {?update_w_type,
 	  <<"修改品类">>,   <<"update_w_type">>,?right_w_good},
 
-	 {?reset_w_good_barcode, <<"货品条码重置">>, <<"reset_w_good_barcode">>, ?right_w_good}
+	 {?reset_w_good_barcode,
+	  <<"货品条码重置">>, <<"reset_w_good_barcode">>, ?right_w_good},
+
+	 {?new_w_commision, <<"新增提成方案">>, <<"new_w_commision">>, ?right_w_good},
+	 {?del_w_commision, <<"删除提成方案">>, <<"del_w_commision">>, ?right_w_good},
+	 {?update_w_commision, <<"修改提成方案">>, <<"update_w_commision">>, ?right_w_good}
+	 %% {?list_w_commision, <<"查询提成方案">>, <<"list_w_commision">>, ?right_w_good}
 	],
 
     WReport =
@@ -1040,6 +1046,7 @@ pass_action(wholesaler) ->
      <<"list_w_promotion">>,
      <<"syn_type_pinyin">>,
      <<"get_good_by_barcode">>,
+     <<"list_w_commision">>,
 
      %% inventnory
      <<"list_w_inventory">>,

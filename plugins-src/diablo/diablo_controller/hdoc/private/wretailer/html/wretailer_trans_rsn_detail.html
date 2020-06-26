@@ -68,7 +68,7 @@
 		<thead>
 		  <tr>
 		    <th>序号</th>
-		    <th>单号</th>
+		    <!-- <th>单号</th> -->
 		    <th>促销</th>
 		    <th>积分</th>
 		    
@@ -96,7 +96,7 @@
 		<tbody>
 		  <tr ng-repeat="inv in inventories">
 		    <td>{{inv.order_id}}</td> 
-		    <td>{{inv.rsn}}</td>
+		    <!-- <td>{{inv.rsn}}</td> -->
 		    
 		    <td>
 		      <div x-ng-switch on="inv.pid">
@@ -144,7 +144,7 @@
 		  </tr>
 
 		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td colspan=16></td>
+		    <td colspan=15></td>
 		    <td>{{total_amounts}}</td> 
 		    <!-- <td x-ng-if="right.show_stastic">{{total_balance}}</td> -->
 		    <!-- <td x-ng-if="right.show_stastic">{{total_obalance}}</td> -->
