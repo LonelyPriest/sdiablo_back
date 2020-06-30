@@ -266,7 +266,11 @@ function stockCommisionDetailProvide(
 		dialog.set_error("新增提成方案失败", 2057);
 	    } else {
 		wgoodService.update_commision(
-		    c.name, c.rule.id, c.balance, c.flat
+		    commision.id,
+		    diablo_get_modified(c.name, commision.name),
+		    diablo_get_modified(c.rule.id, commision.rule_id),
+		    diablo_get_modified(c.balance, commision.balance),
+		    diablo_get_modified(c.flat, commision.flat)
 		).then(function(result) {
 		    console.log(result);
 		    if (result.ecode === 0) {

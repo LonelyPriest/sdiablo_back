@@ -161,7 +161,7 @@
 
 %% price
 -define(BARGIN_PRICE, 3).
--define(NORMAL_PRICE, -1).
+-define(NORMAL_PRICE, 0).
 
 %% sort
 -define(SORT_BY_ID, 0).

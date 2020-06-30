@@ -558,8 +558,7 @@ action(Session, Req, {"update_w_promotion"}, Payload) ->
 %% commision
 %%
 action(Session, Req, {"new_w_commision"}, Payload) ->
-    ?DEBUG("new_w_commision with session ~p~nPayload ~p", [Session, Payload]),
-
+    ?DEBUG("new_w_commision with session ~p~nPayload ~p", [Session, Payload]), 
     Merchant  = ?session:get(merchant, Session),
 
     case ?promotion:commision(new, Merchant, Payload) of 
@@ -569,6 +568,19 @@ action(Session, Req, {"new_w_commision"}, Payload) ->
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
+
+action(Session, Req, {"update_w_commision"}, Payload) ->
+    ?DEBUG("update_w_commision with session ~p~nPayload ~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session), 
+    case ?promotion:commision(update, Merchant, Payload) of 
+	{ok, PId} ->
+	    ?w_user_profile:update(commision, Merchant),
+	    ?utils:respond(
+	       200, Req, ?succ(update_promotion, PId), {<<"id">>, PId});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 
 action(Session, Req, {"update_w_color"}, Payload) ->
     ?DEBUG("update_w_color with session ~p, Payload ~p", [Session, Payload]), 

@@ -240,10 +240,10 @@ function wgoodConfig(){
 	    return http.query({operation: "list_w_commision"}).$promise;
 	};
 
-	this.update_commision = function(name, rule, balance, flat) {
+	this.update_commision = function(mid, name, rule, balance, flat) {
 	    return http.save(
 		{operation: "update_w_commision"},
-		{name:name, rule:rule, balance:balance, flat:flat}).$promise;
+		{mid:mid, name:name, rule:rule, balance:balance, flat:flat}).$promise;
 	};
 
 	/*

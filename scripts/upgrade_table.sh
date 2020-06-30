@@ -30,17 +30,44 @@ PASSWORD=$2
 # done
 
 
-mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
-alter table w_inventory add column draw DECIMAL(10, 2) default 0 after tag_price;
-alter table w_inventory_good add column draw DECIMAL(10, 2) default 0 after tag_price;
-EOF
+# mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
+# alter table w_inventory add column draw DECIMAL(10, 2) default 0 after tag_price;
+# alter table w_inventory_good add column draw DECIMAL(10, 2) default 0 after tag_price;
+# EOF
 
-for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 71 72 73 74 79 90 98 101 103 104 105 106 107 108 109 110 111 112
+# for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 71 72 73 74 79 90 98 101 103 104 105 106 107 108 109 110 111 112
+# do
+#     echo w_inventory__${t}
+#     echo w_inventory_good_${t}
+#     mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
+# alter table w_inventory_${t} add column draw DECIMAL(10, 2) default 0 after tag_price;
+# alter table w_inventory_good_${t} add column draw DECIMAL(10, 2) default 0 after tag_price;
+# EOF
+# done
+
+## 2020-06-30
+# mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
+# update w_inventory set state=0 where state=-1;
+# update w_inventory_good set state=0 where state=-1;
+# alter table w_inventory modify column state VARCHAR(16) not null default 0;
+# alter table w_inventory_good modify column state VARCHAR(16) not null default 0; 
+# alter table w_inventory drop column gift;
+# alter table w_sale_detail modify column reject VARCHAR(16) not null default 0;
+# alter table w_sale_detail drop column negative;
+# EOF
+
+for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 71 72 73 74 79 90 98 101 103 104 105 106 107 108 109 110 111 112 113
 do
-    echo w_inventory__${t}
+    echo w_inventory_${t}
     echo w_inventory_good_${t}
+    echo w_sale_detail_${t}
     mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
-alter table w_inventory_${t} add column draw DECIMAL(10, 2) default 0 after tag_price;
-alter table w_inventory_good_${t} add column draw DECIMAL(10, 2) default 0 after tag_price;
+update w_inventory_${t} set state=0 where state=-1;
+update w_inventory_good_${t} set state=0 where state=-1;
+alter table w_inventory_${t} modify column state VARCHAR(16) not null default 0;
+alter table w_inventory_good_${t} modify column state VARCHAR(16) not null default 0; 
+alter table w_inventory_${t} drop column gift;
+alter table w_sale_detail_${t} modify column reject VARCHAR(16) not null default 0;
+alter table w_sale_detail_${t} drop column negative;
 EOF
 done

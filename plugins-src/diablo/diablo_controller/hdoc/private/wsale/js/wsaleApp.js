@@ -1860,8 +1860,11 @@ function wsaleNewProvide(
 	add.path         = src.path; 
 	add.s_group      = src.s_group;
 	add.free         = src.free;
+	
 	add.state        = src.state;
-	add.gift         = src.gift;
+	add.bargin_price = wsaleUtils.to_integer(src.state.charAt(0)); 
+	add.gift         = wsaleUtils.to_integer(src.state.charAt(1));
+	
 	add.entry        = src.entry_date;
 
 	// add.full_bcode   = angular.isUndefined(src.full_bcode) ? src.bcode : src.full_bcode;
@@ -2513,6 +2516,7 @@ function wsaleNewProvide(
 		    
 		    stock       : add.total,
 		    negative    : add.negative ? diablo_yes : diablo_no,
+		    sprice      : add.bargin_price === 3 ? diablo_yes : diablo_no,
 		    
 		    path        : sets(add.path), 
 		    sizes       : add.sizes,

@@ -29,16 +29,16 @@
 
       <div class="portlet-body">
 	<div class="table-toolbar">
-	    <div class="row diablo-form-group">
-	      <div class="col-xs-12 col-md-12">
-		<div class="input-group">
-		  <span class="input-group-addon">
-	  	    <i class="glyphicon glyphicon-map-marker fg-red"></i>店铺</span>
-	  	  <select class="form-control" type="text"
-	  		  x-ng-model="select.shop"
-	  		  x-ng-change="change_shop()"
-	  		  x-ng-options="s as s.name for s in shops">
-	  	  </select>
+	  <div class="row diablo-form-group">
+	    <div class="col-xs-12 col-md-12">
+	      <div class="input-group">
+		<span class="input-group-addon">
+	  	  <i class="glyphicon glyphicon-map-marker fg-red"></i>店铺</span>
+	  	<select class="form-control" type="text"
+	  		x-ng-model="select.shop"
+	  		x-ng-change="change_shop()"
+	  		x-ng-options="s as s.name for s in shops">
+	  	</select>
 
 		<span x-ng-if="setting.barcode_mode" class="input-group-addon">
 		  <i class="glyphicon glyphicon-barcode fg-red"></i>条码</span>
@@ -57,9 +57,9 @@
 		  </div>
 		</form>
 
-		<span x-ng-if="!setting.scan_only" class="input-group-addon">
+		<span x-ng-if="right.master || !setting.scan_only" class="input-group-addon">
 		  <i class="glyphicon glyphicon-signal fg-red"></i>货号</span>
-		<form x-ng-if="!setting.scan_only" name="sform">
+		<form x-ng-if="right.master || !setting.scan_only" name="sform">
 		  <div ng-class="{'has-error':sform.snumber.$invalid && !sform.snumber.$pristine}">
 		    <input id="snumber" class="form-control text-left"
 			   name="snumber"
@@ -78,10 +78,10 @@
 		    </span>
 		  </div>
 		</form>
-	
-		</div>
-	      </div> 
-	    </div>
+		
+	      </div>
+	    </div> 
+	  </div>
 	</div> 
       </div>
       
@@ -119,9 +119,9 @@
 	      <tbody>
 		<tr class="text-center" x-ng-repeat="inv in inventories">
 		  <td x-ng-if="setting.negative_sale">
-		    <div x-ng-if="inv.state===3 && !setting.charge_with_special
-				 || !inv.sell || inv.sell<=0"></div> 
-		    <div x-ng-if="(inv.state!==3 || setting.charge_with_special) && inv.sell > 0">
+		    <div x-ng-if="inv.bargin_price===3 && !setting.charge_with_special
+				  || !inv.sell || inv.sell<=0"></div> 
+		    <div x-ng-if="(inv.bargin_price!==3 || setting.charge_with_special) && inv.sell > 0">
 		      <div class="checkbox checkbox-danger checkbox-circle">
 			<input id={{inv.order_id}}
 			       type="checkbox"
@@ -149,7 +149,7 @@
 		      <span x-ng-if="inv.vir_price>inv.tag_price" x-ng-bind="inv.vir_price"></span>
 		      <span x-ng-if="inv.vir_price<=inv.tag_price" x-ng-bind="inv.tag_price"></span>
 		    </div>
-	  <!-- <div x-ng-if="!select.sysVip" x-ng-bind="inv.tag_price"></div> -->
+		    <!-- <div x-ng-if="!select.sysVip" x-ng-bind="inv.tag_price"></div> -->
 		  </td>
 
 		  <!--discount-->
@@ -231,8 +231,8 @@
 		    <span class={{color_negative_sale(inv.negative)}}>{{inv.calc}}</span>
 		  </td>
 		  <td  x-ng-if="setting.fixed_draw
-			       && select.retailer.type_id===1
-			       && select.retailer.balance!==0" class="vert-align">
+				&& select.retailer.type_id===1
+				&& select.retailer.balance!==0" class="vert-align">
 		    <span class={{color_negative_sale(inv.negative)}}>{{inv.draw}}</span>
 		  </td>
 		  <td class="vert-align">
@@ -715,11 +715,11 @@
 	    <span x-ng-if="select.recharge>0">充值：<span class="fg-blue sell-font">
 		<strong>{{select.recharge}}</strong></span>&nbsp&nbsp
 	    </span>
-	      
+	    
     	    <span>余额：<span class="fg-blue sell-font">
 		<strong>{{select.surplus}}</strong></span>&nbsp&nbsp
     	    </span>
-	      
+	    
     	    <span>结余：<span class="fg-red sell-font">
 		<strong>{{select.left_balance}}</strong></span>&nbsp&nbsp
     	    </span> 

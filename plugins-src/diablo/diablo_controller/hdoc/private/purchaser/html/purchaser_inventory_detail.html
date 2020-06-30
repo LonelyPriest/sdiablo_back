@@ -16,12 +16,26 @@
 		  x-ng-click="promotion()">促销
 	    <i class="glyphicon glyphicon-pencil"></i></button>
 
-	  <button x-ng-if="stock_right.update_batch"
-		  class="btn red-sunglo"
-		  type="button"
-		  x-ng-click="update_batch()">批改
-	    <i class="glyphicon glyphicon-yen"></i></button>
+	  <div class="btn-group">
+	    <button x-ng-if="stock_right.update_batch"
+		    class="btn yellow">批改<i class="glyphicon glyphicon-edit"></i></button>
+	    <button class="btn red"
+		    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	      <span class="caret"></span>
+	      <span class="sr-only">Toggle Dropdown</span>
+	    </button>
 
+	    <ul class="dropdown-menu">
+	      <li>
+		<a href="javascript:;" x-ng-click="update_batch(0)">价格修改</a>
+		<a href="javascript:;" x-ng-click="update_batch(1)">特价标识</a>
+	      </li>
+	      <li x-ng-if="setting.gift_sale && stock_right.gift_stock">
+		<a href="javascript:;" x-ng-click="update_batch(2)">赠送标识</a>
+	      </li> 
+	    </ul>
+	  </div> 
+	  
 	  <!-- <a type="button" class="btn green hidden-xs" -->
 	  <!--    x-ng-click="goto_page('#/inventory_new')">入库 -->
 	  <!--   <i class="glyphicon glyphicon-plus"></i></a> -->
@@ -171,7 +185,7 @@
 
 			<td>
 			  <div x-ng-switch on="inv.bargin_price">
-			    <span x-ng-switch-when=1>是</span>
+			    <span x-ng-switch-when=3>是</span>
 			    <span x-ng-switch-default>否</span>
 			  </div>
 			</td>
@@ -620,7 +634,7 @@
     </button>
     
     <h4 class="modal-title">
-      <span class="label label-sm label-primary">库存批量改价</span>
+      <span class="label label-sm label-primary">库存批量修改</span>
     </h4>
   </div>
   
@@ -628,7 +642,7 @@
     <form class="form-horizontal" name="sForm" novalidate> 
       <div class="form-body">
 
-	<div class="form-group">
+	<div x-ng-if="params.mode===0" class="form-group">
 	  <div class="input-group">
 	    <span class="input-group-addon">
 	      <i class="glyphicon glyphicon-yen fg-red"></i>
@@ -643,7 +657,7 @@
 	  </div> 
 	</div>
 
-	<div class="form-group">
+	<div x-ng-if="params.mode===0" class="form-group">
 	  <div class="input-group">
 	    <span class="input-group-addon">
 	      <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
@@ -658,7 +672,7 @@
 	  </div> 
 	</div>
 
-	<div class="form-group">
+	<div x-ng-if="params.mode===0" class="form-group">
 	  <div class="input-group">
 	    <span class="input-group-addon">
 	      <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
@@ -686,7 +700,7 @@
 	<!--   </div> -->
 	<!-- </div> -->
 	
-	<div class="form-group">
+	<div x-ng-if="params.mode===0" class="form-group">
 	  <div class="input-group">
 	    <span class="input-group-addon">
 	      <i class="glyphicon glyphicon-hand-right fg-red"></i>是否积分</span>
@@ -697,12 +711,23 @@
 	  </div>
 	</div>
 
-	<div class="form-group">
+	<div x-ng-if="params.mode===0 || params.mode===1" class="form-group">
 	  <div class="input-group">
 	    <span class="input-group-addon">
 	      <i class="glyphicon glyphicon-hand-right fg-red"></i>是否特价</span>
 	    <select class="form-control"
 		    x-ng-model="params.select.sprice"
+		    x-ng-options="s as s.name for s in params.yes_no">
+	    </select>
+	  </div>
+	</div>
+
+	<div x-ng-if="params.mode===2" class="form-group">
+	  <div class="input-group">
+	    <span class="input-group-addon">
+	      <i class="glyphicon glyphicon-hand-right fg-red"></i>是否赠送</span>
+	    <select class="form-control"
+		    x-ng-model="params.select.gift"
 		    x-ng-options="s as s.name for s in params.yes_no">
 	    </select>
 	  </div>
@@ -802,7 +827,7 @@
 	  </div>
 	</div>
 
-	<div class="form-group">
+	<div x-ng-if="params.score!==-1" class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">是否积分</label>
 	  <div class="col-sm-10 col-md-10">
 	    <select class="form-control"

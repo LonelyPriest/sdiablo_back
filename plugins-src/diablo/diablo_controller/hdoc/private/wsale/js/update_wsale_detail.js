@@ -222,6 +222,11 @@ function wsaleUpdateDetailCtrlProvide(
 	add.path         = src.path;
 	add.s_group      = src.s_group;
 	add.free         = src.free;
+	
+	add.state        = src.state;
+	add.bargin_price = wsaleUtils.to_integer(src.state.charAt(0)); 
+	add.gift         = wsaleUtils.to_integer(src.state.charAt(1));
+	
 	add.entry        = src.entry_date;
 	console.log(add);
 	return add;
@@ -480,6 +485,7 @@ function wsaleUpdateDetailCtrlProvide(
 
 		stock          : add.total,
 		negative       : 0,
+		sprice         : add.bargin_price === 3 ? diablo_yes : diablo_no,
 
 		// sizes          : add.sizes,
 		s_group        : add.s_group,

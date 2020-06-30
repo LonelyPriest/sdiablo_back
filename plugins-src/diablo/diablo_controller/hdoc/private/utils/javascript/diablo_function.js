@@ -162,6 +162,13 @@ var diablo_bill_card = 1;
 var diablo_bill_wire = 2;
 
 /*
+ * stock update batch
+ */
+var diablo_update_price_batch = 0;
+var diablo_update_sprice_batch = 1;
+var diablo_update_gift_batch = 2;
+
+/*
  * scan mode
  */
 var diablo_scan_mode = "00000001";

@@ -86,7 +86,9 @@ var wsaleUtils = function(){
 		
 		add.reject    = s.amount;
 		add.total     = s.total;
-		add.has_rejected = s.has_rejected; 
+		add.has_rejected = wsaleUtils.to_integer(s.has_rejected.charAt(0));
+		add.negative = wsaleUtils.to_integer(s.has_rejected.charAt(1)); 
+		add.bargin_price = wsaleUtils.to_integer(s.has_rejected.charAt(2)) === 1 ? 3 : 0;
 		
 		add.pid       = s.pid;
 		add.sid       = s.sid;
@@ -132,7 +134,7 @@ var wsaleUtils = function(){
 		name:      inv.style_number
 		    + "-" + (inv.brand.name ? inv.brand.name : inv.brand)
 		    + "-" + (inv.type.name  ? inv.type.name: inv.type)
-		    + "-" + (inv.state === 3 ? "特价" : "正价"),
+		    + "-" + (wsaleUtils.to_integer(inv.bargin_price) === 3 ? "特价" : "正价"),
 		
 		promotion: inv.promotion,
 		score:     inv.score
@@ -915,6 +917,7 @@ var wsaleCalc = function(){
 	    var stocksSortWithPromotion = [];
 	    for (var i=0, l=inventories.length; i<l; i++) {
 		var one = inventories[i];
+		// console.log(one);
 		valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, one);
 		if ( (angular.isDefined(one.select) && !one.select) || one.has_rejected) continue;
 
@@ -934,7 +937,7 @@ var wsaleCalc = function(){
 		    	one.fprice = diablo_price(valid_price, one.fdiscount); 
 		    }
 		} else {
-		    if (one.state !== 3 && !one.$update && diablo_sale === saleMode) {
+		    if (diablo_sale === saleMode && !one.$update && one.bargin_price !== 3) {
 			wsaleCalc.sort_stock_with_promotion(one, stocksSortWithPromotion); 
 		    }
 		}		
@@ -1216,7 +1219,8 @@ var wsaleCalc = function(){
 		    // promotion first
 		    var one = inventories[i]; 
 		    // console.log(one);
-		    if (one.state !== 3 && wsaleCalc.in_promotion_stock(one, stocksSortWithPromotion)) {
+		    if (one.bargin_price !== 3
+			&& wsaleCalc.in_promotion_stock(one, stocksSortWithPromotion)) {
 			if (one.pid !== diablo_invalid_index) {
 			    // M2N stock
 			    if (wsaleCalc.in_m2n_stocks(one, stocksNoWithM2N)) {
@@ -1838,7 +1842,7 @@ var wsalePrint = function(){
 		
 		// LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, brand); 
 		// top += 5;
-		if (d.state === 3) {
+		if (wsaleUtils.to_integer(d.state.charAt(0)) === 3) {
 		    LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, d.note + "/特价"); 
 		} else {
 		    LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, d.note);

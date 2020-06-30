@@ -439,10 +439,10 @@ check_transfer(Merchant, UTable, FShop, TShop, CheckProps) ->
 			 ++ ?to_s(EDiscount) ++ "," 
 			 ++ ?to_s(TagPrice) ++ ","
 			 ++ ?to_s(Discount) ++ "," 
-			 ++ case Good of
-				[] -> ?to_s(0);
-				_ -> ?to_s(?v(<<"state">>, Good, 0))
-			    end  ++ ","
+			 ++ "\'" ++ case Good of
+					[] -> ?to_s(0);
+					_ -> ?to_s(?v(<<"state">>, Good, 0))
+				    end  ++ "\'," 
 			 ++ "\'" ++ ?to_s(Path) ++ "\',"
 			 ++ ?to_s(AlarmDay) ++ ","
 			 ++ ?to_s(TShop) ++ ","

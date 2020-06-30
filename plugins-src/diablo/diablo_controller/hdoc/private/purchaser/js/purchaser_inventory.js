@@ -2080,7 +2080,7 @@ function purchaserInventoryNewCtrlProvide (
 			tag_price: good.tag_price,
 			draw:      good.draw,
 			ediscount: good.ediscount,
-			state:     stockUtils.to_integer(good.sprice) === 1 ? 3 : diablo_invalid_index,
+			state:     stockUtils.to_integer(good.sprice) === diablo_yes ? 3 : diablo_no,
 			discount:  good.discount,
 			alarm_day: good.alarm_day,
 			path:      state.path,
@@ -2342,7 +2342,8 @@ function purchaserInventoryDetailCtrlProvide(
 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
-    
+
+    var to_f = diablo_set_float;
     var now = $.now();
     var storage = localStorageService.get(diablo_key_inventory_detail);
     // console.log(storage);
@@ -3115,13 +3116,12 @@ function purchaserInventoryDetailCtrlProvide(
 	
     };
 
-    $scope.update_batch = function(){
+    $scope.update_batch = function(update_mode){
 	var condition = diabloFilter.do_filter(
 	    $scope.filters, $scope.time, function(search){
-		// add_search_condition(search); 
-		return search; 
+		return search;
 	    }); 
-	console.log(stockUtils.get_own_property_length(condition));
+	// console.log(stockUtils.get_own_property_length(condition));
 
 	if (stockUtils.get_own_property_length(condition) < 3) {
 	    dialog.set_error("批量修改库存价格", 2071);
@@ -3132,11 +3132,12 @@ function purchaserInventoryDetailCtrlProvide(
 		var update = {
 		    // season: params.select.season,
 		    // year: params.select.year 
-		    tag_price: diablo_set_float(params.select.tag_price),
-		    discount:  diablo_set_float(params.select.discount),
-		    imbalance: diablo_set_float(params.select.imbalance),
-		    score: params.select.score.id,
-		    sprice: params.select.sprice.id
+		    tag_price: update_mode === 0 ? to_f(params.select.tag_price) : undefined,
+		    discount:  update_mode === 0 ? to_f(params.select.discount) : undefined,
+		    imbalance: update_mode === 0 ? to_f(params.select.imbalance) : undefined,
+		    score: update_mode === 0 ? params.select.score.id : undefined,
+		    sprice: update_mode === 0 || update_mode === 1 ? params.select.sprice.id : undefined,
+		    gift: update_mode === 2 ? params.select.gift.id : undefined,
 		};
 		console.log(update);
 		
@@ -3193,7 +3194,12 @@ function purchaserInventoryDetailCtrlProvide(
 		    },
 		    
 		    yes_no: yes_no,
-		    select: {score: yes_no[0], sprice: yes_no[0]}
+		    mode: update_mode,
+		    select: {
+			score: yes_no[0],
+			sprice: yes_no[0],
+			gift: yes_no[0],
+		    }
 		}
 	    ); 
 	}
@@ -3321,6 +3327,7 @@ function purchaserInventoryDetailCtrlProvide(
 		tag_price    :inv.tag_price,
 		discount     :inv.discount,
 		draw         :inv.draw,
+		score        :inv.sid,
 		contailer    :inv.contailer,
 		yes_no       :yes_no,
 		is_score     :yes_no[0],
@@ -3336,7 +3343,9 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.gift_stock = function(inv) {
 	console.log(inv);
 	var condition = {style_number:inv.style_number, brand:inv.brand.id, shop:inv.shop_id};
-	purchaserService.gift_stock(condition, {gift:inv.gift}).then(function(result){
+	purchaserService.gift_stock(
+	    condition, {gift:stockUtils.to_integer(inv.state.charAt(1))}
+	).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0){
 		dialog.response_with_callback(
@@ -3344,7 +3353,10 @@ function purchaserInventoryDetailCtrlProvide(
 		    "赠送标识设置",
 		    "赠送标识设置成功！！",
 		    undefined,
-		    function() {inv.gift = result.gift;});
+		    function() {
+			// inv.gift = result.gift;
+			inv.state = stockUtils.replace_stock_state(inv.state, 1, result.state);
+			inv.gift  = stockUtils.to_integer(inv.state.charAt(1));});
 	    } else {
 		dialog.response(
 		    false,
@@ -3387,7 +3399,9 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.offering_stock = function(inv) {
 	console.log(inv);
 	var condition = {style_number:inv.style_number, brand:inv.brand.id, shop:inv.shop_id};
-	purchaserService.offering_stock(condition, {state:inv.state}).then(function(result){
+	purchaserService.offering_stock(
+	    condition, {state:stockUtils.to_integer(inv.state.charAt(0))}
+	).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0){
 		dialog.response_with_callback(
@@ -3395,12 +3409,14 @@ function purchaserInventoryDetailCtrlProvide(
 		    "特价标识设置",
 		    "特价标识设置成功！！",
 		    undefined,
-		    function() {inv.state = result.state;})
+		    function() {
+			inv.state = stockUtils.replace_stock_state(inv.state, 0, result.state);
+			inv.bargin_price = stockUtils.to_integer(inv.state.charAt(0));})
 	    } else {
 		dialog.set_error(false, "特价标识设置", result.ecode); 
 	    }
 	});
-    };
+    }; 
 
     $scope.update_alarm_a = function(inv){
 	console.log(inv);

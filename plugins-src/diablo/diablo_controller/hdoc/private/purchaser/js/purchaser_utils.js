@@ -602,6 +602,19 @@ var stockUtils = function(){
 	    })
 	},
 
+	replace_stock_state: function(state, pos, value) {
+	    var newState = "";
+	    for (var i=0, j=state.length; i<j; i++ ) {
+		if (i===pos) {
+		    newState += value.toString();
+		} else {
+		    newState += state.charAt(i).toString();
+		}
+	    }
+
+	    return newState;
+	},
+
 	correct_condition_with_shop: function(condition, shopIds, shops, useSalerStock) {
 	    if (stockUtils.to_integer(condition.region) === 0){
 		if (angular.isUndefined(condition.shop) || condition.shop.length === 0){

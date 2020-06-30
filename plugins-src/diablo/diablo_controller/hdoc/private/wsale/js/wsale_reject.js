@@ -484,6 +484,8 @@ function wsaleRejectCtrlProvide(
 		rprice      : add.rprice,
 		path        : add.path,
 
+		sprice      : add.bargin_price === 3 ? diablo_yes : diablo_no,
+		
 		s_group     : add.s_group,
 		colors      : add.colors,
 		free        : add.free

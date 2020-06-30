@@ -1131,7 +1131,8 @@ handle_call({reject_sale, Merchant, UTable, Inventories, Props}, _From, State) -
 		    ", lscore"
 		    ", score"
 		    ", comment"
-		    ", type, entry_date) values("
+		    ", type"
+		    ", entry_date) values("
 		    ++ "\"" ++ ?to_s(RejectRsn) ++ "\","
 		    ++ ?to_s(UserId) ++ ","
 		    ++ "\'" ++ ?to_s(Employe) ++ "\',"
@@ -2262,6 +2263,7 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 		  end,
     Exist       = ?v(<<"stock">>, Inventory),
     Negative    = ?v(<<"negative">>, Inventory),
+    SPrice      = ?v(<<"sprice">>, Inventory, 0),
     Promotion   = ?v(<<"promotion">>, Inventory, -1),
     Score       = ?v(<<"score">>, Inventory, -1),
     Free        = ?v(<<"free">>, Inventory),
@@ -2322,7 +2324,8 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 		 ", in_datetime"
 		 ", exist"
 		 ", total"
-		 ", negative"
+	     %% ", negative"
+		 ", reject"
 		 ", promotion"
 		 ", score"
 		 ", org_price"
@@ -2331,7 +2334,8 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 		 ", discount"
 		 ", fdiscount"
 		 ", rdiscount"
-		 ", fprice, rprice"
+		 ", fprice"
+		 ", rprice"
 		 ", path"
 		 ", comment"
 		 ", entry_date) values("
@@ -2349,14 +2353,14 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 		 ++ ?to_s(Year) ++ ","
 		 ++ "\'" ++ ?to_s(InDatetime) ++ "\',"
 		 ++ case Action of
-			new -> ?to_s(Exist);
-			reject -> ?to_s(0)
-		    end ++ "," 
+				new -> ?to_s(Exist);
+				reject -> ?to_s(0)
+			    end ++ "," 
 		 ++ ?to_s(Total) ++ ","
-		 ++ case Action of
-			new -> ?to_s(Negative);
-			reject -> ?to_s(0)
-		    end ++ ","
+		 ++ "\'" ++ case Action of
+				new -> "0" ++ ?to_s(Negative) ++ ?to_s(SPrice);
+				reject -> "00" ++ ?to_s(SPrice)
+			    end ++ "\',"
 		 ++ ?to_s(Promotion) ++ ","
 		 ++ ?to_s(Score) ++ ","
 		 
@@ -2460,7 +2464,7 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 		   ["update"
 		    %% " w_sale_detail"
 		    ++ ?table:t(sale_detail, Merchant, UTable)
-		    ++ " set reject=" ++ ?to_s(?YES)
+		    ++ " set reject=insert(reject,1,1," ++ ?to_s(?YES) ++ ")"
 		    ++ " where merchant=" ++ ?to_s(Merchant)
 		    ++ " and shop=" ++ ?to_s(Shop)
 		    ++ " and rsn=\'" ++ ?to_s(SaleRsn) ++ "\'"
@@ -2753,7 +2757,8 @@ sale_new(rsn_groups, MatchMode, {Merchant, UTable}, Conditions, PageFun) ->
 	", b.s_group"
 	", b.free"
 	", b.total"
-	", b.negative"
+    %% ", b.negative"
+	", b.reject"
 	", b.promotion as pid"
 	", b.score as sid"
 	", b.org_price"

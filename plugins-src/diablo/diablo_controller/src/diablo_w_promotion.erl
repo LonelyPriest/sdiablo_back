@@ -39,7 +39,9 @@ promotion(list, Merchant) ->
     gen_server:call(?SERVER(Merchant), {list_promotion, Merchant}).
 
 commision(new, Merchant, Attrs) ->
-    gen_server:call(?SERVER(Merchant), {new_commision, Merchant, Attrs}).
+    gen_server:call(?SERVER(Merchant), {new_commision, Merchant, Attrs});
+commision(update, Merchant, Attrs) ->
+    gen_server:call(?SERVER(Merchant), {update_commision, Merchant, Attrs}).
 commision(list, Merchant) ->
     gen_server:call(?SERVER(Merchant), {list_commision, Merchant}).
     
@@ -216,7 +218,6 @@ handle_call({update_promotion, Merchant, Attrs}, _From, State) ->
 		++ " and merchant=" ++ ?to_s(Merchant),
 
 	    Reply = ?sql_utils:execute(write, Sql1, Id),
-	    ?w_user_profile:update(firm, Merchant),
 	    {reply, Reply, State};
 	{ok, _} ->
 	    {reply, {error, ?err(promotion_exist, Name)}, State};
@@ -290,6 +291,40 @@ handle_call({new_commision, Merchant, Attrs}, _From, State) ->
 		Error
 	end,
     {reply, Reply, State};
+
+handle_call({update_commision, Merchant, Attrs}, _From, State) -> 
+    ?DEBUG("update_promotion with merhcant ~p, attrs ~p", [Merchant, Attrs]),
+    Id       = ?v(<<"mid">>, Attrs),
+    Name     = ?v(<<"name">>, Attrs),
+    Rule     = ?v(<<"rule">>, Attrs),
+    Balance  = ?v(<<"balance">>, Attrs),
+    Flat     = ?v(<<"flat">>, Attrs),
+    
+    Sql = "select id, name from w_commision"
+	++ " where "
+	++ " name=" ++ "\"" ++ ?to_s(Name) ++ "\""
+	++ " and merchant=" ++ ?to_s(Merchant)
+	++ " and deleted=" ++ ?to_s(?NO),
+
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} ->
+	    Updates = ?utils:v(name, string, Name)
+		++ ?utils:v(rule, integer, Rule)
+		++ ?utils:v(balance, integer, Balance)
+		++ ?utils:v(flat, integer, Flat),
+	    Sql1 = 
+		"update w_commision set "
+		++ ?utils:to_sqls(proplists, comma, Updates)
+		++ " where id=" ++ ?to_s(Id)
+		++ " and merchant=" ++ ?to_s(Merchant),
+
+	    Reply = ?sql_utils:execute(write, Sql1, Id),
+	    {reply, Reply, State};
+	{ok, _} ->
+	    {reply, {error, ?err(promotion_exist, Name)}, State};
+	Error ->
+	    {reply, Error, State}
+    end;
 
 handle_call({list_commision, Merchant}, _From, State) ->
     Sql = "select id"

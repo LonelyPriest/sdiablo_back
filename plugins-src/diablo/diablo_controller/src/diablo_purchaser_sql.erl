@@ -18,7 +18,7 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
     TagPrice    = ?v(<<"tag_price">>, Attrs, 0),
     Draw        = ?v(<<"draw">>, Attrs, 0), 
     EDiscount   = ?v(<<"ediscount">>, Attrs, 100),
-    SPrice      = case ?v(<<"sprice">>, Attrs, ?INVALID_OR_EMPTY) of
+    SPrice      = case ?v(<<"sprice">>, Attrs, ?NORMAL_PRICE) of
 		      ?YES -> ?BARGIN_PRICE;
 		      _ -> ?NORMAL_PRICE
 		  end,
@@ -327,6 +327,7 @@ good(detail, {Merchant, UTable}, Conditions) ->
 	", a.tag_price"
 	", a.ediscount"
 	", a.discount"
+	", a.draw"
 	", a.state"
 	", a.path" 
 	", a.alarm_day"
@@ -738,7 +739,7 @@ inventory({group_detail, MatchMode}, {Merchant, UTable}, Conditions, PageFun) ->
 	", a.sell"
 	", a.shop as shop_id"
 	", a.state"
-	", a.gift"
+    %% ", a.gift"
 	", a.last_sell"
 	", a.change_date"
 	", a.entry_date"
@@ -822,9 +823,10 @@ inventory(set_promotion, {Merchant, UTable}, Promotions, Conditions) ->
 
 inventory(set_gift, {Merchant, UTable}, GiftState, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
-    Updates = ?utils:v(gift, integer, GiftState), 
+    %% Updates = ?utils:v(gift, integer, GiftState), 
     "update" ++ ?table:t(stock, Merchant, UTable)
-	++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
+    %%++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
+	++ " set " ++ update_stock(state, 1, GiftState)
 	++ " where " 
 	++ ?sql_utils:condition(proplists_suffix, NewConditions)
 	++ "merchant=" ++ ?to_s(Merchant)
@@ -836,9 +838,10 @@ inventory(set_gift, {Merchant, UTable}, GiftState, Conditions) ->
 
 inventory(set_offer, {Merchant, UTable}, StockState, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
-    Updates = ?utils:v(state, integer, StockState), 
+    %% Updates = ?utils:v(state, integer, StockState), 
     "update" ++ ?table:t(stock, Merchant, UTable)
-	++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
+    %% ++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
+	++ " set " ++ update_stock(state, 1, StockState)
 	++ " where " 
 	++ ?sql_utils:condition(proplists_suffix, NewConditions)
 	++ "merchant=" ++ ?to_s(Merchant)
@@ -891,6 +894,9 @@ inventory({update_batch, MatchMode}, {Merchant, UTable}, Attrs, Conditions) ->
     		1 -> 3;
     		_ -> undefined
     	    end,
+
+    Gift = ?v(<<"gift">>, Attrs),
+    
     %% {State, Len} = calc_update_stock_state(Attrs, [], 0),
 
     %% ?DEBUG("imbalance ~p", [Imbalance]),
@@ -900,8 +906,8 @@ inventory({update_batch, MatchMode}, {Merchant, UTable}, Attrs, Conditions) ->
 		?utils:v(org_price, float, OrgPrice)
 		    ++ ?utils:v(tag_price, float, TagPrice)
 		    ++ ?utils:v(vir_price, float, VirPrice)
-		    ++ ?utils:v(draw, float, CanDraw)
-		    ++ ?utils:v(state, integer, State); 
+		    ++ ?utils:v(draw, float, CanDraw);
+		%% ++ ?utils:v(state, integer, State); 
 	    false ->
 		[]
 	end
@@ -913,8 +919,27 @@ inventory({update_batch, MatchMode}, {Merchant, UTable}, Attrs, Conditions) ->
 
     ?DEBUG("UpdateOfGood ~p, UpdateOfStock ~p", [UpdateOfGood, UpdateOfStock]),
 
-    ["update" ++ ?table:t(stock, Merchant, UTable) 
-     ++ " set " ++ ?utils:to_sqls(proplists, comma, UpdateOfStock)
+    ["update" ++ ?table:t(stock, Merchant, UTable)
+     ++ " set "
+     ++ case State =/= undefined of
+	    true -> update_stock(state, 1, State);
+	    false -> []
+	end
+     ++ case Gift =/= undefined of
+	    true -> update_stock(state, 2, Gift);
+	    false -> []
+	end
+
+     ++ case UpdateOfStock =/= [] of
+	    true -> "," ++ ?utils:to_sqls(proplists, comma, UpdateOfStock);
+	    false -> []
+	end
+
+     %% ++ " set " ++  ?utils:to_sqls(proplists, comma, UpdateOfStock)
+     %% ++ case State =/= undefined of
+     %% 	    true -> "," ++ update_stock(state, 1, State);
+     %% 	    false -> []
+     %% 	end
      ++ case Imbalance =:= undefined orelse Imbalance == 0 of
 	    true -> 
 		%% ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
@@ -965,59 +990,74 @@ inventory({update_batch, MatchMode}, {Merchant, UTable}, Attrs, Conditions) ->
 	    TimeSql ->  " and " ++ TimeSql
 	end
      ++ " and deleted=" ++ ?to_s(?NO)]
-	
-	++ case UpdateOfGood of
-	       [] -> [];
-	       _ ->
-		   ["update" ++ ?table:t(good, Merchant, UTable)
-		    ++ " set " ++ ?utils:to_sqls(proplists, comma, UpdateOfGood)
-		    ++ case Imbalance =:= undefined orelse Imbalance == 0 of
-			   true ->
-			       case {TagPrice, OrgPrice} of
-			       	   {undefined, undefined} ->
-			       	       [];
-			       	   {undefined, OrgPrice} ->
-			       	       ", ediscount=(" ++ ?to_s(OrgPrice) ++"/tag_price)*100";
-			       	   {TagPrice, undefined} ->
-			       	       ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100";
-			       	   {TagPrice, OrgPrice} ->
-			       	       ", ediscount=" ++ ?to_s(stock(ediscount, OrgPrice, TagPrice))
-			          end;
-			       
-			       %% case TagPrice =:= undefined orelse TagPrice == 0 of
-			       %% 	   true -> [];
-			       %% 	   false -> ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
-			       %% end;
 
-			   false -> []
-		       end
-		    %% ++ case {TagPrice, OrgPrice} of
-		    %% 	   {undefined, undefined} ->
-		    %% 	       [];
-		    %% 	   {undefined, OrgPrice} ->
-		    %% 	       ", ediscount=(" ++ ?to_s(OrgPrice) ++"/tag_price)*100";
-		    %% 	   {TagPrice, undefined} ->
-		    %% 	       ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100";
-		    %% 	   {TagPrice, OrgPrice} ->
-		    %% 	       ", ediscount=" ++ ?to_s(stock(ediscount, OrgPrice, TagPrice))
-		    %%    end
-		    ++ " where "
-		    ++ "merchant=" ++ ?to_s(Merchant) 
-		    ++ case MatchMode of
-			   ?AND ->
+	
+	%% ++ case UpdateOfGood of
+	%%        [] -> [];
+	%%        _ ->
+	++ ["update" ++ ?table:t(good, Merchant, UTable)
+	    ++ " set "
+	    ++ case State =/= undefined of
+		   true -> update_stock(state, 1, State);
+		   false -> []
+	       end
+
+	    ++ case Gift =/= undefined of
+		   true -> update_stock(state, 2, Gift);
+		   false -> []
+	       end
+
+	    ++ case UpdateOfGood =/= [] of
+		   true -> "," ++ ?utils:to_sqls(proplists, comma, UpdateOfGood);
+		   false -> []
+	       end
+	    
+	    ++ case Imbalance =:= undefined orelse Imbalance == 0 of
+		   true ->
+		       case {TagPrice, OrgPrice} of
+			   {undefined, undefined} ->
+			       [];
+			   {undefined, OrgPrice} ->
+			       ", ediscount=(" ++ ?to_s(OrgPrice) ++"/tag_price)*100";
+			   {TagPrice, undefined} ->
+			       ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100";
+			   {TagPrice, OrgPrice} ->
+			       ", ediscount=" ++ ?to_s(stock(ediscount, OrgPrice, TagPrice))
+		       end;
+
+		   %% case TagPrice =:= undefined orelse TagPrice == 0 of
+		   %% 	   true -> [];
+		   %% 	   false -> ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
+		   %% end;
+
+		   false -> []
+	       end
+	    %% ++ case {TagPrice, OrgPrice} of
+	    %% 	   {undefined, undefined} ->
+	    %% 	       [];
+	    %% 	   {undefined, OrgPrice} ->
+	    %% 	       ", ediscount=(" ++ ?to_s(OrgPrice) ++"/tag_price)*100";
+	    %% 	   {TagPrice, undefined} ->
+	    %% 	       ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100";
+	    %% 	   {TagPrice, OrgPrice} ->
+	    %% 	       ", ediscount=" ++ ?to_s(stock(ediscount, OrgPrice, TagPrice))
+	    %%    end
+	    ++ " where "
+	    ++ "merchant=" ++ ?to_s(Merchant) 
+	    ++ case MatchMode of
+		   ?AND ->
+		       ?sql_utils:condition(proplists, UpdateGoodCondition);
+		   ?LIKE ->
+		       case ?v(<<"style_number">>, UpdateGoodCondition, []) of
+			   [] ->
 			       ?sql_utils:condition(proplists, UpdateGoodCondition);
-			   ?LIKE ->
-			       case ?v(<<"style_number">>, UpdateGoodCondition, []) of
-				   [] ->
-				       ?sql_utils:condition(proplists, UpdateGoodCondition);
-				   StyleNumber ->
-				       " and style_number like '" ++ ?to_s(StyleNumber) ++ "%'"
-					   ++ ?sql_utils:condition(
-						 proplists, lists:keydelete(<<"style_number">>, 1, UpdateGoodCondition))
-			       end
-		       end 
-		    ++ " and deleted=" ++ ?to_s(?NO)]
-	   end;
+			   StyleNumber ->
+			       " and style_number like '" ++ ?to_s(StyleNumber) ++ "%'"
+				   ++ ?sql_utils:condition(
+					 proplists, lists:keydelete(<<"style_number">>, 1, UpdateGoodCondition))
+		       end
+	       end 
+	    ++ " and deleted=" ++ ?to_s(?NO)];
 
 inventory(update_stock_alarm, {Merchant, UTable}, Attrs, Conditions) ->
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
@@ -1119,7 +1159,7 @@ inventory(list, {Merchant, UTable}, Conditions) ->
 	", a.ediscount"
 	", a.discount"
 	", a.state"
-	", a.gift"
+    %% ", a.gift"
 	", a.shop_id"
 
 	", b.color as color_id"
@@ -1140,7 +1180,7 @@ inventory(list, {Merchant, UTable}, Conditions) ->
 	", a.ediscount"
 	", a.discount"
 	", a.state"
-	", a.gift"
+    %% ", a.gift"
 	", a.shop as shop_id"
     %% " from w_inventory a"
 	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
@@ -1703,7 +1743,7 @@ inventory_match(all_inventory, Merchant, UTable, Shop, Conditions) ->
 	", a.ediscount"
 	", a.discount"
 	", a.state"
-	", a.gift"
+    %% ", a.gift"
 	", a.path"
 	", a.entry_date"
 
@@ -1748,7 +1788,7 @@ inventory_match(of_in, Merchant, UTable, Shop, Ins) ->
 	", a.ediscount"
 	", a.discount"
 	", a.state"
-	", a.gift"
+    %% ", a.gift"
 	", a.path"
 	", a.entry_date"
 
@@ -1793,7 +1833,7 @@ inventory_match(Merchant, UTable, StyleNumber, Shop, Firm) ->
 	
 	", a.state"
 	", a.unit"
-	", a.gift"
+    %% ", a.gift"
 	", a.path"
 	", a.entry_date"
 	
@@ -1887,7 +1927,7 @@ get_inventory(barcode, Merchant, UTable, Shop, Firm, Barcode, ExtraConditions) -
 	
 	", a.state"
 	", a.unit"
-	", a.gift"
+    %% ", a.gift"
 	", a.path"
 	", a.entry_date"
 
@@ -2247,11 +2287,11 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 		  %% ++ ", promotion=" ++ ?to_s(Promotion)
 		  ++ case Mode of
 			?NEW_INVENTORY ->
-			    ", org_price=" ++ ?to_s(OrgPrice)
-				++ ", ediscount=" ++ ?to_s(EDiscount)
-				++ ", tag_price=" ++ ?to_s(TagPrice)
-				 ++ ", draw=" ++ ?to_s(Draw)
-				++ ", discount=" ++ ?to_s(Discount);
+			     ", org_price=" ++ ?to_s(OrgPrice)
+				 ++ ", ediscount=" ++ ?to_s(EDiscount)
+				 ++ ", tag_price=" ++ ?to_s(TagPrice)
+			     %% ++ ", draw=" ++ ?to_s(Draw)
+				 ++ ", discount=" ++ ?to_s(Discount);
 				%% ++ ", contailer=" ++ ?to_s(Contailer)
 				%% ++ ", alarm_a=" ++ ?to_s(Alarm_a); 
 			%%++ ", entry_date=" ++ "\"" ++ ?to_s(CurDateTime) ++ "\""; 
@@ -3075,6 +3115,9 @@ get_match_mode(style_number, StyleNumber, Prefix) ->
 	{_, Match, _}->
 	    ?to_s(Prefix) ++ "style_number like \'%" ++ Match ++ "%\'"
     end.
+
+update_stock(state, Pos, Value) ->
+    "state=insert(state," ++ ?to_s(Pos)++ ",1," ++ ?to_s(Value) ++ ")".
 
 gen_barcode(self_barcode, Merchant, Year, Season, Type) ->
     <<_:2/binary, YY/binary>> = ?to_b(Year),
