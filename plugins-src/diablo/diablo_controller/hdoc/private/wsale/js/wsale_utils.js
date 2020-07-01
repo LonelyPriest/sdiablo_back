@@ -86,9 +86,11 @@ var wsaleUtils = function(){
 		
 		add.reject    = s.amount;
 		add.total     = s.total;
+		
 		add.has_rejected = wsaleUtils.to_integer(s.has_rejected.charAt(0));
 		add.negative = wsaleUtils.to_integer(s.has_rejected.charAt(1)); 
 		add.bargin_price = wsaleUtils.to_integer(s.has_rejected.charAt(2)) === 1 ? 3 : 0;
+		add.ticket = wsaleUtils.to_integer(s.has_rejected.charAt(3));
 		
 		add.pid       = s.pid;
 		add.sid       = s.sid;
@@ -1842,7 +1844,7 @@ var wsalePrint = function(){
 		
 		// LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, brand); 
 		// top += 5;
-		if (wsaleUtils.to_integer(d.state.charAt(0)) === 3) {
+		if (wsaleUtils.to_integer(d.bargin_price) === 3) {
 		    LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, d.note + "/特价"); 
 		} else {
 		    LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, d.note);

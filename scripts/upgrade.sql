@@ -785,6 +785,9 @@ alter table w_sale_detail drop column negative;
 
 
 --2020-07-01
+update w_inventory set state=RPAD(state,7,'0100000');
+
+--2020-07-02
 alter table w_inventory add column commision INTEGER not null default -1;
 
 

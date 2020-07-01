@@ -2264,6 +2264,8 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
     Exist       = ?v(<<"stock">>, Inventory),
     Negative    = ?v(<<"negative">>, Inventory),
     SPrice      = ?v(<<"sprice">>, Inventory, 0),
+    Ticket      = ?v(<<"ticket">>, Inventory, 0),
+	
     Promotion   = ?v(<<"promotion">>, Inventory, -1),
     Score       = ?v(<<"score">>, Inventory, -1),
     Free        = ?v(<<"free">>, Inventory),
@@ -2358,8 +2360,8 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 			    end ++ "," 
 		 ++ ?to_s(Total) ++ ","
 		 ++ "\'" ++ case Action of
-				new -> "0" ++ ?to_s(Negative) ++ ?to_s(SPrice);
-				reject -> "00" ++ ?to_s(SPrice)
+				new -> "0" ++ ?to_s(Negative) ++ ?to_s(SPrice) ++ ?to_s(Ticket);
+				reject -> "00" ++ ?to_s(SPrice) ++ ?to_s(Ticket)
 			    end ++ "\',"
 		 ++ ?to_s(Promotion) ++ ","
 		 ++ ?to_s(Score) ++ ","

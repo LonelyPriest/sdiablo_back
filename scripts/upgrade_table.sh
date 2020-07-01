@@ -56,18 +56,27 @@ PASSWORD=$2
 # alter table w_sale_detail drop column negative;
 # EOF
 
+# for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 71 72 73 74 79 90 98 101 103 104 105 106 107 108 109 110 111 112 113
+# do
+#     echo w_inventory_${t}
+#     echo w_inventory_good_${t}
+#     echo w_sale_detail_${t}
+#     mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
+# update w_inventory_${t} set state=0 where state=-1;
+# update w_inventory_good_${t} set state=0 where state=-1;
+# alter table w_inventory_${t} modify column state VARCHAR(16) not null default 0;
+# alter table w_inventory_good_${t} modify column state VARCHAR(16) not null default 0; 
+# alter table w_inventory_${t} drop column gift;
+# alter table w_sale_detail_${t} modify column reject VARCHAR(16) not null default 0;
+# alter table w_sale_detail_${t} drop column negative;
+# EOF
+# done
+
+## 2020-07-01
 for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 71 72 73 74 79 90 98 101 103 104 105 106 107 108 109 110 111 112 113
 do
     echo w_inventory_${t}
-    echo w_inventory_good_${t}
-    echo w_sale_detail_${t}
     mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
-update w_inventory_${t} set state=0 where state=-1;
-update w_inventory_good_${t} set state=0 where state=-1;
-alter table w_inventory_${t} modify column state VARCHAR(16) not null default 0;
-alter table w_inventory_good_${t} modify column state VARCHAR(16) not null default 0; 
-alter table w_inventory_${t} drop column gift;
-alter table w_sale_detail_${t} modify column reject VARCHAR(16) not null default 0;
-alter table w_sale_detail_${t} drop column negative;
+update w_inventory_${t} set state=RPAD(state,7,'0100000') where merchant=${t};
 EOF
 done

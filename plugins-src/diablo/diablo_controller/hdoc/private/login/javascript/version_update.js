@@ -1,5 +1,10 @@
 var version_update = function(){
     var updates = [
+	{date: "2020-07-01",
+	 content:
+	 ["增加电子券赠送与货品关联，货品可选择是否参与电子券赠送"]
+	},
+	
 	{date: "2020-06-01",
 	 content:
 	 ["标鉴打印优化，货品货号可单独设置字体大小，货号换行间距",

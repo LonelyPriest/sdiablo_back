@@ -2356,7 +2356,7 @@ check_inventory({oncheck, _Merchant, _Shop, _UTable, _CheckSale}, Round, Moneny,
 		false -> {error, round(Moneny), ShouldPay}
 	    end;
 	0 ->
-	    case Moneny == ShouldPay of
+	    case ?to_f(Moneny) == ShouldPay of
 		true -> {ok, none};
 		false -> {error, Moneny, ShouldPay}
 	    end

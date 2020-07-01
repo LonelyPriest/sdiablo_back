@@ -2897,17 +2897,16 @@ handle_call({set_gift, Merchant, UTable, Attrs, Conditions}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({set_offer, Merchant, UTable, Attrs, Conditions}, _From, State) ->
-    ?DEBUG("set_offer with merchant ~p, attrs ~p, conditions ~p", [Merchant, Attrs, Conditions]),
-    Offer = 
-	case ?v(<<"state">>, Attrs, 0) =:= 0 orelse ?v(<<"state">>, Attrs, 0) =:= ?INVALID_OR_EMPTY of
-	    true -> 3;
-	    false -> 0
-	end,
-	    
+    ?DEBUG("set_offer with merchant ~p, attrs ~p, conditions ~p", [Merchant, Attrs, Conditions]), 
+    %% case ?v(<<"state">>, Attrs, 0) =:= 0 orelse ?v(<<"state">>, Attrs, 0) =:= ?INVALID_OR_EMPTY of
+    %%     true -> 3;
+    %%     false -> 0
+    %% end, 
     %% StockState = case ?v(<<"state">>, Attrs) =:= 0 of
     %% 		    true -> 3;
     %% 		    false -> 0
     %% 		end,
+    Offer = ?v(<<"state">>, Attrs),
     Sql = ?w_good_sql:inventory(set_offer, {Merchant, UTable}, Offer, Conditions), 
     Reply = ?sql_utils:execute(write, Sql, Offer),
     {reply, Reply, State};

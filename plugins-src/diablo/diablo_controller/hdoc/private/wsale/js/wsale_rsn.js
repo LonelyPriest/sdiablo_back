@@ -269,6 +269,8 @@ function wsaleRsnDetailCtrlProvide (
 			diablo_float_sub(d.rprice, d.org_price), d.rprice);
 		    d.calc      = diablo_float_mul(d.rprice, d.total);
 		    d.imbalance = wsaleUtils.to_decimal(d.tag_price - d.rprice);
+
+		    d.bargin_price = wsaleUtils.to_integer(d.reject.charAt(2)) === 1 ? 3 : 0;
 		    // if (d.note) {
 		    // 	d.notes = d.note.split(diablo_semi_seperator);
 		    // }

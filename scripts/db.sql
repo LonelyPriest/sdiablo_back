@@ -971,7 +971,7 @@ create table w_inventory
     --
     shop             INTEGER default -1,
     -- state            TINYINT default 0,  -- 3:special price
-    state            VARCHAR(16) default 0, -- [1]->promotion price, [2] gift
+    state            VARCHAR(16) default 0, -- [1]->promotion price, [2] gift, [3] ticket
     -- gift             TINYINT default 0,
 
     merchant         INTEGER default -1,
@@ -1434,9 +1434,8 @@ create table w_sale_detail(
 
     -- [1] 0->sale normal; 1-> has been reject
     -- [2] 0->sale with enought stock; 1:sale with negative stock 
-    -- [3] 0->normal stock; 1->special price stock
-    -- [4] 0->commision type 
-    -- [5] 0->none ticket; 1:ticket with stock
+    -- [3] 0->normal stock; 1->special price stock 
+    -- [4] 0->none ticket; 1:ticket with stock 
     reject         VARCHAR(16) not null default 0,
     path           VARCHAR(255) default null, -- the image path
     comment        VARCHAR(127) default null,

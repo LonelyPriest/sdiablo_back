@@ -16,9 +16,8 @@
 		  x-ng-click="promotion()">促销
 	    <i class="glyphicon glyphicon-pencil"></i></button>
 
-	  <div class="btn-group">
-	    <button x-ng-if="stock_right.update_batch"
-		    class="btn yellow">批改<i class="glyphicon glyphicon-edit"></i></button>
+	  <div x-ng-if="stock_right.update_batch" class="btn-group">
+	    <button class="btn yellow">批改<i class="glyphicon glyphicon-edit"></i></button>
 	    <button class="btn red"
 		    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 	      <span class="caret"></span>
@@ -28,7 +27,10 @@
 	    <ul class="dropdown-menu">
 	      <li>
 		<a href="javascript:;" x-ng-click="update_batch(0)">价格修改</a>
-		<a href="javascript:;" x-ng-click="update_batch(1)">特价标识</a>
+		<a href="javascript:;" x-ng-click="update_batch(1)">特价标识</a> 
+	      </li>
+	      <li>
+		<a href="javascript:;" x-ng-click="update_batch(3)">赠券标识</a>
 	      </li>
 	      <li x-ng-if="setting.gift_sale && stock_right.gift_stock">
 		<a href="javascript:;" x-ng-click="update_batch(2)">赠送标识</a>
@@ -154,6 +156,7 @@
 			<th>积分</th>
 			<th x-ng-if="!setting.hide_draw">提现额度</th>
 			<th x-ng-if="setting.gift_sale">赠送</th>
+			<th>赠券</th>
 			<th>店铺</th>
 			<th>上架日期</th>
 			<th>退货日期</th>
@@ -217,6 +220,13 @@
 			  </div>
 			</td>
 
+			<td>
+			  <div x-ng-switch on="inv.ticket">
+			    <span x-ng-switch-when=1>是</span>
+			    <span x-ng-switch-default>否</span>
+			  </div>
+			</td>
+
 			<td class="css(inv.isAlarm)">{{inv.shop}}</td> 
 			<td>{{inv.entry_date}}</td>
 			<td>
@@ -269,7 +279,8 @@
 			    <ul class="dropdown-menu">
 			      <li x-ng-if="stock_right.update_batch">
 				<a href="javascript:;" x-ng-click="update_price(inv)">价格修改</a>
-				<a href="javascript:;" x-ng-click="offering_stock(inv)">特价标识</a>
+				<a href="javascript:;" x-ng-click="offering_stock(inv, 1)">特价标识</a>
+				<a href="javascript:;" x-ng-click="offering_stock(inv, 3)">赠券标识</a>
 			      </li>
 			      <li x-ng-if="setting.gift_sale && stock_right.gift_stock">
 				<a href="javascript:;" x-ng-click="gift_stock(inv)">赠送标识</a>
@@ -332,7 +343,7 @@
 			
 			<td x-ng-if="stock_right.show_orgprice" x-ng-bind="total_lmoney"></td>
 			<td><span x-ng-bind="total_sell"></span></td>
-			<td colspan="7"></td>
+			<td colspan="9"></td>
 		      </tr>
 		    </tbody> 
 		  </table> <!--END supplier table-->
@@ -732,6 +743,17 @@
 	    </select>
 	  </div>
 	</div>
+
+	<div x-ng-if="params.mode===3" class="form-group">
+	  <div class="input-group">
+	    <span class="input-group-addon">
+	      <i class="glyphicon glyphicon-hand-right fg-red"></i>赠券标识</span>
+	    <select class="form-control"
+		    x-ng-model="params.select.ticket"
+		    x-ng-options="t as t.name for t in params.yes_no">
+	    </select>
+	  </div>
+	</div>
 	
       </div> <!-- END form body --> 
     </form>
@@ -837,15 +859,15 @@
 	  </div>
 	</div>
 
-	<!-- <div class="form-group"> -->
-	<!--   <label class="col-sm-2 col-md-2 control-label">是否特价</label> -->
-	<!--   <div class="col-sm-10 col-md-10"> -->
-	<!--     <select class="form-control" -->
-	<!-- 	    x-ng-model="params.is_sprice" -->
-	<!-- 	    x-ng-options="s as s.name for s in params.yes_no"> -->
-	<!--     </select> -->
-	<!--   </div> -->
-	<!-- </div> -->
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">是否特价</label>
+	  <div class="col-sm-10 col-md-10">
+	    <select class="form-control"
+		    x-ng-model="params.is_sprice"
+		    x-ng-options="s as s.name for s in params.yes_no">
+	    </select>
+	  </div>
+	</div>
 
 	<div x-ng-if="params.stock_contailer" class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">货柜号</label>
