@@ -1,7 +1,7 @@
 function wsaleRejectCtrlProvide(
     $scope, $q, dateFilter, diabloUtilsService, diabloPromise,
     diabloPattern, diabloFilter, diabloNormalFilter, wsaleService,
-    user, filterPromotion, filterScore, filterSysRetailer, filterBrand,
+    user, filterPromotion, filterCommision, filterScore, filterSysRetailer, filterBrand,
     filterType, filterEmployee, filterSizeGroup, filterColor, filterLevel, base){
     // console.log($scope);
     // console.log(user); 
@@ -9,6 +9,7 @@ function wsaleRejectCtrlProvide(
     $scope.shopIds       = user.shopIds;
     
     $scope.promotions    = filterPromotion;
+    $scope.commisions    = filterCommision;
     $scope.scores        = filterScore;
     $scope.sysRetailers  = filterSysRetailer; 
     $scope.brands        = filterBrand;
@@ -102,6 +103,7 @@ function wsaleRejectCtrlProvide(
 			$scope.colors,
 			$scope.size_groups,
 			$scope.promotions,
+			$scope.commisions,
 			$scope.scores);
 		    
 		    console.log(wsale); 
@@ -473,6 +475,7 @@ function wsaleRejectCtrlProvide(
 		amounts     : get_sales(add.amounts),
 		sell_total  : wsaleUtils.to_integer(add.reject), 
 		promotion   : add.pid,
+		commision   : add.mid,
 		score       : add.sid, 
 		
 		org_price   : add.org_price, 
@@ -482,6 +485,7 @@ function wsaleRejectCtrlProvide(
 		rdiscount   : add.rdiscount,
 		fprice      : add.fprice,
 		rprice      : add.rprice,
+		oil         : add.oil,
 		path        : add.path,
 
 		sprice      : add.bargin_price === 3 ? diablo_yes : diablo_no,
@@ -537,6 +541,7 @@ function wsaleRejectCtrlProvide(
 	    g_ticket:      $scope.select.g_ticket,
 	    direct:        wsaleService.direct.wreject,
 	    total:         $scope.select.rtotal,
+	    oil:           $scope.select.oil,
 	    score:         $scope.select.rscore, 
 	    tbatch:        $scope.select.tbatch.length === 0 ? undefined : $scope.select.tbatch,
 	    tcustom:       $scope.select.tcustom,
@@ -618,6 +623,7 @@ function wsaleRejectCtrlProvide(
     
     $scope.re_calculate = function(){
 	$scope.select.total = 0;
+	$scope.select.oil = 0;
 	$scope.select.abs_total  = 0;
 	$scope.select.base_pay   = 0;
 	$scope.select.should_pay = 0;
@@ -639,7 +645,8 @@ function wsaleRejectCtrlProvide(
 	
 	// console.log(calc);
 	
-	$scope.select.total     = calc.total; 
+	$scope.select.total     = calc.total;
+	$scope.select.oil       = calc.oil;
 	$scope.select.abs_total = calc.abs_total;
 	$scope.select.base_pay  = calc.base_pay;
 	$scope.select.should_pay= calc.should_pay;

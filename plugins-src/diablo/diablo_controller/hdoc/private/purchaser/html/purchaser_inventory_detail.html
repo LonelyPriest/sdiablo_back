@@ -26,12 +26,11 @@
 
 	    <ul class="dropdown-menu">
 	      <li>
-		<a href="javascript:;" x-ng-click="update_batch(0)">价格修改</a>
-		<a href="javascript:;" x-ng-click="update_batch(1)">特价标识</a> 
-	      </li>
-	      <li>
+		<a href="javascript:;" x-ng-click="update_batch(0)">价格修改</a> 
+		<a href="javascript:;" x-ng-click="update_batch(1)">特价标识</a>
 		<a href="javascript:;" x-ng-click="update_batch(3)">赠券标识</a>
-	      </li>
+		<a href="javascript:;" x-ng-click="set_commision()">提成设置</a>
+	      </li> 
 	      <li x-ng-if="setting.gift_sale && stock_right.gift_stock">
 		<a href="javascript:;" x-ng-click="update_batch(2)">赠送标识</a>
 	      </li> 
@@ -157,6 +156,7 @@
 			<th x-ng-if="!setting.hide_draw">提现额度</th>
 			<th x-ng-if="setting.gift_sale">赠送</th>
 			<th>赠券</th>
+			<th>提成</th>
 			<th>店铺</th>
 			<th>上架日期</th>
 			<th>退货日期</th>
@@ -196,9 +196,7 @@
 			<td>
 			  <div x-ng-switch on="inv.pid">
 			    <span x-ng-switch-when=-1>-</span>
-			    <span x-ng-switch-default>
-			      {{inv.promotion.name}}
-			    </span>
+			    <span x-ng-switch-default>{{inv.promotion.name}}</span>
 			  </div>
 			</td>
 			
@@ -210,7 +208,7 @@
 			    </span>
 			  </div>
 			</td>
-
+			
 			<td x-ng-if="!setting.hide_draw" x-ng-bind=inv.draw></td>
 
 			<td x-ng-if="setting.gift_sale">
@@ -224,6 +222,13 @@
 			  <div x-ng-switch on="inv.ticket">
 			    <span x-ng-switch-when=1>是</span>
 			    <span x-ng-switch-default>否</span>
+			  </div>
+			</td>
+
+			<td>
+			  <div x-ng-switch on="inv.mid">
+			    <span x-ng-switch-when=-1>-</span>
+			    <span x-ng-switch-default>{{inv.commision.name}}</span>
 			  </div>
 			</td>
 
@@ -343,7 +348,7 @@
 			
 			<td x-ng-if="stock_right.show_orgprice" x-ng-bind="total_lmoney"></td>
 			<td><span x-ng-bind="total_sell"></span></td>
-			<td colspan="9"></td>
+			<td colspan="10"></td>
 		      </tr>
 		    </tbody> 
 		  </table> <!--END supplier table-->
@@ -609,11 +614,11 @@
 		<label for={{-s.id}}></label>
 	      </div>
 	    </td>
-	    <td>{{s.name}}</td>
-	    <td>{{s.balance}}</td>
-	    <td>{{s.score}}</td>
-	    <td>{{s.sdate}}</td>
-	    <td>{{s.edate}}</td>
+	    <td class="vert-align">{{s.name}}</td>
+	    <td class="vert-align">{{s.balance}}</td>
+	    <td class="vert-align">{{s.score}}</td>
+	    <td class="vert-align">{{s.sdate}}</td>
+	    <td class="vert-align">{{s.edate}}</td>
 	    <td>
 	      <span x-ng-if="s.remark">{{s.remark}}</span>
 	      <span x-ng-if="!s.remark">暂无</span> 
@@ -622,15 +627,12 @@
 	</tbody>
 	
       </table>
-    </div>
-    
+    </div> 
   </div>
   
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="pForm.$invalid
-			   || !params.check_select(
-			   params.promotions, params.scores)"
+	    x-ng-disabled="!params.check_select(params.promotions, params.scores)"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  
@@ -753,7 +755,7 @@
 		    x-ng-options="t as t.name for t in params.yes_no">
 	    </select>
 	  </div>
-	</div>
+	</div> 
 	
       </div> <!-- END form body --> 
     </form>
@@ -1060,6 +1062,69 @@
   
   <div class="modal-footer">
     <button class="btn btn-primary" 
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
+</script>
+
+
+<script type="text/ng-template" id="set-commision.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button> 
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">
+	<span>店铺（
+	<span x-ng-repeat="s in params.shops">{{s.name}}</span>
+	）</span>
+      </span>
+    </h4>
+  </div>
+
+  <!--BEGIN modal body--> 
+  <div class="modal-body"> 
+    <div class="text-center">
+      <h5><span class="fg-darkRed"><strong>提成方案</strong></span></h5>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped table-condensed table-advanced">
+	<thead>
+	  <tr>
+	    <th></th>
+	    <th class="vert-align">名称</th>
+	    <th class="vert-align">规则</th>
+	    <th class="vert-align">提成金额/百分比</th>
+	    <th class="vert-align">非定价提成百分比</th> 
+	  </tr>
+	</thead>
+	
+	<tbody>
+	  <tr x-ng-repeat="m in params.commisions">
+	    <td class="vert-align">
+	      <div class="checkbox checkbox-danger checkbox-circle">
+		<input id={{m.id}}
+		       type="checkbox"
+		       x-ng-model="m.select"
+		       x-ng-change="params.check_only(m, params.commisions)"/>
+		<label for={{m.id}}></label>
+	      </div>
+	    </td> 
+	    <td class="vert-align">{{m.name}}</td>
+	    <td class="vert-align">{{m.rule.name}}</td>
+	    <td class="vert-align">{{m.balance}}</td>
+	    <td class="vert-align">{{m.flat}}</td> 
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+    
+  </div>
+  
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="!params.check_select(params.commisions)"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  

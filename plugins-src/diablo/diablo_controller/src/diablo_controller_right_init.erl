@@ -1044,10 +1044,10 @@ pass_action(wholesaler) ->
      <<"match_all_w_good">>,
      <<"match_w_good_style_number">>,
      <<"list_w_promotion">>,
+     <<"list_w_commision">>,
      <<"syn_type_pinyin">>,
      <<"get_good_by_barcode">>,
-     <<"list_w_commision">>,
-
+     
      %% inventnory
      <<"list_w_inventory">>,
      <<"list_w_inventory_info">>,

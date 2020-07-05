@@ -2250,13 +2250,21 @@ function purchaserInventoryNewCtrlProvide (
 function purchaserInventoryDetailCtrlProvide(
     $scope, $routeParams, $q, dateFilter, diabloPattern, diabloFilter,
     diabloUtilsService, diabloPromise, purchaserService,
-    localStorageService, filterPromotion, filterScore,  filterBrand,
-    filterFirm, filterType, filterCType, filterSizeGroup, filterColor,
+    localStorageService, filterPromotion, filterCommision, filterScore,
+    filterBrand, filterFirm, filterType, filterCType, filterSizeGroup, filterColor,
     filterSizeSpec, filterStdExecutive, filterCategory, filterFabric, filterTemplate,
     filterRegion, base, user) {
     $scope.promotions = filterPromotion.concat([{id:diablo_invalid_index, name:"重置促销方案"}]);
     $scope.scores = filterScore.filter(function(s) {return s.type_id===0})
 	.concat([{id:diablo_invalid_index, name:"重置积分方案", type_id:0}]);
+    $scope.commisions = filterCommision.map(function(m){
+	return {id:m.id,
+		name:m.name, 
+		rule_id:m.rule_id,
+		rule: diablo_get_object(m.rule_id, purchaserService.commision_rules),
+		balance:m.balance,
+		flat: m.flat}}).concat({id:diablo_invalid_index, name:"重置提成方案"});
+    // console.log($scope.commisions);
     // console.log(filterTemplate);
     
     $scope.unfold = true; 
@@ -2355,9 +2363,9 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.setting.use_barcode     = stockUtils.use_barcode(diablo_default_shop, base);
     $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, base); 
     $scope.setting.saler_stock     = stockUtils.saler_stock(diablo_default_shop, base);
-    $scope.setting.gift_sale       = stockUtils.gift_sale(diablo_default_shop, base);
     $scope.setting.print_access    = stockUtils.print_num(user.loginShop, base);
     angular.extend($scope.setting, stockUtils.stock_in_hide_mode(user.loginShop, base));
+    angular.extend($scope.setting, stockUtils.gift_sale(diablo_default_shop, base))
     // if (needCLodop()) loadCLodop(print_mode.protocal); 
     
     // var hide_mode  = stockUtils.stock_in_hide_mode(diablo_default_shop, base); 
@@ -2521,6 +2529,8 @@ function purchaserInventoryDetailCtrlProvide(
 			d.type  = diablo_get_object(d.type_id, filterType);
 			d.firm  = diablo_get_object(d.firm_id, filterFirm);
 			d.promotion = diablo_get_object(d.pid, filterPromotion);
+			d.commision = diablo_get_object(d.mid, filterCommision);
+			
 			d.bargin_price = stockUtils.to_integer(d.state.charAt(0));
 			d.gift  = stockUtils.to_integer(d.state.charAt(1));
 			d.ticket  = stockUtils.to_integer(d.state.charAt(2));
@@ -3025,17 +3035,7 @@ function purchaserInventoryDetailCtrlProvide(
 		    return search; 
 		}); 
 
-	console.log(condition);
-
-	// var check_only = function(select, promotions){
-	//     console.log(select); 
-	//     angular.forEach(promotions, function(p){
-	// 	if (p.id !== select.id){
-	// 	    p.select = false;
-	// 	};
-	//     });
-	// };
-
+	console.log(condition); 
 	var check_select = function(promotions, scores){
 	    for (var i=0, l=promotions.length; i<l; i++){
 		if (promotions[i].select){
@@ -3066,7 +3066,7 @@ function purchaserInventoryDetailCtrlProvide(
 	    purchaserService.set_w_inventory_promotion(
 		condition,
 		s_promotion.length !==0 ? s_promotion[0].id : undefined,
-		s_score.length !==0 ? s_score[0].id : undefined 
+		s_score.length !==0 ? s_score[0].id : undefined
 	    ).then(function(result){
 		if (result.ecode === 0){
 		    var s = "";
@@ -3110,8 +3110,82 @@ function purchaserInventoryDetailCtrlProvide(
 		}
 	    }(),
 	     promotions:   $scope.promotions,
-	     scores:       $scope.scores.filter(
-		 function(s){return s.type_id===0}),
+	     scores:       $scope.scores.filter(function(s){return s.type_id===0}),
+	     check_only:   stockUtils.check_select_only,
+	     check_select: check_select}); 
+	
+    };
+
+    $scope.set_commision = function(){
+	var condition = diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    add_search_condition(search); 
+	    return search;
+	}); 
+
+	console.log(condition); 
+	var check_select = function(commisions){
+	    var valid = false;
+	    for (var i=0, l=commisions.length; i<l; i++){
+		if (commisions[i].select){
+		    valid = true;
+		    break;
+		}
+	    } 
+	    return valid;
+	};
+	
+	var callback = function(params){
+	    console.log(params); 
+	    var s_commision = params.commisions.filter(function(m){
+		return m.select;
+	    });
+
+	    var update = {
+		commision: s_commision.length !== 0  ? s_commision[0].id : undefined
+	    };
+	    
+	    purchaserService.update_w_inventory_batch(
+		$scope.match, condition, update
+	    ).then(function(result){
+		if (result.ecode === 0){
+		    var s = ""; 
+		    if (s_commision.length !== 0){
+			s += "提成 [" + s_commision[0].name + "] ";
+		    } 
+		    s += "方案设置成功！！";
+		    
+		    dialog.response_with_callback(
+			true, "提成方案设置", s, undefined,
+			function(){
+			    $scope.do_search($scope.tab_page.page_of_time)
+			});
+		} else {
+		    dialog.response(
+			false,
+			"提成方案设置",
+			"提成方案设置失败：" + purchaserService.error[result.ecode]);
+		}
+		
+	    }); 
+	};
+	
+	dialog.edit_with_modal(
+	    "set-commision.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {shops: function() {
+		if (angular.isDefined(condition.shop)) {
+		    if (angular.isNumber(condition.shop)) {
+			return [].push(diablo_get_object(condition.shop, $scope.shops));
+		    } else {
+			condition.shop.map(function(s){return diablo_get_object(s, $scope.shops)});
+		    }
+		} else {
+		    return $scope.shops;
+		}
+	    }(),
+	     commisions:   $scope.commisions,
 	     check_only:   stockUtils.check_select_only,
 	     check_select: check_select}); 
 	

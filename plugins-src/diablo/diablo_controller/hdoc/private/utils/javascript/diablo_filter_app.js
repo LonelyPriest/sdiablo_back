@@ -60,6 +60,7 @@ function filterProvider(){
     var _employees   = [];
     var _size_groups = [];
     var _promotions  = [];
+    var _commisions  = [];
 
     // var _executives  = [];
     // var _category    = [];
@@ -105,6 +106,10 @@ function filterProvider(){
 	
 	function list_w_promotion() {
 	    return _goodHttp.query({operation: 'list_w_promotion'}).$promise;
+	};
+
+	function list_w_commision() {
+	    return _goodHttp.query({operation: 'list_w_commision'}).$promise;
 	};
 
 	function list_purchaser_firm() {
@@ -943,7 +948,7 @@ function filterProvider(){
 		// }
 		else {
 		    return list_w_promotion().then(function(promotions){
-			console.log(promotions);
+			// console.log(promotions);
 			_promotions = promotions.map(function(p){
 			    return {
 				id:        p.id,
@@ -962,14 +967,37 @@ function filterProvider(){
 			});
 			set_storage(cookie, "promotion", _promotions);
 			return _promotions;
-		    }) 
+		    }); 
 		}
 	    },
 
 	    reset_promotion: function(){
 		clear_from_storage(cookie, "promotion");
 	    },
-	    
+
+	    get_commision: function() {
+		var cached = get_from_storage(cookie, "commision");
+		if (angular.isDefined(cached) && angular.isArray(cached)) return cached;
+		else {
+		    return list_w_commision().then(function(commisions) {
+			_commisions = commisions.map(function(m) {
+			    return {
+				id: m.id,
+				name: m.name,
+				rule_id: m.rule_id,
+				balance: m.balance,
+				flat: m.flat
+			    }
+			}); 
+			set_storage(cookie, "commision", _commisions);
+			return _commisions;
+		    });
+		};
+	    },
+
+	    reset_commision: function(){
+		clear_from_storage(cookie, "commision");
+	    },
 
 	    get_employee: function(){
 		var cached = get_from_storage(cookie, "employee");

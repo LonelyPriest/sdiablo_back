@@ -59,6 +59,9 @@ function wsaleConfg(angular){
 	var promotion = {"filterPromotion": function(diabloFilter){
 	    return diabloFilter.get_promotion()}};
 
+	var commision = {"filterCommision": function(diabloFilter){
+	    return diabloFilter.get_commision()}};
+
 	var score = {"filterScore": function(diabloNormalFilter){
 	    return diabloNormalFilter.get_score()}};
 	
@@ -88,7 +91,7 @@ function wsaleConfg(angular){
 		templateUrl: '/private/wsale/html/new_wsale.html',
 		controller: 'wsaleNewCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, charge, score, sysretailer, employee, s_group, brand, type, color, level, plan, base)
+		    {}, user, promotion, commision, charge, score, sysretailer, employee, s_group, brand, type, color, level, plan, base)
 	    }).
 	    when('/new_wsale_detail/:page?', {
 		templateUrl: '/private/wsale/html/new_wsale_detail.html',
@@ -99,13 +102,13 @@ function wsaleConfg(angular){
 		templateUrl: '/private/wsale/html/update_wsale_detail.html',
 		controller: 'wsaleUpdateDetailCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, score, sysretailer, employee, s_group, brand, color, type, level, base)
+		    {}, user, promotion, commision, score, sysretailer, employee, s_group, brand, color, type, level, base)
 	    }). 
 	    when('/wsale_rsn_detail/:rsn?/:ppage?', {
 		templateUrl: '/private/wsale/html/wsale_rsn_detail.html',
 		controller: 'wsaleRsnDetailCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, score, sysretailer, brand, employee, firm, s_group, type, color, ctype, base)
+		    {}, user, promotion, commision, score, sysretailer, brand, employee, firm, s_group, type, color, ctype, base)
 	    }).
 	    when('/wsale_print_note/:note?', {
 		templateUrl: '/private/wsale/html/wsale_print_note.html',
@@ -121,13 +124,13 @@ function wsaleConfg(angular){
 		templateUrl: '/private/wsale/html/reject_wsale.html',
 		controller: 'wsaleRejectCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, score, sysretailer, brand, type, employee, s_group, color, level, base) 
+		    {}, user, promotion, commision, score, sysretailer, brand, type, employee, s_group, color, level, base) 
 	    }).
 	    when('/update_wsale_reject/:rsn?/:ppage?', {
 		templateUrl: '/private/wsale/html/update_wsale_reject.html',
 		controller: 'wsaleUpdateRejectCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, score, sysretailer, employee, s_group, brand, color, type, level, base)
+		    {}, user, promotion, commision, score, sysretailer, employee, s_group, brand, color, type, level, base)
 	    }). 
 	    when('/wsale_print_preview/:rsn?', {
 		templateUrl: '/private/wsale/html/wsale_print_preview.html',
@@ -411,12 +414,14 @@ function wsaleNewProvide(
     $scope, $q, $timeout, $interval, dateFilter, localStorageService,
     diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter,
     diabloPattern, wsaleService, wsaleGoodService,
-    user, filterPromotion, filterCharge, filterScore,
+    user, filterPromotion, filterCommision, filterCharge, filterScore,
     filterSysRetailer, filterEmployee,
     filterSizeGroup, filterType, filterColor, filterLevel, filterTicketPlan, base){
     // console.log(base);
     // console.log(filterLevel);
     $scope.promotions = filterPromotion;
+    $scope.commisions = filterCommision;
+    console.log($scope.commisions);
     $scope.scores     = filterScore;
     $scope.draws      = filterCharge.filter(function(d){return d.type === diablo_withdraw});
     $scope.ticketPlans = filterTicketPlan.filter(function(p) {
@@ -565,6 +570,7 @@ function wsaleNewProvide(
 
 	sysVip:       diablo_yes,
 	total:        0,
+	oil:          0,
 	abs_total:    0,
 	has_pay:      0,
 	should_pay:   0,
@@ -608,7 +614,7 @@ function wsaleNewProvide(
 	$scope.setting.draw_score    = wsaleUtils.draw_score(shopId, base);
 	$scope.setting.draw_region   = wsaleUtils.draw_region(shopId, base);
 	$scope.setting.vip_mode      = wsaleUtils.vip_mode(shopId, base);
-	$scope.setting.gift_sale     = wsaleUtils.gift_sale(shopId, base);
+	// $scope.setting.gift_sale     = wsaleUtils.gift_sale(shopId, base);
 
 	var scan_mode = wsaleUtils.scan_only(shopId, base);
 	$scope.setting.scan_only     = wsaleUtils.to_integer(scan_mode.charAt(0));
@@ -632,6 +638,8 @@ function wsaleNewProvide(
 	$scope.setting.disableWithDraw = wsaleUtils.to_integer(sale_mode.charAt(25));
 	$scope.setting.interval_print = wsaleUtils.to_integer(sale_mode.charAt(27));
 	$scope.setting.fixed_draw = wsaleUtils.to_integer(sale_mode.charAt(28));
+
+	angular.extend($scope.setting, wsaleUtils.gift_sale(shopId, base));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
 
 	$scope.print_setting = {
@@ -1668,6 +1676,7 @@ function wsaleNewProvide(
 
 	$scope.select.sysVip       = diablo_yes,
 	$scope.select.total        = 0;
+	$scope.select.oil          = 0;
 	$scope.select.abs_total    = 0;
 	$scope.select.has_pay      = 0;
 	$scope.select.should_pay   = 0;
@@ -1849,6 +1858,8 @@ function wsaleNewProvide(
 	add.promotion    = diablo_get_object(src.pid, $scope.promotions);
 	add.sid          = src.sid;
 	add.score        = diablo_get_object(src.sid, $scope.scores);
+	add.mid          = src.mid;
+	add.commision    = diablo_get_object(src.mid, $scope.commisions);
 	
 	add.org_price    = src.org_price;
 	add.ediscount    = src.ediscount;
@@ -2442,7 +2453,6 @@ function wsaleNewProvide(
 	var seti = diablo_set_integer;
 	var sets = diablo_set_string; 
 	var added = [];
-	
 	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
 	    console.log(add);
@@ -2458,10 +2468,12 @@ function wsaleNewProvide(
 		
 		// reset fdiscount
 		if (existSale.fdiscount !== add.fdiscount) {
-		    existSale.fdiscount = diablo_discount(existSale.all_fprice, existSale.all_tagprice);
+		    existSale.fdiscount = diablo_discount(existSale.all_fprice, existSale.all_tagprice) ;
+		    existSale.rdiscount = diablo_discount(existSale.all_rprice, existSale.all_fprice);
+		    
 		    existSale.fprice = diablo_price(existSale.tag_price, existSale.fdiscount);
 		    existSale.rprice = diablo_price(existSale.fprice, existSale.rdiscount);
-		}
+		} 
 		
 		// if (existSale.rdiscount !== add.rdiscount) {
 		//     existSale.rdiscount = diablo_discount(existSale.all_rprice, existSale.all_fprice);
@@ -2501,6 +2513,7 @@ function wsaleNewProvide(
 
 		    promotion   : add.pid,
 		    score       : add.sid,
+		    commision   : add.mid,
 
 		    org_price   : add.org_price,
 		    ediscount   : add.ediscount,
@@ -2510,6 +2523,7 @@ function wsaleNewProvide(
 		    rprice      : add.rprice,
 		    fdiscount   : add.fdiscount,
 		    rdiscount   : add.rdiscount,
+		    oil         : add.oil,
 
 		    all_fprice  : wsaleUtils.to_decimal(add.fprice * sell_total),
 		    all_rprice  : wsaleUtils.to_decimal(add.rprice * sell_total),
@@ -2531,8 +2545,19 @@ function wsaleNewProvide(
 	    } 
 	};
 
+	// reset oil
+	$scope.select.oil = 0;
+	angular.forEach(added, function(stock){
+	    $scope.select.oil += wsaleCalc.calc_commision(
+		stock,
+		stock.sell_total,
+		stock.commision,
+		diablo_get_object(stock.commision, $scope.commisions));
+	});
+	
+	console.log($scope.select); 
 	console.log(added);
-
+	
 	// console.log($scope.select);
 	var im_print = $scope.immediately_print($scope.select.shop.id);
 	var p_mode = $scope.p_mode($scope.select.shop.id);
@@ -2566,6 +2591,7 @@ function wsaleNewProvide(
 	    pay_order:      $scope.select.pay_order,
 	    charge:         $scope.select.charge,
 	    total:          $scope.select.total,
+	    oil:            $scope.select.oil,
 	    last_score:     $scope.select.retailer.score,
 	    score:          $scope.select.score,
 	    cards:          angular.isArray($scope.select.draw_cards)
@@ -2775,6 +2801,7 @@ function wsaleNewProvide(
     $scope.re_calculate = function(){
 	// console.log("re_calculate");
 	$scope.select.total        = 0;
+	$scope.select.oil          = 0;
 	$scope.select.abs_total    = 0;
 	$scope.select.should_pay   = 0;
 	$scope.select.can_draw     = 0;
@@ -2798,7 +2825,8 @@ function wsaleNewProvide(
 	
 	console.log(calc);
 	// console.log($scope.show_promotions);
-	$scope.select.total      = calc.total; 
+	$scope.select.total      = calc.total;
+	$scope.select.oil        = calc.oil;
 	$scope.select.abs_total  = calc.abs_total;
 	$scope.select.should_pay = calc.should_pay;
 	$scope.select.can_draw   = calc.can_draw;

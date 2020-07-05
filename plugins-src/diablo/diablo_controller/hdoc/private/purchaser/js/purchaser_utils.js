@@ -170,7 +170,7 @@ var stockUtils = function(){
 	gift_sale:function(shop, base) {
 	    var gift = diablo_base_setting("gift_sale", shop, base, function(s) {return s}, diablo_gift_mode);
 	    return {
-		gift: stockUtils.to_integer(gift.charAt(0)),
+		gift_sale: stockUtils.to_integer(gift.charAt(0)),
 		commision: stockUtils.to_integer(gift.charAt(1))
 	    }
 	},

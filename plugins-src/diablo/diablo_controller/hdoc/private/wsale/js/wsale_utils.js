@@ -42,6 +42,7 @@ var wsaleUtils = function(){
 	select.comment    = base.comment;
 	select.state      = base.state;
 	select.total      = base.total;
+	select.oil        = base.oil;
 	select.score      = base.score;
 	
 	select.tbatch        = base.tbatch === diablo_invalid_index ? [] : [].concat(base.tbatch);
@@ -86,6 +87,7 @@ var wsaleUtils = function(){
 		
 		add.reject    = s.amount;
 		add.total     = s.total;
+		add.oil       = s.oil;
 		
 		add.has_rejected = wsaleUtils.to_integer(s.has_rejected.charAt(0));
 		add.negative = wsaleUtils.to_integer(s.has_rejected.charAt(1)); 
@@ -93,6 +95,7 @@ var wsaleUtils = function(){
 		add.ticket = wsaleUtils.to_integer(s.has_rejected.charAt(3));
 		
 		add.pid       = s.pid;
+		add.mid       = s.mid;
 		add.sid       = s.sid;
 
 		add.sizes.push(s.size); 
@@ -179,8 +182,18 @@ var wsaleUtils = function(){
 	},
 	
 	cover_wsale: function(
-	    base, sells, shops, brands, retailers,
-	    employees, types, colors, size_groups, promotions, scores){
+	    base,
+	    sells,
+	    shops,
+	    brands,
+	    retailers,
+	    employees,
+	    types,
+	    colors,
+	    size_groups,
+	    promotions,
+	    commisions,
+	    scores){
 	    var wsale         = sort_wsale(base, sells);
 	    // var details       = wsale.details;
 	    var order_length  = wsale.details.length; 
@@ -197,6 +210,7 @@ var wsaleUtils = function(){
 		d.brand        = diablo_get_object(d.brand_id, brands);
 		d.type         = diablo_get_object(d.type_id, types); 
 		d.promotion    = diablo_get_object(d.pid, promotions);
+		d.commision    = diablo_get_object(d.mid, commisions);
 		d.score        = diablo_get_object(d.sid, scores); 
 		d.select       = true; 
 		
@@ -331,7 +345,11 @@ var wsaleUtils = function(){
 	},
 
 	gift_sale:function(shop, base) {
-	    return diablo_base_setting("gift_sale", shop, base, parseInt, diablo_no);
+	    var gift = diablo_base_setting("gift_sale", shop, base, function(s) {return s}, diablo_gift_mode);
+	    return {
+		gift_sale: wsaleUtils.to_integer(gift.charAt(0)),
+		commision: wsaleUtils.to_integer(gift.charAt(1))
+	    }
 	},
 
 	scan_only:function(shop, base) {
@@ -882,7 +900,7 @@ var wsaleCalc = function(){
 
 	get_valid_price:function(isVip, virPriceMode, stock) {
 	    if (virPriceMode) {
-		if (!isVip && stock.vir_price > 0 && stock.vir_price > stock.tag_price) {
+		if (!isVip && (stock.vir_price) > 0 && (stock.vir_price > stock.tag_price)) {
 		    return stock.vir_price; 
 		}
 		else {
@@ -893,6 +911,33 @@ var wsaleCalc = function(){
 	    }
 	    
 	},
+
+	calc_commision: function(stock, count, mid, commision) {
+	    var total_oil = 0;
+	    if (mid !== diablo_invalid_index && mid !== 0) {
+		if (commision.rule_id === 0) {
+		    if (stock.rprice < diablo_price(stock.tag_price, stock.discount)) {
+			stock.oil = diablo_price(commision.balance, commision.flat) * count;
+		    } else {
+			stock.oil = commision.balance * count;
+		    }
+		} else if (commision.rule_id === 1) {
+		    if (stock.rprice < diablo_price(stock.tag_price, stock.discount)) {
+			stock.oil = diablo_price(
+			    stock.rprice, commision.balance * commision.flat * 0.01) * count;
+		    } else {
+			stock.oil = diablo_price(stock.rprice, commision.balance) * count;
+		    }
+		}
+		total_oil += stock.oil;
+	    } else {
+		stock.oil = 0;
+	    }
+
+	    return total_oil;
+	},
+
+	
 	
 	calculate: function(isVip,
 			    vipMode,
@@ -911,6 +956,7 @@ var wsaleCalc = function(){
 	    var score        = 0;
 	    var valid_price  = 0;
 	    var can_draw     = 0;
+	    var total_oil    = 0;
 	    
 	    var vipDiscountMode    = wsaleUtils.to_integer(vipMode.charAt(0));
 	    var virPriceMode       = wsaleUtils.to_integer(vipMode.charAt(2));
@@ -1301,14 +1347,39 @@ var wsaleCalc = function(){
 	    can_draw   = wsaleUtils.to_decimal(can_draw); 
 	    
 	    // console.log(should_pay);
-	    // reset score
+	    // recalculate score and commision
 	    var pscores = [];
 	    for (var i=0, l=inventories.length; i<l; i++) {
 		var one = inventories[i];
+		var count = wsaleCalc.get_inventory_count(one, saleMode);
 		valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, one);
+		
+		// commision
+		// if (one.mid !== diablo_invalid_index && one.mid !== 0) {
+		//     if (one.commision.rule_id === 0) {
+		// 	if (one.rprice < diablo_price(one.tag_price, one.discount)) {
+		// 	    one.oil = diablo_price(one.commision.balance, one.commision.flat) * count;
+		// 	} else {
+		// 	    one.oil = one.commision.balance * count;
+		// 	}
+		//     } else if (one.commision.rule_id === 1) {
+		// 	if (one.rprice < diablo_price(one.tag_price, one.discount)) {
+		// 	    one.oil = diablo_price(
+		// 		one.rprice,
+		// 		one.commision.balance * one.commision.flat * 0.01) * count;
+		// 	} else {
+		// 	    one.oil = diablo_price(one.rprice, one.commision.balance) * count;
+		// 	}
+		//     }
+		//     total_oil += one.oil;
+		// }
+		total_oil += wsaleCalc.calc_commision(one, count, one.mid, one.commision);
+		
+		// reset score
 		if (wsaleUtils.to_integer(score_discount) !== 0) {
 		    if (diablo_yes === scoreDiscountPerStock) {
-			var ff = one.rprice * diablo_full_discount / (valid_price * one.discount);
+			var ff = diablo_discount(
+			    one.rprice, (diablo_price(valid_price, one.discount)));
 			// console.log(ff);
 			if (ff * diablo_full_discount < score_discount) {
 			    continue;
@@ -1331,7 +1402,7 @@ var wsaleCalc = function(){
 		if (one.sid !== diablo_invalid_index){
 		    pscores = wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
 		} 
-	    }
+	    } 
 	    
 	    // if (wsaleUtils.to_integer(score_discount) !== 0) {
 	    // 	for (var i=0, l=inventories.length; i<l; i++) {
@@ -1375,13 +1446,29 @@ var wsaleCalc = function(){
 		    can_draw   = -diablo_round(Math.abs(can_draw));
 		}
 	    } else if (round === 2) {
-		
+		should_pay = 0;
+		base_pay   = 0;
+		abs_pay    = 0;
+		can_draw   = 0;
+		for (var i=0, l=inventories.length; i<l; i++) {
+		    var one = inventories[i];
+		    valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, one);
+		    one.calc = diablo_round(one.rprice * count); 
+		    should_pay += one.calc;
+		    abs_pay += one.vir_price > one.tag_price
+			? diablo_round(one.vir_price * count) : diablo_round(one.tag_price * count);
+		    if (one.$update) {
+			base_pay += diablo_round(diablo_price(valid_price * count, one.discount));
+		    } else {
+			base_pay += one.calc;
+		    }
+		}
 	    } else {
-		// no round
-		
-		// should_pay = should_pay;
-		// base_pay   = base_pay;
-		// can_draw   = can_draw;
+		// no round 
+		should_pay = wsaleUtils.to_decimal(should_pay);
+		base_pay   = wsaleUtils.to_decimal(base_pay);
+		abs_pay    = wsaleUtils.to_decimal(abs_pay);
+		can_draw   = wsaleUtils.to_decimal(can_draw);
 	    }
 	    
 	    return {
@@ -1389,6 +1476,7 @@ var wsaleCalc = function(){
 		abs_total:  abs_total,
 		should_pay: should_pay,
 		can_draw:   can_draw,
+		oil:        total_oil,
 		base_pay:   base_pay,
 		abs_pay:    abs_pay,
 		score:      score,

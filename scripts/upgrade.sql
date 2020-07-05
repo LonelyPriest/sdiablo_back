@@ -785,10 +785,14 @@ alter table w_sale_detail drop column negative;
 
 
 --2020-07-01
-update w_inventory set state=RPAD(state,7,'0100000');
+update w_inventory_2 set state=RPAD(state,7,'0100000') where merchant=2 and length(state)=2;
 
 --2020-07-02
-alter table w_inventory add column commision INTEGER not null default -1;
+alter table w_inventory add column commision INTEGER not null default -1 after score;
+alter table w_sale add column oil DECIMAL(10,2) default 0 after total;
+
+alter table w_sale_detail add column commision INTEGER not null default -1 after total;
+alter table w_sale_detail add column oil DECIMAL(10,2) default 0 after rprice;
 
 
 --9999-99-99

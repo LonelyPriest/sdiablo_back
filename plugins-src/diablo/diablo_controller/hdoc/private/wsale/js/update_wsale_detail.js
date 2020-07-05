@@ -4,16 +4,17 @@ function wsaleUpdateDetailCtrlProvide(
     $scope, $routeParams, $q, dateFilter, diabloUtilsService,
     diabloPromise, diabloFilter, diabloPattern,
     wsaleService,
-    user, filterPromotion, filterScore, filterSysRetailer, filterEmployee,
+    user, filterPromotion, filterCommision, filterScore, filterSysRetailer, filterEmployee,
     filterSizeGroup, filterBrand, filterColor, filterType, filterLevel, base){
     console.log(user); 
     $scope.pattern     = {money: diabloPattern.decimal_2};
     
     $scope.shops         = user.sortShops;
     $scope.promotions    = filterPromotion;
+    $scope.commisions    = filterCommision;
     $scope.scores        = filterScore;
     $scope.sysRetailers  = filterSysRetailer;
-
+    
     // $scope.retailers     = filterRetailer; 
     // $scope.employees     = filterEmployee;
     $scope.size_groups   = filterSizeGroup;
@@ -66,6 +67,7 @@ function wsaleUpdateDetailCtrlProvide(
 
     $scope.re_calculate = function(){
 	$scope.select.total          = 0;
+	$scope.select.oil            = 0;
 	$scope.select.abs_total      = 0;
 	$scope.select.should_pay     = 0;
 	$scope.select.base_pay       = 0;
@@ -88,6 +90,7 @@ function wsaleUpdateDetailCtrlProvide(
 	console.log(calc);
 	// console.log($scope.show_promotions); 
 	$scope.select.total     = calc.total;
+	$scope.select.oil       = calc.oil;
 	$scope.select.abs_total = calc.abs_total;
 	$scope.select.should_pay= calc.should_pay;
 	$scope.select.base_pay  = calc.base_pay;
@@ -127,6 +130,7 @@ function wsaleUpdateDetailCtrlProvide(
 		    $scope.colors,
 		    $scope.size_groups,
 		    $scope.promotions,
+		    $scope.commisions,
 		    $scope.scores);
 
 		// console.log(wsale);
@@ -213,6 +217,8 @@ function wsaleUpdateDetailCtrlProvide(
 	add.promotion    = diablo_get_object(src.pid, $scope.promotions);
 	add.sid          = src.sid;
 	add.score        = diablo_get_object(src.sid, $scope.scores);
+	add.mid          = src.mid;
+	add.commision    = diablo_get_object(src.mid, $scope.commisions);
 
 	add.org_price    = src.org_price;
 	add.tag_price    = src.tag_price;
@@ -237,23 +243,28 @@ function wsaleUpdateDetailCtrlProvide(
     $scope.on_select_good = function(item, model, label){
 	console.log(item);
 	// one good can be add only once at the same time
+	var ok_select = true;
 	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
 		&& item.brand_id  === $scope.inventories[i].brand.id){
-		diabloUtilsService.response_with_callback(
-		    false,
-		    "销售单编辑",
-		    "销售单编辑失败：" + wsaleService.error[2191],
-		$scope, function(){})}
+		ok_select =false;
+		break;
+	    };
 	};
-	
-	// add at first allways 
-	var add = {$new:true}; 
-	add = $scope.copy_select(add, item);
-	console.log(add); 
-	$scope.add_inventory(add);
-	
-	return;
+
+	if (!ok_select) {
+	    diabloUtilsService.response_with_callback(
+		false,
+		"销售单编辑",
+		"销售单编辑失败：" + wsaleService.error[2191],
+		undefined, function(){})
+	} else {
+	    // add at first allways 
+	    var add = {$new:true}; 
+	    add = $scope.copy_select(add, item);
+	    console.log(add); 
+	    $scope.add_inventory(add);
+	} 
     }; 
     
     /*
@@ -471,6 +482,7 @@ function wsaleUpdateDetailCtrlProvide(
 		
 		sell_total     : parseInt(add.reject),
 		promotion      : add.pid,
+		commision      : add.mid,
 		score          : add.sid,
 
 		org_price      : add.org_price,
@@ -481,6 +493,7 @@ function wsaleUpdateDetailCtrlProvide(
 		rprice         : add.rprice,
 		fdiscount      : add.fdiscount,
 		rdiscount      : add.rdiscount,
+		oil            : add.oil,
 		path           : add.path,
 		comment        : add.comment,
 
@@ -530,6 +543,7 @@ function wsaleUpdateDetailCtrlProvide(
 	    old_score:       $scope.old_select.score,
 	    
 	    total:          seti($scope.select.total),
+	    oil:            $scope.select.oil,
 	    score:          $scope.select.score
 	};
 	

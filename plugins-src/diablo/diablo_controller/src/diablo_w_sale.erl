@@ -187,6 +187,7 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
     Score      = ?v(<<"score">>, Props, 0),
+    Oil        = ?v(<<"oil">>, Props, 0),
 
     BankCards  = ?v(<<"cards">>, Props, []), 
     %% ScoreId    = ?v(<<"sid">>, Props, 0),
@@ -261,6 +262,7 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 			", ticket"
 			", verificate"
 			", total"
+			", oil"
 			", lscore"
 			", score"
 			", comment"
@@ -287,6 +289,7 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 			++ ?to_s(NewTicket) ++ ","
 			++ ?to_s(Verificate) ++ ","
 			++ ?to_s(Total) ++ ","
+			++ ?to_s(Oil) ++ ","
 			++ ?to_s(CurrentScore) ++ ","
 			++ ?to_s(Score) ++ "," 
 			++ "\'" ++ ?to_s(Comment) ++ "\'," 
@@ -415,6 +418,7 @@ handle_call({update_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
     Comment    = ?v(<<"comment">>, Props),
     
     Total        = ?v(<<"total">>, Props),
+    Oil          = ?v(<<"oil">>, Props, 0),
     Score        = ?v(<<"score">>, Props, 0),
 
     RSNId        = ?v(<<"id">>, OldProps),
@@ -435,6 +439,7 @@ handle_call({update_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
     
     %% OldComment   = ?v(<<"comment">>, OldProps),
     OldTotal     = ?v(<<"total">>, OldProps),
+    OldOil       = ?v(<<"oil">>, OldProps),
     SellType     = ?v(<<"type">>, OldProps), 
 
     MShouldPay   = ShouldPay - OldShouldPay,
@@ -472,6 +477,7 @@ handle_call({update_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
 	++ ?utils:v(withdraw, float, get_modified(NewWithdraw, OldWithdraw))
 	++ ?utils:v(ticket, float, get_modified(NewTicket, OldTicket))
 	++ ?utils:v(total, integer, get_modified(Total, OldTotal))
+	++ ?utils:v(oil, integer, get_modified(Oil, OldOil))
 	++ ?utils:v(score, integer, get_modified(Score, OldScore))
 	++ ?utils:v(comment, string, Comment)
 	++ ?utils:v(entry_date, string, get_modified(NewDatetime, OldDatetime)), 
@@ -747,6 +753,7 @@ handle_call({get_new, Merchant, UTable, RSN}, _From, State) ->
 	", g_ticket"
 	", verificate"
 	", total"
+	", oil"
 	", lscore"
 	", score"
 	", comment"
@@ -940,6 +947,7 @@ handle_call({trans_detail, Merchant, UTable, Conditions}, _From, State) ->
 	", a.total"
 	", a.pid"
 	", a.sid"
+	", a.mid"
 	", a.org_price"
 	", a.tag_price"
 	", a.discount"
@@ -947,6 +955,7 @@ handle_call({trans_detail, Merchant, UTable, Conditions}, _From, State) ->
 	", a.rdiscount"
 	", a.fprice"
 	", a.rprice"
+	", a.oil" 
 	", a.path"
 	", a.comment"
 	", a.has_rejected"
@@ -972,6 +981,7 @@ handle_call({trans_detail, Merchant, UTable, Conditions}, _From, State) ->
 	", total"
 	", promotion as pid"
 	", score as sid"
+	", commision as mid"
 	", org_price"
 	", tag_price"
 	", discount"
@@ -979,6 +989,7 @@ handle_call({trans_detail, Merchant, UTable, Conditions}, _From, State) ->
 	", rdiscount"
 	", fprice"
 	", rprice"
+	", oil"
 	", path"
 	", comment"
 	", reject as has_rejected"
@@ -1037,6 +1048,7 @@ handle_call({reject_sale, Merchant, UTable, Inventories, Props}, _From, State) -
     Verificate = ?v(<<"verificate">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
     Score      = ?v(<<"score">>, Props, 0),
+    Oil        = ?v(<<"oil">>, Props, 0),
 
     Ticket       = ?v(<<"ticket">>, Props, 0),
     TicketScore  = ?v(<<"ticket_score">>, Props, 0),
@@ -1128,6 +1140,7 @@ handle_call({reject_sale, Merchant, UTable, Inventories, Props}, _From, State) -
 		    ", withdraw"
 		    ", verificate"
 		    ", total"
+		    ", oil"
 		    ", lscore"
 		    ", score"
 		    ", comment"
@@ -1157,6 +1170,7 @@ handle_call({reject_sale, Merchant, UTable, Inventories, Props}, _From, State) -
 		    ++ ?to_s(-NewWithdraw) ++ ","
 		    ++ ?to_s(-Verificate) ++ ","
 		    ++ ?to_s(-Total) ++ ","
+		    ++ ?to_s(-Oil) ++ ","
 		    ++ ?to_s(CurrentScore) ++ ","
 		    ++ ?to_s(-Score) ++ ","
 		    ++ "\'" ++ ?to_s(Comment) ++ "\'," 
@@ -1320,6 +1334,7 @@ handle_call({total_rsn_group, MatchMode, Merchant, UTable, Conditions}, _From, S
 
     Sql = "select count(*) as total"
     	", SUM(b.total) as t_amount"
+	", SUM(b.oil) as t_oil"
 	", SUM(b.tag_price * b.total) as t_tbalance"
     	", SUM(b.rprice * b.total) as t_balance"
 	", SUM(b.org_price * b.total) as t_obalance"
@@ -2260,14 +2275,16 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
     Total       = case Action of
 		      new    -> ?v(<<"sell_total">>, Inventory);
 		      reject -> -?v(<<"sell_total">>, Inventory) 
-		  end,
+		  end, 
+    Oil         = ?v(<<"oil">>, Inventory),
     Exist       = ?v(<<"stock">>, Inventory),
     Negative    = ?v(<<"negative">>, Inventory),
     SPrice      = ?v(<<"sprice">>, Inventory, 0),
     Ticket      = ?v(<<"ticket">>, Inventory, 0),
 	
     Promotion   = ?v(<<"promotion">>, Inventory, -1),
-    Score       = ?v(<<"score">>, Inventory, -1),
+    Commision   = ?v(<<"commision">>, Inventory, -1),
+    Score       = ?v(<<"score">>, Inventory, -1), 
     Free        = ?v(<<"free">>, Inventory),
     Path        = ?v(<<"path">>, Inventory, []),
     Comment     = ?v(<<"comment">>, Inventory, []),
@@ -2326,9 +2343,11 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 		 ", in_datetime"
 		 ", exist"
 		 ", total"
+		 ", oil"
 	     %% ", negative"
 		 ", reject"
 		 ", promotion"
+		 ", commision"
 		 ", score"
 		 ", org_price"
 		 ", ediscount"
@@ -2359,11 +2378,13 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 				reject -> ?to_s(0)
 			    end ++ "," 
 		 ++ ?to_s(Total) ++ ","
+		 ++ ?to_s(Oil) ++ ","
 		 ++ "\'" ++ case Action of
 				new -> "0" ++ ?to_s(Negative) ++ ?to_s(SPrice) ++ ?to_s(Ticket);
 				reject -> "00" ++ ?to_s(SPrice) ++ ?to_s(Ticket)
 			    end ++ "\',"
 		 ++ ?to_s(Promotion) ++ ","
+		 ++ ?to_s(Commision) ++ ","
 		 ++ ?to_s(Score) ++ ","
 		 
 		 ++ ?to_s(ValidOrgPrice) ++ ","
@@ -2386,7 +2407,8 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 		 ++ ", fdiscount=" ++ ?to_s(FDiscount)
 		 ++ ", rdiscount=" ++ ?to_s(RDiscount)
 		 ++ ", fprice=" ++ ?to_s(FPrice)
-		 ++ ", rprice=" ++ ?to_s(RPrice) 
+		 ++ ", rprice=" ++ ?to_s(RPrice)
+		 ++ ", oil=" ++ ?to_s(Oil)
 		 ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 		 ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		 ++ " and brand=" ++ ?to_s(Brand);
@@ -2479,6 +2501,7 @@ count_table(w_sale, {Merchant, UTable}, Conditions) ->
 
     CountSql = "select count(*) as total"
     	", sum(a.total) as t_amount"
+	", sum(a.oil) as t_oil"
     	", sum(a.base_pay) as t_bpay"
 	", sum(a.should_pay) as t_spay"
 	", sum(a.verificate) as t_veri"
@@ -2512,6 +2535,7 @@ filter_table(w_sale, {Merchant, UTable}, Conditions) ->
 	", a.ticket"
 	", a.verificate"
 	", a.total"
+	", a.oil"
 	", a.score" 
 	", a.comment"
 	", a.type"
@@ -2551,6 +2575,7 @@ filter_table(w_sale_with_page, {Merchant, UTable}, CurrentPage, ItemsPerPage, Co
 	", a.ticket"
 	", a.verificate"
 	", a.total"
+	", a.oil"
 	", a.score"
 	
 	", a.comment"
@@ -2759,6 +2784,7 @@ sale_new(rsn_groups, MatchMode, {Merchant, UTable}, Conditions, PageFun) ->
 	", b.s_group"
 	", b.free"
 	", b.total"
+	", b.oil"
     %% ", b.negative"
 	", b.reject"
 	", b.promotion as pid"

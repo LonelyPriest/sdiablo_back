@@ -54,6 +54,9 @@ function stockConfg(angular){
 
 	var promotion = {"filterPromotion": function(diabloFilter){
 	    return diabloFilter.get_promotion()}};
+	
+	var commision = {"filterCommision": function(diabloFilter){
+	    return diabloFilter.get_commision()}};
 
 	var score = {"filterScore": function(diabloNormalFilter){
 	    return diabloNormalFilter.get_score()}};
@@ -139,7 +142,7 @@ function stockConfg(angular){
 		templateUrl: '/private/purchaser/html/purchaser_inventory_detail.html',
 		controller: 'purchaserInventoryDetailCtrl' ,
 		resolve: angular.extend(
-		    {}, promotion, score,
+		    {}, promotion, commision, score,
 		    brand, firm, type, ctype, s_group, color,
 		    size_spec, std_executive, safety_category, fabric, ptemplate , region, base, user)
 	    }).
@@ -660,7 +663,8 @@ function stockConfg(angular){
 		{operation: "set_w_inventory_promotion"},
 		{condition: condition,
 		 promotion: promotion,
-		 score:     score}).$promise;
+		 score:     score,
+		 commision: commision}).$promise;
 	};
 	
 	/*

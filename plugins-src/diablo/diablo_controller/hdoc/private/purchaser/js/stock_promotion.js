@@ -66,7 +66,10 @@ function stockPromotionNewProvide(
 	    if (result.ecode === 0){
 		dialog.response_with_callback(
 		    true, "新增促销方案", "促销方案新增成功！！", undefined,
-		    function(){$scope.cancel()});
+		    function(){
+			diabloFilter.reset_promotion();
+			$scope.cancel();
+		    });
 	    } else {
 		dialog.response(
 		    false,
@@ -137,7 +140,10 @@ function stockPromotionDetailProvide(
 		    dialog.response_with_callback(
 			true, "促销方案编辑",
 			"促销方案 [" + params.promotion.name + "] 编辑成功！！",
-			undefined, function(){$scope.refresh()})
+			undefined, function(){
+			    diabloFilter.reset_promotion();
+			    $scope.refresh();
+			})
 		} else{
 		    dialog.response(
 			false, "促销方案编辑", "促销方案编辑失败："
@@ -191,7 +197,7 @@ function stockPromotionDetailProvide(
 };
 
 function stockCommisionDetailProvide(
-    $scope, dateFilter, diabloPattern, diabloUtilsService,
+    $scope, dateFilter, diabloPattern, diabloUtilsService, diabloFilter,
     purchaserService, wgoodService, user){
     // $scope.shops = user.sortShops; 
     $scope.pattern = {
@@ -279,7 +285,10 @@ function stockCommisionDetailProvide(
 			    "新增提成方案",
 			    "新增提成方案 [" + c.name + "] 成功",
 			    undefined,
-			    $scope.refresh
+			    function() {
+				diabloFilter.reset_commision();
+				$scope.refresh();
+			    }
 			);
 		    } else {
 			dialog.set_error("新增提成方案", result.ecode);

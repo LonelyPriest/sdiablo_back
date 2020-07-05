@@ -120,7 +120,7 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 	++ ?to_s(Draw) ++ ","
 	++ ?to_s(EDiscount) ++ ","
 	++ ?to_s(Discount) ++ ","
-	++ "\'" ++ ?to_s(SPrice) ++ "\',"
+	++ "\'" ++ ?to_s(SPrice) ++ "0100000\',"
 	++ "\'" ++ ?to_s(Path) ++ "\',"
 	
 	%% ++ ?to_s(Level) ++ ","
@@ -717,6 +717,7 @@ inventory({group_detail, MatchMode}, {Merchant, UTable}, Conditions, PageFun) ->
 	", a.s_group"
 	", a.free"
 	", a.promotion as pid"
+	", a.commision as mid"
 	", a.score as sid"
 
 	", a.vir_price"
@@ -808,8 +809,12 @@ inventory(set_promotion, {Merchant, UTable}, Promotions, Conditions) ->
     RealyConditions = realy_conditions(Merchant, NewConditions),
     ExtraConditions = sort_condition(stock, NewConditions), 
     Promotion = ?v(<<"promotion">>, Promotions),
-    Score     = ?v(<<"score">>, Promotions), 
-    Updates = ?utils:v(promotion, integer, Promotion) ++ ?utils:v(score, integer, Score),
+    Score     = ?v(<<"score">>, Promotions),
+    Commision = ?v(<<"commision">>, Promotions),
+    
+    Updates = ?utils:v(promotion, integer, Promotion)
+	++ ?utils:v(score, integer, Score)
+	++ ?utils:v(commision, integer, Commision),
     
     "update" ++ ?table:t(stock, Merchant, UTable)
 	++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
@@ -883,7 +888,8 @@ inventory({update_batch, MatchMode}, {Merchant, UTable}, Attrs, Conditions) ->
     Imbalance = ?v(<<"imbalance">>, Attrs),
     Contailer = ?v(<<"contailer">>, Attrs),
     VirPrice  = ?v(<<"vir_price">>, Attrs),
-    CanDraw   = ?v(<<"draw">>, Attrs), 
+    CanDraw   = ?v(<<"draw">>, Attrs),
+    Commision = ?v(<<"commision">>, Attrs),
     Score = case ?v(<<"score">>, Attrs) of
 		0 -> -1;
 		_ -> undefined
@@ -915,7 +921,8 @@ inventory({update_batch, MatchMode}, {Merchant, UTable}, Attrs, Conditions) ->
     
     UpdateOfStock = UpdateOfGood
 	++ ?utils:v(score, integer, Score)
-	++ ?utils:v(discount, float, Discount), 
+	++ ?utils:v(discount, float, Discount)
+	++ ?utils:v(commision, integer, Commision),
 
     ?DEBUG("UpdateOfGood ~p, UpdateOfStock ~p", [UpdateOfGood, UpdateOfStock]),
 
@@ -1845,6 +1852,7 @@ inventory_match(Merchant, UTable, StyleNumber, Shop, Firm) ->
 	
 	", a.promotion as pid"
 	", a.score as sid"
+	", a.commision as mid"
 	", a.org_price"
 	", a.vir_price" 
 	", a.tag_price"
@@ -1938,6 +1946,7 @@ get_inventory(barcode, Merchant, UTable, Shop, Firm, Barcode, ExtraConditions) -
 	
 	", a.promotion as pid"
 	", a.score as sid"
+	", a.commision as mid"
 	", a.org_price"
 	", a.vir_price"
 	", a.tag_price"
@@ -2286,7 +2295,7 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 		  ++ "\"" ++ ?to_s(Path) ++ "\","
 		  ++ ?to_s(AlarmDay) ++ ","
 		  ++ ?to_s(Shop) ++ ","
-		  ++ "\'" ++ ?to_s(SPrice) ++ "\',"
+		  ++ "\'" ++ ?to_s(SPrice) ++ "0100000\',"
 		  ++ ?to_s(Contailer) ++ ","
 		  ++ ?to_s(Alarm_a) ++ ","
 		  ++ ?to_s(Unit) ++ "," 

@@ -73,10 +73,26 @@ PASSWORD=$2
 # done
 
 ## 2020-07-01
+# for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 71 72 73 74 79 90 98 101 103 104 105 106 107 108 109 110 111 112 113
+# do
+#     echo w_inventory_${t}
+#     mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
+# update w_inventory_${t} set state=RPAD(state,7,'0100000') where merchant=${t};
+# EOF
+# done
+
+
+## 2020-07-02
 for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 71 72 73 74 79 90 98 101 103 104 105 106 107 108 109 110 111 112 113
 do
     echo w_inventory_${t}
+    echo w_sale_detail_${t}
     mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
-update w_inventory_${t} set state=RPAD(state,7,'0100000') where merchant=${t};
+alter table w_inventory_${t} add column commision INTEGER not null default -1 after score;
+alter table w_sale_${t} add column oil DECIMAL(10,2) not null default 0 after total;
+alter table w_sale_detail_${t} add column commision INTEGER not null default -1;
+alter table w_sale_detail_${t} add column oil DECIMAL(10,2) default 0 after rprice;
 EOF
 done
+
+
