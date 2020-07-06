@@ -1,5 +1,10 @@
 var version_update = function(){
     var updates = [
+	{date: "2020-07-05",
+	 content:
+	 ["增加员工销售提成功能"]
+	},
+	
 	{date: "2020-07-01",
 	 content:
 	 ["增加电子券赠送与货品关联，货品可选择是否参与电子券赠送"]

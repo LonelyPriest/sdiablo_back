@@ -663,8 +663,7 @@ function stockConfg(angular){
 		{operation: "set_w_inventory_promotion"},
 		{condition: condition,
 		 promotion: promotion,
-		 score:     score,
-		 commision: commision}).$promise;
+		 score:     score}).$promise;
 	};
 	
 	/*

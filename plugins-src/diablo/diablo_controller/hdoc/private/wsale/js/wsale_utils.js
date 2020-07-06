@@ -957,6 +957,7 @@ var wsaleCalc = function(){
 	    var valid_price  = 0;
 	    var can_draw     = 0;
 	    var total_oil    = 0;
+	    var noTicketBalance = 0;
 	    
 	    var vipDiscountMode    = wsaleUtils.to_integer(vipMode.charAt(0));
 	    var virPriceMode       = wsaleUtils.to_integer(vipMode.charAt(2));
@@ -1347,33 +1348,20 @@ var wsaleCalc = function(){
 	    can_draw   = wsaleUtils.to_decimal(can_draw); 
 	    
 	    // console.log(should_pay);
-	    // recalculate score and commision
+	    // reset
 	    var pscores = [];
 	    for (var i=0, l=inventories.length; i<l; i++) {
 		var one = inventories[i];
 		var count = wsaleCalc.get_inventory_count(one, saleMode);
 		valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, one);
-		
-		// commision
-		// if (one.mid !== diablo_invalid_index && one.mid !== 0) {
-		//     if (one.commision.rule_id === 0) {
-		// 	if (one.rprice < diablo_price(one.tag_price, one.discount)) {
-		// 	    one.oil = diablo_price(one.commision.balance, one.commision.flat) * count;
-		// 	} else {
-		// 	    one.oil = one.commision.balance * count;
-		// 	}
-		//     } else if (one.commision.rule_id === 1) {
-		// 	if (one.rprice < diablo_price(one.tag_price, one.discount)) {
-		// 	    one.oil = diablo_price(
-		// 		one.rprice,
-		// 		one.commision.balance * one.commision.flat * 0.01) * count;
-		// 	} else {
-		// 	    one.oil = diablo_price(one.rprice, one.commision.balance) * count;
-		// 	}
-		//     }
-		//     total_oil += one.oil;
-		// }
+
+		// oil
 		total_oil += wsaleCalc.calc_commision(one, count, one.mid, one.commision);
+
+		// can not use ticket
+		if (diablo_yes === wsaleUtils.to_integer(one.state.charAt(2))) {
+		    noTicketBalance += one.calc;
+		}
 		
 		// reset score
 		if (wsaleUtils.to_integer(score_discount) !== 0) {
@@ -1480,7 +1468,8 @@ var wsaleCalc = function(){
 		base_pay:   base_pay,
 		abs_pay:    abs_pay,
 		score:      score,
-		pscores:    pscores
+		pscores:    pscores,
+		noTicketBalance: noTicketBalance
 		// rbalance:   calc_p.rbalance, 
 	    }; 
 	},

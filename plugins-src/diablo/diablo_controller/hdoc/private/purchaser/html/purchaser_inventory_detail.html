@@ -28,8 +28,9 @@
 	      <li>
 		<a href="javascript:;" x-ng-click="update_batch(0)">价格修改</a> 
 		<a href="javascript:;" x-ng-click="update_batch(1)">特价标识</a>
-		<a href="javascript:;" x-ng-click="update_batch(3)">赠券标识</a>
-		<a href="javascript:;" x-ng-click="set_commision()">提成设置</a>
+		<a href="javascript:;" x-ng-click="update_batch(3)">用券标识</a>
+		<a x-ng-if="!setting.hide_oil"
+		   href="javascript:;" x-ng-click="set_commision()">提成设置</a>
 	      </li> 
 	      <li x-ng-if="setting.gift_sale && stock_right.gift_stock">
 		<a href="javascript:;" x-ng-click="update_batch(2)">赠送标识</a>
@@ -155,8 +156,8 @@
 			<th>积分</th>
 			<th x-ng-if="!setting.hide_draw">提现额度</th>
 			<th x-ng-if="setting.gift_sale">赠送</th>
-			<th>赠券</th>
-			<th>提成</th>
+			<th>用券</th>
+			<th x-ng-if="!setting.hide_oil">提成</th>
 			<th>店铺</th>
 			<th>上架日期</th>
 			<th>退货日期</th>
@@ -225,7 +226,7 @@
 			  </div>
 			</td>
 
-			<td>
+			<td x-ng-if="!setting.hide_oil">
 			  <div x-ng-switch on="inv.mid">
 			    <span x-ng-switch-when=-1>-</span>
 			    <span x-ng-switch-default>{{inv.commision.name}}</span>
@@ -1096,7 +1097,7 @@
 	    <th class="vert-align">名称</th>
 	    <th class="vert-align">规则</th>
 	    <th class="vert-align">提成金额/百分比</th>
-	    <th class="vert-align">非定价提成百分比</th> 
+	    <th class="vert-align">补充规则</th> 
 	  </tr>
 	</thead>
 	

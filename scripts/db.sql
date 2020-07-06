@@ -877,7 +877,7 @@ create table w_inventory_good
     alarm_day        TINYINT default -1,  -- the days of alarm
     unit             TINYINT default 0,  -- the days of alarm
     -- state            TINYINT default -1, -- 3:promotion
-    state            VARCHAR(16) default 0, -- [1]->promotion price, [2]->gift, [3] commision type
+    state            VARCHAR(16) default 0, -- [1]->promotion price, [2]->gift, [3] ticket
     --
     contailer        INTEGER default -1,
     alarm_a          INTEGER default 0,

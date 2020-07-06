@@ -862,7 +862,7 @@ sys_config(shop) ->
      {"m_sale",          "允许负数退货",         "1",   "0"},
      {"round",           "四舍五入",             "1",   "0"},
      {"h_stock",         "入库字段隐藏",
-      "0001"++"1011"++"1111"++"0111"++"0000"++"1", "0"},
+      "0001"++"1011"++"1111"++"0111"++"0000"++"11", "0"},
      
      {"consume_sms",     "消费短信提醒",         "0",   "0"}, 
 
@@ -939,10 +939,11 @@ sys_config() ->
 	      %% [15]: hide feather
 	      %% [16]: none score with promotion 0:yes, 1:no
 	      %% [17-18]: 80-> vir_price * 0.8 = tag_price, 00 -> none
-	      %% 19: print label with dialog 0: no dialog, 1: dialog
-	      %% 20: hide draw, draw by good
+	      %% [19]: print label with dialog 0: no dialog, 1: dialog
+	      %% [20]: hide draw, draw by good
+	      %% [21]: hide commision
 	      {"h_stock",         "入库字段隐藏",
-	       "0001"++"1011"++"1111"++"0111"++"0000"++"1", "0"},
+	       "0001"++"1011"++"1111"++"0111"++"0000"++"11", "0"},
 	      
 	      {"s_member",        "会员区域隔离",         "0",   "0"},
 	      {"s_employee",      "营业员必选",           "0",   "0"},

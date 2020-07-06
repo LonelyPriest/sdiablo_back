@@ -568,11 +568,12 @@ function wsaleNewProvide(
 	ticket_sid: diablo_invalid_index,
 	ticket_custom: diablo_invalid_index,
 
-	sysVip:       diablo_yes,
-	total:        0,
-	oil:          0,
-	abs_total:    0,
-	has_pay:      0,
+	sysVip:          diablo_yes,
+	total:           0,
+	oil:             0,
+	noTicketBalance: 0,
+	abs_total:       0,
+	has_pay:         0,
 	should_pay:   0,
 	can_draw:     0,
 	base_pay:     0,
@@ -1014,8 +1015,7 @@ function wsaleNewProvide(
     $scope.get_ticket = function() {
 	$scope.select.ticket_batchs   = [];
 	$scope.select.ticket_balance  = 0;
-	$scope.select.ticket_custom   = diablo_invalid_index;
-
+	$scope.select.ticket_custom   = diablo_invalid_index; 
 	diabloFilter.get_all_ticket_by_retailer(
 	    $scope.select.retailer.id,
 	    $scope.select.shop.id
@@ -1084,7 +1084,8 @@ function wsaleNewProvide(
     	    if (result.ecode === 0){
 		var scoreTicket = result.sticket;
 		var promotionTickets = result.pticket.filter(function(p) {
-		    return p.ubalance === diablo_invalid || p.ubalance <= $scope.select.should_pay;
+		    return p.ubalance === diablo_invalid
+			|| p.ubalance <= $scope.select.should_pay - $scope.select.noTicketBalance;
 		});
 		
     		diabloUtilsService.edit_with_modal(
@@ -1677,6 +1678,7 @@ function wsaleNewProvide(
 	$scope.select.sysVip       = diablo_yes,
 	$scope.select.total        = 0;
 	$scope.select.oil          = 0;
+	$scope.select.noTicketBalance = 0;
 	$scope.select.abs_total    = 0;
 	$scope.select.has_pay      = 0;
 	$scope.select.should_pay   = 0;
@@ -2802,6 +2804,7 @@ function wsaleNewProvide(
 	// console.log("re_calculate");
 	$scope.select.total        = 0;
 	$scope.select.oil          = 0;
+	$scope.select.noTicketBalance = 0;
 	$scope.select.abs_total    = 0;
 	$scope.select.should_pay   = 0;
 	$scope.select.can_draw     = 0;
@@ -2827,6 +2830,7 @@ function wsaleNewProvide(
 	// console.log($scope.show_promotions);
 	$scope.select.total      = calc.total;
 	$scope.select.oil        = calc.oil;
+	$scope.select.noTicketBalance = calc.noTicketBalance;
 	$scope.select.abs_total  = calc.abs_total;
 	$scope.select.should_pay = calc.should_pay;
 	$scope.select.can_draw   = calc.can_draw;
@@ -4023,179 +4027,179 @@ function wsaleNewDetailProvide(
 	    dialog.set_error(giftTitle, 2714);
 	} else if ($scope.ticketPlans.length === 0) {
 	    dialog.set_error(giftTitle, 2715);
-	} else {
+	} else {	    
+	    // wsaleService.get_w_sale_new(r.rsn).then(function(result) {
+	    // 	console.log(result);
+	    // 	var noTicketBalance = 0;
+	    // 	if (result.ecode === 0) {
+	    // 	    for (var i=0, l=result.detail.length; i<l; i++) {
+	    // 		var d = result.detail[i];
+	    // 		// the stock can not gift ticket
+	    // 		if (diablo_no === wsaleUtils.yes_default(d.has_rejected.charAt(3))) {
+	    // 		    noTicketBalance += d.rprice * d.total;
+	    // 		}
+	    // 	    } 
+	    // 	    noTicketBalance = diablo_round(noTicketBalance);
+
+	    // var wholeBalance = (r.has_pay - r.ticket - noTicketBalance)
+	    // 	- (r.has_pay - r.ticket - noTicketBalance) % 100;
+	    var wholeBalance = (r.has_pay - r.ticket) - (r.has_pay - r.ticket ) % 100;
+	    var realBalance  = wholeBalance;
+	    var ticketLength = $scope.ticketPlans.length;
+	    var validPlans   = [], maxSend;
 	    
-	    wsaleService.get_w_sale_new(r.rsn).then(function(result) {
-		console.log(result);
-		var noTicketBalance = 0;
-		if (result.ecode === 0) {
-		    for (var i=0, l=result.detail.length; i<l; i++) {
-			var d = result.detail[i];
-			// the stock can not gift ticket
-			if (diablo_no === wsaleUtils.yes_default(d.has_rejected.charAt(3))) {
-			    noTicketBalance += d.rprice * d.total;
-			}
-		    } 
-		    noTicketBalance = diablo_round(noTicketBalance);
-
-		    var wholeBalance = (r.has_pay - r.ticket - noTicketBalance)
-			- (r.has_pay - r.ticket - noTicketBalance) % 100;
-		    var realBalance  = wholeBalance;
-		    var ticketLength = $scope.ticketPlans.length;
-		    var validPlans   = [], maxSend;
-		    
-		    var callback = function(params) {
-			console.log(params);
-			// get all ticket
-			var send_tickets = [];
-			var gift_balance = 0; 
-			angular.forEach(params.tickets, function(t) {
-	    		    if (t.plan.id !== diablo_invalid_index) {
-	    			send_tickets.push({id      :t.plan.id,
-						   balance :t.plan.balance,
-						   count   :t.count,
-						   effect  :t.plan.effect,
-						   expire  :t.plan.expire});
-				gift_balance += t.plan.mbalance * t.count;
-	    		    }
-			}); 
-			console.log(send_tickets); 
-			
-			if (gift_balance > wholeBalance) {
-			    dialog.set_error("会员电子券赠送", 2716);
+	    var callback = function(params) {
+		console.log(params);
+		// get all ticket
+		var send_tickets = [];
+		var gift_balance = 0; 
+		angular.forEach(params.tickets, function(t) {
+	    	    if (t.plan.id !== diablo_invalid_index) {
+	    		send_tickets.push({id      :t.plan.id,
+					   balance :t.plan.balance,
+					   count   :t.count,
+					   effect  :t.plan.effect,
+					   expire  :t.plan.expire});
+			gift_balance += t.plan.mbalance * t.count;
+	    	    }
+		}); 
+		console.log(send_tickets); 
+		
+		if (gift_balance > wholeBalance) {
+		    dialog.set_error("会员电子券赠送", 2716);
+		} else {
+		    diabloFilter.wretailer_gift_ticket({
+			shop           :r.shop_id,
+			shop_name      :r.shop.name,
+			retailer       :r.retailer_id,
+			employee       :r.employee_id,
+			retailer_name  :r.retailer,
+			retailer_phone :r.rphone,
+			ticket         :send_tickets,
+			rsn            :r.rsn
+		    }).then(function(result) {
+			console.log(result);
+			if (result.ecode === 0) {
+			    r.g_ticket = diablo_yes;
+			    dialog.response(
+				true,
+				"会员优惠卷赠送",
+				"会员[" + r.retailer + "] 卷赠送成功！！"
+				    + function() {
+					if (result.sms_code !== 0) {
+					    var ERROR = require("diablo-error");
+					    return "发送短消息失败：" + ERROR[result.sms_code];
+					} 
+					else return ""; 
+				    }()
+			    );
 			} else {
-			    diabloFilter.wretailer_gift_ticket({
-				shop           :r.shop_id,
-				shop_name      :r.shop.name,
-				retailer       :r.retailer_id,
-				employee       :r.employee_id,
-				retailer_name  :r.retailer,
-				retailer_phone :r.rphone,
-				ticket         :send_tickets,
-				rsn            :r.rsn
-			    }).then(function(result) {
-				console.log(result);
-				if (result.ecode === 0) {
-				    r.g_ticket = diablo_yes;
-				    dialog.response(
-					true,
-					"会员优惠卷赠送",
-					"会员[" + r.retailer + "] 卷赠送成功！！"
-					    + function() {
-						if (result.sms_code !== 0) {
-						    var ERROR = require("diablo-error");
-						    return "发送短消息失败：" + ERROR[result.sms_code];
-						} 
-						else return ""; 
-					    }()
-				    );
-				} else {
-				    dialog.set_error("会员电子券赠送", result.ecode);
-				}
-			    });
-			} 
-		    };
-		    
-		    if (0 === $scope.setting.gift_ticket_strategy) {
-			maxSend = 5;
-			// max
-			if (realBalance >= $scope.ticketPlans[0].mbalance) {
-			    validPlans.push({plan:$scope.ticketPlans[0], count: 1});
-			    realBalance -= $scope.ticketPlans[0].mbalance;
-			    maxSend -= 1;
+			    dialog.set_error("会员电子券赠送", result.ecode);
 			}
+		    });
+		} 
+	    };
+	    
+	    if (0 === $scope.setting.gift_ticket_strategy) {
+		maxSend = 5;
+		// max
+		if (realBalance >= $scope.ticketPlans[0].mbalance) {
+		    validPlans.push({plan:$scope.ticketPlans[0], count: 1});
+		    realBalance -= $scope.ticketPlans[0].mbalance;
+		    maxSend -= 1;
+		}
 
-			// min
-			if (realBalance >= $scope.ticketPlans[ticketLength - 1].mbalance) {
-			    validPlans.push({plan:$scope.ticketPlans[ticketLength - 1], count: 1});
-			    realBalance -= $scope.ticketPlans[ticketLength - 1].mbalance;
-			    maxSend -= 1;
-			}
+		// min
+		if (realBalance >= $scope.ticketPlans[ticketLength - 1].mbalance) {
+		    validPlans.push({plan:$scope.ticketPlans[ticketLength - 1], count: 1});
+		    realBalance -= $scope.ticketPlans[ticketLength - 1].mbalance;
+		    maxSend -= 1;
+		}
 
-			for (var i=1, l=ticketLength - 1; i<l; i++) {
-			    if (realBalance >= $scope.ticketPlans[i].mbalance) {
-				validPlans.push({plan:$scope.ticketPlans[i], count: 1});
-				realBalance -= $scope.ticketPlans[i].mbalance;
-				maxSend -= 1;
-			    }
-			}
+		for (var i=1, l=ticketLength - 1; i<l; i++) {
+		    if (realBalance >= $scope.ticketPlans[i].mbalance) {
+			validPlans.push({plan:$scope.ticketPlans[i], count: 1});
+			realBalance -= $scope.ticketPlans[i].mbalance;
+			maxSend -= 1;
+		    }
+		}
 
-			// left use min
-			while (maxSend > 0 && realBalance > $scope.ticketPlans[ticketLength - 1].mbalance) {
-			    validPlans.push({plan:$scope.ticketPlans[ticketLength - 1], count: 1});
-			    realBalance -= $scope.ticketPlans[ticketLength - 1].mbalance;
-			    maxSend -= 1;
-			}
-		    } else if (1 === $scope.setting.gift_ticket_strategy) {
-			for (var i=0; i<ticketLength; i++) {
-			    if (realBalance >= $scope.ticketPlans[i].mbalance) {
-				validPlans.push({plan:$scope.ticketPlans[i], count: 1});
-				realBalance -= $scope.ticketPlans[i].mbalance;
-				break;
-			    }
-			}
-		    } else if (2 === $scope.setting.gift_ticket_strategy){
-			var i, use;
-			for (var i=0; i<ticketLength; i++) {
-			    if (realBalance >= $scope.ticketPlans[i].mbalance) {
-				use = Math.floor(realBalance / $scope.ticketPlans[i].mbalance);
-				if (use > 0) {
-				    validPlans.push({plan:$scope.ticketPlans[i], count: use}); 
-				    realBalance -= $scope.ticketPlans[i].mbalance * use;
-				}
-			    }
-			}
-
-			if (validPlans.length !== 0 && realBalance > 0) {
-			    validPlans[validPlans.length - 1].count -= 1;
-			    realBalance += validPlans[validPlans.length - 1].plan.mbalance;
-			    i--;
-			    for (i; i<ticketLength; i++) {
-				if (realBalance >= $scope.ticketPlans[i].mbalance) {
-				    use = Math.floor(realBalance / $scope.ticketPlans[i].mbalance);
-				    if (use > 0) {
-					validPlans.push({plan:$scope.ticketPlans[i], count: use}); 
-					realBalance -= $scope.ticketPlans[i].mbalance * use;
-				    }
-				} 
-			    }
+		// left use min
+		while (maxSend > 0 && realBalance > $scope.ticketPlans[ticketLength - 1].mbalance) {
+		    validPlans.push({plan:$scope.ticketPlans[ticketLength - 1], count: 1});
+		    realBalance -= $scope.ticketPlans[ticketLength - 1].mbalance;
+		    maxSend -= 1;
+		}
+	    } else if (1 === $scope.setting.gift_ticket_strategy) {
+		for (var i=0; i<ticketLength; i++) {
+		    if (realBalance >= $scope.ticketPlans[i].mbalance) {
+			validPlans.push({plan:$scope.ticketPlans[i], count: 1});
+			realBalance -= $scope.ticketPlans[i].mbalance;
+			break;
+		    }
+		}
+	    } else if (2 === $scope.setting.gift_ticket_strategy){
+		var i, use;
+		for (var i=0; i<ticketLength; i++) {
+		    if (realBalance >= $scope.ticketPlans[i].mbalance) {
+			use = Math.floor(realBalance / $scope.ticketPlans[i].mbalance);
+			if (use > 0) {
+			    validPlans.push({plan:$scope.ticketPlans[i], count: use}); 
+			    realBalance -= $scope.ticketPlans[i].mbalance * use;
 			}
 		    }
-
-		    dialog.edit_with_modal(
-			"detail-gift-ticket.html",
-			undefined,
-			callback,
-			undefined,
-			{tickets: validPlans.filter(function(p) {return p.count !== 0}),
-			 add_ticket: function(tickets, planes, balance) {
-			     tickets.push({plan:planes[planes.length-1], count:1});
-			     balance -= tickets[tickets.length - 1].plan.mbalance;
-			     return balance;
-			 }, 
-			 delete_ticket: function(tickets, balance) {
-			     balance += tickets[tickets.length - 1].plan.mbalance * tickets[tickets.length - 1].count; 
-			     tickets.splice(-1, 1);
-			     return balance;
-			 }, 
-			 check_ticket: function(planes, balance) {
-			     return balance >= planes[planes.length - 1].mbalance;
-			 },
-			 calc_balance: function(tickets) {
-			     var useBalance = 0;
-			     for (var i=0, l=tickets.length; i<l; i++) {
-				 useBalance += tickets[i].plan.mbalance * tickets[i].count;
-			     }
-			     return wholeBalance - useBalance;
-			 },
-			 balance: realBalance,
-			 planes: $scope.ticketPlans
-			});
-		    
-		} else {
-		    dialog.set_error(giftTitle, 2717);
 		}
-	    }); 
+
+		if (validPlans.length !== 0 && realBalance > 0) {
+		    validPlans[validPlans.length - 1].count -= 1;
+		    realBalance += validPlans[validPlans.length - 1].plan.mbalance;
+		    i--;
+		    for (i; i<ticketLength; i++) {
+			if (realBalance >= $scope.ticketPlans[i].mbalance) {
+			    use = Math.floor(realBalance / $scope.ticketPlans[i].mbalance);
+			    if (use > 0) {
+				validPlans.push({plan:$scope.ticketPlans[i], count: use}); 
+				realBalance -= $scope.ticketPlans[i].mbalance * use;
+			    }
+			} 
+		    }
+		}
+	    }
+
+	    dialog.edit_with_modal(
+		"detail-gift-ticket.html",
+		undefined,
+		callback,
+		undefined,
+		{tickets: validPlans.filter(function(p) {return p.count !== 0}),
+		 add_ticket: function(tickets, planes, balance) {
+		     tickets.push({plan:planes[planes.length-1], count:1});
+		     balance -= tickets[tickets.length - 1].plan.mbalance;
+		     return balance;
+		 }, 
+		 delete_ticket: function(tickets, balance) {
+		     balance += tickets[tickets.length - 1].plan.mbalance * tickets[tickets.length - 1].count; 
+		     tickets.splice(-1, 1);
+		     return balance;
+		 }, 
+		 check_ticket: function(planes, balance) {
+		     return balance >= planes[planes.length - 1].mbalance;
+		 },
+		 calc_balance: function(tickets) {
+		     var useBalance = 0;
+		     for (var i=0, l=tickets.length; i<l; i++) {
+			 useBalance += tickets[i].plan.mbalance * tickets[i].count;
+		     }
+		     return wholeBalance - useBalance;
+		 },
+		 balance: realBalance,
+		 planes: $scope.ticketPlans
+		});
+	    
+	    // } else {
+	    //     dialog.set_error(giftTitle, 2717);
+	    // }
+	    // }); 
 	} 
     };
     
