@@ -1017,7 +1017,7 @@ var wsaleCalc = function(){
 				uPrice = diablo_price(valid_price, stock.discount);
 			    } else if (pm.prule_id === 1) {
 				// uPrice = stock.tag_price;
-				uPrice = stock.valid_price;
+				uPrice = valid_price;
 			    } 
 			    totalPay += uPrice * count; 
 			    // payAll += stock.tag_price * count;
@@ -1359,7 +1359,7 @@ var wsaleCalc = function(){
 		total_oil += wsaleCalc.calc_commision(one, count, one.mid, one.commision);
 
 		// can not use ticket
-		if (diablo_yes === wsaleUtils.to_integer(one.state.charAt(2))) {
+		if (diablo_no === one.ticket) {
 		    noTicketBalance += one.calc;
 		}
 		

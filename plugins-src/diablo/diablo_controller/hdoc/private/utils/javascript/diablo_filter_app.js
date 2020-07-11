@@ -322,11 +322,11 @@ function filterProvider(){
 		} else if (name === 'org_price'){
 		    _filter.fields.push({name:"org_price", chinese:"进货价"});
 		} else if (name === 'msell'){
-		    _filter.fields.push({name:"msell", chinese:"销售大于"});
+		    _filter.fields.push({name:"msell", chinese:"销售>"});
 		} else if (name === 'esell'){
-		    _filter.fields.push({name:"esell", chinese:"销售等于"});
+		    _filter.fields.push({name:"esell", chinese:"销售="});
 		} else if (name === 'lsell'){
-		    _filter.fields.push({name:"lsell", chinese:"销售小于"});
+		    _filter.fields.push({name:"lsell", chinese:"销售<"});
 		} else if (name === 'check_state'){
 		    _filter.fields.push({name:"check_state", chinese:"审核状态"});
 		    _prompt.check_state = promptValues;
@@ -349,7 +349,7 @@ function filterProvider(){
 		    _filter.fields.push({name:"over", chinese:"溢出"});
 		    _prompt.over = promptValues;
 		} else if (name === 'mconsume'){
-		    _filter.fields.push({name:"mconsume", chinese:"消费大于"});
+		    _filter.fields.push({name:"mconsume", chinese:"消费>"});
 		    _prompt.mconsume = promptValues;
 		} else if (name ==='mscore') {
 		    _filter.fields.push({name:"mscore", chinese:"积分>="});
@@ -395,6 +395,9 @@ function filterProvider(){
 		    _prompt.pay_type = promptValues;
 		} else if (name === 'pay_state') {
 		    _filter.fields.push({name:"pay_state", chinese:"支付状态"});
+		    _prompt.pay_state = promptValues;
+		} else if (name === 'mticket') {
+		    _filter.fields.push({name:"mticket", chinese:"用券>="});
 		    _prompt.pay_state = promptValues;
 		}
 		

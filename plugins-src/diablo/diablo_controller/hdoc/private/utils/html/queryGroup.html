@@ -431,9 +431,7 @@
 		       x-ng-pattern="/^\d+$/" />
 	      </div>
 	    </form>
-	  </span>
-
-	  
+	  </span> 
 
 	  <span x-ng-switch-when="mconsume">
 	    <form name="cForm">
@@ -463,6 +461,17 @@
 		<input type="number" step="1"
 		       disable-key
 		       class="form-control" placeholder="请输入累计积分"
+		       x-ng-model="f.value" />
+	      </div>
+	    </form>
+	  </span>
+
+	  <span x-ng-switch-when="mticket">
+	    <form name="tForm">
+	      <div ng-class="{'has-error':tForm.$invalid && !tForm.$pristine}">
+		<input type="number" step="1"
+		       disable-key
+		       class="form-control" placeholder="请输入用券金额"
 		       x-ng-model="f.value" />
 	      </div>
 	    </form>

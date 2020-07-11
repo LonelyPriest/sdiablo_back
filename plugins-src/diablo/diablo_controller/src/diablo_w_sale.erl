@@ -1321,7 +1321,8 @@ handle_call({total_rsn_group, MatchMode, Merchant, UTable, Conditions}, _From, S
 			<<"ldiscount">>, 1,
 			lists:keydelete(
 			  <<"lsell">>, 1,
-			  lists:keydelete(<<"msell">>, 1, Conditions)))),
+			  lists:keydelete(
+			    <<"msell">>, 1, Conditions)))),
     
     {DConditions, SConditions} = filter_condition(wsale, NewConditions, [], []),
     
@@ -1368,6 +1369,7 @@ handle_call({total_rsn_group, MatchMode, Merchant, UTable, Conditions}, _From, S
 	       _ ->
 		   " and b.total>" ++ ?to_s(MSell)
 	   end
+	
 	%% ++ case MatchMode of
 	%%        ?AND ->
 	%% 	   ?sql_utils:condition(proplists, CorrectCutDConditions);
@@ -2609,7 +2611,10 @@ direct(_) -> wsale.
 
 sort_condition(wsale, Merchant, Conditions) ->
     Comment = ?v(<<"comment">>, Conditions),
-    CutConditions = lists:keydelete(<<"comment">>, 1, Conditions),
+    MTicket = ?v(<<"mticket">>, Conditions), 
+    CutConditions = lists:keydelete(
+		      <<"comment">>, 1,
+		      lists:keydelete(<<"mticket">>, 1, Conditions)),
     
     C = lists:foldr(
 	  fun({K, V}, Acc) when K =:= <<"check_state">>->
@@ -2627,6 +2632,12 @@ sort_condition(wsale, Merchant, Conditions) ->
 	       0 -> " and a.comment!=\'\'";
 	       1 -> []
 	   end
+	
+	++ case MTicket of
+	       undefined -> [];
+	       _ -> "and a.ticket>=" ++ ?to_s(MTicket)
+	   end
+	
 	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
 	       [] -> [];
 	       TimeSql -> " and " ++ TimeSql

@@ -3769,6 +3769,8 @@ function wsaleNewDetailProvide(
     diabloFilter.add_field("rsn",         $scope.match_rsn);
     diabloFilter.add_field("check_state", wsaleService.check_state);
     diabloFilter.add_field("comment",     wsaleService.check_comment);
+    diabloFilter.add_field("mticket",     []);
+
     
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();

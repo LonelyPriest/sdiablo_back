@@ -1789,7 +1789,7 @@ handle_call({list_score, Merchant}, _From, State) ->
 	", sdate, edate, remark, entry"
 	" from w_score"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ " and deleted=" ++ ?to_s(?NO)
+    %% ++ " and deleted=" ++ ?to_s(?NO)
 	++ " order by id", 
     Reply = ?sql_utils:execute(read, Sql),
 

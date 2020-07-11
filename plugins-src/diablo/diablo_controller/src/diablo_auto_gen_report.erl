@@ -502,7 +502,8 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
 	    ?INVALID_OR_EMPTY ->
 		lists:foldr(
 		  fun({S}, Acc) ->
-			  case ?v(<<"type_id">>, S) =:= 1 of
+			  case ?v(<<"type_id">>, S) =:= 1
+			      andalso ?v(<<"deleted">>, S) =:= 0 of
 			      true ->
 				  case Acc of
 				      [] -> S;
