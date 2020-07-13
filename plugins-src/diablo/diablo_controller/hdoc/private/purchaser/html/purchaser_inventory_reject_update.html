@@ -32,13 +32,19 @@
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="icon icon-rss fg-red"></i>厂商</span>
-	  	<input class="form-control" type="text"
+	  	<input x-ng-if="stock_right.show_stock_firm_info" class="form-control" type="text"
 		       ng-edit
 	  	       x-ng-model="select.firm"
 	  	       placeholder="请选择厂商"
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_firm()"
-	  	       uib-typeahead="f as f.name for f in get_prompt_firm($viewValue)"/> 
+	  	       uib-typeahead="f as f.name for f in get_prompt_firm($viewValue)"/>
+
+		<input x-ng-if="!stock_right.show_stock_firm_info"
+		       class="form-control"
+		       type="text"
+		       readonly
+		       value="******"/> 
 	      </div>
 	    </div>
 
@@ -221,7 +227,7 @@
 		      <!-- <th class="text-center">序号</th> -->
 		      <th class="text-center">货号</th>
 		      <th class="text-center">品名</th>
-		      <th class="text-center">厂商</th> 
+		      <th x-ng-if="stock_right.show_stock_firm_info" class="text-center">厂商</th> 
 		      <!-- <th class="text-center">季节</th> --> 
 		      <th class="text-center">吊牌价</th>
 		      <th class="text-center">折扣</th>
@@ -242,7 +248,9 @@
 		  <tr x-ng-repeat="h in p_history">
 		    <td>{{h.style_number}}</td>
 		    <td>{{h.brand.name}}</td>
-		    <td class="bg-lightOrange">{{h.firm.name}}</td>
+		    <td x-ng-if="stock_right.show_stock_firm_info"
+			class="bg-lightOrange">{{h.firm.name}}
+		    </td>
 		    
 		    <td>{{h.tag_price}}</td>
 		    <td>{{h.discount}}</td>

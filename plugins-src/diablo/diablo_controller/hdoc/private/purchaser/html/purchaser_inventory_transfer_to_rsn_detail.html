@@ -74,7 +74,7 @@
 		    <th>调出店铺</th>
 		    <th>调入店铺</th>
 
-		    <th>厂商</th>
+		    <th x-ng-if="stock_right.show_stock_firm_info">厂商</th>
 		    <th>款号</th>
 		    <th>品牌</th> 
 		    <th>类型</th>
@@ -102,7 +102,7 @@
 		    <td>{{inv.fshop.name}}</td>
 		    <td>{{inv.tshop.name}}</td> 
 
-		    <td>{{inv.firm.name}}</td>
+		    <td x-ng-if="stock_right.show_stock_firm_info">{{inv.firm.name}}</td>
 		    <td>{{inv.style_number}}</td>
 		    <td>{{inv.brand.name}}</td>
 		    <td>{{inv.type.name}}</td>

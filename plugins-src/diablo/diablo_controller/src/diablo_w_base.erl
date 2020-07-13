@@ -1073,9 +1073,11 @@ sys_config() ->
 	      {"r_discount",        "会员折扣模式",       "0000",    "0"},
 	      
 	      %% {"r_level",        "会员等级模式",       "0",    "0"},
+	      
 	      %% [0]: 0->gift none, 1->use gift mode
 	      %% [1]: 0->commision none, 1-> commision mode
 	      {"gift_sale",         "开单赠送模式",       "0",    "0"},
+	      
 	      %%[0]:scan sale only
 	      %%[1]:add scan mode when stock_in
 	      %%[2]:add scan mode when stock_out

@@ -1033,7 +1033,9 @@ function purchaserInventoryTransferFromDetailCtrlProvide (
     $scope.stock_right = {
 	print:  stockUtils.authen_stock(user.type, user.right, 'print_stock_transfer'),
 	cancel: stockUtils.authen_stock(user.type, user.right, 'cancel_stock_transfer'),
-	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, "show_orgprice")
+	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, "show_orgprice"),
+	show_stock_firm_info: rightAuthen.authen(
+	    user.type, rightAuthen.stock_action()["show_stock_firm_info"], user.right)
     };
 
     $scope.base_settings = {
@@ -1231,7 +1233,9 @@ function purchaserInventoryTransferToDetailCtrlProvide (
     $scope.stock_right = {
 	// print:  stockUtils.authen_stock(user.type, user.right, 'print_stock_transfer'),
 	// cancel: stockUtils.authen_stock(user.type, user.right, 'cancel_stock_transfer'),
-	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, "show_orgprice")
+	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, "show_orgprice"),
+	show_stock_firm_info: rightAuthen.authen(
+	    user.type, rightAuthen.stock_action()["show_stock_firm_info"], user.right)
     };
     
     /*

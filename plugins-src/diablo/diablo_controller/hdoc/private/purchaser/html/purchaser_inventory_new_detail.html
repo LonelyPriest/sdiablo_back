@@ -96,7 +96,7 @@
 		    <th>店铺</th>
 		    <th>店员</th>
 		    
-		    <th class="danger">厂商</th>
+		    <th x-ng-if="shop_right.show_stock_firm_info" class="danger">厂商</th>
 		    <th class="danger">数量</th>
 		    
 		    <th x-ng-if="!hidden.balance">现金</th>
@@ -142,7 +142,9 @@
 		    <td class="{{css(r.state, r.type)}}">{{r.shop.name}}</td>
 		    <td class="{{css(r.state, r.type)}}">{{r.employee.name}}</td>
 		    
-		    <td class="{{css(r.state, r.type)}}">{{r.firm.name}}</td>
+		    <td x-ng-if="shop_right.show_stock_firm_info"
+			class="{{css(r.state, r.type)}}">{{r.firm.name}}</td>
+		    
 		    <td class="{{css(r.state, r.type)}}">{{r.total}}</td>
 		    
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="!hidden.balance">{{r.cash}}</td>
@@ -231,7 +233,8 @@
 
 		  <!--Total info-->
 		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td colspan="7"></td>
+		    <td colspan="6"></td>
+		    <td x-ng-if="shop_right.show_stock_firm_info"</td>
 		    <td class="danger">{{total_amounts}}</td>
 		    <td x-ng-if="!hidden.balance">{{total_cash}}</td>
 		    <td x-ng-if="!hidden.balance">{{total_card}}</td>

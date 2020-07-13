@@ -90,7 +90,7 @@
 		    <th x-ng-if="!hidden.base">店铺</th>
 		    <th x-ng-if="!hidden.base">店员</th>
 		    
-		    <th>厂商</th>
+		    <th x-ng-if="stock_right.show_stock_firm_info">厂商</th>
 		    <th class="danger">款号</th>
 		    <th class="success">品牌</th>
 		    <th class="warning">类型</th>
@@ -128,7 +128,9 @@
 		      {{inv.employee.name}}
 		    </td>
 		    
-		    <td class="{{css(inv.state, inv.type)}}">{{inv.firm.name}}</td> 
+		    <td x-ng-if="stock_right.show_stock_firm_info"
+			class="{{css(inv.state, inv.type)}}">{{inv.firm.name}}
+		    </td> 
 		    <td class="{{css(inv.state, inv.type)}}">{{inv.style_number}}</td>
 		    <td class="{{css(inv.state, inv.type)}}">{{inv.brand.name}}</td>
 		    <td class="{{css(inv.state, inv.type)}}">{{inv.itype.name}}</td>

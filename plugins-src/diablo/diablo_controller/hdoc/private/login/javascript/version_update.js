@@ -1,5 +1,11 @@
 var version_update = function(){
     var updates = [
+	{date: "2020-07-13",
+	 content:
+	 ["厂商信息显示增加权限控制",
+	  "修正退货单无法修改的问题"]
+	},
+	
 	{date: "2020-07-05",
 	 content:
 	 ["增加员工销售提成功能"]

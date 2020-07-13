@@ -51,6 +51,8 @@ function wsaleRsnDetailCtrlProvide (
 	    column += 1;
 	if ($scope.hidden.base)
 	    column -= 3;
+	if (!$scope.right.show_stock_firm_info)
+	    column -= 1;
 	
 	return column;
     };
@@ -94,7 +96,7 @@ function wsaleRsnDetailCtrlProvide (
     var sale_mode = wsaleUtils.sale_mode(diablo_default_shop, base);
     $scope.setting.show_note     = wsaleUtils.to_integer(sale_mode.charAt(1));
     $scope.setting.solo_retailer = wsaleUtils.solo_retailer(
-	$scope.shopIds.length === 1 ? $scope.shopIds[0] : diablo_default_shop, base);
+	$scope.shopIds.length === 1 ? $scope.shopIds[0] : diablo_default_shop, base); 
     
     var storage = localStorageService.get(diablo_key_wsale_trans_detail);
     console.log(storage);

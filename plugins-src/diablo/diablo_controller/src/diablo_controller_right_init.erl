@@ -462,7 +462,9 @@ init([]) ->
 	 {?list_stock_order_note,
 	  <<"查询采购定单明细">>, <<"list_stock_order_note">>, ?right_w_inventory}, 
 	 {?transfer_w_inventory_fast,
-	  <<"店铺一键调出">>, <<"transfer_w_inventory_fast">>, ?right_w_inventory}
+	  <<"店铺一键调出">>, <<"transfer_w_inventory_fast">>, ?right_w_inventory},
+	 {?show_stock_firm_info,
+	  <<"查看货品厂商信息">>, <<"show_stock_firm_info">>, ?right_w_inventory}
 	],
 
     %% firm

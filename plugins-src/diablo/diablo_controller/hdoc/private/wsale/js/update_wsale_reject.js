@@ -1,15 +1,16 @@
 function wsaleUpdateRejectCtrlProvide(
     $scope, $q, $routeParams, dateFilter, diabloUtilsService, diabloPromise,
     diabloFilter, diabloPattern, wsaleService,
-    user, filterPromotion, filterScore, filterSysRetailer, filterEmployee,
+    user, filterPromotion, filterCommision, filterScore, filterSysRetailer, filterEmployee,
     filterSizeGroup, filterBrand, filterColor, filterType, filterLevel, base){
     // console.log(base);
     // console.log(user);
     // console.log(filterScore);
     $scope.shops         = user.sortBadRepoes.concat(user.sortShops);
     $scope.promotions    = filterPromotion;
+    $scope.commisions    = filterCommision;
     $scope.scores        = filterScore;
-    $scope.sysRetailers  = filterSysRetailer; 
+    $scope.sysRetailers  = filterSysRetailer;
     
     // $scope.retailers       = filterRetailer; 
     $scope.employees       = filterEmployee;
@@ -81,6 +82,7 @@ function wsaleUpdateRejectCtrlProvide(
 		    $scope.colors,
 		    $scope.size_groups,
 		    $scope.promotions,
+		    $scope.commisions,
 		    $scope.scores);
 
 		console.log(wsale);

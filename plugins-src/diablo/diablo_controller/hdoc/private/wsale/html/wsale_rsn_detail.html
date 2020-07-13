@@ -111,7 +111,8 @@
 			<th class="success">类型</th>
 			<th class="success">性别</th>
 			<th >季节</th>
-			<th x-ng-click="use_order(order_fields.firm)" class="danger">厂商
+			<th x-ng-if="right.show_stock_firm_info"
+			    x-ng-click="use_order(order_fields.firm)" class="danger">厂商
 			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
 			</th> 
 			<th >年度</th>
@@ -214,7 +215,7 @@
 			  <div x-ng-if="inv.negative" class="bg-red">{{inv.oseason.name}}</div>
 			  <div x-ng-if="!inv.negative">{{inv.oseason.name}}</div>
 			</td> 
-			<td>
+			<td x-ng-if="right.show_stock_firm_info">
 			  <div x-ng-if="inv.negative" class="bg-red">{{inv.firm.name}}</div>
 			  <div x-ng-if="!inv.negative">{{inv.firm.name}}</div>
 			</td>

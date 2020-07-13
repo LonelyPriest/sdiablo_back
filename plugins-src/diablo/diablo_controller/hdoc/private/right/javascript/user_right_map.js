@@ -102,8 +102,8 @@ var rightAuthen = {
 	    bill_firm_on_stock_in:     rightAuthen.root_right._stock + 34,
 	    auto_balance_fix_stock:    rightAuthen.root_right._stock + 38,
 
-	    transfer_w_inventory_fast: rightAuthen.root_right._stock + 44
-
+	    transfer_w_inventory_fast: rightAuthen.root_right._stock + 44,
+	    show_stock_firm_info:   rightAuthen.root_right._stock + 45 
 	}
     },
 
@@ -382,7 +382,8 @@ diabloAuthen.prototype.authenStockRight = function() {
 	print_w_stock          :this.printStockIn(),
 	print_w_stock_note     :this.printStockNote(),
 	auto_balance_fix_stock :this.authenStock('auto_balance_fix_stock'),
-	transfer_w_stock_fast  :this.authenStock('transfer_w_inventory_fast')
+	transfer_w_stock_fast  :this.authenStock('transfer_w_inventory_fast'),
+	show_stock_firm_info   :this.authenStock('show_stock_firm_info')
     }
 };
 
@@ -421,7 +422,9 @@ diabloAuthen.prototype.authenSaleRight = function() {
 	// daily cost
 	new_daily_cost:    this.authenSale('new_daily_cost'),
 	update_daily_cost: this.authenSale('update_daily_cost'),
-	delete_daily_cost: this.authenSale('delete_daily_cost')
+	delete_daily_cost: this.authenSale('delete_daily_cost'),
+	
+	show_stock_firm_info   :this.authenStock('show_stock_firm_info')
     }
 };
 

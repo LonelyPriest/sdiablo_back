@@ -345,11 +345,16 @@ function purchaserInventoryNewCtrlProvide (
 	// console.log(viewValue);
 	if (angular.isUndefined(diablo_set_string(viewValue))
 	    || viewValue.length < diablo_filter_length) return;
+
+	if ($scope.stock_right.show_stock_firm_info) {
+	    return diabloFilter.match_wgood_with_firm(
+		viewValue,
+		stockUtils.match_firm(
+		    $scope.base_settings.stock_with_firm ? $scope.select.firm : diablo_invalid_firm) ); 
+	} else {
+	    return diabloFilter.match_wgood_with_firm(viewValue, diablo_invalid_firm); 
+	}
 	
-	return diabloFilter.match_wgood_with_firm(
-	    viewValue,
-	    stockUtils.match_firm(
-		$scope.base_settings.stock_with_firm ? $scope.select.firm : diablo_invalid_firm) ); 
     };
 
     $scope.q_prompt = $scope.q_typeahead($scope.select.shop.id, base); 
@@ -2302,9 +2307,12 @@ function purchaserInventoryDetailCtrlProvide(
 	    user.type, rightAuthen.stock_action()["reset_barcode"], user.right), 
 	update_good:   rightAuthen.authen(
 	    user.type, rightAuthen.good_action()["update_w_good"], user.right),
-	gift_stock:  rightAuthen.authen(
-	    user.type, rightAuthen.good_action()["gift_w_stock"], user.right)
+	gift_stock: rightAuthen.authen(
+	    user.type, rightAuthen.good_action()["gift_w_stock"], user.right),
+	show_stock_firm_info: rightAuthen.authen(
+	    user.type, rightAuthen.stock_action()["show_stock_firm_info"], user.right)
     };
+    console.log($scope.stock_right);
     
     $scope.setting = {alarm: false};
 
