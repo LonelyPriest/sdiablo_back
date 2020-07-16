@@ -14,7 +14,7 @@
 	  	    x-ng-click="go_back()">返回
 	      <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
 	    
-	    <button x-ng-if="right.orgprice" class="btn green purple-stripe"
+	    <button x-ng-if="right.show_orgprice" class="btn green purple-stripe"
 		    type="button"
 		    x-ng-click="export_to()">导出
 	    <i class="glyphicon glyphicon-export"></i></button>
@@ -74,11 +74,11 @@
 		    <th class="text-center">店铺</th>
 
 		    <th class="text-center" style="background-color:#FFCCFF">库存</th>
-		    <th x-ng-if="right.orgprice" class="text-center">库存成本</th>
+		    <th x-ng-if="right.show_orgprice" class="text-center">库存成本</th>
 		    
 		    <th class="text-center" style="background-color:#FFCCCC">销售数量</th>
 		    <th class="text-center" style="background-color:#FFCCCC">销售金额</th>
-		    <th x-ng-if="right.orgprice" class="text-center"
+		    <th x-ng-if="right.show_orgprice" class="text-center"
 			style="background-color:#FFCCCC">销售成本</th> 
 		    <th class="text-center" style="background-color:#CCCCCC">现金</th>
 		    <th class="text-center" style="background-color:#CCCCCC">刷卡</th>
@@ -91,17 +91,17 @@
 		    <th class="text-cente success">充值</th>
 		    
 		    <th class="text-center">入库数量</th>
-		    <th x-ng-if="right.orgprice" class="text-center">入库成本</th>
+		    <th x-ng-if="right.show_orgprice" class="text-center">入库成本</th>
 		    <th class="text-center">出库数量</th>
-		    <th x-ng-if="right.orgprice" class="text-center">出库成本</th>
+		    <th x-ng-if="right.show_orgprice" class="text-center">出库成本</th>
 
 		    <th class="text-center">调入数量</th>
-		    <th x-ng-if="right.orgprice" class="text-center">调入成本</th>
+		    <th x-ng-if="right.show_orgprice" class="text-center">调入成本</th>
 		    <th class="text-center">调出数量</th>
-		    <th x-ng-if="right.orgprice" class="text-center">调出成本</th>
+		    <th x-ng-if="right.show_orgprice" class="text-center">调出成本</th>
 		    
 		    <th class="text-center">盘点数量</th>
-		    <th x-ng-if="right.orgprice" class="text-center">盘点成本</th>
+		    <th x-ng-if="right.show_orgprice" class="text-center">盘点成本</th>
 
 		    <!-- <th class="text-center">日期</th> -->
 		    <!-- <th class="text-center">创建日期</th>  -->
@@ -114,11 +114,11 @@
 		    
 		    <!-- <td style="background-color:#FFCCFF">{{r.stock}}</td> -->
 		    <td style="background-color:#FFCCFF">{{r.stockc}}</td>
-		    <td x-ng-if="right.orgprice">{{r.stockCost}}</td>
+		    <td x-ng-if="right.show_orgprice">{{r.stockCost}}</td>
 
 		    <td style="background-color:#FFCCCC">{{r.sell}}</td>
 		    <td style="background-color:#FFCCCC">{{r.balance}}</td> 
-		    <td x-ng-if="right.orgprice"
+		    <td x-ng-if="right.show_orgprice"
 			style="background-color:#FFCCCC">{{r.sellCost}}</td>
 		    <td style="background-color:#CCCCCC">{{r.cash}}</td>
 		    <td style="background-color:#CCCCCC">{{r.card}}</td>
@@ -131,17 +131,17 @@
 		    <td class="success">{{r.charge}}</td>
 
 		    <td>{{r.stockIn}}</td>
-		    <td x-ng-if="right.orgprice">{{r.stockInCost}}</td> 
+		    <td x-ng-if="right.show_orgprice">{{r.stockInCost}}</td> 
 		    <td>{{r.stockOut}}</td>
-		    <td x-ng-if="right.orgprice">{{r.stockOutCost}}</td>
+		    <td x-ng-if="right.show_orgprice">{{r.stockOutCost}}</td>
 
 		    <td>{{r.tstockIn}}</td>
-		    <td x-ng-if="right.orgprice">{{r.tstockInCost}}</td> 
+		    <td x-ng-if="right.show_orgprice">{{r.tstockInCost}}</td> 
 		    <td>{{r.tstockOut}}</td>
-		    <td x-ng-if="right.orgprice">{{r.tstockOutCost}}</td>
+		    <td x-ng-if="right.show_orgprice">{{r.tstockOutCost}}</td>
 
 		    <td>{{r.stockFix}}</td>
-		    <td x-ng-if="right.orgprice">{{r.stockFixCost}}</td>
+		    <td x-ng-if="right.show_orgprice">{{r.stockFixCost}}</td>
 		    
 		  </tr>
 		  <tr>
@@ -151,32 +151,32 @@
 		    <td></td>
 		    <td></td>
 		    <td>{{s_stastic.stockc}}</td>
-		    <td x-ng-if="right.orgprice">{{s_stastic.stockCost}}</td>
+		    <td x-ng-if="right.show_orgprice">{{s_stastic.stockCost}}</td>
 		    <td>{{s_stastic.sell}}</td>
 		    
-		    <td><div x-ng-if="right.orgprice">{{s_stastic.balance}}</div></td>
+		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.balance}}</div></td>
 		    <td x-ng-if="right.orgprice">{{s_stastic.sellCost}}</td>
-		    <td><div x-ng-if="right.orgprice">{{s_stastic.cash}}</div></td>
-		    <td><div x-ng-if="right.orgprice">{{s_stastic.card}}</div></td>
-		    <td><div x-ng-if="right.orgprice">{{s_stastic.wxin}}</div></td>
-		    <td><div x-ng-if="right.orgprice">{{s_stastic.aliPay}}</div></td>
-		    <td><div x-ng-if="right.orgprice">{{s_stastic.draw}}</div></td>
-		    <td><div x-ng-if="right.orgprice">{{s_stastic.ticket}}</div></td>
-		    <td><div x-ng-if="right.orgprice">{{s_stastic.veri}}</div></td>
+		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.cash}}</div></td>
+		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.card}}</div></td>
+		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.wxin}}</div></td>
+		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.aliPay}}</div></td>
+		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.draw}}</div></td>
+		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.ticket}}</div></td>
+		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.veri}}</div></td>
 
 		    <td>{{s_stastic.charge}}</td>
 		    <td>{{s_stastic.stockIn}}</td>
-		    <td x-ng-if="right.orgprice">{{s_stastic.stockInCost}}</td>
+		    <td x-ng-if="right.show_orgprice">{{s_stastic.stockInCost}}</td>
 		    <td>{{s_stastic.stockOut}}</td>
-		    <td x-ng-if="right.orgprice">{{s_stastic.stockOutCost}}</td>
+		    <td x-ng-if="right.show_orgprice">{{s_stastic.stockOutCost}}</td>
 
 		    <td>{{s_stastic.tstockIn}}</td>
-		    <td x-ng-if="right.orgprice">{{s_stastic.tstockInCost}}</td>
+		    <td x-ng-if="right.show_orgprice">{{s_stastic.tstockInCost}}</td>
 		    <td>{{s_stastic.tstockOut}}</td>
-		    <td x-ng-if="right.orgprice">{{s_stastic.tstockOutCost}}</td>
+		    <td x-ng-if="right.show_orgprice">{{s_stastic.tstockOutCost}}</td>
 
 		    <td>{{s_stastic.stockFix}}</td>
-		    <td x-ng-if="right.orgprice">{{s_stastic.stockFixCost}}</td>
+		    <td x-ng-if="right.show_orgprice">{{s_stastic.stockFixCost}}</td>
 		    <td colspan=2></td>
 		      
 		  </tr>

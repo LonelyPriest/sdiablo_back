@@ -14,9 +14,10 @@ init_sms() ->
 	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 0, \'会员提醒：欢迎光临{$var}，本次{$var}成功，消费金额{$var}，当前余额{$var}，累计积分{$var}，感谢您的惠顾！！\')">>
 	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 3, \'尊敬的VIP：欢迎光临{$var}，现赠与总价值{$var}元的优惠券{$var}张，{$var}天激活后可使用，请保管好该信息并及时消费。\')">>,
 	   %% <<"insert into zz_sms_template(merchant, type, content) values(15, 3, \'尊敬的VIP，现赠予总价值{$var}元的优惠券{$var}张，{$var}天后激活可在钻石女人、艾莱依、E主题、波司登、千仞岗使用！\')">>
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 4, \'尊敬的{$var}会员，花开一季，岁月一轮，祝您生日快乐，本店特意为您准备了礼品，感谢您的一路陪伴。{$var}祝！\')">>,
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 5, \'会员提醒：欢迎光临{$var}，本次{$var}成功，剩余次数{$var}，有效期截止日{$var}，感谢您的惠顾！！\')">>,
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 6, \'尊敬的客户{$var}，短信充值成功，您已充值{$var}元，目前剩余短消息{$var}条，感谢您的使用！！\')">>
+	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 4, \'尊敬的{$var}会员，花开一季，岁月一轮，祝您生日快乐，本店特意为您准备了礼品，感谢您的一路陪伴。{$var}祝！\')">>,
+	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 5, \'会员提醒：欢迎光临{$var}，本次{$var}成功，剩余次数{$var}，有效期截止日{$var}，感谢您的惠顾！！\')">>,
+	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 6, \'尊敬的客户{$var}，短信充值成功，您已充值{$var}元，目前剩余短消息{$var}条，感谢您的使用！！\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 7, \'尊敬的钱掌柜客户{n}，您名下店铺{s}会员{m}消费异常，近一月内消费达{c}次，请及时核对本次交易！！！！\')">>
 	  ],
     ?sql_utils:execute(transaction, Sqls, ok).
     
@@ -376,7 +377,15 @@ sms(birth, Merchant, Phone, {Shop, Sign}) ->
 	++ "," ++ ?to_s(Shop)
 	++ "," ++ ?to_s(Shop),
     ?DEBUG("params ~ts", [?to_b(Params)]),
-    rocket_sms_send(zz, Merchant, Sign, ?BIRTH_NOTIFY, Phone, Params, fun() -> ok end).
+    rocket_sms_send(zz, Merchant, Sign, ?BIRTH_NOTIFY, Phone, Params, fun() -> ok end);
+
+sms(max_trans, Merchant, Phone, {Shop, Sign, Retailer, TransCount}) ->
+    Params = string:strip(?to_s(Phone))
+	++ "," ++ ?to_s(Shop)
+	++ "," ++ ?to_s(Retailer)
+	++ "," ++ ?to_s(TransCount),
+    ?DEBUG("params ~ts", [?to_b(Params)]),
+    rocket_sms_send(zz, Merchant, Sign, ?MAX_TRANS, Phone, Params, fun() -> ok end).
 
 start_sms(Merchant, Phone, SMSTemplate, SMSParams) ->
     case check_sms_rate(Merchant) of

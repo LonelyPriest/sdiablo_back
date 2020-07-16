@@ -99,7 +99,21 @@ var reportUtils = function(){
 	    }
 	    
 	    return condition;
-	}
+	},
+
+	correct_query_time: function(isMaster, configDays, start_time, now, dateFilter){
+	    if (isMaster || configDays === diablo_nolimit_day)
+		return dateFilter.default_time(start_time, now);
+	    else {
+		var diff = now - diablo_get_time(start_time);
+		// console.log(diff, diff - configDays * diablo_day_millisecond);
+		if (diff - configDays * diablo_day_millisecond <= diablo_day_millisecond) {
+		    return dateFilter.default_time(start_time, now);
+		} else {
+		    return dateFilter.default_time(now - diablo_day_millisecond * configDays, now); 
+		}
+	    } 
+	},
 
     }
 }();

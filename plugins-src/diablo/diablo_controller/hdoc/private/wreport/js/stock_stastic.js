@@ -8,6 +8,7 @@ function stockStasticCtrlProvide(
     $scope.shopIds = user.shopIds;
     $scope.disableSyn = false;
 
+    var show_report_days = user.sdays;
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.right = authen.authenReportRight();
     
@@ -30,7 +31,14 @@ function stockStasticCtrlProvide(
     // 	    "qtime_start", -1, base, diablo_set_date,
     // 	    diabloFilter.default_start_time(now));
     // }(); 
-    $scope.time = diabloFilter.default_time(now.first, now.current);
+    // $scope.time = diabloFilter.default_time(now.first, now.current);
+    $scope.time = reportUtils.correct_query_time(
+	authen.master,
+	show_report_days,
+	now.first,
+	now.current,
+	diabloFilter);
+    console.log($scope.time);
 
     $scope.pagination = {
 	items_perpage:  diablo_items_per_page(),
@@ -85,6 +93,15 @@ function stockStasticCtrlProvide(
     $scope.do_search = function(page){
 	console.log(page);
 	$scope.pagination.current_page = page;
+	if (!authen.master && show_report_days !== diablo_nolimit_day) {
+	    var diff = now.current - diablo_get_time($scope.time.start_time);
+	    if (diff - diablo_day_millisecond * show_report_days > diablo_day_millisecond)
+	    	$scope.time.start_time = now.current - show_report_days * diablo_day_millisecond;
+
+	    if ($scope.time.end_time < $scope.time.start_time)
+		$scope.time.end_time = now.current;
+	}
+	
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    // add_shop_condition(search);
 	    reportUtils.correct_condition_with_shop(search, $scope.shopIds, $scope.shops);

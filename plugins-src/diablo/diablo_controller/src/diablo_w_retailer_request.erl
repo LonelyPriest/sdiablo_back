@@ -458,6 +458,35 @@ action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"check_w_retailer_transe_count", Id}, Payload) ->
+    ?DEBUG("check_w_retailer_transe_count: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    UTable   = ?session:get(utable, Session),
+    
+    Shop = ?v(<<"shop">>, Payload),
+    Count = ?v(<<"count">>, Payload, 0), 
+    case ?w_retailer:retailer(check_trans_count, {Merchant, UTable}, Id, Shop, Count) of
+	{ok, {0, LastTranseDate}} ->
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, 
+					       {<<"date">>, LastTranseDate},
+					       {<<"trans">>, 0}]});
+	{ok, {TransCount, LastTranseDate}} ->
+	    case TransCount > Count of
+		true ->
+		    ?utils:respond(200,
+				   object,
+				   Req,
+				   ?err(max_trans, Id),
+				   [{<<"date">>, LastTranseDate}, {<<"trans">>, TransCount}]),
+		    %% send sms
+		    ok;
+		false ->
+		    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+						       {<<"date">>, LastTranseDate},
+						       {<<"trans">>, TransCount}]});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
 
 action(Session, Req, {"new_threshold_card_sale", Id}, Payload) ->
     ?DEBUG("new_threshold_card_sale: session ~p, payload ~p", [Session, Payload]),

@@ -113,6 +113,7 @@
 -define(BIRTH_NOTIFY, 4).
 -define(THEORETIC_CARD_SALE, 5).
 -define(SMS_CHARGE, 6).
+-define(MAX_TRANS, 7).
 
 %% bill mode
 -define(CASH, 0).

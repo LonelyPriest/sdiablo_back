@@ -640,7 +640,7 @@ var stockUtils = function(){
 	},
 
 	impl_ext_stock: function(stock, ext, execs, cates, specs, fabrics) {
-	    stock.state     = stockUtils.to_integer(ext.state);
+	    stock.state     = ext.state;
 	    stock.level     = ext.level;
 	    stock.executive = diablo_get_object(ext.executive, execs);
 	    stock.category  = diablo_get_object(ext.category, cates); 
@@ -1736,10 +1736,11 @@ stockPrintU.prototype.printBarcode2 = function() {
     			       startSecond + offset_virprice,
     			       startThird + offset_virprice);
     }
-    
+
+    var bargin_price = stockUtils.to_integer(this.stock.state.charAt(0));
     if (1 === this.template.p_tagprice) {
 	line = diablo_trim(this.template.tag_price);
-	if (this.stock.state === 3 && diablo_trim(this.template.my_price)) {
+	if (bargin_price === 3 && diablo_trim(this.template.my_price)) {
 	    line = diablo_trim(this.template.my_price);
 	}
 	    
@@ -1750,7 +1751,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 
 	
 	var offset_tagprice = this.to_i(this.template.offset_tagprice);
-	if (this.stock.state === 3 && diablo_trim(this.template.my_price)) {
+	if (this.bargin_price === 3 && diablo_trim(this.template.my_price)) {
 	    offset_tagprice = this.to_i(this.template.offset_myprice);
 	}
 
@@ -1832,7 +1833,7 @@ stockPrintU.prototype.printBarcode2 = function() {
     if (2 === this.template.p_tagprice) {
 	top += 5;
 	line = diablo_trim(this.template.tag_price);
-	if (this.stock.state === 3 && diablo_trim(this.template.my_price)) {
+	if (bargin_price === 3 && diablo_trim(this.template.my_price)) {
 	    line = diablo_trim(this.template.my_price);
 	}
 	
@@ -1843,7 +1844,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 
 	
 	var offset_tagprice = this.to_i(this.template.offset_tagprice);
-	if (this.stock.state === 3 && diablo_trim(this.template.my_price)) {
+	if (bargin_price === 3 && diablo_trim(this.template.my_price)) {
 	    offset_tagprice = this.to_i(this.template.offset_myprice);
 	}
 

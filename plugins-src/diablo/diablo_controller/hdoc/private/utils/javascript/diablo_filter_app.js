@@ -718,6 +718,12 @@ function filterProvider(){
 		    {operation: "check_w_retailer_charge"},
 		    {id:retailerId, shop:shopId, pay:pay, balance:balance, draw:retailerDraw}).$promise;
 	    },
+
+	    check_retailer_trans_count: function(retailerId, shopId, count) {
+		return _retailerHttp.save(
+		    {operation: "check_w_retailer_transe_count"},
+		    {id:retailerId, shop:shopId, count:count}).$promise;
+	    },
 	    
 	    list_threshold_card_good:function(deferred, shopIds) {
 		var cached = get_from_storage(cookie, "tcard_good");

@@ -578,6 +578,8 @@ error(gift_score_not_enought, Score) ->
     {2140, "gift not enought score:" ++ ?to_s(Score)};
 error(gift_drawed_last_year, Gift) ->
     {2141, "gift has been drawed:" ++ ?to_s(Gift)};
+error(max_trans, RetailerId) ->
+    {2142, "more trans of the retailer:" ++ ?to_s(RetailerId)};
     
 %% wprint
 error(wprint_server_exist, Server) ->

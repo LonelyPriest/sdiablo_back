@@ -84,6 +84,9 @@ retailer(reset_password, Merchant, RetailerId, Password) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {reset_password, Merchant, RetailerId, Password}).
 
+retailer(check_trans_count, Merchant, RetailerId, Shop, Count) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {check_trans_count, Merchant, RetailerId, Shop, Count});
 retailer(check_password, Merchant, RetailerId, Password, CheckPwd) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {check_password, Merchant, RetailerId, Password, CheckPwd}).
@@ -669,6 +672,21 @@ handle_call({reset_password, Merchant, RetailerId, Password}, _From, State) ->
     Reply = ?sql_utils:execute(write, Sql, RetailerId),
     {reply, Reply, State};
 
+handle_call({check_trans_count, {Merchant, UTable}, RetailerId, Shop, Count}, _From, State) -> 
+    Sql = "select id, rsn, retailer from" ++ ?table:t(sale_new, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " where shop=" ++ ?to_s(Shop)
+	++ " and retailer=" ++ ?to_s(RetailerId) 
+	++ " order by id desc limit " ++ ?to_s(Count + 1),
+    case ?sql_utils:execute(read, Sql) of
+	{ok, []} ->
+	    {reply, {ok, {0, ?utils:current_date(format), State}}};
+	{ok, [{H}|_] = Trans} ->
+	    Date = format_date(?utils:to_date(?v(<<"entry_date">>, H))),
+	    {reply, {ok, {length(Trans), Date}, State}};
+	Error ->
+	    {reply, Error, State}
+    end;
 
 handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
     ?DEBUG("get_retailer with merchant ~p, retailerId ~p",

@@ -6,11 +6,14 @@ function monthStasticCtrlProvide(
     $scope.shops = user.sortShops;
     $scope.shopIds = user.shopIds;
 
-    $scope.right = {
-	orgprice: rightAuthen.authen(user.type,
-				     rightAuthen.rainbow_action()['show_orgprice'],
-				     user.right)
-    };
+    // $scope.right = {
+    // 	orgprice: rightAuthen.authen(user.type,
+    // 				     rightAuthen.rainbow_action()['show_orgprice'],
+    // 				     user.right)
+    // };
+
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenReportRight();
 
     $scope.d_reports = [];
     $scope.s_stastic = {
@@ -51,8 +54,14 @@ function monthStasticCtrlProvide(
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
     
-    var now = reportUtils.first_day_of_month(); 
-    $scope.time = diabloFilter.default_time(now.first, now.current);
+    var now = reportUtils.first_day_of_month();
+    var show_report_days = user.sdays;
+    $scope.time = reportUtils.correct_query_time(
+	authen.master,
+	show_report_days,
+	now.first,
+	now.current,
+	diabloFilter); 
 
     var reset_stastic = function(){
 	$scope.s_stastic.stockc = 0;
@@ -90,10 +99,19 @@ function monthStasticCtrlProvide(
     var decimal = reportUtils.to_decimal;
     
     $scope.do_search = function() {
+	if (!authen.master && show_report_days !== diablo_nolimit_day) {
+	    var diff = now.current - diablo_get_time($scope.time.start_time);
+	    if (diff - diablo_day_millisecond * show_report_days > diablo_day_millisecond)
+	    	$scope.time.start_time = now.current - show_report_days * diablo_day_millisecond;
+
+	    if ($scope.time.end_time < $scope.time.start_time)
+		$scope.time.end_time = now.current;
+	}
+	
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    reportUtils.correct_condition_with_shop(search, $scope.shopIds, $scope.shops);
 	    console.log(search);
-
+	    
 	    wreportService.h_month_wreport(search).then(function(result){
 		console.log(result);
 		if (result.ecode === 0) {

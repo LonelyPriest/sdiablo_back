@@ -639,6 +639,7 @@ function wsaleNewProvide(
 	$scope.setting.disableWithDraw = wsaleUtils.to_integer(sale_mode.charAt(25));
 	$scope.setting.interval_print = wsaleUtils.to_integer(sale_mode.charAt(27));
 	$scope.setting.fixed_draw = wsaleUtils.to_integer(sale_mode.charAt(28));
+	$scope.setting.trans_count = wsaleUtils.to_integer(sale_mode.charAt(29)); 
 
 	angular.extend($scope.setting, wsaleUtils.gift_sale(shopId, base));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
@@ -777,6 +778,11 @@ function wsaleNewProvide(
     $scope.on_select_retailer = function(item, model, label){
 	// console.log(item);
 	console.log($scope.select.retailer);
+	// check retailer trans count
+	if ($scope.setting.trans_count !== 0) {
+	    
+	}
+	
 	$scope.set_retailer();
 	$scope.wsaleStorage.remove($scope.wsaleStorage.get_key());
 	$scope.wsaleStorage.change_retailer($scope.select.retailer.id);
@@ -3676,7 +3682,7 @@ function wsaleNewDetailProvide(
 		scount:   p.scount}
     }); 
 
-    console.log($scope.ticketPlans);
+    // console.log($scope.ticketPlans);
 
     // var calendar = require("diablo-calendar"); 
     // console.log(calendar.solar2lunar(2020,7,20));
@@ -3698,7 +3704,7 @@ function wsaleNewDetailProvide(
      */
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.shop_right = authen.authenSaleRight();
-    console.log($scope.shop_right);
+    // console.log($scope.shop_right);
     // $scope.shop_right = {
     // 	update_w_sale: wsaleUtils.authen_shop(user.type, user.shop, 'update_w_sale'),
     // 	check_w_sale: wsaleUtils.authen_shop(user.type, user.shop, 'check_w_sale'),

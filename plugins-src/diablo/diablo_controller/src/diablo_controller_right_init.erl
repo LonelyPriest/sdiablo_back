@@ -1105,6 +1105,7 @@ pass_action(wholesaler) ->
      <<"check_w_retailer_password">>,
      <<"check_w_retailer_region">>,
      <<"check_w_retailer_charge">>,
+     <<"check_w_retailer_transe_count">>,
      <<"list_w_retailer_charge">>,
      <<"list_w_retailer_score">>,
      <<"filter_charge_detail">>,
