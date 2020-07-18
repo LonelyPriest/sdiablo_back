@@ -396,6 +396,7 @@ diabloAuthen.prototype.authenGoodRight = function() {
 	new_w_commision       :this.authenGood('new_commision'),
 	update_w_commision    :this.authenGood('update_commision'),
 	del_w_commision       :this.authenGood('del_commision'),
+	show_stock_firm_info   :this.authenStock('show_stock_firm_info')
 	// update_oprice_stock_out :this.updateOrgPriceOnStockOut()
     }
 };

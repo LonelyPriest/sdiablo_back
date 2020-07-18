@@ -75,7 +75,7 @@
 		<thead>
 		  <tr>
 		    <th>序号</th>
-		    <th>厂商</th>
+		    <th x-ng-if="right.show_stock_firm_info">厂商</th>
 		    <th x-ng-if="setting.use_barcode">条码</th>
 		    <th>款号</th>
 		    <th>品牌</th>
@@ -104,7 +104,7 @@
 		<tbody>
 		  <tr ng-repeat="g in goods">
 		    <td>{{g.order_id}}</td> 
-		    <td>
+		    <td x-ng-if="right.show_stock_firm_info">
 		      <div x-ng-if="g.firm_id===-1" class="text-center">-</div>
 		      <div x-ng-if="g.firm_id!==-1">{{g.firm.name}}</div>
 		    </td>
