@@ -462,28 +462,50 @@ action(Session, Req, {"check_w_retailer_transe_count", Id}, Payload) ->
     ?DEBUG("check_w_retailer_transe_count: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     UTable   = ?session:get(utable, Session),
-    
-    Shop = ?v(<<"shop">>, Payload),
-    Count = ?v(<<"count">>, Payload, 0), 
-    case ?w_retailer:retailer(check_trans_count, {Merchant, UTable}, Id, Shop, Count) of
-	{ok, {0, LastTranseDate}} ->
+
+    RetailerPhone = ?v(<<"phone">>, Payload),
+    Shop          = ?v(<<"shop">>, Payload),
+    Count         = ?v(<<"count">>, Payload, 0),
+    case ?w_retailer:retailer(check_trans_count, {Merchant, UTable}, Id, Shop, Count, 30) of
+	{ok, 0, []} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, 
-					       {<<"date">>, LastTranseDate},
-					       {<<"trans">>, 0}]});
-	{ok, {TransCount, LastTranseDate}} ->
+					       {<<"count">>, 0},
+					       {<<"trans">>, []}]});
+	{ok, TransCount, Trans} ->
 	    case TransCount > Count of
 		true ->
+		    ?DEBUG("unexcept sale: trans ~p, count ~p", [Trans, TransCount]),
+		    {ECode, EInfo} = ?err(max_trans, Id),
 		    ?utils:respond(200,
 				   object,
 				   Req,
-				   ?err(max_trans, Id),
-				   [{<<"date">>, LastTranseDate}, {<<"trans">>, TransCount}]),
+				   {[{<<"ecode">>, ECode},
+				     {<<"einfo">>, ?to_b(EInfo)},
+				     {<<"count">>, TransCount},
+				     {<<"trans">>, Trans}]}),
 		    %% send sms
-		    ok;
-		false ->
-		    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
-						       {<<"date">>, LastTranseDate},
-						       {<<"trans">>, TransCount}]});
+		    %% {ok, Retailer} = ?w_retailer:retailer(get, Merchant, Id),
+		    {ShopName, _ShopSign} = ?shop:shop(get_sign, Merchant, Shop),
+		    %% ?DEBUG("shop name ~ts", [ShopName]),
+		    {ok, Managers} = ?employ:employ(list_manager, Merchant), 
+		    %% ?DEBUG("managers ~p", [Managers]), 
+
+		    lists:foreach(
+		      fun({M}) -> 
+			      ?notify:sms(
+				 max_trans,
+				 Merchant,
+				 ?v(<<"mobile">>, M),
+				 {?v(<<"name">>, M), ShopName, RetailerPhone, TransCount})
+		      end, Managers); 
+		false -> 
+		    ?utils:respond(200,
+				   object,
+				   Req,
+				   {[{<<"ecode">>, 0}, 
+				     {<<"count">>, TransCount},
+				     {<<"trans">>, Trans}]}) 
+	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;

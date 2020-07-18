@@ -20,7 +20,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([retailer/2, retailer/3, retailer/4, retailer/5, default_profile/2]).
+-export([retailer/2, retailer/3, retailer/4, retailer/5, retailer/6, default_profile/2]).
 -export([charge/2, charge/3, threshold_card/3, threshold_card/4, threshold_card_good/3]).
 -export([score/2, score/3, ticket/2, ticket/3, ticket/4, get_ticket/3, get_ticket/4, make_ticket/3]).
 -export([bank_card/3]).
@@ -84,12 +84,13 @@ retailer(reset_password, Merchant, RetailerId, Password) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {reset_password, Merchant, RetailerId, Password}).
 
-retailer(check_trans_count, Merchant, RetailerId, Shop, Count) ->
-    Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {check_trans_count, Merchant, RetailerId, Shop, Count});
 retailer(check_password, Merchant, RetailerId, Password, CheckPwd) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {check_password, Merchant, RetailerId, Password, CheckPwd}).
+
+retailer(check_trans_count, {Merchant, UTable}, RetailerId, Shop, Count, Days) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {check_trans_count, {Merchant, UTable}, RetailerId, Shop, Count, Days}).
 
 %% charge strategy
 charge(new, Merchant, Attrs) ->
@@ -672,18 +673,32 @@ handle_call({reset_password, Merchant, RetailerId, Password}, _From, State) ->
     Reply = ?sql_utils:execute(write, Sql, RetailerId),
     {reply, Reply, State};
 
-handle_call({check_trans_count, {Merchant, UTable}, RetailerId, Shop, Count}, _From, State) -> 
-    Sql = "select id, rsn, retailer from" ++ ?table:t(sale_new, Merchant, UTable)
+handle_call({check_trans_count, {Merchant, UTable}, RetailerId, Shop, Count, Days}, _From, State) -> 
+    Sql = "select id"
+	", rsn"
+	", retailer"
+	", entry_date"
+	" from" ++ ?table:t(sale_new, Merchant, UTable)
 	++ " where merchant=" ++ ?to_s(Merchant)
-	++ " where shop=" ++ ?to_s(Shop)
-	++ " and retailer=" ++ ?to_s(RetailerId) 
+	++ " and shop=" ++ ?to_s(Shop)
+	++ " and retailer=" ++ ?to_s(RetailerId)
+	++ " and type=0"
 	++ " order by id desc limit " ++ ?to_s(Count + 1),
     case ?sql_utils:execute(read, Sql) of
 	{ok, []} ->
-	    {reply, {ok, {0, ?utils:current_date(format), State}}};
-	{ok, [{H}|_] = Trans} ->
-	    Date = format_date(?utils:to_date(?v(<<"entry_date">>, H))),
-	    {reply, {ok, {length(Trans), Date}, State}};
+	    {reply, {ok, 0, []}, State};
+	{ok, Trans} ->
+	    DateBeforDays = ?utils:date_before(Days),
+	    ValidTrans = 
+		lists:foldr(
+		  fun({T}, Acc) ->
+			  Date = format_date(?utils:to_date(datetime, ?v(<<"entry_date">>, T))),
+			  case ?utils:big_date(date, Date, DateBeforDays) of
+			      true -> [{T}|Acc];
+			      false -> Acc
+			  end
+		  end, Trans, []), 
+	    {reply, {ok, length(ValidTrans), ValidTrans}, State};
 	Error ->
 	    {reply, Error, State}
     end;

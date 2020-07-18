@@ -778,17 +778,12 @@ function wsaleNewProvide(
     $scope.on_select_retailer = function(item, model, label){
 	// console.log(item);
 	console.log($scope.select.retailer);
-	// check retailer trans count
-	if ($scope.setting.trans_count !== 0) {
-	    
-	}
-	
 	$scope.set_retailer();
 	$scope.wsaleStorage.remove($scope.wsaleStorage.get_key());
 	$scope.wsaleStorage.change_retailer($scope.select.retailer.id);
 	// $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
-
 	$scope.select.sysVip = !wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers);
+	
 	// console.log($scope.select.sysVip);
 	$scope.re_calculate();
 	
@@ -2636,6 +2631,18 @@ function wsaleNewProvide(
 	    }
 	    
 	    if (result.ecode === 0){
+		// check retailer trans count
+		if (!$scope.select.sysVip && $scope.setting.trans_count !== 0 ) {
+		    diabloFilter.check_retailer_trans_count(
+			$scope.select.retailer.id,
+			$scope.select.retailer.mobile,
+			$scope.select.shop.id,
+			$scope.setting.trans_count
+		    ).then(function(result) {
+			console.log(result);
+		    })
+		};
+		
 		$scope.select.rsn = result.rsn;
 		if (diablo_backend === p_mode){
 		    $scope.print_backend(result, im_print);

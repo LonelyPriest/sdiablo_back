@@ -57,6 +57,9 @@ function employeeConfig(angular){
 	var employ = $resource("/employ/:operation/:id",
     			       {operation: '@operation', id: '@id'});
 	// var members = $resource("/member/:operation/:number");
+	this.positions = [{id:0, name: "管理员"},
+			  {id:1, name: "店长"},
+			  {id:2, name: "普通员工"}];
 
 	this.list = function(){
 	    return employ.query({operation: "list_employe"})};
@@ -126,12 +129,16 @@ function employeeConfig(angular){
 	$scope, dateFilter, diabloPattern, diabloUtilsService, employService, user){
 	$scope.shops = user.sortShops;
 	$scope.goto_page = diablo_goto_page;
+	$scope.positions = employService.positions;
+	// console.log($scope.positions);
 	
 	$scope.refresh = function(){
 	    employService.list().$promise.then(function(employees){
+		// console.log(employees);
 		angular.forEach(employees, function(e){
 		    e.sex = diablo_sex2object[e.sex];
 		    e.shop = diablo_get_object(e.shop_id, $scope.shops);
+		    e.position = diablo_get_object(e.pos_id, $scope.positions);
 		});	    
 		$scope.employees = employees;
 		diablo_order($scope.employees);
@@ -151,8 +158,8 @@ function employeeConfig(angular){
 		    mobile: diablo_get_modified(n_employee.mobile, o_employee.mobile),
 		    address: diablo_get_modified(n_employee.address, o_employee.address),
 		    shop: diablo_get_modified(n_employee.shop, o_employee.shop),
-		    entry: diablo_get_modified(
-			dateFilter(n_employee.entry, "yyyy-MM-dd"), o_employee.entry)
+		    entry: diablo_get_modified(dateFilter(n_employee.entry, "yyyy-MM-dd"), o_employee.entry),
+		    position: diablo_get_modified(n_employee.position.id, o_employee.pos_id)
 		}; 
 		console.log(u_employee);
 		
@@ -178,6 +185,7 @@ function employeeConfig(angular){
 		    && diablo_is_same(new_employee.address, o_employee.address)
 		    && diablo_is_same(new_employee.shop, o_employee.shop)
 		    && diablo_is_same(dateFilter(new_employee.entry, "yyyy-MM-dd"), o_employee.entry)
+		    && diablo_is_same(new_employee.position, o_employee.position);
 	    };
 	    
 	    
@@ -193,8 +201,8 @@ function employeeConfig(angular){
 	    }
 
 	    o_employee.sex = diablo_sex2object[o_employee.sex.id];
-	    o_employee.shop = diablo_get_object(o_employee.shop_id, $scope.shops); 
-
+	    o_employee.shop = diablo_get_object(o_employee.shop_id, $scope.shops);
+	    o_employee.position = diablo_get_object(o_employee.pos_id, $scope.positions);
 	    
 	    diabloUtilsService.edit_with_modal(
 		"edit-employ.html", undefined, callback, $scope,
@@ -211,6 +219,7 @@ function employeeConfig(angular){
 			       address: diabloPattern.ch_name_address},
 		 sexes:       diablo_sex2object,
 		 shops:       $scope.shops,
+		 positions:   $scope.positions,
 		 check_same:  check_same,
 		 check_exist: check_exist});
 	};

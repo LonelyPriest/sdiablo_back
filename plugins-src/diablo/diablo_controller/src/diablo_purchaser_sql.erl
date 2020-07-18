@@ -2017,16 +2017,22 @@ inventory(update_attr, Mode, RSN, Merchant, UTable, Shop, {Firm, OldFirm, Dateti
 		 %% "update w_inventory_new_detail set "
 		 "update" ++ ?table:t(stock_new_detail, Merchant, UTable)
 		 ++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
-		 ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
+		 ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
+
+		 
+		 "update" ++ ?table:t(stock_new_note, Merchant, UTable)
+		 ++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
+		 ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"
+		],
 		
-		++
-		case UpdateDate of
-		    [] -> []; 
-		    _  -> [%% "update w_inventory_new_detail_amount set "
-			   "update" ++ ?table:t(stock_new_note, Merchant, UTable)
-			   ++ " set " ++ ?utils:to_sqls(proplists, comma, UpdateDate)
-			   ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
-		end,
+		%% ++
+		%% case UpdateDate of
+		%%     [] -> []; 
+		%%     _  -> [%% "update w_inventory_new_detail_amount set "
+		%% 	   "update" ++ ?table:t(stock_new_note, Merchant, UTable)
+		%% 	   ++ " set " ++ ?utils:to_sqls(proplists, comma, UpdateDate)
+		%% 	   ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
+		%% end,
 		
 	    Sql2 =
 		case UpdateFirm of

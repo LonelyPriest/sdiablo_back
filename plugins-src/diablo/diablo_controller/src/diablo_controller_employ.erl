@@ -34,7 +34,9 @@
 employ(new, Props) ->
     gen_server:call(?MODULE, {new_employee, Props});
 employ(list, Merchant) ->
-    employ(list, Merchant, []).
+    employ(list, Merchant, []);
+employ(list_manager, Merchant) ->
+    gen_server:call(?MODULE, {list_manager, Merchant}).
 
 employ(delete, Merchant, EmployeeId) ->
     gen_server:call(?MODULE, {delete_employee, Merchant, EmployeeId});
@@ -42,6 +44,7 @@ employ(recover, Merchant, EmployeeId) ->
     gen_server:call(?MODULE, {recover_employee, Merchant, EmployeeId});
 employ(list, Merchant, Conditions) ->
     gen_server:call(?MODULE, {list_employee, Merchant, Conditions}).
+    
 
 department(list, Merchant) ->
     gen_server:call(?MODULE, {list_department, Merchant, []}).
@@ -152,6 +155,7 @@ handle_call({update_employee, Merchant, EmployeeId, Attrs}, _From, State) ->
     Address = ?v(<<"address">>, Attrs),
     Shop    = ?v(<<"shop">>, Attrs),
     Entry   = ?v(<<"entry">>, Attrs),
+    Position = ?v(<<"position">>, Attrs),
     
     NameExist =
 	case Name of
@@ -174,7 +178,8 @@ handle_call({update_employee, Merchant, EmployeeId, Attrs}, _From, State) ->
 		++ ?utils:v(mobile, string, Mobile)
 		++ ?utils:v(address, string, Address)
 		++ ?utils:v(shop, integer, Shop)
-		++ ?utils:v(entry, string, Entry),
+		++ ?utils:v(entry, string, Entry)
+		++ ?utils:v(position, integer, Position),
 
 	    
 	    Sql1 = "update employees set "
@@ -189,7 +194,7 @@ handle_call({update_employee, Merchant, EmployeeId, Attrs}, _From, State) ->
     end;
 
 handle_call({list_employee, Merchant, Conditions}, _From, State) ->
-    ?DEBUG("list_employee with Merchant ~p, Conditions ~p", [Merchant, Conditions]),
+    %% ?DEBUG("list_employee with Merchant ~p, Conditions ~p", [Merchant, Conditions]),
     Sql = "select " ++ fields()
 	++ " from " ++ ?tbl_employ
 	++ " where " ++
@@ -198,8 +203,9 @@ handle_call({list_employee, Merchant, Conditions}, _From, State) ->
 	    Conditions ->
 		?utils:to_sqls(proplists, Conditions) ++ " and "
 	end
-	++ "merchant=" ++ ?to_s(Merchant)
-	%% ++ " and deleted=" ++ ?to_s(?NO)
+    %% ++ "position in(1,2)"
+	++ " merchant=" ++ ?to_s(Merchant) 
+    %% ++ " and deleted=" ++ ?to_s(?NO)
 	++ " order by shop",
     
     case ?mysql:fetch(read, Sql) of
@@ -208,6 +214,19 @@ handle_call({list_employee, Merchant, Conditions}, _From, State) ->
 	{error, {_, Error}} ->
 	    {reply, ?err(db_error, Error), State}
     end;
+
+handle_call({list_manager, Merchant}, _From, State) ->
+    Sql = "select id, name, mobile, shop, merchant"
+	" from employees"
+	" where position=0 and merchant="  ++ ?to_s(Merchant),
+    Reply = 
+	case ?sql_utils:execute(read, Sql) of
+	    {ok, []} -> {ok, []};
+	    {ok, Employees} -> {ok, Employees};
+	    {error, _Error} -> {ok, []}
+	end,
+    
+    {reply, Reply, State};
 
 handle_call({new_department, Merchant, Attrs}, _From, State)->
     ?DEBUG("new department with props ~p", [Attrs]),
@@ -332,7 +351,16 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%%===================================================================
 fields() ->
-    "id, number, name, sex, entry, position, mobile, address, shop as shop_id, deleted as state".
+    "id"
+	", number"
+	", name"
+	", sex"
+	", entry"
+	", position as pos_id"
+	", mobile"
+	", address"
+	", shop as shop_id"
+	", deleted as state".
 
 new_number(Merchant) ->
     ?inventory_sn:sn(member, Merchant). 
