@@ -1404,7 +1404,7 @@ var version_update = function(){
 	    }
 
 	    var apk = "<div class='update-content'>"
-		+ "<a type='button' href='/qzg_stock_fix-release2020-04-14_23-43-20.apk' download=''>"
+		+ "<a type='button' href='/qzg_stock_fix-release2020-07-20_22-18-22.apk' download=''>"
 		+ "<h5 class='text-center fg-pink'>盘点机软件(安卓)下载</h5>"
 		+ "</a>"
 		+ "</div>"
