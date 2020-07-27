@@ -1751,7 +1751,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 
 	
 	var offset_tagprice = this.to_i(this.template.offset_tagprice);
-	if (this.bargin_price === 3 && diablo_trim(this.template.my_price)) {
+	if (bargin_price === 3 && diablo_trim(this.template.my_price)) {
 	    offset_tagprice = this.to_i(this.template.offset_myprice);
 	}
 

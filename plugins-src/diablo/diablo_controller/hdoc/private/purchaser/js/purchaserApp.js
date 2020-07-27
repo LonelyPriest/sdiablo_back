@@ -530,6 +530,13 @@ function stockConfg(angular){
 	};
 
 	/*
+	 * order
+	 */
+	this.add_purchaser_order = function(inventory, base){
+	    return http.save({operation: "new_stock_order"}, inventory).$promise;
+	};
+
+	/*
 	 * reject
 	 */
 	this.reject_purchaser_inventory = function(inventory){

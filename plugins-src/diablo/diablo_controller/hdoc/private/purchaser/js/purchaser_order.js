@@ -122,7 +122,7 @@ function purchaserOrderNewCtrlProvide (
 	$scope.select.total = 0;
 	$scope.select.should_pay = 0.00; 
 
-	for (var i=1, l=$scope.inventories.length; i<l; i++){
+	for (var i=0, l=$scope.inventories.length; i<l; i++){
 	    var one = $scope.inventories[i];
 	    // console.log(one);
 	    $scope.select.total  += stockUtils.to_integer(one.total); 
@@ -166,7 +166,8 @@ function purchaserOrderNewCtrlProvide (
 	};
 
 	var select = function(draft, resource){
-	    // console.log(draft);
+	    console.log(draft);
+	    console.log(resource);
 	    $scope.select.employee = diablo_get_object(draft.employee.id, filterEmployee);
 	    $scope.select.shop = diablo_get_object(draft.shop.id, $scope.shops);
 	    $scope.get_employee();
@@ -461,23 +462,33 @@ function purchaserOrderNewCtrlProvide (
 		order_id    : add.order_id,
 		style_number: add.style_number,
 		brand       : add.brand_id,
+		firm        : add.firm_id,
 		
 		type        : add.type_id,
 		sex         : add.sex,
-		season      : add.season,
-		firm        : add.firm_id,
+		year        : add.year, 
+		season      : add.season, 
+		amount      : add.amount, 
+		
 		s_group     : add.s_group,
 		free        : add.free,
-		year        : add.year,
-		path        : add.path,
-		
+
 		org_price   : diablo_set_float(add.org_price),
 		tag_price   : diablo_set_float(add.tag_price), 
 		ediscount   : diablo_set_float(add.ediscount),
-		discount    : diablo_set_float(add.discount), 
+		discount    : diablo_set_float(add.discount),
+
+		state       : add.state,
+		unit        : add.unit,
 		
-		amount      : add.amount, 
-		total       : add.total,
+		level       : add.level,
+		executive   : add.executive,
+		category    : add.category,
+		fabric      : add.fabric,
+		feather     : add.feather,
+
+		path        : add.path,
+		total       : add.total
 	    })
 	}; 
 	
@@ -489,7 +500,7 @@ function purchaserOrderNewCtrlProvide (
 	    comment:       $scope.select.comment,
 	    total:         $scope.select.total,
 	    
-	    should_pay:    setv($scope.select.should_pay) 
+	    should_pay:    diablo_set_float($scope.select.should_pay) 
 	};
 
 	console.log(added);
@@ -603,19 +614,14 @@ function purchaserOrderNewCtrlProvide (
 	var after_add = function(){
 	    inv.$edit = true;
 	    inv.$new = false;
-	    // oreder 
-	    inv.order_id = $scope.inventories.length;
-	    // backup
-	    // $scope.local_save();
-	    sDraft.save($scope.inventories.filter(function(r){return !r.$new}));
-	    // add new line
-	    // console.log("add new line");
+	    
 	    $scope.inventories.unshift(inv); 
+	    inv.order_id = $scope.inventories.length;
+	    sDraft.save($scope.inventories.filter(function(r){return !r.$new})); 
 	    $scope.disable_refresh = false;
+	    
 	    // reset barcode
-	    $scope.good.bcode = undefined;
-	    // $scope.good.sprice = $scope.yes_no[0];
-	    // $scope.stock_at_first = undefined;
+	    $scope.good.bcode = undefined; 
 	    $scope.re_calculate();
 
 	    // auto focus
@@ -682,18 +688,15 @@ function purchaserOrderNewCtrlProvide (
 			      };
 		
 		if (inv.colors.length === 1 && inv.colors[0] === "0"){
-		    inv.colors_info = [{cid:0}];
-		    payload.colors = inv.colors_info;
-		    diabloUtilsService.edit_with_modal(
-			"order-new.html", modal_size, callback, undefined, payload)
+		    inv.colors_info = [{cid:0}]; 
 		} else{
 		    inv.colors_info = inv.colors.map(function(cid){
-			return diablo_find_color(parseInt(cid), $scope.colors)});
-		    
-		    payload.colors = inv.colors_info;
-		    diabloUtilsService.edit_with_modal(
-			"order-new.html", modal_size, callback, undefined, payload);
-		} 
+			return diablo_find_color(parseInt(cid), $scope.colors)}); 
+		}
+
+		payload.colors = inv.colors_info;
+		diabloUtilsService.edit_with_modal(
+		    "order-new.html", modal_size, callback, undefined, payload)
 	    }
 	}; 
 	

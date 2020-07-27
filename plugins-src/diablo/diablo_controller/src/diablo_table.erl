@@ -33,6 +33,16 @@ t(stock_new_detail, Merchant, UTable) ->
 t(stock_new_note, Merchant, UTable) ->
     " w_inventory_new_detail_amount" ++ t_suffix(Merchant, UTable);
 
+%% ================================================================================
+%% order
+%% ================================================================================
+t(stock_order, Merchant, UTable) ->
+    " w_inventory_order" ++ t_suffix(Merchant, UTable);
+t(stock_order_detail, Merchant, UTable) ->
+    " w_inventory_order_detail" ++ t_suffix(Merchant, UTable);
+t(stock_order_note, Merchant, UTable) ->
+    " w_inventory_order_note" ++ t_suffix(Merchant, UTable);
+
 t(stock, Merchant, UTable) ->
     " w_inventory" ++ t_suffix(Merchant, UTable);
 t(stock_note, Merchant, UTable) ->

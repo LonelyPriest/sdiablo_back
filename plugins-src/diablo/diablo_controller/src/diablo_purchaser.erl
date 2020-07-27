@@ -46,7 +46,7 @@ purchaser_good(lookup, {Merchant, UTable}) ->
 
 purchaser_good(new, {Merchant, UTable}, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {new_good, Merchant, UTable, Attrs}); 
+    gen_server:call(Name, {new_good, Merchant, UTable, Attrs});
 purchaser_good(lookup, {Merchant, UTable}, GoodId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {lookup_good, Merchant, UTable, GoodId});
@@ -89,7 +89,10 @@ purchaser_inventory(update, {Merchant, UTable}, Inventories, {Props, OldProps}) 
     gen_server:call(Name, {update_inventory, Merchant, UTable, Inventories, {Props, OldProps}});
 purchaser_inventory(reject, {Merchant, UTable}, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {reject_inventory, Merchant, UTable, Inventories, Props});
+    gen_server:call(Name, {reject_inventory, Merchant, UTable, Inventories, Props}); 
+purchaser_inventory(order, {Merchant, UTable}, Inventories, Props) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {order_inventory, Merchant, UTable, Inventories, Props}, 30 * 1000); 
 purchaser_inventory(transfer, {Merchant, UTable}, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {transfer_inventory, Merchant, UTable, Inventories, Props});
@@ -1743,6 +1746,59 @@ handle_call({update_inventory, Merchant, UTable, Inventories, {Props, OldProps}}
     %% 		    false -> []
     %% 		end, 
     %% end; 
+
+handle_call({order_inventory, Merchant, UTable, Inventories, Props}, _From, State) ->
+    ?DEBUG("order_inventory: merchant ~p~n, Inventories ~p, props ~p", [Merchant, Inventories, Props]),
+    DateTime = ?utils:correct_datetime(datetime, ?v(<<"datetime">>, Props)),
+    CurrentDatetime = ?utils:current_time(format_localtime),
+    
+    UserId     = ?v(<<"user">>, Props, -1),
+    Shop       = ?v(<<"shop">>, Props),
+    Firm       = ?v(<<"firm">>, Props, -1),
+    Employee   = ?v(<<"employee">>, Props),
+    ShouldPay  = ?v(<<"should_pay">>, Props, 0),
+    Comment    = ?v(<<"comment">>, Props, []),
+
+    Total      = ?v(<<"total">>, Props, 0),
+    RSn = rsn(new,
+	      Merchant,
+	      Shop,
+	      ?inventory_sn:sn(w_inventory_order_sn, Merchant)),
+    
+    Sql1 = sql(worder, RSn, Merchant, UTable, Shop, Firm, {DateTime, CurrentDatetime}, Inventories),
+
+    Sql2 = %% "insert into w_inventory_new(rsn"
+	"insert into" ++ ?table:t(stock_order, Merchant, UTable)
+	++ "(rsn"
+	", account"
+	", employ"
+	", shop"
+	", merchant"
+	", firm"
+	", comment"
+	
+	", should_pay"
+	", h_total"
+	", op_date"
+	", entry_date"
+	", op_date) values("
+	++ "\"" ++ ?to_s(RSn) ++ "\","
+	++ ?to_s(UserId) ++ ","
+	++ "\"" ++ ?to_s(Employee) ++ "\","
+	
+	
+	++ ?to_s(Shop) ++ ","
+	++ ?to_s(Merchant) ++ ","
+	++ ?to_s(Firm) ++ ","
+	++ "\'" ++ ?to_s(Comment) ++ "\',"
+	++ ?to_s(ShouldPay) ++ ","
+	++ ?to_s(Total) ++ "," 
+	
+	++ "\"" ++ ?to_s(CurrentDatetime) ++ "\","
+	++ "\"" ++ ?to_s(DateTime) ++ "\")",
+
+    Reply = ?sql_utils:execute(transaction, [Sql2, Sql1], RSn),
+    {reply, Reply, State};
 
 handle_call({check_inventory, Merchant, UTable, RSN, Props}, _From, State) ->
     ?DEBUG("check_inventory with merchant ~p, RSN ~p, Props ~p",
@@ -3746,6 +3802,8 @@ code_change(_OldVsn, State, _Extra) ->
 %% @desc: generate a sn of record
 rsn(new, Merchant, Shop, Rsn) ->
     lists:concat(["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-", Rsn]);
+rsn(order, Merchant, Shop, Rsn) ->
+    lists:concat([Rsn, "-M-", ?to_i(Merchant), "-S-", ?to_i(Shop)]);
 rsn(reject, Merchant, Shop, Rsn) ->
     lists:concat(["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-R-", Rsn]);
 rsn(transfer_from, Merchant, Shop, Rsn) ->
@@ -3761,6 +3819,16 @@ sql(wnew, RSN, Merchant, UTable, Shop, Firm, DateTime, Inventories) ->
 	      Amounts      = lists:reverse(?v(<<"amount">>, Inv)),
 	      ?w_good_sql:amount_new(
 		 ?NEW_INVENTORY, RSN, Merchant, UTable, RealyShop, Firm, DateTime, Inv, Amounts)
+		  ++ Acc0 
+      end, [], Inventories);
+
+sql(worder, RSN, Merchant, UTable, Shop, Firm, {DateTime, CurDatetime}, Inventories) ->
+    RealyShop = ?w_good_sql:realy_shop(Merchant, Shop),
+    lists:foldr(
+      fun({struct, Inv}, Acc0)->
+	      Amounts = lists:reverse(?v(<<"amount">>, Inv)),
+	      ?w_good_sql:amount_order(
+		 RSN, Merchant, UTable, RealyShop, Firm, DateTime, CurDatetime, Inv, Amounts)
 		  ++ Acc0 
       end, [], Inventories);
 

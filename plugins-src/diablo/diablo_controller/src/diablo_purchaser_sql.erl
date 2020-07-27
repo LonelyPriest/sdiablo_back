@@ -2554,6 +2554,158 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 	   end,
     Sql1 ++ Sql2 ++ Sql3 ++ Sql4.
 
+
+amount_order(RSN, Merchant, UTable, Shop, Firm, Datetime, CurDateTime, Inv, Amounts) ->
+    ?DEBUG("order inventory with rsn ~p~namounts ~p", [RSN, Amounts]),
+    StyleNumber = ?v(<<"style_number">>, Inv),
+    Brand       = ?v(<<"brand">>, Inv),
+    Type        = ?v(<<"type">>, Inv),
+    Sex         = ?v(<<"sex">>, Inv),
+    Year        = ?v(<<"year">>, Inv), 
+    Season      = ?v(<<"season">>, Inv), 
+    SizeGroup   = ?v(<<"s_group">>, Inv),
+    Free        = ?v(<<"free">>, Inv),
+    Total       = ?v(<<"total">>, Inv),
+    %% Promotion   = ?v(<<"promotion">>, Inv),
+    OrgPrice    = ?v(<<"org_price">>, Inv, 0),
+    TagPrice    = ?v(<<"tag_price">>, Inv, 0),
+    EDiscount   = stock(ediscount, OrgPrice, TagPrice), 
+    Discount    = ?v(<<"discount">>, Inv, 100), 
+    State       = ?v(<<"state">>, Inv, 0), 
+    Path        = ?v(<<"path">>, Inv, []),
+    Unit        = ?v(<<"unit">>, Inv, 0), 
+
+    
+    Sql20 = "select id, rsn, style_number, brand"
+	" from" ++ ?table:t(stock_order_detail, Merchant, UTable)
+	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+	" and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+	" and brand=" ++ ?to_s(Brand),
+
+    Sql2 = 
+	case ?sql_utils:execute(s_read, Sql20) of
+	    {ok, []} ->
+		["insert into" ++ ?table:t(stock_order_detail, Merchant, UTable)
+		 ++ "(rsn"
+		 ", style_number"
+		 ", brand"
+		 ", type"
+		 ", sex"
+
+		 ", year"
+		 ", season"
+		 ", firm" 
+		 ", s_group"
+		 ", free"
+		 
+		 ", org_price"
+		 ", tag_price"
+		 ", ediscount"
+		 ", discount"
+
+		 ", state"
+		 ", path"
+		 ", unit"
+
+		 ", h_total"
+		 
+		 ", merchant"
+		 ", shop"
+		 ", op_date"
+		 ", entry_date) values("
+		 ++ "\'" ++ ?to_s(RSN) ++ "\',"
+		 ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
+		 ++ ?to_s(Brand) ++ ","
+		 ++ ?to_s(Type) ++ ","
+		 ++ ?to_s(Sex) ++ ","
+		 ++ ?to_s(Year) ++ ","
+		 ++ ?to_s(Season) ++ ","
+		 ++ ?to_s(Firm) ++ "," 
+		 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
+		 ++ ?to_s(Free) ++ ","
+
+		 ++ ?to_s(OrgPrice) ++ ","
+		 ++ ?to_s(TagPrice) ++ ","
+		 ++ ?to_s(EDiscount) ++ ","
+		 ++ ?to_s(Discount) ++ ","
+
+		 ++ ?to_s(State) ++ ","
+		 ++ "\'" ++ ?to_s(Path) ++ "\',"
+		 ++ ?to_s(Unit) ++ ","
+		 
+		 ++ ?to_s(Total) ++ "," 
+		 
+		 ++ ?to_s(Merchant) ++ ","
+		 ++ ?to_s(Shop) ++ ","
+		 ++ "\'" ++ ?to_s(CurDateTime) ++ "\',"
+		 ++ "\"" ++ ?to_s(Datetime) ++ "\")"];
+	    {ok, R20} ->
+		[%% "update w_inventory_new_detail"
+		 "update" ++ ?table:t(stock_order_detail, Merchant, UTable)
+		 ++ " set h_total=h_total+" ++ ?to_s(Total) 
+		 ++ ", org_price=" ++ ?to_s(OrgPrice) 
+		 ++ ", ediscount=" ++ ?to_s(EDiscount)
+		 ++ ", tag_price=" ++ ?to_s(TagPrice)
+		 ++ ", discount=" ++ ?to_s(Discount)
+		 ++ ", entry_date=" ++ "\"" ++ ?to_s(Datetime) ++ "\"" 
+		 ++ " where id=" ++ ?to_s(?v(<<"id">>, R20))]; 
+	    {error, Error20} ->
+		throw({db_error, Error20})
+	end,
+
+    NewFun =
+	fun({struct, Attr}, Acc) ->
+		Color = ?v(<<"cid">>, Attr),
+		Size  = ?v(<<"size">>, Attr),
+		Count = ?v(<<"count">>, Attr), 
+
+		Sql01 =
+		    "select id, style_number, brand, color, size"
+		    " from" ++ ?table:t(stock_order_note, Merchant, UTable)
+		    ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+		    ++ " and style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
+		    ++ " and brand=" ++ ?to_s(Brand)
+		    ++ " and color=" ++ ?to_s(Color)
+		    ++ " and size=" ++ "\"" ++ ?to_s(Size) ++ "\"",
+		%% ++ " and shop=" ++ ?to_s(Shop)
+		%% ++ " and merchant=" ++ ?to_s(Merchant),
+
+		[case ?sql_utils:execute(s_read, Sql01) of
+		     {ok, []} ->
+			 "insert into" ++ ?table:t(stock_order_note, Merchant, UTable)
+			     ++ "(rsn"
+			     ", style_number"
+			     ", brand"
+			     ", color"
+			     ", size"
+			     ", h_total"
+			     ", merchant"
+			     ", shop"
+			     ", op_date"
+			     ", entry_date) values("
+			     ++ "\"" ++ ?to_s(RSN) ++ "\","
+			     ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
+			     ++ ?to_s(Brand) ++ ","
+			     ++ ?to_s(Color) ++ ","
+			     ++ "\'" ++ ?to_s(Size)  ++ "\',"
+			     ++ ?to_s(Count) ++ ","
+			     ++ ?to_s(Merchant) ++ ","
+			     ++ ?to_s(Shop) ++ ","
+			     ++ "\'" ++ ?to_s(CurDateTime) ++ "\',"
+			     ++ "\'" ++ ?to_s(Datetime) ++ "\')";
+		     {ok, R01} ->
+			 "update" ++ ?table:t(stock_order_note, Merchant, UTable)
+			     ++ " set h_total=h_total+" ++ ?to_s(Count)
+			     ++ ", entry_date=" ++ ?to_s(CurDateTime)
+			     ++ " where id=" ++ ?to_s(?v(<<"id">>, R01));
+		     {error, E00} ->
+			 throw({db_error, E00})
+		 end|Acc]
+	end,
+
+    Sql3 = lists:foldr(NewFun, [], Amounts), 
+    Sql2 ++ Sql3.
+
 amount_reject(RSN, Merchant, UTable, Shop, Firm, Datetime, Inv, Amounts) ->
     ?DEBUG("reject inventory with rsn ~p~namounts ~p", [RSN, Amounts]), 
     StyleNumber = ?v(<<"style_number">>, Inv),

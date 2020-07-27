@@ -477,7 +477,63 @@ action(Session, Req, {"get_stock_note"}, Payload) ->
 	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
     end;
-    
+
+%% ================================================================================
+%% order
+%% ================================================================================
+action(Session, Req, {"new_stock_order"}, Payload) ->
+    ?DEBUG("new purchaser order with session ~p, paylaod~n~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    UserId = ?session:get(id, Session),
+    Invs = ?v(<<"inventory">>, Payload, []),
+    {struct, Base} = ?v(<<"base">>, Payload), 
+    Datetime       = ?v(<<"datetime">>, Base),
+    Total          = ?v(<<"total">>, Base), 
+
+    case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 3600 * 2 of
+	true ->
+	    CurDatetime    = ?utils:current_time(format_localtime),
+	    ?DEBUG("operation date: ~p, current date ~p", [Datetime, CurDatetime]),
+	    ?utils:respond(200,
+			   Req,
+			   ?err(stock_invalid_date, "new_w_inventory"),
+			   [{<<"fdate">>, Datetime},
+			    {<<"bdate">>, ?to_b(CurDatetime)}]);
+	false ->
+	    case stock(check, ?NEW_INVENTORY, Total, 0, Invs) of
+		ok ->
+		    case ?w_inventory:purchaser_inventory(
+			    order,
+			    {Merchant, UTable},
+			    lists:reverse(Invs),
+			    [{<<"user">>, UserId}] ++ Base) of
+			{ok, RSn} -> 
+			    ?utils:respond(
+			       200,
+			       Req,
+			       ?succ(add_purchaser_inventory, RSn), {<<"rsn">>, ?to_b(RSn)}); 
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end;
+		{error, EInv} ->
+		    StyleNumber = ?v(<<"style_number">>, EInv),
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?err(stock_invalid_inv, StyleNumber),
+		       [{<<"style_number">>, StyleNumber},
+			{<<"order_id">>, ?v(<<"order_id">>, EInv)}]);
+		{error, Total, CalcTotal} ->
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?err(stock_invalid_total, CalcTotal),
+		       [{<<"total">>, Total},
+			{<<"ctotal">>, CalcTotal}])
+	    end
+
+    end;
 %% =============================================================================
 %% reject
 %% =============================================================================

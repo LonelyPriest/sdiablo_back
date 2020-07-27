@@ -1290,21 +1290,24 @@ create table w_inventory_order_detail(
     style_number   VARCHAR(64) not null,
     brand          INTEGER default -1, 
     
-    type           INTEGER default -1, -- reference to inv_type 
-    sex            TINYINT default -1, -- 0: man, 1:woman
-    season         TINYINT, -- 0:spring, 1:summer, 2:autumn, 3:winter 
+    type           INTEGER default -1,
+    sex            TINYINT default -1,
+
+    year           YEAR(4) not null default 0,
+    season         TINYINT, -- 0:spring, 1:summer, 2:autumn, 3:winter
+    
     firm           INTEGER default -1, 
     s_group        VARCHAR(32) default 0,  -- which size group 
     free           TINYINT default 0,  -- free color and free size
-    year           YEAR(4), 
-
-    should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99
+    
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     ediscount      DECIMAL(4, 1)  default 100, -- max: 100
     discount       DECIMAL(4, 1)  default 100, -- max: 100
 
+    state          VARCHAR(16) default 0, -- [1]->promotion price, [2] gift, [3] ticket
     path           VARCHAR(255) default null, -- the image path
+    unit           TINYINT not null default 0,
 
     h_total        INTEGER default 0,
     r_total        INTEGER default 0, -- recieve total 
@@ -1335,6 +1338,7 @@ create table w_inventory_order_note(
     
     merchant       INTEGER default -1,
     shop           INTEGER default -1,
+    op_date        DATETIME default 0,
     entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
     unique  key uk (rsn, style_number, brand, color, size),
