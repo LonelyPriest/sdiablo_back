@@ -1994,13 +1994,13 @@ sidebar(Session) ->
                     Shops)
 		  ++ authen_shop_action(
 		       {?list_stock_order, 
-			"list_stock_order",
+			"order_detail",
 			"定单记录",
 			"glyphicon glyphicon-download"},
 		       Shops)
 		  ++ authen_shop_action(
 		       {?list_stock_order_note, 
-			"list_stock_order_note",
+			"order_note",
 			"定单明细",
 			"glyphicon glyphicon-map-marker"},
 		       Shops)

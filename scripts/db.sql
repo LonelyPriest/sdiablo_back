@@ -1258,7 +1258,7 @@ create table w_inventory_transfer_detail_amount(
 /*
 * order
 */
-create table w_inventory_order(
+create table w_inventory_order_101(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
     account        INTEGER not null default -1,
@@ -1283,7 +1283,7 @@ create table w_inventory_order(
     primary key    (id)
 )default charset=utf8;
 
-create table w_inventory_order_detail(
+create table w_inventory_order_detail_101(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
     
@@ -1324,7 +1324,7 @@ create table w_inventory_order_detail(
     primary key    (id)
 )default charset=utf8;
 
-create table w_inventory_order_note(
+create table w_inventory_order_note_101(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
     

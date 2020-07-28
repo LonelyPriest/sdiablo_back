@@ -309,6 +309,13 @@ function stockConfg(angular){
 	    	    {}, user, brand, type, s_group, firm, employee, color, color_type,
 	    	    std_executive, safety_category, fabric, base)
 	    }).
+	    when('/order_detail', {
+		templateUrl: '/private/purchaser/html/purchaser_inventory_order_detail.html',
+		controller: 'purchaserInventoryOrderDetailCtrl',
+		resolve: angular.extend(
+		    {}, user, brand, firm, type, employee, s_group, color, base)
+	    }).
+	    
 	    // when('/order/update_order', {
 	    // 	templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail_update.html',
 	    // 	controller: 'purchaserInventoryNewUpdateCtrl',

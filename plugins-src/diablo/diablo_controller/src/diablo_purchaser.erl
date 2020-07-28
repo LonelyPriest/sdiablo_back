@@ -1780,8 +1780,7 @@ handle_call({order_inventory, Merchant, UTable, Inventories, Props}, _From, Stat
 	", should_pay"
 	", h_total"
 	", op_date"
-	", entry_date"
-	", op_date) values("
+	", entry_date) values("
 	++ "\"" ++ ?to_s(RSn) ++ "\","
 	++ ?to_s(UserId) ++ ","
 	++ "\"" ++ ?to_s(Employee) ++ "\","
@@ -1797,7 +1796,7 @@ handle_call({order_inventory, Merchant, UTable, Inventories, Props}, _From, Stat
 	++ "\"" ++ ?to_s(CurrentDatetime) ++ "\","
 	++ "\"" ++ ?to_s(DateTime) ++ "\")",
 
-    Reply = ?sql_utils:execute(transaction, [Sql2, Sql1], RSn),
+    Reply = ?sql_utils:execute(transaction, [Sql2|Sql1], RSn),
     {reply, Reply, State};
 
 handle_call({check_inventory, Merchant, UTable, RSN, Props}, _From, State) ->
