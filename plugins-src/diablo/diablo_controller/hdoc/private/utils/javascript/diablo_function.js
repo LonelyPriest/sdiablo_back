@@ -245,11 +245,12 @@ var diablo_key_inventory_detail       = "q-inventory-detail"
 var diablo_key_inventory_trans        = "q-inventory-trans";
 var diablo_key_inventory_note         = "q-inventory-trans-note";
 var diablo_key_inventory_note_link    = "q-inventory-trans-note-link";
+var diablo_key_inventory_order        = "q-inventory-order";
 
 // transfer
-var diablo_key_inventory_transfer     = "q-inventory-transfer";
-var diablo_key_inventory_transfer_to  = "q-inventory-transfer-to";
-var diablo_key_inventory_transfer_note = "q-inventory-transfer-note";
+var diablo_key_inventory_transfer         = "q-inventory-transfer";
+var diablo_key_inventory_transfer_to      = "q-inventory-transfer-to";
+var diablo_key_inventory_transfer_note    = "q-inventory-transfer-note";
 var diablo_key_inventory_transfer_to_note = "q-inventory-transfer-to-note";
 
 // firm

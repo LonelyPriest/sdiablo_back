@@ -312,8 +312,7 @@ function stockConfg(angular){
 	    when('/order_detail', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_order_detail.html',
 		controller: 'purchaserInventoryOrderDetailCtrl',
-		resolve: angular.extend(
-		    {}, user, brand, firm, type, employee, s_group, color, base)
+		resolve: angular.extend({}, user, brand, firm, employee, base)
 	    }).
 	    
 	    // when('/order/update_order', {
@@ -323,6 +322,7 @@ function stockConfg(angular){
 	    // 	    {}, user, brand, firm, type, employee, s_group, color,
 	    // 	    std_executive, safety_category, fabric, size_spec, ptemplate, base)
 	    // }).
+	
 	    // adjust price
 	    when('/inventory_price', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_price.html',
@@ -541,6 +541,15 @@ function stockConfg(angular){
 	 */
 	this.add_purchaser_order = function(inventory, base){
 	    return http.save({operation: "new_stock_order"}, inventory).$promise;
+	};
+
+	this.filter_purchaser_order = function(match, fields, currentPage, itemsPerpage){
+	    return http.save(
+		{operation: "filter_stock_order"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
 	};
 
 	/*

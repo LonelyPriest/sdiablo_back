@@ -456,8 +456,8 @@
 -define(new_stock_order, ?right_w_inventory + 39).
 -define(del_stock_order, ?right_w_inventory + 40).
 -define(update_stock_order, ?right_w_inventory + 41).
--define(list_stock_order, ?right_w_inventory + 42).
--define(list_stock_order_note, ?right_w_inventory + 43).
+-define(filter_stock_order, ?right_w_inventory + 42).
+-define(filter_stock_order_note, ?right_w_inventory + 43).
 
 -define(transfer_w_inventory_fast, ?right_w_inventory + 44).
 -define(show_stock_firm_info, ?right_w_inventory + 45).
