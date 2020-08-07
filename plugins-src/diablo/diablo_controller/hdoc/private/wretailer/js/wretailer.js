@@ -144,6 +144,7 @@ function wretailerDetailCtrlProvide(
     diabloFilter.add_field("region", $scope.regions);
     diabloFilter.add_field("shop", user.sortShops);
     diabloFilter.add_field("level", $scope.retailer_levels);
+    diabloFilter.add_field("mconsume",[]);
     diabloFilter.add_field("mscore",[]);
     diabloFilter.add_field("lscore",[]);
     $scope.filter = diabloFilter.get_filter();

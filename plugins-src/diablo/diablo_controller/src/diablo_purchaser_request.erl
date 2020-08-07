@@ -1993,13 +1993,13 @@ sidebar(Session) ->
                      "glyphicon glyphicon-shopping-cart"},
                     Shops)
 		  ++ authen_shop_action(
-		       {?list_stock_order, 
+		       {?filter_stock_order, 
 			"order_detail",
 			"定单记录",
 			"glyphicon glyphicon-download"},
 		       Shops)
 		  ++ authen_shop_action(
-		       {?list_stock_order_note, 
+		       {?filter_stock_order_note, 
 			"order_note",
 			"定单明细",
 			"glyphicon glyphicon-map-marker"},

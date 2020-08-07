@@ -802,8 +802,21 @@ handle_call({list_retailer, Merchant, Conditions, Mode}, _From, State) ->
     
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions), 
     Month = ?v(<<"month">>, Conditions, []),
-    Date  = ?v(<<"date">>, Conditions, []),    
-    SortConditions = lists:keydelete(<<"a.month">>, 1, lists:keydelete(<<"a.date">>, 1, NewConditions)),
+    Date  = ?v(<<"date">>, Conditions, []),
+    MConsume = ?v(<<"mconsume">>, Conditions, []),
+    MScore = ?v(<<"mscore">>, Conditions, []),
+    LScore = ?v(<<"lscore">>, Conditions, []),
+    
+    %% SortConditions = lists:keydelete(<<"a.month">>, 1, lists:keydelete(<<"a.date">>, 1, NewConditions)),
+    SortConditions = lists:keydelete(
+		       <<"a.mconsume">>, 1,
+		       lists:keydelete(
+			 <<"a.lscore">>, 1,
+			 lists:keydelete(
+			   <<"a.mscore">>, 1,
+			   lists:keydelete(
+			     <<"a.month">>, 1,
+			     lists:keydelete(<<"a.date">>, 1, NewConditions))))),
     
     Sql = "select a.id"
 	", a.name"
@@ -840,6 +853,22 @@ handle_call({list_retailer, Merchant, Conditions, Mode}, _From, State) ->
 		   " and dayofmonth(a.birth)=" ++ ?to_s(Date);
 	       {Month, Date} ->
 		   " and month(a.birth)=" ++ ?to_s(Month) ++ " and dayofmonth(a.birth)=" ++ ?to_s(Date)
+	   end
+
+	++ case MConsume of
+	       [] -> [];
+	       _ ->
+		   " and a.consume>=" ++ ?to_s(MConsume)
+	   end
+	++ case MScore of
+	       [] -> [];
+	       _ ->
+		   " and a.score>=" ++ ?to_s(MScore)
+	   end
+	++ case LScore of
+	       [] -> [];
+	       _ ->
+		   " and a.score<=" ++ ?to_s(LScore)
 	   end 
 	++ ?sql_utils:condition(proplists, SortConditions)
 	++ case Mode of
@@ -2247,15 +2276,18 @@ handle_call({total_retailer, Merchant, Conditions}, _From, State) ->
 
     Month = ?v(<<"month">>, Conditions, []),
     Date  = ?v(<<"date">>, Conditions, []),
+    MConsume = ?v(<<"mconsume">>, Conditions, []),
     MScore = ?v(<<"mscore">>, Conditions, []),
     LScore = ?v(<<"lscore">>, Conditions, []),
     SortConditions = lists:keydelete(
-		       <<"lscore">>, 1,
+		       <<"mconsume">>, 1,
 		       lists:keydelete(
-			 <<"mscore">>, 1,
+			 <<"lscore">>, 1,
 			 lists:keydelete(
-			   <<"month">>, 1,
-			   lists:keydelete(<<"date">>, 1, NewConditions)))),
+			   <<"mscore">>, 1,
+			   lists:keydelete(
+			     <<"month">>, 1,
+			     lists:keydelete(<<"date">>, 1, NewConditions))))),
     
     Sql = "select count(*) as total"
 	", sum(balance) as balance"
@@ -2271,6 +2303,11 @@ handle_call({total_retailer, Merchant, Conditions}, _From, State) ->
 		   " and dayofmonth(birth)=" ++ ?to_s(Date);
 	       {Month, Date} ->
 		   " and month(birth)=" ++ ?to_s(Month) ++ " and dayofmonth(birth)=" ++ ?to_s(Date)
+	   end
+	++ case MConsume of
+	       [] -> [];
+	       _ ->
+		   " and consume>=" ++ ?to_s(MConsume)
 	   end
 	++ case MScore of
 	       [] -> [];
@@ -2338,16 +2375,19 @@ handle_call({{filter_retailer, Order, Sort},
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     Month = ?v(<<"month">>, Conditions, []),
     Date  = ?v(<<"date">>, Conditions, []),
+    MConsume = ?v(<<"mconsume">>, Conditions, []),
     MScore = ?v(<<"mscore">>, Conditions, []),
     LScore = ?v(<<"lscore">>, Conditions, []),
     SortConditions = lists:keydelete(
-		       <<"a.lscore">>, 1,
+		       <<"a.mconsume">>, 1,
+		       lists:keydelete(
+			 <<"a.lscore">>, 1,
 		       lists:keydelete(
 			 <<"a.mscore">>, 1,
 			 lists:keydelete(
 			   <<"a.month">>, 1,
 			   lists:keydelete(
-			     <<"a.date">>, 1, NewConditions)))), 
+			     <<"a.date">>, 1, NewConditions))))), 
     
     Sql = "select a.id"
 	", a.merchant" 
@@ -2387,6 +2427,11 @@ handle_call({{filter_retailer, Order, Sort},
 		   " and month(a.birth)=" ++ ?to_s(Month) ++ " and dayofmonth(a.birth)=" ++ ?to_s(Date)
 	   end 
 	++ ?sql_utils:condition(proplists, SortConditions)
+	++ case MConsume of
+	       [] -> [];
+	       _ ->
+		   " and a.consume>=" ++ ?to_s(MConsume)
+	   end 
 	++ case MScore of
 	       [] -> [];
 	       _ ->

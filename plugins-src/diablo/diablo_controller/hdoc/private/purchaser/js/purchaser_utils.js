@@ -1131,7 +1131,8 @@ stockPrintU.prototype.print_waynode = function(
     offset_fabric2 = offset_fabric2 === 0 ? 40 : offset_fabric2;
     offset_fabric3 = offset_fabric3 === 0 ? 50 : offset_fabric3;
     
-    var fabric_length = waynode.fabrics.length; 
+    var fabric_length = waynode.fabrics.length;
+    var calcOffset = waynode.name.length === 2 ? offset_fabric2 : offset_fabric3;
     if (0 !== fabric_length) {
 	var f; 
 	var name = waynode.name + ":"; 
@@ -1150,14 +1151,14 @@ stockPrintU.prototype.print_waynode = function(
 	// line = f.p + "%" + f.name; 
 	this.start_print(f.p + "%" + f.name,
 			 top,
-			 left + (waynode.name.length === 2 ? offset_fabric2 : offset_fabric3),
+			 left + calcOffset,
 			 width,
 			 this.template.hpx_each,
 			 this.template.font_fabric,
 			 printSecond,
 			 printThird,
-			 startSecond,
-			 startThird);
+			 startSecond + calcOffset,
+			 startThird + calcOffset);
 
 	for (var i=1, l=fabric_length; i<l; i++) {
 	    // line = f.p + "%" + f.name;
@@ -1165,14 +1166,14 @@ stockPrintU.prototype.print_waynode = function(
 	    top += this.template.hpx_fabric;
 	    this.start_print(f.p + "%" + f.name,
 			     top,
-			     left + (waynode.name.length === 2 ? offset_fabric2 : offset_fabric3),
+			     left + calcOffset,
 			     width,
 			     this.template.hpx_fabric,
 			     this.template.font_fabric,
 			     printSecond,
 			     printThird,
-			     startSecond,
-			     startThird); 
+			     startSecond + calcOffset,
+			     startThird + calcOffset); 
 	}
 	
 	top += this.template.hpx_fabric;
