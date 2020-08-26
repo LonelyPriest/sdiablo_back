@@ -75,14 +75,15 @@ filter(total_vfirm, 'and', Merchant, Conditions) ->
     gen_server:call(?MODULE, {total_vfirm, Merchant, Conditions}).
 
 filter(bill, 'and', Merchant, CurrentPage, ItemsPerPage, Conditions) ->
-    gen_server:call(?MODULE, {bill_detail,
-			      Merchant, CurrentPage, ItemsPerPage, Conditions});
+    gen_server:call(?MODULE, {bill_detail, Merchant, CurrentPage, ItemsPerPage, Conditions});
 filter(vfirm, 'and', Merchant, CurrentPage, ItemsPerPage, Conditions) ->
-    gen_server:call(?MODULE, {vfirm_detail,
-			      Merchant, CurrentPage, ItemsPerPage, Conditions}).
+    gen_server:call(?MODULE, {vfirm_detail, Merchant, CurrentPage, ItemsPerPage, Conditions}).
 
 bill(lookup, {Merchant, UTable}, Conditions) ->
     gen_server:call(?MODULE, {bill_lookup, Merchant, UTable, Conditions});
+bill(get, Merchant, Conditions) ->
+    gen_server:call(?MODULE, {get_bill, Merchant, Conditions});
+    
 bill(check_time, Merchant, {Firm, Datetime}) ->
     gen_server:call(?MODULE, {bill_check_time, Merchant, Firm ,Datetime}).
 
@@ -824,8 +825,7 @@ handle_call({update_bill_supplier, Merchant, UTable, {Attrs, OldAttrs}}, _From, 
 			 ++ case Metric == 0 of
 				true -> [];
 				false ->
-				    [
-				     "update suppliers set balance=balance-" ++ ?to_s(Metric)
+				    ["update suppliers set balance=balance-" ++ ?to_s(Metric)
 				     ++ " where merchant=" ++ ?to_s(Merchant)
 				     ++ " and id=" ++ ?to_s(FirmId),
 				     
@@ -853,8 +853,7 @@ handle_call({check_bill_supplier, Merchant, Attrs}, _From, State) ->
     RSN  = ?v(<<"rsn">>, Attrs),
     Mode = ?v(<<"mode">>, Attrs),
 
-    Sql = "update w_bill_detail set "
-	"state=" ++ ?to_s(Mode)
+    Sql = "update w_bill_detail set state=" ++ ?to_s(Mode)
 	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'",
 
@@ -913,13 +912,20 @@ handle_call({abandon_bill_supplier, Merchant, UTable, Attrs}, _From, State) ->
 handle_call({bill_lookup, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("bill_lookup with merchant ~p, conditions ~p", [Merchant, Conditions]),
     RSN = ?v(<<"rsn">>, Conditions),
-    NewConditions = ?utils:correct_condition(
-		       <<"a.">>, proplists:delete(<<"rsn">>, Conditions)),
-    Sql = "select a.id, a.rsn"
-	", a.shop as shop_id, a.firm as firm_id"
-	", a.mode, a.balance, a.bill, a.veri"
-	", a.card as card_id, a.employee as employee_id"
-	", a.comment, a.state, a.merchant, a.entry_date"
+    NewConditions = ?utils:correct_condition(<<"a.">>, proplists:delete(<<"rsn">>, Conditions)),
+    Sql = "select a.id"
+	", a.rsn"
+	", a.shop as shop_id"
+	", a.firm as firm_id"
+	", a.mode"
+	", a.balance"
+	", a.bill, a.veri"
+	", a.card as card_id"
+	", a.employee as employee_id"
+	", a.comment"
+	", a.state"
+	", a.merchant"
+	", a.entry_date"
 
 	", b.id as sid"
 	" from w_bill_detail a,"
@@ -932,12 +938,51 @@ handle_call({bill_lookup, Merchant, UTable, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
+handle_call({get_bill, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("get_detail:  merchant ~p, condition ~p", [Merchant,  Conditions]), 
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, Conditions),
+    Sql = "select a.id"
+	", a.rsn"
+	", a.shop as shop_id"
+	", a.firm as firm_id"
+	", a.mode"
+	", a.balance"
+	", a.bill"
+	", a.veri"
+	", a.card as card_id"
+	", a.employee as employee_id"
+	", a.comment"
+	", a.state"
+	", a.merchant"
+	", a.entry_date"
+	", a.op_date"
+	
+	", b.name as shop"
+	", c.name as employee"
+	", d.name as bank"
+	", d.no as card"
+	", e.name as firm"
+	" from w_bill_detail a"
+	" left join shops b on a.shop=b.id"
+	" left join employees c on a.employee=c.number and a.merchant=c.merchant"
+	" left join w_bank_card d on a.card=d.id"
+	" left join suppliers e on a.firm=e.id"
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.state in(0,1)"
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime)
+	++ " order by id desc",
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
 handle_call({total_bill, Merchant, Conditions}, _From, State) ->
     ?DEBUG("total_bill with merchant ~p, conditions ~p", [Merchant, Conditions]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
     
-    Sql ="select a.total, b.t_bill, b.t_veri from("
-	"select merchant, count(*) as total from w_bill_detail"
+    Sql ="select a.total"
+	", b.t_bill"
+	", b.t_veri from"
+	"(select merchant, count(*) as total from w_bill_detail"
 	++ " where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime) ++ ") a"
@@ -953,15 +998,24 @@ handle_call({total_bill, Merchant, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({bill_detail,
-	     Merchant, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
+handle_call({bill_detail, Merchant, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
     ?DEBUG("bill_detail:  merchant ~p, currentPage ~p, ItemsPerpage ~p~nfields ~p",
 	   [Merchant, CurrentPage, ItemsPerPage, Conditions]),
 
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
-    Sql = "select rsn, shop as shop_id, firm as firm_id, mode, balance, bill"
-	", veri, card as card_id, employee as employee_id"
-	", comment, state, merchant, entry_date, op_date"
+    Sql = "select rsn"
+	", shop as shop_id"
+	", firm as firm_id"
+	", mode, balance"
+	", bill"
+	", veri"
+	", card as card_id"
+	", employee as employee_id"
+	", comment"
+	", state"
+	", merchant"
+	", entry_date"
+	", op_date"
 	" from w_bill_detail"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)

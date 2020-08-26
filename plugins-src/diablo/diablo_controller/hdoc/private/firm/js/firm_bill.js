@@ -306,7 +306,24 @@ function firmBillDetailCtrlProvide(
 	dialog.request(
 	    "入库单废弃", "入库单废弃后，无法恢复，确认要废弃吗？",
 	    callback, undefined, undefined);
-    }
+    };
+
+    $scope.export_to = function() {
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    add_search_condition(search);
+	    firmService.export_bill(search).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+			true, "文件导出成功", "创建文件成功，请点击确认下载！！", undefined,
+			function(){window.location.href = result.url;}) 
+		} else {
+		    dialog.response(
+			false, "文件导出失败", "创建文件失败：" + result.ecode.toString());
+		} 
+	    });
+	})
+    };
     
 };
 

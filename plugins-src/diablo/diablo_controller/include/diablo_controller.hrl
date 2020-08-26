@@ -484,6 +484,7 @@
 -define(new_virtual_firm,       ?right_w_firm + 16).
 -define(list_virtual_firm,      ?right_w_firm + 17).
 -define(update_virtual_firm,    ?right_w_firm + 18).
+-define(export_firm_bill,       ?right_w_firm + 19).
 
 
 %% wprint

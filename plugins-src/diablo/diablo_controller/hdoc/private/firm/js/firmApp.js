@@ -239,6 +239,10 @@ function firmConfig(angular){
 		 count:  itemsPerpage}).$promise;
 	};
 
+	this.export_bill = function(condition) {
+	    return http.save({operation: "export_firm_bill"}, condition).$promise;
+	};
+
 	this.get_bill_by_rsn = function(rsn){
 	    return http.save({operation:"get_firm_bill"}, {rsn:rsn}).$promise;
 	};

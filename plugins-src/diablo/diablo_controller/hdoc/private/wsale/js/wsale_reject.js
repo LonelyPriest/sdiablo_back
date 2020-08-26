@@ -312,7 +312,7 @@ function wsaleRejectCtrlProvide(
     $scope.disable_save = function(){
 	var invalid = false;
 	// save one time only
-	if ($scope.has_saved || $scope.select.total === 0)
+	if ($scope.has_saved || $scope.select.abs_total === 0)
 	    return invalid = true;
 
 	if ($scope.select.retailer.type_id===1 && $scope.select.withdraw!==0 && !$scope.has_withdrawed)

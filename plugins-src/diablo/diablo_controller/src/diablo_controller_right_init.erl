@@ -488,28 +488,31 @@ init([]) ->
 	  <<"查看品牌">>,     <<"list_brand">>,   ?right_w_firm},
 
 	 {?bill_w_firm,
-	  <<"厂商结帐">>,     <<"bill_w_firm">>,   ?right_w_firm},
+	  <<"厂商结帐">>,         <<"bill_w_firm">>,   ?right_w_firm},
 	 {?update_bill_w_firm,
-	  <<"厂商结帐单编辑">>, <<"update_bill_w_firm">>, ?right_w_firm},
+	  <<"厂商结帐单编辑">>,   <<"update_bill_w_firm">>, ?right_w_firm},
 	 {?check_w_firm_bill,
-	  <<"厂商结帐单审核">>, <<"check_w_firm_bill">>,  ?right_w_firm},
+	  <<"厂商结帐单审核">>,   <<"check_w_firm_bill">>,  ?right_w_firm},
 	 {?abandon_w_firm_bill,
-	  <<"厂商结帐单废弃">>, <<"abandon_w_firm_bill">>,  ?right_w_firm},
+	  <<"厂商结帐单废弃">>,   <<"abandon_w_firm_bill">>,  ?right_w_firm},
 	 {?export_w_firm,
-	  <<"厂商导出">>, <<"export_w_firm">>,  ?right_w_firm},
+	  <<"厂商导出">>,         <<"export_w_firm">>,  ?right_w_firm},
 	 {?analysis_profit_w_firm, 
-	  <<"厂商盈利分析">>, <<"analysis_profit_w_firm">>,  ?right_w_firm},
+	  <<"厂商盈利分析">>,     <<"analysis_profit_w_firm">>,  ?right_w_firm},
 	 {?export_firm_profit, 
 	  <<"导出厂商盈利分析">>, <<"export_firm_profit">>,  ?right_w_firm},
 
 	 {?new_virtual_firm,
-	  <<"新增虚拟厂商">>, <<"new_virtual_firm">>,  ?right_w_firm},
+	  <<"新增虚拟厂商">>,     <<"new_virtual_firm">>,  ?right_w_firm},
 
 	 {?update_virtual_firm, 
-	  <<"修改虚拟厂商">>, <<"update_virtual_firm">>,  ?right_w_firm},
+	  <<"修改虚拟厂商">>,     <<"update_virtual_firm">>,  ?right_w_firm},
 
 	 {?list_virtual_firm,
-	  <<"查看虚拟厂商">>, <<"list_virtual_firm">>,  ?right_w_firm} 
+	  <<"查看虚拟厂商">>,     <<"list_virtual_firm">>,  ?right_w_firm},
+	 
+	 {?export_firm_bill,
+	  <<"导出厂商结帐记录">>, <<"export_firm_bill">>,  ?right_w_firm}
 	], 
     
     %% print

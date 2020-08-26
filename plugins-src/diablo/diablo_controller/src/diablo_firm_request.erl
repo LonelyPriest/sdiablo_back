@@ -264,8 +264,7 @@ action(Session, Req, {"get_firm_bill"}, Payload) ->
     ?DEBUG("get_firm_bill with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     UTable = ?session:get(utable, Session), 
-    ?utils:respond(
-       object, fun() -> ?supplier:bill(lookup, {Merchant, UTable}, Payload) end, Req); 
+    ?utils:respond(object, fun() -> ?supplier:bill(lookup, {Merchant, UTable}, Payload) end, Req); 
 
 action(Session, Req, {"filter_firm_bill_detail"}, Payload) -> 
     ?DEBUG("filter_firm_bill_detail with session ~p, paylaod~n~p",
@@ -536,7 +535,42 @@ action(Session, Req, {"export_firm_profit"}, Payload) ->
 			     {<<"url">>, ?to_b(Url)}]}); 
 	{error, Error} ->
 	    ?utils:respond(200, Req, ?err(wsale_export_error, Error))
-    end. 
+    end;
+
+action(Session, Req, {"export_firm_bill"}, Payload) ->
+    ?DEBUG("export_firm_bill with session ~p, payload ~p", [Session, Payload]),
+    Merchant    = ?session:get(merchant, Session),
+    UserId      = ?session:get(id, Session), 
+    case ?supplier:bill(get, Merchant, Payload) of
+	[] -> ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
+	{ok, Bills} ->
+	    {ok, ExportFile, Url} = ?utils:create_export_file("firm_bill", Merchant, UserId),
+
+	    case file:open(ExportFile, [append, raw]) of
+		{ok, Fd} ->
+		    try
+			DoFun = fun(C) -> ?utils:write(Fd, C) end,
+			csv_head(bill, DoFun),
+			do_write(bill, DoFun, 1, Bills),
+			ok = file:datasync(Fd),
+			ok = file:close(Fd)
+		    catch
+			T:W -> 
+			    file:close(Fd),
+			    ?DEBUG("trace export:T ~p, W ~p~n~p",
+				   [T, W, erlang:get_stacktrace()]),
+			    ?utils:respond(
+			       200, Req, ?err(wsale_export_error, W)) 
+		    end,
+		    ?utils:respond(200, object, Req,
+				   {[{<<"ecode">>, 0},
+				     {<<"url">>, ?to_b(Url)}]}); 
+		{error, Error} ->
+		    ?utils:respond(200, Req, ?err(wsale_export_error, Error))
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end.
 
 
 sidebar(Session) -> 
@@ -614,6 +648,9 @@ batch_responed(Fun, Req) ->
 
 csv_head(firm, Do) ->
     H = "序号,名称,欠款,联系方式,联系地址,备注,编号,日期",
+    Do(?utils:to_utf8(from_latin1, H));
+csv_head(bill, Do) ->
+    H = "序号,厂商,结帐日期,结帐店铺,经手人,结帐金额,现金,刷卡,汇款,结帐银行,银行卡号,备注,操作日期",
     Do(?utils:to_utf8(from_latin1, H)).
 
 do_write(firm, _Do, _Count, []) ->
@@ -638,9 +675,43 @@ do_write(firm, Do, Count, [{H}|T]) ->
 	++ ?to_s(?FIRM_PREFIX + Id) ++ ?d
 	++ ?to_s(Datetime) ++ ?d, 
     Do(?utils:to_utf8(from_latin1, L)),
-    do_write(firm, Do, Count + 1, T).
+    do_write(firm, Do, Count + 1, T);
 
-
+do_write(bill, _Do, _Count, []) ->
+    ok;
+do_write(bill, Do, Count, [{H}|T]) ->
+    Firm     = ?v(<<"firm">>, H),
+    BillDate = ?v(<<"entry_date">>, H),
+    Shop     = ?v(<<"shop">>, H),
+    Employee = ?v(<<"employee">>, H),
+    Bill     = ?v(<<"bill">>, H),
+    Mode     = ?v(<<"mode">>, H),
+    Bank     = ?v(<<"bank">>, H),
+    BankCard = ?v(<<"card">>, H),
+    Comment  = ?v(<<"comment">>, H),
+    OPDate   = ?v(<<"op_date">>, H),
+    {Cash, Card, Wire} = case Mode of
+			     0 -> {Bill, 0, 0};
+			     1 -> {0, Bill, 0};
+			     2 -> {0, 0, Bill}
+			 end,
+    
+    L = "\r\n"
+	++ ?to_s(Count) ++ ?d
+	++ ?to_s(Firm) ++ ?d
+	++ ?to_s(BillDate) ++ ?d
+	++ ?to_s(Shop) ++ ?d
+	++ ?to_s(Employee) ++ ?d
+	++ ?to_s(Bill) ++ ?d
+	++ ?to_s(Cash) ++ ?d
+	++ ?to_s(Card) ++ ?d
+	++ ?to_s(Wire) ++ ?d
+	++ ?to_s(Bank) ++ ?d
+	++ ?to_s(BankCard) ++ ?d
+	++ ?to_s(Comment) ++ ?d
+	++ ?to_s(OPDate) ++ ?d, 
+    Do(?utils:to_utf8(from_latin1, L)),
+    do_write(bill, Do, Count + 1, T).
 
 csv_head(pfirm, Do, {Format, ShowOrgPrice}) ->
     H = case ShowOrgPrice of
