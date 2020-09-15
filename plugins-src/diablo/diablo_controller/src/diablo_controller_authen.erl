@@ -256,17 +256,34 @@ handle_call({authen_action, Action, UserId}, _From, #func_tree{rights = Rights} 
 	true  ->
 	    {reply, {ok, Action}, State};
 	false ->
+	    %% Children = get_right(by_user, UserId),
+	    %% case [R || {R} <- Children, ?v(<<"action">>, R) =:= ?to_b(Action)] of
+	    %% 	[] ->
+	    %% 	    {reply, {error, ?err(not_enought_right, Action)}, State};
+	    %% 	_ ->
+	    %% 	    ?DEBUG("success to auth action ~p", [Action]),
+	    %% 	    {reply, {ok, Action}, State}
+	    %% end
+		
 	    case dict:find(UserId, Rights) of
-		{ok, UserTree} ->
-		    case gb_trees:lookup(?to_b(Action), UserTree) of
-			none       ->
-			    {reply, {error, ?err(not_enought_right, Action)}, State};
-			{value, V} ->
-			    ?DEBUG("~p found of action ~p", [V, Action]),
-			    {reply, {ok, Action}, State}
-		    end;
-		error ->
-		    {reply, {error, ?err(not_enought_right, Action)}, State}
+	    	{ok, UserTree} ->
+	    	    case gb_trees:lookup(?to_b(Action), UserTree) of
+	    		none       ->
+	    		    {reply, {error, ?err(not_enought_right, Action)}, State};
+	    		{value, V} ->
+	    		    ?DEBUG("~p found of action ~p", [V, Action]),
+	    		    {reply, {ok, Action}, State}
+	    	    end;
+	    	error ->
+	    	    %% retry by db
+	    	    Children = get_right(by_user, UserId),
+	    	    case [R || R <- Children, ?v(<<"action">>, R) =:= Action] of
+	    		[] ->
+	    		    {reply, {error, ?err(not_enought_right, Action)}, State};
+	    		_ ->
+	    		    ?DEBUG("success to auth action ~p", [Action]),
+	    		    {reply, {ok, Action}, State}
+	    	    end
 	    end
     end;    
 
@@ -317,23 +334,23 @@ handle_call({authen_id, ActionId, UserId}, _From,
 
 handle_call({cache_right, UserId}, _From,
 	    #func_tree{rights = Rights} =  State) ->
-    RoleIds = get_roles(by_user, UserId),
+    %% RoleIds = get_roles(by_user, UserId),
 
-    {ok, RightIds} = ?right:lookup_role_right({<<"role_id">>, RoleIds}),
-    ?DEBUG("RightIds ~p", [RightIds]),
+    %% {ok, RightIds} = ?right:lookup_role_right({<<"role_id">>, RoleIds}),
+    %% ?DEBUG("RightIds ~p", [RightIds]),
 
-    Children = 
-	lists:foldr(
-	  fun({RightId}, Acc)->
-		  {ok, C} = ?right_init:get_children(RightId),
-		  C ++ Acc
-	  end, [], ?to_tuplelist(RightIds)),
+    %% Children = 
+    %% 	lists:foldr(
+    %% 	  fun({RightId}, Acc)->
+    %% 		  {ok, C} = ?right_init:get_children(RightId),
+    %% 		  C ++ Acc
+    %% 	  end, [], ?to_tuplelist(RightIds)),
     %% ?DEBUG("Children ~p", [Children]),
-
-
+    
+    Children = get_right(by_user, UserId),
     Right = 
 	lists:foldr(
-	  fun(Child, Acc) ->
+	  fun({Child}, Acc) ->
 		  gb_trees:insert(?value(<<"action">>, Child), Child, Acc)
 	  end, gb_trees:empty(), Children),
 
@@ -360,10 +377,12 @@ handle_call(_Request, _From, State) ->
 
 
 handle_cast(_Msg, State) ->
+    ?INFO("auth cast ~p", [_Msg]),
     {noreply, State}.
 
 
 handle_info(_Info, State) ->
+    ?INFO("auth info ~p", [_Info]),
     {noreply, State}.
 
 
@@ -441,6 +460,21 @@ get_roles(by_user, UserId) ->
 
     ?DEBUG("RoleIds ~p", [RoleIds]),
     RoleIds.
+
+
+get_right(by_user, UserId) ->
+    RoleIds = get_roles(by_user, UserId),
+    {ok, RightIds} = ?right:lookup_role_right({<<"role_id">>, RoleIds}),
+    ?DEBUG("RightIds ~p", [RightIds]),
+
+    Children = 
+	lists:foldr(
+	  fun({RightId}, Acc)->
+		  {ok, C} = ?right_init:get_children(RightId),
+		  C ++ Acc
+	  end, [], ?to_tuplelist(RightIds)),
+    ?DEBUG("Children ~p", [Children]),
+    Children. 
     
 %% authen_funcion(FunId, UserId) ->
 %%     Roles = ?right:lookup_account_right({<<"user_id">>, UserId}),

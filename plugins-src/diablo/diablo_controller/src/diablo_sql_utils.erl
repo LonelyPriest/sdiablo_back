@@ -178,9 +178,9 @@ condition(page_desc, {use_level, Sort}, CurrentPage, ItemsPerPage) ->
 condition(page_desc, {use_ticket, Mode, Sort}, CurrentPage, ItemsPerPage) ->
     " order by"
 	++ case Mode of
-	       0 -> " a.mtime ";
+	       0 -> " a.retailer ";
 	       1 -> " a.entry_date ";
-	       2 -> " a.ctime "
+	       2 -> " a.retailer "
 	   end
 	++ ?MODULE:sort(Sort) 
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
