@@ -794,6 +794,9 @@ alter table w_sale add column oil DECIMAL(10,2) default 0 after total;
 alter table w_sale_detail add column commision INTEGER not null default -1 after total;
 alter table w_sale_detail add column oil DECIMAL(10,2) default 0 after rprice;
 
+--20-09-29
+alter table suppliers modify column mobile VARCHAR(16) not null default '';
+
 
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;

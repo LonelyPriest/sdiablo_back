@@ -1318,11 +1318,12 @@ function wsaleNewProvide(
 		pay  += diablo_price(stocks[i].tag_price * stocks[i].sell, default_charge.xdiscount);
 		desc += stocks[i].style_number + "/";
 	    }
+	    
 	    if (desc.length > 64) {
 		desc = desc.substr(0, 64);
 	    }
 	    
-	    var charge_balance = diablo_round(pay * default_charge.xtime);
+	    var charge_balance = diablo_round(diablo_round(pay) * default_charge.xtime);
 	    var retailer = $scope.select.retailer;
 	    var callback = function(params) {
 		console.log(params);
@@ -1403,6 +1404,14 @@ function wsaleNewProvide(
 		     return wsaleUtils.to_integer(cash)
 			 + wsaleUtils.to_integer(card)
 			 + wsaleUtils.to_integer(wxin) >= charge_balance;
+		 },
+		 calc_charge_balance: function(charge) {
+		     pay = 0;
+		     for (var i=0,l=stocks.length; i<l; i++) {
+			 pay += diablo_price(stocks[i].tag_price * stocks[i].sell, charge.xdiscount);
+		     } 
+		     
+		     return diablo_round(diablo_round(pay) * charge.xtime);
 		 }
 		}
 	    );

@@ -231,37 +231,37 @@ select a.id, insert(a.csn1, 3, 2, '') as csn2 from (select id, insert(csn, 1,2, 
 -- delete from w_inventory_good where merchant=93;
 
 -- goods
-delete from w_inventory_good where merchant=27;
+-- delete from w_inventory_good where merchant=63;
 
-delete from w_inventory_new_detail_amount where merchant=27;
-delete from w_inventory_new_detail where merchant=27;
-delete from w_inventory_new where merchant=27;
+delete from w_inventory_new_detail_amount where merchant=63;
+delete from w_inventory_new_detail where merchant=63;
+delete from w_inventory_new where merchant=63;
 
 -- clear stock
-delete from w_inventory_amount where merchant=27;
-delete from w_inventory where merchant=27;
+delete from w_inventory_amount where merchant=63;
+delete from w_inventory where merchant=63;
 
 -- clear sale
-delete from w_sale_detail_amount where merchant=27;
-delete from w_sale_detail where merchant=27;
-delete from w_sale where merchant=27;
+delete from w_sale_detail_amount where merchant=63;
+delete from w_sale_detail where merchant=63;
+delete from w_sale where merchant=63;
 
 -- clear batch sale
-delete from batch_sale where merchant=27;
-delete from batch_sale_detail where merchant=27;
-delete from batch_sale_detail_amount where merchant=27;
+delete from batch_sale where merchant=63;
+delete from batch_sale_detail where merchant=63;
+delete from batch_sale_detail_amount where merchant=63;
 -- delete from batchsaler where merchant=27 and type!=2;
 
 
 -- clear transefer
-delete from w_inventory_transfer_detail_amount where merchant=27;
-delete from w_inventory_transfer_detail where merchant=27;
-delete from w_inventory_transfer where merchant=27;
+delete from w_inventory_transfer_detail_amount where merchant=63;
+delete from w_inventory_transfer_detail where merchant=63;
+delete from w_inventory_transfer where merchant=63;
 
 
 -- report
-delete from w_daily_report where merchant=27;
-delete from w_change_shift where merchant=27;
+delete from w_daily_report where merchant=63;
+delete from w_change_shift where merchant=63;
 
 -- charge
 -- delete from w_charge_detail where merchant=27;

@@ -139,7 +139,7 @@ create table suppliers
     code            INTEGER default -1,
     name            VARCHAR(128) not null,
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
-    mobile          VARCHAR(12),
+    mobile          VARCHAR(16),
     address         VARCHAR(256),
     expire          INTEGER default -1,
     comment         VARCHAR(256),

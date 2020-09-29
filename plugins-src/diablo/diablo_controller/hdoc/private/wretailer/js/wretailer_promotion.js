@@ -13,7 +13,7 @@ function wretailerRechargeNewCtrlProvide(
     $scope.action = retailerUtils.to_integer($routeParams.action); 
     $scope.label = $scope.action === 1 ? "提现" : "充值";
     $scope.rules = wretailerService.charge_rules;
-    $scope.times = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    $scope.times = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
     $scope.yes_no = retailerUtils.yes_no();
 
     var dialog = diabloUtilsService; 
