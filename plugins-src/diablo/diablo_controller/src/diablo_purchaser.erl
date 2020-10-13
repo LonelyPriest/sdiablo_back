@@ -2947,8 +2947,8 @@ handle_call({set_gift, Merchant, UTable, Attrs, Conditions}, _From, State) ->
 		    true -> 1;
 		    false -> 0
 		end,
-    Sql = ?w_good_sql:inventory(set_gift, {Merchant, UTable}, GiftState, Conditions), 
-    Reply = ?sql_utils:execute(write, Sql, GiftState),
+    Sqls = ?w_good_sql:inventory(set_gift, {Merchant, UTable}, GiftState, Conditions), 
+    Reply = ?sql_utils:execute(transaction, Sqls, GiftState),
     {reply, Reply, State};
 
 handle_call({set_offer, Merchant, UTable, Attrs, Conditions}, _From, State) ->
@@ -2962,8 +2962,8 @@ handle_call({set_offer, Merchant, UTable, Attrs, Conditions}, _From, State) ->
     %% 		    false -> 0
     %% 		end,
     Offer = ?v(<<"state">>, Attrs),
-    Sql = ?w_good_sql:inventory(set_offer, {Merchant, UTable}, Offer, Conditions), 
-    Reply = ?sql_utils:execute(write, Sql, Offer),
+    Sqls = ?w_good_sql:inventory(set_offer, {Merchant, UTable}, Offer, Conditions), 
+    Reply = ?sql_utils:execute(transaction, Sqls, Offer),
     {reply, Reply, State};
 
 handle_call({update_stock_alarm, Merchant, UTable, Attrs, Conditions}, _From, State) ->

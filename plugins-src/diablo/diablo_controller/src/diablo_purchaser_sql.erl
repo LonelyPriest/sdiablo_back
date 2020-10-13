@@ -120,7 +120,7 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 	++ ?to_s(Draw) ++ ","
 	++ ?to_s(EDiscount) ++ ","
 	++ ?to_s(Discount) ++ ","
-	++ "\'" ++ ?to_s(SPrice) ++ "0100000\',"
+	++ "\'" ++ ?to_s(SPrice) ++ "0100000\'," 
 	++ "\'" ++ ?to_s(Path) ++ "\',"
 	
 	%% ++ ?to_s(Level) ++ ","
@@ -829,33 +829,48 @@ inventory(set_promotion, {Merchant, UTable}, Promotions, Conditions) ->
 inventory(set_gift, {Merchant, UTable}, GiftState, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
     %% Updates = ?utils:v(gift, integer, GiftState), 
-    "update" ++ ?table:t(stock, Merchant, UTable)
-    %%++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
-	++ " set " ++ update_stock(state, 1, GiftState)
-	++ " where " 
-	++ ?sql_utils:condition(proplists_suffix, NewConditions)
-	++ "merchant=" ++ ?to_s(Merchant)
-	++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
-	       [] -> [];
-	       TimeSql ->  " and " ++ TimeSql
-	   end
-	++ " and deleted=" ++ ?to_s(?NO);
+    ["update" ++ ?table:t(stock, Merchant, UTable)
+     %%++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
+     ++ " set " ++ update_stock(state, 1, GiftState)
+     ++ " where " 
+     ++ ?sql_utils:condition(proplists_suffix, NewConditions)
+     ++ "merchant=" ++ ?to_s(Merchant)
+     ++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
+	    [] -> [];
+	    TimeSql ->  " and " ++ TimeSql
+	end
+     ++ " and deleted=" ++ ?to_s(?NO),
+     
+     "update" ++ ?table:t(good, Merchant, UTable)
+     %%++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
+     ++ " set " ++ update_stock(state, 1, GiftState)
+     ++ " where " 
+     ++ ?sql_utils:condition(proplists_suffix, lists:keydelete(<<"shop">>, 1, NewConditions))
+     ++ "merchant=" ++ ?to_s(Merchant) 
+     ++ " and deleted=" ++ ?to_s(?NO)];
 
 inventory(set_offer, {Merchant, UTable}, StockState, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
     Updates = ?utils:v(state, string, StockState), 
-    "update" ++ ?table:t(stock, Merchant, UTable)
-	++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
-    %%++ " set " ++ update_stock(state, 1, StockState)
-	++ " where " 
-	++ ?sql_utils:condition(proplists_suffix, NewConditions)
-	++ "merchant=" ++ ?to_s(Merchant)
-	++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
-	       [] -> [];
-	       TimeSql ->  " and " ++ TimeSql
-	   end
-	++ " and deleted=" ++ ?to_s(?NO);
+    ["update" ++ ?table:t(stock, Merchant, UTable)
+     ++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
+     %%++ " set " ++ update_stock(state, 1, StockState)
+     ++ " where " 
+     ++ ?sql_utils:condition(proplists_suffix, NewConditions)
+     ++ "merchant=" ++ ?to_s(Merchant)
+     ++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
+	    [] -> [];
+	    TimeSql ->  " and " ++ TimeSql
+	end
+     ++ " and deleted=" ++ ?to_s(?NO),
 
+     "update" ++ ?table:t(good, Merchant, UTable)
+     ++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
+     %%++ " set " ++ update_stock(state, 1, StockState)
+     ++ " where " 
+     ++ ?sql_utils:condition(proplists_suffix, lists:keydelete(<<"shop">>, 1, NewConditions))
+     ++ "merchant=" ++ ?to_s(Merchant) 
+     ++ " and deleted=" ++ ?to_s(?NO)];
 
 inventory({update_batch, MatchMode}, {Merchant, UTable}, Attrs, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),

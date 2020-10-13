@@ -1688,8 +1688,9 @@ draw_with_bank_card([Card|T], Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw,Acc)
 		    LimitCount = ?v(<<"icount">>, ChargePromotion),
 		    case LimitCount =/= ?INVALID_OR_EMPTY andalso LimitCount =/= 0 of
 			true ->
-			    CBalance     = ?v(<<"cbalance">>, ChargePromotion),
-			    SBalance     = ?v(<<"sbalance">>, ChargePromotion),
+			    %% ?DEBUG("ChargePromotion ~p", [ChargePromotion]),
+			    CBalance     = ?v(<<"charge">>, ChargePromotion),
+			    SBalance     = ?v(<<"balance">>, ChargePromotion),
 			    OneTakeBalance = ?utils:min_value(
 						CardBalance, (CBalance + SBalance) div LimitCount),
 			    CanDraw = ?utils:min_value(OneTakeBalance, MaxDraw),

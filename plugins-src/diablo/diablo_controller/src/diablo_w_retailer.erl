@@ -921,7 +921,8 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 		      ++ " and type=" ++ ?to_s(Type)
 		      ++ " and mbalance=" ++ ?to_s(MBalance)
 		      ++ " and ibalance=" ++ ?to_s(IBalance)
-		      ++ " and ishop=" ++ ?to_s(IShop);
+		      ++ " and ishop=" ++ ?to_s(IShop)
+		      ++ " and icount=" ++ ?to_s(ICount);
 	      ?TIMES_CHARGE ->
 		  %% N
 		  "select id, xtime from w_charge"
@@ -1847,11 +1848,19 @@ handle_call({new_score, Merchant, Attrs}, _From, State) ->
     end;
 
 handle_call({list_score, Merchant}, _From, State) ->
-    Sql = "select id, name, balance, score, type as type_id"
-	", sdate, edate, remark, entry"
+    Sql = "select id"
+	", name"
+	", balance"
+	", score"
+	", type as type_id"
+	", sdate"
+	", edate"
+	", remark"
+	", deleted"
+	", entry"
 	" from w_score"
 	" where merchant=" ++ ?to_s(Merchant)
-    %% ++ " and deleted=" ++ ?to_s(?NO)
+	++ " and deleted=" ++ ?to_s(?NO)
 	++ " order by id", 
     Reply = ?sql_utils:execute(read, Sql),
 

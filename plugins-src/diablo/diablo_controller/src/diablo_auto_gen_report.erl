@@ -200,7 +200,7 @@ handle_cast({gen_ticket, TriggerTime}, #state{merchant=Merchants, ticket_of_merc
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
 		  end, [], Merchants),
-			  %% end, [], [4]),
+	    %% end, [], [79]),
 	    %% ?DEBUG("new ticket ~p with merchants ~p", [NewTasks, Merchants]),
 	    {noreply, State#state{ticket_of_merchant=NewTasks}};
 	_ -> {noreply, State}
@@ -493,9 +493,9 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
     FormatDatetime = format_datetime(Datetime),
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
     {ok, Scores} = ?w_user_profile:get(score, Merchant),
-    %% ?DEBUG("scores ~p", [Scores]),
-
+    ?DEBUG("scores ~p", [Scores]), 
     ScoreId = ?v(<<"sid">>, Conditions, ?INVALID_OR_EMPTY),
+    ?DEBUG("scoreId ~p", [ScoreId]),
     %% max first
     Score2Money =
 	case ScoreId of

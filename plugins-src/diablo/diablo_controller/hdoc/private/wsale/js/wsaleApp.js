@@ -2647,8 +2647,8 @@ function wsaleNewProvide(
 			$scope.select.retailer.mobile,
 			$scope.select.shop.id,
 			$scope.setting.trans_count
-		    ).then(function(result) {
-			console.log(result);
+		    ).then(function(check_result) {
+			console.log(check_result);
 		    })
 		};
 		
