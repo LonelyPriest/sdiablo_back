@@ -2182,7 +2182,6 @@ function wsaleNewProvide(
 
 	var sms_notify = function() {
 	    if (result.sms_code !== 0) {
-		var ERROR = require("diablo-error");
 		dialog.response(false,
 				"销售开单",
 				"开单成功！！发送短消息失败：" + ERROR[result.sms_code]); 
@@ -2191,52 +2190,60 @@ function wsaleNewProvide(
 	
 	var start_print = function(print_callback){
 	    if (angular.isUndefined(LODOP)) LODOP = getLodop();
-	    
-	    $scope.select.ticket_score = 0; 
-	    var sid = $scope.select.ticket_sid;
-	    if ($scope.select.ticket_custom === diablo_score_ticket
-		&& angular.isDefined(sid) && diablo_invalid_index !== sid) {
-		var s = diablo_get_object(sid, $scope.scores);
-		if (angular.isObject(s)) {
-		    $scope.select.ticket_score =
-			parseInt($scope.select.ticket_balance / s.balance) * s.score;
-		} 
-	    }
-	    
-	    var top = wsalePrint.gen_head(
-		LODOP,
-		$scope.select.shop.name,
-		$scope.select.rsn,
-		$scope.select.employee.name,
-		$scope.select.retailer.name, 
-		dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
-		wsaleService.direct.wsale,
-		$scope.print_setting);
+	    if (angular.isUndefined(LODOP.PRINT_INIT) && !angular.isFunction(LODOP.PRINT_INIT)) {
+		var ERROR = require("diablo-error"); 
+		dialog.response_with_callback(
+		    false,
+		    "销售开单", "打印失败！！" + ERROR[9801],
+		    undefined,
+		    function() {window.location.reload()}); 
+	    } else {
+		$scope.select.ticket_score = 0; 
+		var sid = $scope.select.ticket_sid;
+		if ($scope.select.ticket_custom === diablo_score_ticket
+		    && angular.isDefined(sid) && diablo_invalid_index !== sid) {
+		    var s = diablo_get_object(sid, $scope.scores);
+		    if (angular.isObject(s)) {
+			$scope.select.ticket_score =
+			    parseInt($scope.select.ticket_balance / s.balance) * s.score;
+		    } 
+		}
+		
+		var top = wsalePrint.gen_head(
+		    LODOP,
+		    $scope.select.shop.name,
+		    $scope.select.rsn,
+		    $scope.select.employee.name,
+		    $scope.select.retailer.name, 
+		    dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
+		    wsaleService.direct.wsale,
+		    $scope.print_setting);
 
-	    var isRound = $scope.setting.round; 
-	    // var cakeMode = $scope.setting.cake_mode;
-	    top = wsalePrint.gen_body(
-		LODOP,
-		top,
-		$scope.select,
-		pinvs,
-		isRound,
-		$scope.print_setting);
-	    
-	    var selectRetailer = $scope.select.retailer.id; 
-	    // console.log($scope.select);
-	    top = wsalePrint.gen_stastic(
-		LODOP,
-		top,
-		0,
-		$scope.select,
-		$scope.select.retailer.balance,
-		wsaleUtils.isVip(
-		    $scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
-		$scope.print_setting);
-	    
-	    wsalePrint.gen_foot(LODOP, top, pdate, $scope.select.shop, $scope.print_setting);
-	    return wsalePrint.start_print(LODOP, print_callback); 
+		var isRound = $scope.setting.round; 
+		// var cakeMode = $scope.setting.cake_mode;
+		top = wsalePrint.gen_body(
+		    LODOP,
+		    top,
+		    $scope.select,
+		    pinvs,
+		    isRound,
+		    $scope.print_setting);
+		
+		var selectRetailer = $scope.select.retailer.id; 
+		// console.log($scope.select);
+		top = wsalePrint.gen_stastic(
+		    LODOP,
+		    top,
+		    0,
+		    $scope.select,
+		    $scope.select.retailer.balance,
+		    wsaleUtils.isVip(
+			$scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
+		    $scope.print_setting);
+		
+		wsalePrint.gen_foot(LODOP, top, pdate, $scope.select.shop, $scope.print_setting);
+		return wsalePrint.start_print(LODOP, print_callback);
+	    }
 	}; 
 	
 	var print_interval = function(job) {

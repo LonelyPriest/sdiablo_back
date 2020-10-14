@@ -473,7 +473,7 @@ get_right(by_user, UserId) ->
 		  {ok, C} = ?right_init:get_children(RightId),
 		  C ++ Acc
 	  end, [], ?to_tuplelist(RightIds)),
-    ?DEBUG("Children ~p", [Children]),
+    %% ?DEBUG("Children ~p", [Children]),
     Children. 
     
 %% authen_funcion(FunId, UserId) ->

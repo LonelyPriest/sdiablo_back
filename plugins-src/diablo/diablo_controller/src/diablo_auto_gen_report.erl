@@ -200,7 +200,7 @@ handle_cast({gen_ticket, TriggerTime}, #state{merchant=Merchants, ticket_of_merc
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
 		  end, [], Merchants),
-	    %% end, [], [79]),
+	    %% end, [], [1]),
 	    %% ?DEBUG("new ticket ~p with merchants ~p", [NewTasks, Merchants]),
 	    {noreply, State#state{ticket_of_merchant=NewTasks}};
 	_ -> {noreply, State}
@@ -495,24 +495,24 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
     {ok, Scores} = ?w_user_profile:get(score, Merchant),
     ?DEBUG("scores ~p", [Scores]), 
     ScoreId = ?v(<<"sid">>, Conditions, ?INVALID_OR_EMPTY),
-    ?DEBUG("scoreId ~p", [ScoreId]),
+    %% ?DEBUG("scoreId ~p", [ScoreId]),
     %% max first
     Score2Money =
 	case ScoreId of
 	    ?INVALID_OR_EMPTY ->
 		lists:foldr(
 		  fun({S}, Acc) ->
-			  case ?v(<<"type_id">>, S) =:= 1
-			      andalso ?v(<<"deleted">>, S) =:= 0 of
+			  case ?v(<<"type_id">>, S) =:= 1 andalso ?v(<<"deleted">>, S) =:= 0 of
 			      true ->
-				  case Acc of
-				      [] -> S;
-				      S0 ->
-					  case ?v(<<"balance">>, S0) < ?v(<<"balance">>, S) of
-					      true -> S;
-					      false -> Acc
-					  end
-				  end;
+				  %% case Acc of
+				  %%     [] -> S;
+				  %%     S0 ->
+				  %% 	  case ?v(<<"balance">>, S0) < ?v(<<"balance">>, S) of
+				  %% 	      true -> S;
+				  %% 	      false -> Acc
+				  %% 	  end
+				  %% end;
+				  [{S}|Acc];
 			      false ->
 				  Acc
 			  end
@@ -525,10 +525,8 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
 			      false -> Acc
 			  end
 		  end, [], Scores)
-	end,
-    
-    ?DEBUG("score2money ~p, ", [Score2Money]),
-
+	end,    
+    %% ?DEBUG("score2money ~p, ", [Score2Money]),
     
     TicketSetting = ?to_s(?v(<<"gen_ticket">>, BaseSetting, <<"00">>)),
     ?DEBUG("TicketSetting ~p", [TicketSetting]),
@@ -537,22 +535,24 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
     IsCheck = ?utils:nth(2, TicketSetting),
     ?DEBUG("AutoGenTicket ~p, IsCheck ~p", [AutoGenTicket, IsCheck]),
 
+    SortScores = lists:sort(
+		   fun({S0}, {S1}) -> ?v(<<"score">>, S0) < ?v(<<"score">>, S1) end,
+		   Score2Money),
+    %% ?DEBUG("SortScores ~p", [SortScores]),
+
     SysVips = sys_vip_of(merchant, Merchant), 
     TicketSqls =
-	case AutoGenTicket =:= ?YES andalso length(Score2Money) =/= 0 of
-	    true ->
-		AccScore    = ?v(<<"score">>, Score2Money), 
-		SendBalance = ?v(<<"balance">>, Score2Money),
-
-		SortScores = 
-		    lists:sort(
-		      fun({S0}, {S1}) ->
-			      ?v(<<"score">>, S0) < ?v(<<"score">>, S1) end,
-		      lists:filter(
-			fun({S}) ->
-				?v(<<"type_id">>, S) =:= 1
-				    andalso ?v(<<"id">>, S) /= ScoreId
-				    andalso ?v(<<"score">>, S) > ?v(<<"score">>, Score2Money) end, Scores)),
+	case AutoGenTicket =:= ?YES andalso length(SortScores) =/= 0 of
+	    true -> 
+		%% SortScores = 
+		%%     lists:sort(
+		%%       fun({S0}, {S1}) ->
+		%% 	      ?v(<<"score">>, S0) < ?v(<<"score">>, S1) end,
+		%%       lists:filter(
+		%% 	fun({S}) ->
+		%% 		?v(<<"type_id">>, S) =:= 1
+		%% 		    andalso ?v(<<"id">>, S) /= ScoreId
+		%% 		    andalso ?v(<<"score">>, S) > ?v(<<"score">>, Score2Money) end, Scores)),
 		
 		%% AccScore1 = 
 		%%     lists:foldr(
@@ -580,16 +580,17 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
 		    ++ case ?v(<<"retailer">>, Conditions, []) of
 			   [] -> [];
 			   _RetailerId -> [{<<"id">>, _RetailerId}]
-		       end,
-		
-		
+		       end, 
+
+		[MinScore2Money|_] = SortScores,
+		MinAccScore    = ?v(<<"score">>, MinScore2Money), 
 		Sql = "select id, score from w_retailer where merchant=" ++ ?to_s(Merchant) 
-		    ++ " and score>=" ++ ?to_s(AccScore)
-		    ++ case SortScores of
-			   [] -> [];
-			   [H|_] ->
-			       " and score<" ++ ?to_s(?v(<<"score">>, H))
-		       end
+		    ++ " and score>=" ++ ?to_s(MinAccScore)
+		    %% ++ case SortScores of
+		    %% 	   [] -> [];
+		    %% 	   [H|_] ->
+		    %% 	       " and score<" ++ ?to_s(?v(<<"score">>, H))
+		    %%    end
 		    ++ ?sql_utils:condition(proplists, NewConditions)
 		    ++ " and type in (0, 1)"
 		    ++ " and deleted=0",
@@ -597,49 +598,54 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
 		    {ok, []} -> [];
 		    {ok, Retailers} ->
 			%% gen ticket
+			Max2MinSortScores = lists:reverse(SortScores),
 			lists:foldr(
 			  fun({R}, Acc)->
 				  case lists:member(?v(<<"id">>, R), SysVips) of
 				      true -> Acc;
 				      false ->
-					  RetailerScore = ?v(<<"score">>, R, 0),
-					  RetailerId = ?v(<<"id">>, R),
-					  TicketBalance = RetailerScore div AccScore * SendBalance,
+					  travel_retailer_score(
+					    R,
+					    Merchant,
+					    Max2MinSortScores,
+					    IsCheck,
+					    FormatDatetime,
+					    []) ++ Acc
 					  %% only one ticket unless the ticked was consumed
-					  case ?sql_utils:execute(
-						  s_read , "select id, batch, balance, retailer from w_ticket"
-						  " where merchant=" ++ ?to_s(Merchant)
-						  ++ " and retailer=" ++ ?to_s(RetailerId)
-						  ++ " and state in (0, 1)" ) of
-					      {ok, []} ->
-						  Batch = ?inventory_sn:sn(w_ticket, Merchant), 
-						  ["insert into w_ticket(batch, sid, balance"
-						   ", retailer, state, merchant, entry_date) values("
-						   ++ ?to_s(Batch) ++ ","
-						   ++ ?to_s(?v(<<"id">>, Score2Money)) ++ ","
-						   ++ ?to_s(TicketBalance) ++ ","
-						   ++ ?to_s(RetailerId) ++ ","
-						   ++ ?to_s(IsCheck) ++ ","
-						   ++ ?to_s(Merchant) ++ ","
-						   ++ "\'" ++ FormatDatetime ++ "\')"|Acc];
-					      {ok, E} ->
-						  %% ["update w_ticket set "
-						  %%  " sid=" ++ ?to_s(?v(<<"id">>, Score2Money))
-						  %%  ++ ", balance=" ++ ?to_s(TicketBalance)
-						  %%  ++ ", entry_date=\'" ++ FormatDatetime ++ "\'"
-						  %%  ++ " where id=" ++ ?to_s(?v(<<"id">>, E))|Acc]
-						  case TicketBalance =/= ?v(<<"balance">>, E) of
-						      true ->
-						  	  %% ["update w_ticket set balance=" ++ ?to_s(TicketBalance)
-						  	  %% ++ " where id=" ++ ?to_s(?v(<<"id">>, E))|Acc];
-						  	  ["update w_ticket set "
-						  	   " sid=" ++ ?to_s(?v(<<"id">>, Score2Money))
-						  	   ++ ", balance=" ++ ?to_s(TicketBalance)
-						  	   ++ ", entry_date=\'" ++ FormatDatetime ++ "\'"
-						  	   ++ " where id=" ++ ?to_s(?v(<<"id">>, E))|Acc];
-						      false -> Acc
-						  end
-					  end
+					  %% case ?sql_utils:execute(
+					  %% 	  s_read , "select id, batch, balance, retailer from w_ticket"
+					  %% 	  " where merchant=" ++ ?to_s(Merchant)
+					  %% 	  ++ " and retailer=" ++ ?to_s(RetailerId)
+					  %% 	  ++ " and state in (0, 1)" ) of
+					  %%     {ok, []} ->
+					  %% 	  Batch = ?inventory_sn:sn(w_ticket, Merchant), 
+					  %% 	  ["insert into w_ticket(batch, sid, balance"
+					  %% 	   ", retailer, state, merchant, entry_date) values("
+					  %% 	   ++ ?to_s(Batch) ++ ","
+					  %% 	   ++ ?to_s(?v(<<"id">>, Score2Money)) ++ ","
+					  %% 	   ++ ?to_s(TicketBalance) ++ ","
+					  %% 	   ++ ?to_s(RetailerId) ++ ","
+					  %% 	   ++ ?to_s(IsCheck) ++ ","
+					  %% 	   ++ ?to_s(Merchant) ++ ","
+					  %% 	   ++ "\'" ++ FormatDatetime ++ "\')"|Acc];
+					  %%     {ok, E} ->
+					  %% 	  %% ["update w_ticket set "
+					  %% 	  %%  " sid=" ++ ?to_s(?v(<<"id">>, Score2Money))
+					  %% 	  %%  ++ ", balance=" ++ ?to_s(TicketBalance)
+					  %% 	  %%  ++ ", entry_date=\'" ++ FormatDatetime ++ "\'"
+					  %% 	  %%  ++ " where id=" ++ ?to_s(?v(<<"id">>, E))|Acc]
+					  %% 	  case TicketBalance =/= ?v(<<"balance">>, E) of
+					  %% 	      true ->
+					  %% 	  	  %% ["update w_ticket set balance=" ++ ?to_s(TicketBalance)
+					  %% 	  	  %% ++ " where id=" ++ ?to_s(?v(<<"id">>, E))|Acc];
+					  %% 	  	  ["update w_ticket set "
+					  %% 	  	   " sid=" ++ ?to_s(?v(<<"id">>, Score2Money))
+					  %% 	  	   ++ ", balance=" ++ ?to_s(TicketBalance)
+					  %% 	  	   ++ ", entry_date=\'" ++ FormatDatetime ++ "\'"
+					  %% 	  	   ++ " where id=" ++ ?to_s(?v(<<"id">>, E))|Acc];
+					  %% 	      false -> Acc
+					  %% 	  end
+					  %% end
 				  end
 			  end, [], Retailers)
 		end;
@@ -1228,7 +1234,68 @@ charge(info, [{ChargeInfo}]) ->
      ?v(<<"tcard">>, ChargeInfo, 0),
      ?v(<<"twxin">>, ChargeInfo, 0)}.
 
-
+travel_retailer_score(_Retailer, _Merchant, [], _IsCheck, _Datetime, Sql) ->
+    Sql;
+travel_retailer_score(Retailer, Merchant, [{Score2Money}|T], IsCheck, Datetime, Sql) -> 
+    %% ?DEBUG("Retailer ~p, Score2Money ~p", [Retailer, Score2Money]),
+    RetailerScore = ?v(<<"score">>, Retailer, 0),
+    AccScore = ?v(<<"score">>, Score2Money),
+    case RetailerScore >= AccScore of
+	true ->
+	    SendBalance = ?v(<<"balance">>, Score2Money),
+	    TicketBalance = RetailerScore div AccScore * SendBalance, 
+	    travel_retailer_score(
+	      Retailer,
+	      Merchant,
+	      [],
+	      IsCheck,
+	      Datetime,
+	      gen_sql(ticket,
+		      Merchant,
+		      ?v(<<"id">>, Retailer),
+		      ?v(<<"id">>, Score2Money),
+		      TicketBalance,
+		      IsCheck,
+		      Datetime));
+	false ->
+	    travel_retailer_score(Retailer, Merchant, T, IsCheck, Datetime, Sql)
+    end.
+		     
+gen_sql(ticket, Merchant, RetailerId, Score2Money, TicketBalance, IsCheck, Datetime) ->
+    case ?sql_utils:execute(
+	    s_read , "select id, batch, balance, retailer from w_ticket"
+	    " where merchant=" ++ ?to_s(Merchant)
+	    ++ " and retailer=" ++ ?to_s(RetailerId)
+	    ++ " and state in (0, 1)" ) of
+	{ok, []} ->
+	    Batch = ?inventory_sn:sn(w_ticket, Merchant), 
+	    ["insert into w_ticket(batch, sid, balance"
+		", retailer, state, merchant, entry_date) values("
+	     ++ ?to_s(Batch) ++ ","
+	     ++ ?to_s(Score2Money) ++ ","
+	     ++ ?to_s(TicketBalance) ++ ","
+	     ++ ?to_s(RetailerId) ++ ","
+	     ++ ?to_s(IsCheck) ++ ","
+	     ++ ?to_s(Merchant) ++ ","
+	     ++ "\'" ++ Datetime ++ "\')"];
+	{ok, E} ->
+	    %% ["update w_ticket set "
+	    %%  " sid=" ++ ?to_s(?v(<<"id">>, Score2Money))
+	    %%  ++ ", balance=" ++ ?to_s(TicketBalance)
+	    %%  ++ ", entry_date=\'" ++ FormatDatetime ++ "\'"
+	    %%  ++ " where id=" ++ ?to_s(?v(<<"id">>, E))|Acc]
+	    case TicketBalance =/= ?v(<<"balance">>, E) of
+		true ->
+		    %% ["update w_ticket set balance=" ++ ?to_s(TicketBalance)
+		    %% ++ " where id=" ++ ?to_s(?v(<<"id">>, E))|Acc];
+		    ["update w_ticket set "
+		     " sid=" ++ ?to_s(Score2Money)
+		     ++ ", balance=" ++ ?to_s(TicketBalance)
+		     ++ ", entry_date=\'" ++ Datetime ++ "\'"
+		     ++ " where id=" ++ ?to_s(?v(<<"id">>, E))];
+		false -> []
+	    end
+    end.
 
 sys_vip_of(merchant, Merchant) ->
     %% {ok, Settings} = ?w_user_profile:get(setting, Merchant),
