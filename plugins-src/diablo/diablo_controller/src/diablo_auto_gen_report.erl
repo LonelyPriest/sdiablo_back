@@ -521,7 +521,7 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
 		lists:foldr(
 		  fun({S}, Acc) ->
 			  case ?v(<<"type_id">>, S) =:= 1 andalso ?v(<<"id">>, S) =:= ScoreId of
-			      true -> S;
+			      true -> [{S}];
 			      false -> Acc
 			  end
 		  end, [], Scores)
