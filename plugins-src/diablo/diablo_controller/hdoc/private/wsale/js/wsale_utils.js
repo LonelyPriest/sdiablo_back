@@ -777,13 +777,21 @@ var wsaleUtils = function(){
 		&& sysRetailers.filter(function(r) {return selectRetailer.id === r.id}).length === 0
 	},
 
+	get_retailer_level:function(retailerLevel, levels) {
+	    var filterLevels = levels.filter(function(l) {
+		return retailerLevel === l.level;
+	    });
+
+	    return filterLevels.length === 0 ? undefined : filterLevels[0];
+	},
+	
 	get_retailer_discount:function(retailerLevel, levels) {
 	    var filterLevels = levels.filter(function(l) {
 		return retailerLevel === l.level;
 	    });
 
 	    return filterLevels.length === 0 ? undefined : filterLevels[0].discount;
-	},
+	}, 
 
 	first_day_of_month: function(){
 	    var now = new Date(); 
@@ -941,7 +949,8 @@ var wsaleCalc = function(){
 	
 	calculate: function(isVip,
 			    vipMode,
-			    vipDiscount, 
+			    vipDiscount,
+			    vipLevel,
 			    inventories,
 			    show_promotions,
 			    saleMode,
@@ -1263,7 +1272,7 @@ var wsaleCalc = function(){
 	    });
 
 	    // vip mode
-	    if (diablo_sale === saleMode && isVip && diablo_no !== vipDiscountMode) {
+	    if (isVip && diablo_sale === saleMode && diablo_vip_sale_by_discount === vipDiscountMode) {
 		for (var i=0, l=inventories.length; i<l; i++) {
 		    // promotion first
 		    var one = inventories[i]; 
@@ -1291,6 +1300,7 @@ var wsaleCalc = function(){
 			one.fprice = diablo_price(valid_price, one.fdiscount);
 		    } 
 		}
+		
 	    }
 
 	    for (var i=0, l=inventories.length; i<l; i++) {

@@ -220,7 +220,7 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     filterEmployee, filterSizeGroup, filterColor, filterTemplate, filterRegion, base){
     // console.log(user.right);
     // var permitShops      = user.shopIds;
-    $scope.shops     = user.sortShops;
+    $scope.shops     = user.sortShops.filter(function(s) {return s.deleted===0});
     $scope.shopIds   = user.shopIds;
     $scope.goto_page = diablo_goto_page;
 
@@ -747,9 +747,12 @@ function purchaserInventoryFlowCtrlProvide(
     // var firm_id  = undefined;
     // var q_start_time = stockUtils.start_time(-1, base, $.now(), dateFilter);
 
-    $scope.stock_right = {
-	orgprice: stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice')
-    };
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.stock_right = authen.authenStockRight();
+    
+    // $scope.stock_right = {
+    // 	orgprice: stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice')
+    // };
 
 
     var sort_by_date = function(stocks) {
@@ -787,8 +790,7 @@ function purchaserInventoryFlowCtrlProvide(
 	    return {
 		// style_number:s.style_number,
 		// brand_id: s.brand_id,
-		firm_id:  s.firm_id,
-		
+		firm_id:  s.firm_id, 
 		tag_price: s.tag_price,
 		discount: s.discount,
 		total: s.amount,
@@ -803,8 +805,8 @@ function purchaserInventoryFlowCtrlProvide(
 	    return {
 		// style_number:s.style_number,
 		// brand_id: s.brand_id,
-		firm_id:  s.firm_id,
-		
+		rsn: s.rsn,
+		firm_id:  s.firm_id, 
 		tag_price: s.tag_price,
 		discount: s.fdiscount,
 		rprice: s.rprice,
@@ -896,7 +898,7 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
     // $scope.shops   = user.sortShops;
     // $scope.shopIds = user.shopIds;
     var dialog = diabloUtilsService;
-    $scope.shops  = user.sortShops;
+    $scope.shops  = user.sortShops.filter(function(s) {return s.deleted===0});
     $scope.shopIds = user.shopIds;
     
     // style_number
@@ -1239,7 +1241,7 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
     // var permitShops =  user.shopIds;
     // $scope.shops = user.sortAvailabeShops;
     // $scope.shops   = user.sortShops;
-    $scope.shops  = user.sortShops;
+    $scope.shops  = user.sortShops.filter(function(s) {return s.deleted===0});
     $scope.shopIds = user.shopIds;
     
     // style_number

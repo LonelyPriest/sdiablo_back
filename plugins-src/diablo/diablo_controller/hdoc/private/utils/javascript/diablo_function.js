@@ -285,6 +285,12 @@ var diablo_year_unlimit_charge = 5;
 var diablo_half_of_year_unlimit_charge = 6;
 var diablo_balance_limit_charge = 7;
 
+/*
+ * VIP SALE MODE
+ */
+var diablo_vip_sale_by_discount = 1;
+var diablo_vip_sale_by_balance  = 2;
+
 
 /*
  * batch sale

@@ -251,6 +251,9 @@ function wretailerConfig(angular) {
 				{name:"半年卡模式", id:diablo_half_of_year_unlimit_charge},
 				{name:"余额卡模式", id:diablo_balance_limit_charge}
 			       ];
+
+	// this.sale_rules = [{name:"折扣模式", id:diablo_retailer_sale_by_discount},
+	// 		   {name:"直减模式", id:diablo_retailer_sale_by_balance}];
 	
 	this.retailer_types = diablo_retailer_types;
 	
@@ -342,21 +345,22 @@ function wretailerConfig(angular) {
 		 count:  itemsPerpage}).$promise;
 	};
 
-	this.new_retailer_level = function(shop, level, name, score, discount) {
+	this.new_retailer_level = function(shop, level, name, score, discount, rule) {
 	    return http.save(
 		{operation: "add_retailer_level"},
 		{shop: shop,
 		 level: level,
 		 name: name,
 		 score: score,
-		 discount: discount}).$promise;
+		 discount: discount,
+		 rule: rule}).$promise;
 	};
 
-	this.update_retailer_level = function(shop, level, score, discount) {
+	this.update_retailer_level = function(level, shop, score, discount) {
 	    return http.save(
 		{operation: "update_retailer_level"}, {
+		    level: level, 
 		    shop:  shop,
-		    level: level,
 		    score: score,
 		    discount: discount}).$promise;
 	};

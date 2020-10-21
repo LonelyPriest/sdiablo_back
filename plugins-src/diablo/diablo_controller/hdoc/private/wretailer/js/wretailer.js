@@ -2058,7 +2058,8 @@ function wretailerThresholdCardGoodCtrlProvide(
 function wretailerLevelCtrlProvide(
     $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, user){
     $scope.levels = diablo_retailer_levels;
-    $scope.shops  = [{id: -1, name:"== 默认所有店铺配置相同 =="}].concat(user.sortShops);
+    $scope.shops  = [{id: -1, name:"== 默认所有店铺配置相同 =="}].concat(user.sortShops.filter(function(s) {return s.deleted===0}));
+    
     var dialog = diabloUtilsService; 
     var lpattern = {name     :diabloPattern.chinese_name,
 		    score    :diabloPattern.number,
@@ -2079,7 +2080,11 @@ function wretailerLevelCtrlProvide(
 	var callback = function(params) {
 	    console.log(params);
 	    wretailerService.new_retailer_level(
-		params.shop.id, params.level.level, params.name, params.score, params.discount
+		params.shop.id,
+		params.level.level,
+		params.name,
+		params.score,
+		params.discount
 	    ).then(function(result) {
 		console.log(result);
 		if (result.ecode === 0) {
@@ -2099,7 +2104,7 @@ function wretailerLevelCtrlProvide(
 	    {shops   :$scope.shops,
 	     shop    :$scope.shops[0],
 	     levels  :$scope.levels,
-	     level   :$scope.levels[0],
+	     level   :$scope.levels[0], 
 	     pattern :lpattern
 	    })
     };
@@ -2109,7 +2114,7 @@ function wretailerLevelCtrlProvide(
 	var callback = function(params) {
 	    console.log(params);
 	    wretailerService.update_retailer_level(
-		l.id, l.shop.id, params.score, params.discount
+		l.id, params.shop.id, params.score, params.discount
 	    ).then(function(result) {
 		console.log(result);
 		if (result.ecode === 0) {

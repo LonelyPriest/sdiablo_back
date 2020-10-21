@@ -43,8 +43,9 @@
 		    <th>店铺</th>
 		    <th>等级</th>
 		    <th>名称</th>
+		    <!-- <th>规则</th> -->
 		    <th>累计消费</th>
-		    <th>商品折扣</th> 
+		    <th>折扣/减免</th> 
 		    <th>操作</th>
 		  </tr>
 		</thead>
@@ -60,6 +61,7 @@
 		    </td>
 		    <td x-ng-bind=levels[l.level].name></td> 
 		    <td x-ng-bind=l.name></td>
+		    <!-- <td x-ng-bind=sale_rules[l.rule].name></td> -->
 		    <td x-ng-bind=l.score></td>
 		    <td x-ng-bind=l.discount></td>
 		    <td> 
@@ -146,6 +148,15 @@
 	  </div> 
 	</div>
 
+	<!-- <div class="form-group"> -->
+	<!--   <label class="col-sm-2 col-md-2 control-label">消费规则</label> -->
+	<!--   <div class="col-sm-10 col-md-10"> -->
+	<!--     <select class="form-control" -->
+	<!-- 	    x-ng-model="params.rule" -->
+	<!-- 	    x-ng-options="r as r.name for r in params.rules"> -->
+	<!--     </select> -->
+	<!--   </div> -->
+	<!-- </div> -->
 
 	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">累计消费</label>
@@ -164,22 +175,40 @@
 	  </div>
 	</div>
 
-	<div class="form-group">
-	  <label class="col-sm-2 col-md-2 control-label">商品折扣</label>
+	<div x-ng-if="params.rule.id===0" class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">折扣/减免</label>
 	  <div class="col-sm-10 col-md-10">
 	    <div class="input-group"> 
 	      <div x-ng-class="{'has-error': lForm.discount.$invalid && !lForm.discount.$pristine}">
 		<input class="form-control"
 		       type="number"
+		       step="1"
 		       required
 		       name="discount"
 		       x-ng-model="params.discount"
-		       x-ng-pattern="params.pattern.discount"/>
+		       placeholder="整数，折扣小于或等于100"/>
 	      </div>
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div> 
 	  </div>
 	</div>
+
+	<!-- <div x-ng-if="params.rule.id===1" class="form-group"> -->
+	<!--   <label class="col-sm-2 col-md-2 control-label">金额减免</label> -->
+	<!--   <div class="col-sm-10 col-md-10"> -->
+	<!--     <div class="input-group">  -->
+	<!--       <div x-ng-class="{'has-error': lForm.discount.$invalid && !lForm.discount.$pristine}"> -->
+	<!-- 	<input class="form-control" -->
+	<!-- 	       type="number" -->
+	<!-- 	       step="1" -->
+	<!-- 	       required -->
+	<!-- 	       name="discount" -->
+	<!-- 	       x-ng-model="params.discount"/> -->
+	<!--       </div> -->
+	<!--       <span class="input-group-addon bg-white fg-red">*</span> -->
+	<!--     </div>  -->
+	<!--   </div> -->
+	<!-- </div> -->
 
       </div>
     </form>

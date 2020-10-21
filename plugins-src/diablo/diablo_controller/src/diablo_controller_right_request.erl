@@ -219,8 +219,8 @@ action(Session, Req, {"list_inventory_children"}) ->
 				?new_stock_order,
 				?del_stock_order,
 				?update_stock_order,
-				?list_stock_order,
-				?list_stock_order_note
+				?filter_stock_order,
+				?filter_stock_order_note
 			       ]}, 
     
     {ok, Children} = ?right_init:get_children(children_only, [{<<"id">>, RightId}]),
@@ -601,6 +601,7 @@ login_user(shop, Session) ->
 			 {<<"score_id">>,  ?v(<<"score_id">>, AShop)},
 			 {<<"region_id">>, ?v(<<"region_id">>, AShop)},
 			 {<<"type">>,      ?v(<<"type">>, AShop)},
+			 {<<"deleted">>,   ?v(<<"deleted">>, AShop)},
 			 {<<"func_id">>,   ?right_w_inventory}]}
 		       | Acc]
 	      end, [], S);

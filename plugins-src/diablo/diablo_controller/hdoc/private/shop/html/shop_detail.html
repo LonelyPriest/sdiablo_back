@@ -50,6 +50,7 @@
 		    <th>短信鉴名</th>
 		    <th>微信群</th>
 		    <th>收款码</th>
+		    <th>状态</th>
 		    <th>操作</th>
 		  </tr>
 		</thead>
@@ -102,6 +103,11 @@
 			       class="img-responsive img-thumbnail"
 			       ng-src="{{shop.bcode_pay}}"></image></td>
 
+		    <td class="text-center" x-ng-switch on="shop.deleted">
+		      <div x-ng-switch-when=0 class="fg-green">正常</div>
+		      <div x-ng-switch-when=1 class="fg-red">已删除</div>
+		    </td>
+
 		    <td>
 		      <!-- <button class="btn btn-success diablo-button" -->
 		      <!--	      x-ng-click="on_sale(shop)">促销 -->
@@ -119,9 +125,9 @@
 		      <button class="btn diablo-button btn-warning"
 			      x-ng-click="edit_shop(shop)">修改
 			<i class="glyphicon glyphicon-edit"></i></button>
-		      <!-- <button class="btn diablo-button red" -->
-		      <!-- 	      x-ng-click="delete_shop(shop)">删除 -->
-		      <!-- 	<i class="glyphicon glyphicon-erase"></i></button> -->
+		      <button class="btn diablo-button red"
+		      	      x-ng-click="delete_shop(shop)">删除
+		      	<i class="glyphicon glyphicon-erase"></i></button>
 		    </td>
 
 		  </tr>

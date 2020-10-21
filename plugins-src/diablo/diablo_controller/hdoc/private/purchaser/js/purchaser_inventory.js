@@ -21,7 +21,7 @@ function purchaserInventoryNewCtrlProvide (
 
     
     $scope.tab_active  = [{active:false}, {active:true}, {active:false}]; 
-    $scope.shops             = user.sortShops; 
+    $scope.shops             = user.sortShops.filter(function(s) {return s.deleted===0}); 
     $scope.sexs              = diablo_sex;
     $scope.seasons           = diablo_season;
     $scope.extra_pay_types   = purchaserService.extra_pay_types;
@@ -2279,7 +2279,7 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.tab_active = {time: true, chart:false};
     $scope.chart_data = {};
     
-    $scope.shops     = user.sortShops;
+    $scope.shops     = user.sortShops.filter(function(s) {return s.deleted===0});
     $scope.shopIds   = user.shopIds;
     
     $scope.sexs      = diablo_sex;
@@ -3745,7 +3745,7 @@ function purchaserInventoryNewDetailCtrlProvide (
     // console.log(filterEmployee);
     // console.log(filterRegion);
 
-    $scope.shops   = user.sortShops;
+    $scope.shops   = user.sortShops.filter(function(s) {return s.deleted===0});
     $scope.shopIds = user.shopIds;
     $scope.regions = filterRegion;
 

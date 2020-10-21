@@ -34,11 +34,11 @@ function wreportCommServiceProvide(){
     };
     
     service.get_shop_id = function(){
-	return _user.shopIds.length === 0 ? undefined : _user.shopIds;
+	return _user.shopIds === 0 ? undefined : _user.shopIds;
     };
     
     service.get_sort_shop = function(){
-	return _user.sortShops;
+	return _user.sortShops.filter(function(s) {return s.deleted===0});
     };
 
     service.set_base_setting = function(base){

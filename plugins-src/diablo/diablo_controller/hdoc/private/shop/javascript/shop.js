@@ -154,12 +154,12 @@ function shopDetailCtrlProvide(
 		    bcode_pay:    s.bcode_pay ? s.bcode_pay + "?" + Math.random() : undefined,
 		    
 		    repo_id:s.repo,
-		    repo:$scope.authen_list_repo
-			? $scope.get_repo(s.repo) : undefined,
+		    repo:$scope.authen_list_repo ? $scope.get_repo(s.repo) : undefined,
 		    
 		    shopowner_id:s.shopowner_id,
-		    shopowner:diablo_get_object(
-			s.shopowner_id, $scope.employees)})
+		    shopowner:diablo_get_object(s.shopowner_id, $scope.employees),
+		    deleted:s.deleted
+		})
 		// }
 	    })
 	    diablo_order($scope.shops);

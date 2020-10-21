@@ -14,8 +14,8 @@ function wreportDailyCtrlProvide(
     $scope.employees = filterEmployee;
     
     // console.log($scope.employees); 
-    $scope.sortShops = wreportCommService.get_sort_shop();
-    $scope.shopIds = user.shopIds;
+    $scope.sortShops = wreportCommService.get_sort_shop().filter(function(s) { return s.deleted===0});
+    $scope.shopIds = user.shopIds.filter(function(s) {return s.deleted===0});
     $scope.current_day = $.now();
 
     var LODOP;
@@ -76,7 +76,8 @@ function wreportDailyCtrlProvide(
 	
 	var day = {start_time:$scope.current_day, end_time:$scope.current_day}; 
 	diabloFilter.do_filter([], day, function(search){
-	    search.shop = wreportCommService.get_shop_id(); 
+	    search.shop = wreportCommService.get_shop_id();
+	    // console.log(search.shop);
 	    wreportService.daily_report("by_shop", search).then(function(result){
 		console.log(result);
 		if (result.ecode === 0){

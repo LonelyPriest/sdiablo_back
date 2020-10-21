@@ -9,7 +9,7 @@ function purchaserInventoryTransferCtrlProvide (
     $scope.response_title = "库存移仓"; 
     // console.log(user); 
     // console.log(filterShop); 
-    $scope.shops = user.sortShops;
+    $scope.shops = user.sortShops.filter(function(s) {return s.deleted === 0});
     // console.log($scope.shops);
     // console.log(user.sortRepoes);
     
@@ -77,7 +77,7 @@ function purchaserInventoryTransferCtrlProvide (
     $scope.get_transfer_shop = function(){
 	$scope.to_shops = []; 
 	for (var i=0, l=filterShop.length; i<l; i++){
-	    if ($scope.select.shop.id !== filterShop[i].id){
+	    if (!filterShop[i].deleted && $scope.select.shop.id !== filterShop[i].id){
 		var ashop = filterShop[i];
 		if ($scope.base_settings.xsale && $scope.master === diablo_no) {
 		    if ( ashop.type === 1) {

@@ -35,7 +35,7 @@ userApp.factory("userService", function($resource, $q){
 		angular.forEach(shops, function(s){
 		    // if ( ((s.type === 0 && s.repo_id === -1) || s.type === 1)
 		    // 	 && !in_array(ids, s.shop_id))
-		    if (!in_array(ids, s.shop_id)) {
+		    if (!s.deleted && !in_array(ids, s.shop_id)) {
 			ids.push(s.shop_id);
 		    }
 		})
@@ -46,7 +46,7 @@ userApp.factory("userService", function($resource, $q){
 	    shopIds: function(){
 		var ids   = [];
 		angular.forEach(shops, function(s){
-                    if (!in_array(ids, s.shop_id)){
+                    if (!s.deleted && !in_array(ids, s.shop_id)){
                         if (s.shop_id === _loginShop){
                             ids.splice(0, 0, s.shop_id);
                         } else {
@@ -94,7 +94,8 @@ userApp.factory("userService", function($resource, $q){
 				score_id: s.score_id,
 				bcode_friend: s.bcode_friend,
 				bcode_pay: s.bcode_pay,
-				py:diablo_pinyin(s.name)};
+				py:diablo_pinyin(s.name),
+				deleted: s.deleted};
 		    if (!in_array(sort, shop)){
 			if (shop.id === _loginShop){
                             sort.splice(0, 0, shop);

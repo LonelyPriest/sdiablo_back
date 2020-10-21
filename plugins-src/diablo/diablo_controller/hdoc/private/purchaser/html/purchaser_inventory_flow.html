@@ -35,8 +35,8 @@
 		  <th class="text-center">折扣</th>
 		  
 		  <th class="text-center">数量</th> 
-		  <th x-ng-if="stock_right.orgprice" class="text-center">进/退价</th>
-		  <th x-ng-if="stock_right.orgprice" class="text-center">折扣率</th>
+		  <th x-ng-if="stock_right.show_orgprice" class="text-center">进/退价</th>
+		  <th x-ng-if="stock_right.show_orgprice" class="text-center">折扣率</th>
 
 		  <th class="text-center">类型</th>
 		  <th class="text-center">店铺</th>
@@ -54,8 +54,8 @@
 		  <td class="text-center">{{h.tag_price}}</td>
 		  <td class="text-center">{{h.discount}}</td>
 		  <td class="text-center">{{h.total}}</td>
-		  <td x-ng-if="stock_right.orgprice" class="text-center">{{h.org_price}}</td>
-		  <td x-ng-if="stock_right.orgprice" class="text-center">{{h.ediscount}}</td> 
+		  <td x-ng-if="stock_right.show_orgprice" class="text-center">{{h.org_price}}</td>
+		  <td x-ng-if="stock_right.show_orgprice" class="text-center">{{h.ediscount}}</td> 
 
 		  <td class="text-center">
 		    <div x-ng-switch on="h.type">
@@ -70,7 +70,7 @@
 		  <td class="text-center">{{h.entry_date}}</td>
 		</tr>
 		<tr>
-		  <td colspan="6"></td>
+		  <td colspan="7"></td>
 		  <td class="text-center">{{stock.new_total}}</td>
 		  <td colspan="5"></td>
 		</tr>
@@ -115,6 +115,7 @@
 	      <thead>
 		<tr>
 		  <th class="text-center">序号</th>
+		  <th x-ng-if="stock_right.show_orgprice" class="text-center">单号</th>
 		  <th class="text-center">货号</th>
 		  <th class="text-center">品名</th>
 		  <th class="text-center">厂商</th> 
@@ -124,8 +125,8 @@
 		  <th class="text-center">成交价</th> 
 		  
 		  <th class="text-center">数量</th> 
-		  <th x-ng-if="stock_right.orgprice" class="text-center">进价</th>
-		  <th x-ng-if="stock_right.orgprice" class="text-center">折扣率</th>
+		  <th x-ng-if="stock_right.show_orgprice" class="text-center">进价</th>
+		  <th x-ng-if="stock_right.show_orgprice" class="text-center">折扣率</th>
 
 		  <th class="text-center">类型</th>
 		  <th class="text-center">店铺</th>
@@ -136,6 +137,7 @@
 	      <tbody>
 		<tr x-ng-repeat="h in sales">
 		  <td class="text-center">{{h.order_id}}</td>
+		  <td x-ng-if="stock_right.show_orgprice" class="text-center">{{h.rsn}}</td>
 		  <td class="text-center">{{h.style_number}}</td>
 		  <td class="text-center">{{h.brand.name}}</td>
 		  <td class="text-center">{{h.firm.name}}</td>
@@ -144,8 +146,8 @@
 		  <td class="text-center">{{h.discount}}</td>
 		  <td class="text-center">{{h.rprice}}</td>
 		  <td class="text-center">{{h.total}}</td>
-		  <td x-ng-if="stock_right.orgprice" class="text-center">{{h.org_price}}</td>
-		  <td x-ng-if="stock_right.orgprice" class="text-center">{{h.ediscount}}</td> 
+		  <td x-ng-if="stock_right.show_orgprice" class="text-center">{{h.org_price}}</td>
+		  <td x-ng-if="stock_right.show_orgprice" class="text-center">{{h.ediscount}}</td> 
 
 		  <td class="text-center">
 		    <div x-ng-switch on="h.type">
@@ -160,7 +162,9 @@
 		  <td class="text-center">{{h.entry_date}}</td>
 		</tr>
 		<tr>
-		  <td colspan="7"></td>
+		  <td></td>
+		  <td x-ng-if="stock_right.show_orgprice"></td>
+		  <td colspan="6"></td>
 		  <td class="text-center">{{stock.sale_total}}</td>
 		  <td colspan="5"></td>
 		</tr>

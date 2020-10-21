@@ -6,7 +6,7 @@ function wsaleRsnDetailCtrlProvide (
     filterType, filterColor, filterCType, base){
     // console.log($routeParams);
     // console.log(filterEmployee);
-    $scope.shops    = user.sortShops;
+    $scope.shops    = user.sortShops.filter(function(s) {return s.deleted===0});
     $scope.shopIds  = user.shopIds;
     
     $scope.f_mul       = diablo_float_mul;

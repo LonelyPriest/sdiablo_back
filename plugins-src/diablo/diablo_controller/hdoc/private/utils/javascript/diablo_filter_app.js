@@ -1556,6 +1556,7 @@ function normalFilterProvider(){
                                     name:s.name,
                                     // repo: s.repo,
 				    type: s.type,
+				    deleted: s.deleted,
                                     py:diablo_pinyin(s.name)};
                         });
 			set_storage(cookie, "shop", _shops)

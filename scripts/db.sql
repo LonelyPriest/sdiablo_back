@@ -533,9 +533,10 @@ create table w_retailer_level
     id              INTEGER AUTO_INCREMENT,
     name            VARCHAR(64) not null,
     level           TINYINT default -1,
+    rule            TINYINT default 0, -- 0: use discount; 1:use balance direct
     score           INTEGER default 0,
     discount        INTEGER default 0,
-    shop            INTEGER default -1, 
+    shop            INTEGER default -1,
     merchant        INTEGER default -1, -- which merchant belong to
     unique  key  uk (level, merchant, shop),
     primary key     (id)

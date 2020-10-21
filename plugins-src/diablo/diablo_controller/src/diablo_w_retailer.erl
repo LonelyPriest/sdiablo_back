@@ -461,6 +461,7 @@ handle_call({add_retailer_level, Merchant, Attrs}, _From, State) ->
     Level    = ?v(<<"level">>, Attrs),
     Score    = ?v(<<"score">>, Attrs, 0),
     Discount = ?v(<<"discount">>, Attrs, 100),
+    %% Rule     = ?v(<<"rule">>, Attrs, 0),
 
     Sql = "select id, name, level from w_retailer_level"
 	" where merchant=" ++ ?to_s(Merchant)
@@ -470,11 +471,18 @@ handle_call({add_retailer_level, Merchant, Attrs}, _From, State) ->
     case ?sql_utils:execute(read, Sql) of
 	{ok, []} ->
 	    Sql2 = "insert into w_retailer_level("
-		"shop, name, level, score, discount, Merchant)"
+		"shop"
+		", name"
+		", level"
+	    %% ", rule"
+		", score"
+		", discount"
+		", Merchant)"
 		++ " values ("
 		++ ?to_s(Shop) ++ ","
 		++ "\'" ++ ?to_s(Name) ++ "\',"
-		++ "\'" ++ ?to_s(Level) ++ "\'," 
+		++ ?to_s(Level) ++ ","
+	    %% ++ ?to_s(Rule) ++ ","
 		++ ?to_s(Score) ++ ","
 		++ ?to_s(Discount) ++ "," 
 		++ ?to_s(Merchant) ++ ")",
@@ -788,6 +796,7 @@ handle_call({list_retailer_level, Merchant}, _From, State) ->
     Sql = "select id"
 	", name"
 	", level"
+    %% ", rule"
 	", score"
 	", discount"
 	", shop as shop_id"

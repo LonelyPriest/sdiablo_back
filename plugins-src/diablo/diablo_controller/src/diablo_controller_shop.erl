@@ -183,23 +183,26 @@ handle_call({new_shop, Merchant, Props}, _From, State)->
 	    {reply, Error, State}
     end;
 
-handle_call({delete_shop, Merchant, UTable, ShopId}, _From, State) ->
+handle_call({delete_shop, Merchant, _UTable, ShopId}, _From, State) ->
     ?DEBUG("delete_shop with merchant ~p, ShopId ~p", [Merchant, ShopId]),
-    case ?sql_utils:execute(
-	    s_read,
-	    "select id, rsn"
-	    %% " from w_inventory_new"
-	    " from" ++ ?table:t(stock_new, Merchant, UTable)
-	    ++ " where merchant=" ++ ?to_s(Merchant)
-	    ++" and shop=" ++ ?to_s(ShopId)
-	    ++ " limit 1") of
-	{ok, []} ->
-	    Sql = "update from shops set deleted=1 where id=" ++ ?to_s(ShopId) ++ " and merchant=" ++ ?to_s(Merchant), 
-	    Reply = ?sql_utils:execute(write, Sql, ShopId),
-	    {reply, Reply, State};
-	{ok, _Stocks} ->
-	    {reply, {error, ?err(shop_with_stocks, ShopId)}, State}
-    end;
+    %% case ?sql_utils:execute(
+    %% 	    s_read,
+    %% 	    "select id, rsn"
+    %% 	    %% " from w_inventory_new"
+    %% 	    " from" ++ ?table:t(stock_new, Merchant, UTable)
+    %% 	    ++ " where merchant=" ++ ?to_s(Merchant)
+    %% 	    ++" and shop=" ++ ?to_s(ShopId)
+    %% 	    ++ " limit 1") of
+    %% 	{ok, []} ->
+    %% 	    Sql = "update from shops set deleted=1 where id=" ++ ?to_s(ShopId) ++ " and merchant=" ++ ?to_s(Merchant), 
+    %% 	    Reply = ?sql_utils:execute(write, Sql, ShopId),
+    %% 	    {reply, Reply, State};
+    %% 	{ok, _Stocks} ->
+    %% 	    {reply, {error, ?err(shop_with_stocks, ShopId)}, State}
+    %% end;
+    Sql = "update shops set deleted=1 where id=" ++ ?to_s(ShopId) ++ " and merchant=" ++ ?to_s(Merchant), 
+    Reply = ?sql_utils:execute(write, Sql, ShopId),
+    {reply, Reply, State};
 
 handle_call({get_shop, Merchant, ShopId}, _From, State) ->
     Sql = "select id, name, sms_sign, pay_cd from shops"
@@ -337,6 +340,7 @@ handle_call({list_shop, Merchant, Conditions}, _From, State) ->
 	", a.pay_cd"
 	", a.sms_sign"
 	", a.entry_date"
+	", a.deleted"
 	++ " from shops a" 
 	++ " where "
 	++ case Conditions of
@@ -347,7 +351,7 @@ handle_call({list_shop, Merchant, Conditions}, _From, State) ->
 		   ?utils:to_sqls(proplists, CorrectConditions) ++ " and "
 	   end
 	++ "a.merchant=" ++ ?to_s(Merchant)
-	++ " and a.deleted = " ++ ?to_s(?NO)
+    %%++ " and a.deleted = " ++ ?to_s(?NO)
 	++ " order by id",
 
     Reply = ?sql_utils:execute(read, Sql1), 

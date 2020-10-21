@@ -615,6 +615,7 @@ function wsaleNewProvide(
 	$scope.setting.draw_score    = wsaleUtils.draw_score(shopId, base);
 	$scope.setting.draw_region   = wsaleUtils.draw_region(shopId, base);
 	$scope.setting.vip_mode      = wsaleUtils.vip_mode(shopId, base);
+	$scope.setting.vip_discount_mode = wsaleUtils.to_integer(vip_mode.charAt(0));
 	// $scope.setting.gift_sale     = wsaleUtils.gift_sale(shopId, base);
 
 	var scan_mode = wsaleUtils.scan_only(shopId, base);
@@ -693,7 +694,7 @@ function wsaleNewProvide(
     // };
     
     // shops
-    $scope.shops = user.sortShops;
+    $scope.shops = user.sortShops.filter(function(s) {return s.deleted===0});
     if ($scope.shops.length !== 0){
 	$scope.select.shop = $scope.shops[0];
 	get_setting($scope.select.shop.id); 
@@ -2848,6 +2849,7 @@ function wsaleNewProvide(
 	    wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
 	    $scope.setting.vip_mode,
 	    wsaleUtils.get_retailer_discount($scope.select.retailer.level, $scope.levels),
+	    // wsaleUtils.get_retailer_level($scope.select.retailer.level, $scope.levels),
 	    $scope.inventories,
 	    $scope.show_promotions,
 	    diablo_sale,
@@ -3673,7 +3675,7 @@ function wsaleNewDetailProvide(
     $scope, $routeParams, $location, dateFilter, diabloUtilsService,
     localStorageService, diabloFilter, wsaleService,
     user, filterEmployee, filterTicketPlan, base){
-    $scope.shops     = user.sortShops;
+    $scope.shops     = user.sortShops.filter(function(s) {return s.deleted===0});
     $scope.shopIds   = user.shopIds;
     $scope.records   = [];
     
