@@ -101,6 +101,11 @@ function wsaleUpdateDetailCtrlProvide(
 	$scope.select.charge =
 	    $scope.select.should_pay - wsaleUtils.to_float($scope.select.has_pay) - wsaleUtils.to_float($scope.select.ticket);
 
+	if ($scope.setting.show_wprice) {
+	    $scope.select.wprice = $scope.select.should_pay;
+	    $scope.select.verificate = $scope.select.base_pay - $scope.select.should_pay;
+	}
+
 	$scope.reset_score();
 	
 	// console.log($scope.select);	
@@ -675,15 +680,15 @@ function wsaleUpdateDetailCtrlProvide(
     $scope.$watch("select.wprice", function(newValue, oldValue){
 	// console.log(newValue);
 	if (newValue === oldValue) return;
-	if (angular.isUndefined(newValue) || null === newValue) {
-	    for(var i=0, l=$scope.inventories.length; i<l; i++){
-		var s = $scope.inventories[i];
-		s.$update = false;
-		s.fdiscount = s.discount;
-		s.fprice = diablo_price(s.tag_price, s.fdiscount); 
-	    }	    
-	} else {
-	    $scope.select.verificate = $scope.select.base_pay - newValue;
+	if (angular.isDefined(newValue) || null !== newValue) {
+	    $scope.select.verificate = $scope.select.base_pay - newValue; 
+	}
+	
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
+	    var s = $scope.inventories[i];
+	    s.$update = false;
+	    s.fdiscount = s.discount;
+	    s.fprice = diablo_price(s.tag_price, s.fdiscount); 
 	}
 	
 	$scope.re_calculate();

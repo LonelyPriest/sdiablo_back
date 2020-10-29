@@ -950,7 +950,7 @@ var wsaleCalc = function(){
 	calculate: function(isVip,
 			    vipMode,
 			    vipDiscount,
-			    vipLevel,
+			    // vipLevel,
 			    inventories,
 			    show_promotions,
 			    saleMode,

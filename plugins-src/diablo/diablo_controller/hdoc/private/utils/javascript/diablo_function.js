@@ -714,6 +714,10 @@ var diablo_round = function(value){
     return Math.round(value);
 };
 
+var diablo_abs = function(v) {
+    return Math.abs(v);
+};
+
 var diablo_rdight = function(dight, how){  
     var d = Math.round(dight * Math.pow(10,how)) / Math.pow(10,how);  
     return d;

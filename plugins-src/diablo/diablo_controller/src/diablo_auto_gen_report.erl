@@ -816,7 +816,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [{S}|Shops], Sqls) ->
     ShopId  = ?v(<<"id">>, S),
     %% ?DEBUG("ShopId ~p", [ShopId]),
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, M, -1),
-    IsShopDailyReport = ?v(<<"d_report">>, BaseSetting, 1),
+    IsShopDailyReport = ?v(<<"d_report">>, BaseSetting, 0),
 
     {ok, MerchantInfo} = ?w_user_profile:get(merchant, M),
     UTable = ?v(<<"unique_table">>, MerchantInfo, 0),

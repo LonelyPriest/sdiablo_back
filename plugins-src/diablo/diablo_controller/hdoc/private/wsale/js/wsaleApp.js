@@ -173,6 +173,7 @@ function wsaleConfg(angular){
 	    2194: "该款号无入库记录，请先入库后再出售或重新选择货品！！",
 	    2195: "该条码对应的库存不存在，请确认条码是否正确，或通过款号模式开单！！",
 	    2196: "非法条码，条码长度不小于9，请输入正确的条码值！！",
+	    2197: "核销超过限定金额，请重新填写核销金额！！",
 	    2021: "库存不足，请检测库存后再销售！！",
 	    2401: "店铺打印机不存在或打印处理暂停状态！！",
 	    
@@ -615,7 +616,8 @@ function wsaleNewProvide(
 	$scope.setting.draw_score    = wsaleUtils.draw_score(shopId, base);
 	$scope.setting.draw_region   = wsaleUtils.draw_region(shopId, base);
 	$scope.setting.vip_mode      = wsaleUtils.vip_mode(shopId, base);
-	$scope.setting.vip_discount_mode = wsaleUtils.to_integer(vip_mode.charAt(0));
+	$scope.setting.vip_discount_mode = wsaleUtils.to_integer($scope.setting.vip_mode.charAt(0));
+	console.log($scope.setting.vip_discount_mode);
 	// $scope.setting.gift_sale     = wsaleUtils.gift_sale(shopId, base);
 
 	var scan_mode = wsaleUtils.scan_only(shopId, base);
@@ -786,6 +788,10 @@ function wsaleNewProvide(
 	$scope.select.sysVip = !wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers);
 	
 	// console.log($scope.select.sysVip);
+	if ($scope.setting.vip_discount_mode === diablo_vip_sale_by_balance && !$scope.select.sysVip) {
+	    $scope.select.verificate = wsaleUtils.get_retailer_discount($scope.select.retailer.level, $scope.levels);
+	}
+	
 	$scope.re_calculate();
 	
 	// image mode, refresh image
@@ -793,6 +799,16 @@ function wsaleNewProvide(
 	    $scope.page_changed($scope.current_page); 
 	}
     };
+
+    // $scope.check_verificate = function(retailer) {
+    // 	if (angular.isDefined($scope.select.retailer)
+    // 	    && angular.isObject($scope.select.retailer)
+    // 	    && $scope.select.retailer.hasOwnProperty('type_id')) {
+	    
+    // 	}
+    // 	// console.log(retailer); 
+    // 	return true;
+    // };
 
     // $scope.sysRetailers = filterSysRetailer;
     // console.log($scope.sysRetailers);
@@ -1666,7 +1682,7 @@ function wsaleNewProvide(
 	$scope.inventories = [];
 	$scope.show_promotions = [];
 	
-	$scope.select.form.cardForm.$invalid  = false;
+	$scope.select.form.c.$invalid  = false;
 	$scope.select.form.cashForm.$invalid  = false;
 	if ($scope.setting.show_wprice) $scope.select.form.wForm.$invalid  = false; 
 
@@ -1826,6 +1842,11 @@ function wsaleNewProvide(
 		// $scope.inventories.unshift({$edit:false, $new:true});
 		$scope.disable_refresh = false;
 
+		if ($scope.setting.vip_discount_mode === diablo_vip_sale_by_balance
+		    && wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers)) {
+		    $scope.select.verificate = wsaleUtils.get_retailer_discount($scope.select.retailer.level, $scope.levels);
+		}
+		
 		$scope.re_calculate();
 		$scope.focus_by_element();
 	    };
@@ -2452,6 +2473,30 @@ function wsaleNewProvide(
 	    return;
 	};
 
+	if ($scope.setting.vip_discount_mode === diablo_vip_sale_by_balance) {
+	    if ($scope.select.sysVip) {
+		if (diablo_abs($scope.select.verificate) > $scope.setting.maling_rang) {
+		    diabloUtilsService.response(
+			false,
+			"销售开单",
+			"开单失败：" + wsaleService.error[2197]);
+		    $scope.has_saved = false; 
+		    return;
+		}
+	    } else {
+		if ($scope.select.verificate > wsaleUtils.get_retailer_discount(
+		    $scope.select.retailer.level, $scope.levels))
+		{
+		    diabloUtilsService.response(
+			false,
+			"销售开单",
+			"开单失败：" + wsaleService.error[2197]);
+		    $scope.has_saved = false; 
+		    return;
+		}
+	    }
+	} 
+	
 	if ($scope.select.cash > diablo_max_sale_money
 	    || $scope.select.wxin > diablo_max_sale_money
 	    || $scope.select.aliPay > diablo_max_sale_money
@@ -2773,10 +2818,11 @@ function wsaleNewProvide(
 	    for(var i=0, l=$scope.inventories.length; i<l; i++){
 		var s = $scope.inventories[i];
 		s.$update = false;
-		s.o_fprice = s.fprice;
-		s.o_fdiscount = s.fdiscount;
-		// s.fdiscount = s.discount;
-		// s.fprice = diablo_price(s.tag_price, s.fdiscount); 
+		// s.o_fprice = s.fprice;
+		// s.o_fdiscount = s.fdiscount;
+		
+		s.fdiscount = s.discount;
+		s.fprice = diablo_price(s.tag_price, s.fdiscount);
 	    }	    
 	} else {
 	    // var totalPay = 0;
@@ -2799,10 +2845,11 @@ function wsaleNewProvide(
 	    for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    	var s = $scope.inventories[i];
 		s.$update = false;
-		s.o_fprice = s.fprice;
-		s.o_fdiscount = s.fdiscount;
-	    	// s.fdiscount = s.discount;
-		// s.fprice = diablo_price(s.tag_price, s.fdiscount);
+		// s.o_fprice = s.fprice;
+		// s.o_fdiscount = s.fdiscount;
+		
+	    	s.fdiscount = s.discount;
+		s.fprice = diablo_price(s.tag_price, s.fdiscount);
 	    }
 	    // $scope.select.verificate = $scope.select.should_pay - newValue;
 	}
@@ -2857,7 +2904,7 @@ function wsaleNewProvide(
 	    $scope.setting.round,
 	    $scope.setting.score_discount);
 	
-	console.log(calc);
+	// console.log(calc);
 	// console.log($scope.show_promotions);
 	$scope.select.total      = calc.total;
 	$scope.select.oil        = calc.oil;
@@ -2870,10 +2917,12 @@ function wsaleNewProvide(
 	$scope.select.score      = calc.score; 
 	$scope.select.pscores    = calc.pscores;
 	$scope.select.charge     = $scope.select.should_pay - $scope.select.has_pay;
-
-	// if ($scope.setting.show_wprice) {
-	//     $scope.select.verificate = 0;
-	// } 
+	
+	if ($scope.setting.show_wprice) {
+	    $scope.select.wprice = $scope.select.should_pay;
+	    $scope.select.verificate = $scope.select.base_pay - $scope.select.should_pay;
+	}
+	
 	$scope.reset_score();
     };
 
