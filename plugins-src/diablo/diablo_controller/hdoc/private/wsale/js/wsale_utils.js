@@ -1272,13 +1272,12 @@ var wsaleCalc = function(){
 	    });
 
 	    // vip mode
-	    if (isVip && diablo_sale === saleMode && diablo_vip_sale_by_discount === vipDiscountMode) {
+	    if (isVip && diablo_sale === saleMode && diablo_vip_sale_by_balance !== vipDiscountMode) {
 		for (var i=0, l=inventories.length; i<l; i++) {
 		    // promotion first
 		    var one = inventories[i]; 
 		    // console.log(one);
-		    if (one.bargin_price !== 3
-			&& wsaleCalc.in_promotion_stock(one, stocksSortWithPromotion)) {
+		    if (one.bargin_price !== 3 && wsaleCalc.in_promotion_stock(one, stocksSortWithPromotion)) {
 			if (one.pid !== diablo_invalid_index) {
 			    // M2N stock
 			    if (wsaleCalc.in_m2n_stocks(one, stocksNoWithM2N)) {

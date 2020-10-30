@@ -608,6 +608,7 @@ handle_call({lookup_role_shop, Condition}, _From, State) ->
 	", b.bcode_friend"
 	", b.bcode_pay"
 	", b.region as region_id"
+	", b.deleted"
 	++" from role_to_shop a, shops b"
 	++" where "  ++ ?utils:to_sqls(proplists, CorrectCondition)
 	++" and a.shop_id = b.id and a.deleted=" ++ ?to_s(?NO) ++ ";",

@@ -289,7 +289,7 @@ var diablo_balance_limit_charge = 7;
  * VIP SALE MODE
  */
 var diablo_vip_sale_by_discount = 1;
-var diablo_vip_sale_by_balance  = 2;
+var diablo_vip_sale_by_balance  = 3;
 
 
 /*

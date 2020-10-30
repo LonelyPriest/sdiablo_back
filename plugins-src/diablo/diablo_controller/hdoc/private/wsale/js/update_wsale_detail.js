@@ -101,7 +101,7 @@ function wsaleUpdateDetailCtrlProvide(
 	$scope.select.charge =
 	    $scope.select.should_pay - wsaleUtils.to_float($scope.select.has_pay) - wsaleUtils.to_float($scope.select.ticket);
 
-	if ($scope.setting.show_wprice) {
+	if ($scope.setting.show_wprice && wsaleUtils.to_integer($scope.select.wprice) {
 	    $scope.select.wprice = $scope.select.should_pay;
 	    $scope.select.verificate = $scope.select.base_pay - $scope.select.should_pay;
 	}
