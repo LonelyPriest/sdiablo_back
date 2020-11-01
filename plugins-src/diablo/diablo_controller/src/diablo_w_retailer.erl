@@ -247,9 +247,9 @@ gift(update, Merchant, GiftId, Attrs) ->
 filter(total_retailer, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {total_retailer, Merchant, Conditions});
-filter(total_consume, 'and', {Merchant, UTable}, Conditions) ->
+filter({total_consume, Mode}, 'and', {Merchant, UTable}, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {total_consume, Merchant, UTable, Conditions}); 
+    gen_server:call(Name, {total_consume, Mode, Merchant, UTable, Conditions}); 
 filter(total_charge_detail, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {total_charge_detail, Merchant, Conditions});
@@ -282,9 +282,9 @@ filter({retailer, Order, Sort}, 'and', Merchant, Conditions, CurrentPage, ItemsP
     gen_server:call(
       Name, {{filter_retailer, Order, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPage});
 
-filter(consume, 'and', {Merchant, UTable}, Conditions, CurrentPage, ItemsPerPage) ->
+filter({consume, Mode}, 'and', {Merchant, UTable}, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {filter_consume, Merchant, UTable, Conditions, CurrentPage, ItemsPerPage});
+    gen_server:call(Name, {filter_consume, Mode, Merchant, UTable, Conditions, CurrentPage, ItemsPerPage});
 
 filter(charge_detail, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -2343,28 +2343,43 @@ handle_call({total_retailer, Merchant, Conditions}, _From, State) ->
     {reply, Reply, State};
 
 
-handle_call({total_consume, Merchant, UTable, Conditions}, _From, State) ->
+handle_call({total_consume, Mode, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("total_consume: merchant ~p, conditions ~p", [Merchant, Conditions]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
     FilterConditions = filter_condition(consume, NewConditions),
     SortCondtions = sort_condition(consume, NewConditions),
 
-    Sql = "select count(*) as total" 
-	" from "
-	" (select a.retailer, a.shop, a.consume"
-	" from "
-	"(select merchant"
-	", retailer"
-	", shop, SUM(should_pay - verificate) as consume"
-	" from" ++ ?table:t(sale_new, Merchant, UTable)
-	++ " where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, FilterConditions)
-	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime)
-	++ " group by retailer, shop) a"
-	++ case SortCondtions of
-	    [] -> [];
-	    _ -> " where " ++ SortCondtions
-	end ++ ") b",
+    Sql = 
+	case Mode of
+	    0 ->
+		"select count(*) as total" 
+		    " from "
+		    " (select a.retailer, a.shop, a.consume"
+		    " from "
+		    "(select merchant"
+		    ", retailer"
+		    ", shop, SUM(should_pay - verificate) as consume"
+		    " from" ++ ?table:t(sale_new, Merchant, UTable)
+		    ++ " where merchant=" ++ ?to_s(Merchant)
+		    ++ ?sql_utils:condition(proplists, FilterConditions)
+		    ++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime)
+		    ++ " group by retailer, shop) a"
+		    ++ case SortCondtions of
+			   [] -> [];
+			   _ -> " where " ++ SortCondtions
+		       end ++ ") b";
+	    1 ->
+		"select count(*) as total"
+		    " from "
+		    "(select count(*)"
+		    ", retailer"
+		    " from " ++ ?table:t(sale_new, Merchant, UTable)
+		    ++ " where merchant=" ++ ?to_s(Merchant)
+		    ++ " and type=0"
+		    ++ ?sql_utils:condition(proplists, FilterConditions)
+		    ++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime)
+		    ++ " group by retailer) a"
+	end,
     
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
@@ -2466,48 +2481,69 @@ handle_call({{filter_retailer, Order, Sort},
     {reply, Reply, State};
 
 
-handle_call({filter_consume, Merchant, UTable, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+handle_call({filter_consume, Mode, Merchant, UTable, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
     ?DEBUG("filter_consume:merchant ~p, conditions ~p, page ~p", [Merchant, Conditions, CurrentPage]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
     FilterConditions = filter_condition(consume, NewConditions),
     SortCondtions = sort_condition(consume, NewConditions, <<"a.">>),
     
-    Sql = "select a.retailer_id"
-	", a.total"
-	", a.score"
-	", a.consume"
-	", a.draw"
-	", a.ticket"
+    Sql = case Mode of
+	      0 ->
+		  "select a.retailer_id"
+		      ", a.total"
+		      ", a.score"
+		      ", a.consume"
+		      ", a.draw"
+		      ", a.ticket"
 
-	", b.name as retailer"
-	", b.shop as shop_id"
-	", b.mobile as phone"
-	", b.balance"
-	
-	" from ("
-	"select retailer as retailer_id"
-	", shop as shop_id"
-	", SUM(total) as total"
-	", SUM(score) as score"
-	", SUM(should_pay - verificate) as consume"
-	", SUM(withDraw) as draw"
-	", SUM(ticket) as ticket" 
-    %% " from w_sale"
-	" from" ++ ?table:t(sale_new, Merchant, UTable)
-	++ " where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, FilterConditions)
-    %% ++ SortCondtions
-	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime)
-	++ " group by retailer, shop) a"
+		      ", b.name as retailer"
+		      ", b.shop as shop_id"
+		      ", b.mobile as phone"
+		      ", b.type as type_id"
+		      ", b.balance"
 
-	++ " left join w_retailer b on a.retailer_id=b.id"
-    %%++ " left join shops c on a.shop_id=c.id"
-	++ case SortCondtions of
-	       [] -> [];
-	       _ -> " where " ++ SortCondtions
-	   end
-	++ ?sql_utils:condition(page_desc, {use_consume, 0}, CurrentPage, ItemsPerPage),
+		      " from ("
+		      "select retailer as retailer_id"
+		      ", shop as shop_id"
+		      ", SUM(total) as total"
+		      ", SUM(score) as score"
+		      ", SUM(should_pay - verificate) as consume"
+		      ", SUM(withDraw) as draw"
+		      ", SUM(ticket) as ticket" 
+		  %% " from w_sale"
+		      " from" ++ ?table:t(sale_new, Merchant, UTable)
+		      ++ " where merchant=" ++ ?to_s(Merchant)
+		      ++ ?sql_utils:condition(proplists, FilterConditions)
+		  %% ++ SortCondtions
+		      ++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime)
+		      ++ " group by retailer, shop) a"
 
+		      ++ " left join w_retailer b on a.retailer_id=b.id"
+		  %%++ " left join shops c on a.shop_id=c.id"
+		      ++ case SortCondtions of
+			     [] -> [];
+			     _ -> " where " ++ SortCondtions
+			 end
+		      ++ ?sql_utils:condition(page_desc, {use_consume, 0}, CurrentPage, ItemsPerPage); 
+	      1 ->
+		  "select a.amount"
+		      ", a.retailer as retailer_id"
+		      ", b.mobile as phone"
+		      ", b.name as retailer"
+		      ", b.shop as shop_id"
+		      ", b.type as type_id"
+		      " from "
+		      "(select count(*) as amount"
+		      ", retailer"
+		      " from " ++ ?table:t(sale_new, Merchant, UTable)
+		      ++ " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and type=0"
+		      ++ ?sql_utils:condition(proplists, FilterConditions)
+		      ++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime)
+		      ++ " group by retailer) a"
+		      ++ " left join w_retailer b on a.retailer=b.id"
+		      ++ ?sql_utils:condition(page_desc, {use_amount, 0}, CurrentPage, ItemsPerPage)
+	  end,
     
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};

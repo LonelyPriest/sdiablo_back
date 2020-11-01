@@ -169,7 +169,7 @@ condition(page_desc, {use_balance, Sort}, CurrentPage, ItemsPerPage) ->
 condition(page_desc, {use_consume, Sort}, CurrentPage, ItemsPerPage) ->
     " order by a.consume " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
-    	++ ", " ++ ?to_s(ItemsPerPage);
+    	++ ", " ++ ?to_s(ItemsPerPage); 
 condition(page_desc, {use_level, Sort}, CurrentPage, ItemsPerPage) ->
     " order by a.level " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)

@@ -2207,6 +2207,7 @@ function wsaleNewProvide(
 
 	var sms_notify = function() {
 	    if (result.sms_code !== 0) {
+		var ERROR = require("diablo-error");
 		dialog.response(false,
 				"销售开单",
 				"开单成功！！发送短消息失败：" + ERROR[result.sms_code]); 
@@ -2814,7 +2815,7 @@ function wsaleNewProvide(
     });
 
     $scope.$watch("select.wprice", function(newValue, oldValue){
-	console.log(newValue);
+	// console.log(newValue);
 	$scope.select.verificate = 0;
 	if (newValue === oldValue ) return;
 	if (angular.isUndefined(newValue) || null === newValue) {
@@ -2841,7 +2842,7 @@ function wsaleNewProvide(
 	    // 	s.fdiscount = wsaleUtils.to_decimal(s.discount * mdiscount / 100);
 	    // 	s.fprice = diablo_price(s.tag_price, s.fdiscount);
 	    // }
-	    // console.log($scope.select.base_pay, $scope.select.should_pay); 
+	    // console.log($scope.select.base_pay, $scope.select.should_pay);
 	    $scope.select.verificate = $scope.select.base_pay - newValue;
 	    // console.log($scope.select.base_pay, newValue, $scope.select.verificate);
 	    // use original
@@ -2921,10 +2922,10 @@ function wsaleNewProvide(
 	$scope.select.pscores    = calc.pscores;
 	$scope.select.charge     = $scope.select.should_pay - $scope.select.has_pay;
 	
-	if ($scope.setting.show_wprice && wsaleUtils.to_integer($scope.select.wprice) !==0) {
-	    $scope.select.wprice = $scope.select.should_pay;
-	    $scope.select.verificate = $scope.select.base_pay - $scope.select.should_pay;
-	}
+	// if ($scope.setting.show_wprice && wsaleUtils.to_integer($scope.select.wprice) !==0) {
+	//     // $scope.select.wprice = $scope.select.should_pay;
+	//     // $scope.select.verificate = $scope.select.base_pay - $scope.select.should_pay;
+	// }
 	
 	$scope.reset_score();
     };

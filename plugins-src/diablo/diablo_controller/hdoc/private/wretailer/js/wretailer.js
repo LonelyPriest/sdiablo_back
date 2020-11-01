@@ -2146,15 +2146,30 @@ function wretailerLevelCtrlProvide(
 function wretailerConsumeCtrlProvide(
     $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, filterShop, user){
     $scope.levels = diablo_retailer_levels;
+    $scope.retailer_types = diablo_retailer_types;
     var dialog = diabloUtilsService;
-
+    
     $scope.items_perpage = diablo_items_per_page();
     $scope.max_page_size = 10;
     $scope.default_page = 1; 
-    $scope.current_page = $scope.default_page;
-    $scope.total_items = 0;
+    // $scope.current_page = $scope.default_page;
+    // $scope.total_items = 0;
+    $scope.shops = user.sortShops.filter(function(s) {return s.deleted === 0;});
 
-    $scope.shops = user.sortShops;
+    $scope.tab = {money:true, amount:false};
+    $scope.consume = {
+	consumes: [],
+	total_items: 0,
+	default_page: 1,
+	current_page: $scope.default_page
+    };
+
+    $scope.amount = {
+	amounts: [],
+	total_items: 0,
+	default_page: 1,
+	current_page: $scope.default_page
+    };
 
     $scope.filters = []; 
     diabloFilter.reset_field();
@@ -2168,25 +2183,39 @@ function wretailerConsumeCtrlProvide(
     var now = retailerUtils.first_day_of_month();
     $scope.time = diabloFilter.default_time(now.first, now.current);
 
+    var mode = 0;
     $scope.do_search = function(page){
 	console.log($scope.filters);
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    if ($scope.tab.money) mode = 0;
+	    else if ($scope.tab.amount) mode = 1;
+	    else mode = 1;
 	    wretailerService.filter_retailer_consume(
-		$scope.match, search, page, $scope.items_perpage
+		$scope.match, mode, search, page, $scope.items_perpage
 	    ).then(function(result){
 		console.log(result);
 		if (result.ecode === 0){
 		    if (page === $scope.default_page){
-			$scope.total_items = result.total; 
+			if ($scope.tab.money) {
+			    $scope.consume.total_items = result.total; 
+			} else if ($scope.tab.amount) {
+			    $scope.amount.total_items = result.total;
+			}
 		    }
 
 		    angular.forEach(result.data, function(d) {
 			d.shop = diablo_get_object(d.shop_id, filterShop);
+			d.type = diablo_get_object(d.type_id, $scope.retailer_types);
 		    })
 
 		    diablo_order(result.data, (page - 1) * $scope.items_perpage + 1);
-		    $scope.consumes = result.data;
-		    $scope.current_page = page; 
+		    if ($scope.tab.money) {
+			$scope.consume.consumes = result.data;
+			$scope.consume.current_page = page; 
+		    } else if ($scope.tab.amount)  {
+			$scope.amount.amounts = result.data;
+			$scope.amount.current_page = page;
+		    }
 		} 
 	    })
 	})
@@ -2200,7 +2229,7 @@ function wretailerConsumeCtrlProvide(
 	$scope.do_search(page)
     };
 
-    $scope.refresh();
+    // $scope.refresh();
 };
 
 function wretailerPlanCustomTicketCtrlProvide(

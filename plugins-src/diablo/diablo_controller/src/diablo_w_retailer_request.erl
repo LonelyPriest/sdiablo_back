@@ -849,14 +849,15 @@ action(Session, Req, {"print_w_retailer"}, Payload) ->
 action(Session, Req, {"filter_retailer_consume"}, Payload) ->
     ?DEBUG("filter_retailer_consume with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant  = ?session:get(merchant, Session),
-    UTable   = ?session:get(utable, Session),
+    UTable    = ?session:get(utable, Session),
+    Mode      = ?v(<<"mode">>, Payload, 0),
 
     ?pagination:pagination(
        fun(Match, Conditions) ->
-	       ?w_retailer:filter(total_consume, ?to_a(Match), {Merchant, UTable}, Conditions)
+	       ?w_retailer:filter({total_consume, Mode}, ?to_a(Match), {Merchant, UTable}, Conditions)
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
-	       ?w_retailer:filter(consume,
+	       ?w_retailer:filter({consume, Mode},
 				  Match,
 				  {Merchant, UTable},
 				  Conditions,

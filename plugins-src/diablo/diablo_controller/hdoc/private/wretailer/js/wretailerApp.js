@@ -683,10 +683,11 @@ function wretailerConfig(angular) {
 			     {retailer:retailers}).$promise;
 	};
 
-	this.filter_retailer_consume = function(match, fields, currentPage, itemsPerpage) {
+	this.filter_retailer_consume = function(match, mode, fields, currentPage, itemsPerpage) {
 	    return http.save(
 		{operation: "filter_retailer_consume"},
 		{match:  angular.isDefined(match) ? match.op : undefined,
+		 mode:   mode,
 		 fields: fields,
 		 page:   currentPage,
 		 count:  itemsPerpage}).$promise;
