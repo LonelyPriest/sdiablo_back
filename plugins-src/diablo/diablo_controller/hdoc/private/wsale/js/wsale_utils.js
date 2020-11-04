@@ -979,11 +979,11 @@ var wsaleCalc = function(){
 		valid_price = wsaleCalc.get_valid_price(isVip, virPriceMode, one);
 		if ( (angular.isDefined(one.select) && !one.select) || one.has_rejected) continue;
 		
-		if (one.$update && one.o_fprice !== one.fprice) {
+		if (one.o_fprice !== one.fprice) {
 		    // one.fdiscount = diablo_discount(one.fprice, one.tag_price);
 		    one.fdiscount = diablo_discount(one.fprice, valid_price);
 		    
-		} else if (one.$update && one.o_fdiscount !== one.fdiscount) {
+		} else if (one.o_fdiscount !== one.fdiscount) {
 		    // if (one.tag_price == 0) {
 		    // 	one.fprice = diablo_price(one.fprice, one.fdiscount); 
 		    // } else {

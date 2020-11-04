@@ -90,8 +90,8 @@ create table shops
     bcode_friend       VARCHAR(255) default '' not null,
     bcode_pay          VARCHAR(255) default '' not null,
 
-    sms_sign         VARCHAR(32) not null default '',
-    
+    sms_sign           VARCHAR(32) not null default '',
+        
     merchant           INTEGER default -1, -- which merchant belong to
     deleted            INTEGER default 0, -- 0: no;  1: yes
     entry_date         DATETIME not null,

@@ -415,6 +415,7 @@ handle_call({update_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
     AliPay     = ?v(<<"aliPay">>, Props, 0),
     Withdraw   = ?v(<<"withdraw">>, Props, 0),
     Ticket     = ?v(<<"ticket">>, Props, 0),
+    Verificate = ?v(<<"verificate">>, Props, 0),
     Comment    = ?v(<<"comment">>, Props),
     
     Total        = ?v(<<"total">>, Props),
@@ -436,6 +437,7 @@ handle_call({update_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
     OldAliPay     = ?v(<<"aliPay">>, OldProps),
     OldWithdraw   = ?v(<<"withdraw">>, OldProps),
     OldTicket     = ?v(<<"ticket">>, OldProps),
+    OldVericate   = ?v(<<"verificate">>, OldProps),
     
     %% OldComment   = ?v(<<"comment">>, OldProps),
     OldTotal     = ?v(<<"total">>, OldProps),
@@ -476,6 +478,7 @@ handle_call({update_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
 	++ ?utils:v(aliPay, float, get_modified(NewAliPay, OldAliPay))
 	++ ?utils:v(withdraw, float, get_modified(NewWithdraw, OldWithdraw))
 	++ ?utils:v(ticket, float, get_modified(NewTicket, OldTicket))
+	++ ?utils:v(verificate, float, get_modified(Verificate, OldVericate))
 	++ ?utils:v(total, integer, get_modified(Total, OldTotal))
 	++ ?utils:v(oil, integer, get_modified(Oil, OldOil))
 	++ ?utils:v(score, integer, get_modified(Score, OldScore))

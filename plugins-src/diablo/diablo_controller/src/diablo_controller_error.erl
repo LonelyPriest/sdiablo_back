@@ -648,6 +648,8 @@ error(pay_scan_no_shop, Shop) ->
     {2616, "failed to get shop with pay scan: " ++ ?to_s(Shop) ++ "."};
 error(invalid_pay_scan_code_len, PayCode) ->
     {2617, "invalid pay code len:" ++ ?to_s(PayCode)};
+error(pay_http_trans_failed, ECode) ->
+    {2618, "failed to pay scan trade: " ++ ?to_s(ECode)};
 error(check_pay_scan_but_db_error, PayOrderNo) ->
     {2686, "success to check pay, error to db:" ++ ?to_s(PayOrderNo)};
 error(pay_scan_unkown, PayOrderNo) ->

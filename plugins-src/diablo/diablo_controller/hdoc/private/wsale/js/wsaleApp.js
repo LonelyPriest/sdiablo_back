@@ -642,7 +642,8 @@ function wsaleNewProvide(
 	$scope.setting.disableWithDraw = wsaleUtils.to_integer(sale_mode.charAt(25));
 	$scope.setting.interval_print = wsaleUtils.to_integer(sale_mode.charAt(27));
 	$scope.setting.fixed_draw = wsaleUtils.to_integer(sale_mode.charAt(28));
-	$scope.setting.trans_count = wsaleUtils.to_integer(sale_mode.charAt(29)); 
+	$scope.setting.trans_count = wsaleUtils.to_integer(sale_mode.charAt(29));
+	$scope.setting.pay_scan_use = wsaleUtils.to_integer(sale_mode.charAt(32)); 
 
 	angular.extend($scope.setting, wsaleUtils.gift_sale(shopId, base));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
@@ -2822,11 +2823,11 @@ function wsaleNewProvide(
 	    for(var i=0, l=$scope.inventories.length; i<l; i++){
 		var s = $scope.inventories[i];
 		s.$update = false;
-		// s.o_fprice = s.fprice;
-		// s.o_fdiscount = s.fdiscount;
+		s.o_fprice = s.fprice;
+		s.o_fdiscount = s.fdiscount;
 		
-		s.fdiscount = s.discount;
-		s.fprice = diablo_price(s.tag_price, s.fdiscount);
+		// s.fdiscount = s.discount;
+		// s.fprice = diablo_price(s.tag_price, s.fdiscount);
 	    }	    
 	} else {
 	    // var totalPay = 0;
@@ -2849,11 +2850,11 @@ function wsaleNewProvide(
 	    for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    	var s = $scope.inventories[i];
 		s.$update = false;
-		// s.o_fprice = s.fprice;
-		// s.o_fdiscount = s.fdiscount;
+		s.o_fprice = s.fprice;
+		s.o_fdiscount = s.fdiscount;
 		
-	    	s.fdiscount = s.discount;
-		s.fprice = diablo_price(s.tag_price, s.fdiscount);
+	    	// s.fdiscount = s.discount;
+		// s.fprice = diablo_price(s.tag_price, s.fdiscount);
 	    }
 	    // $scope.select.verificate = $scope.select.should_pay - newValue;
 	}
@@ -3594,7 +3595,9 @@ function wsaleNewProvide(
     };
     
     $scope.check_pay_scan = function(pay) {
-	diabloFilter.check_pay_scan(pay.sn, pay.shop_id).then(function(result) {
+	diabloFilter.check_pay_scan(
+	    pay.sn, pay.shop_id, $scope.setting.pay_scan_use
+	).then(function(result) {
 	    console.log(result); 
 	    if (result.ecode === 0) {
 		// success
@@ -3640,6 +3643,7 @@ function wsaleNewProvide(
 		diabloFilter.pay_scan(
 		    $scope.select.shop.id,
 		    pay_type,
+		    $scope.setting.pay_scan_use,
 		    params.pay_code,
 		    params.balance
 		).then(function(result) {

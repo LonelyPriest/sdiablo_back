@@ -54,7 +54,16 @@
 -define(PAY_SCAN_REFUND, 3).
 -define(PAY_SCAN_REFUND_SUCCESS, 4).
 -define(PAY_SCAN_REFUND_FAILED, 5).
+-define(PAY_SCAN_NOTPAY, 6).
+-define(PAY_SCAN_CLOSED, 7).
+-define(PAY_SCAN_REVOKED, 8).
 -define(PAY_SCAN_UNKOWN, 9).
+-define(PAY_SCAN_NEED_QUERY, 10).
+
+%% WeiXin Pay Code
+-define(PREFIX_WEI_XIN, [<<"10">>, <<"11">>, <<"12">>, <<"13">>, <<"14">>, <<"15">>]).
+-define(PREFIX_ALI_PAY, [<<"25">>, <<"26">>, <<"27">>, <<"28">>, <<"29">>, <<"30">>]).
+-define(PREFIX_YIN_LIAN, [<<"62">>]).
 
 %% transfer
 -define(IN_ROAD, 0).

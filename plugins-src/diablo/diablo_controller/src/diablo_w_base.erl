@@ -978,9 +978,10 @@ sys_config() ->
 	      %% [28]: retailer use fixed draw
 	      %% [29]: check retailer trans count, 0 means nocheck
 	      %% [30-31]:days when to check retailer transaction count, default 30 days
+	      %% [32]: which pay_scan to use 0:wwt, 1:yc, default 0
 	      {"p_balance",
 	       "销售模式",
-	       "0000"++"0000"++"0000"++"0001"++"0000"++"0000"++"0010"++"0030" , "0"},
+	       "0000"++"0000"++"0000"++"0001"++"0000"++"0000"++"0010"++"0030" ++ "0" , "0"},
 
 	      %% [0]: auto generate ticket at 04:00
 	      %% [1]: use ticket with no check 0-> check 1-> no check

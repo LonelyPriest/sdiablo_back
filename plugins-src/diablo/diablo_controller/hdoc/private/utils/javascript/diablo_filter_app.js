@@ -1233,10 +1233,10 @@ function filterProvider(){
 		clear_from_storage(cookie, "p_template");
 	    },
 
-	    pay_scan: function(shop, pay_type, pay_code, balance) {
+	    pay_scan: function(shop, pay_type, pay_use, pay_code, balance) {
 		return _wsaleHttp.save(
 		    {operation:"w_pay_scan"},
-		    {shop:shop, type:pay_type, code:pay_code, balance:balance}).$promise;
+		    {shop:shop, type:pay_type, use:pay_use, code:pay_code, balance:balance}).$promise;
 	    },
 
 	    filter_pay_scan: function(match, fields, currentPage, itemsPerpage) {
@@ -1248,9 +1248,9 @@ function filterProvider(){
 		     count:  itemsPerpage}).$promise;
 	    },
 
-	    check_pay_scan:function(pay_order, shop) {
+	    check_pay_scan:function(pay_order, shop, pay_use) {
 		return _wsaleHttp.save(
-		    {operation:"check_w_pay_scan"}, {pay_order:pay_order, shop:shop}).$promise;
+		    {operation:"check_w_pay_scan"}, {pay_order:pay_order, shop:shop, use:pay_use}).$promise;
 	    }
 	    
 	    // 
