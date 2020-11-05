@@ -845,7 +845,7 @@ function dailyCostCtrlProvide (
 
 function payScanCtrlProvide (
     $scope, dateFilter, diabloUtilsService, diabloFilter, diabloPattern, wsaleService, user) {
-    $scope.shops   = user.sortShops;
+    $scope.shops   = user.sortShops.filter(function(s) {return s.deleted===0});
     $scope.shopIds = user.shopIds;
 
     $scope.filters = [];
@@ -905,6 +905,10 @@ function payScanCtrlProvide (
 			$scope.total_items   = result.total;
 			$scope.total_balance = result.t_balance; 
 		    }
+
+		    angular.forEach(result.data, function(d) {
+			d.shop = diablo_get_object(d.shop_id, $scope.shops);
+		    });
 
 		    diablo_order_page(page, $scope.items_perpage, result.data);
 		    $scope.pay_detail = result.data;

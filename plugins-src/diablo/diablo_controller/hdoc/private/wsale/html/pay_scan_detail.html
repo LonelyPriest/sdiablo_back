@@ -52,17 +52,19 @@
 		<thead>
 		  <tr>
 		    <th>序号</th>
+		    <th>店铺</th> 
 		    <th>订单号</th>
 		    <th>类型</th>
 		    <th>金额</th>
-		    <th>状态</th> 
-		    <th>日期</th> 
+		    <th>状态</th>
+		    <th>日期</th>
 		    <th>操作</th>
 		  </tr>
 		</thead>
 		<tbody>
 		  <tr ng-repeat="p in pay_detail">
 		    <td x-ng-bind="p.order_id"></td>
+		    <td x-ng-bind="p.shop.name">
 		    <td x-ng-bind="p.sn"></td>
 		    <td>
 			<div x-ng-switch on="p.type">
@@ -95,7 +97,7 @@
 		  </tr>
 
 		  <tr x-ng-if="total_items > 0">
-		    <td colspan="3"></td>
+		    <td colspan="4"></td>
 		    <td x-ng-bind="total_balance"></td> 
 		    <td colspan="4"></td>
 		  </tr>

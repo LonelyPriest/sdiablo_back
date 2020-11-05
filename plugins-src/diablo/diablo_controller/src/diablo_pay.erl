@@ -188,7 +188,7 @@ pay_yc(yc, Merchant, MchntCd, PayCode, Moneny) ->
 	    %% Service = "unified.trade.micropay",
 	    %% MchId = "800310000015826",
 	    OutTradeNo = "1000" ++ ?to_s(?inventory_sn:sn(pay_order_sn, Merchant)),
-	    GoodDesc = "",
+	    GoodDesc = "DaTangTongYong",
 	    TotalFee = case is_float(Moneny) of
 	    		   true ->
 	    		       erlang:float_to_list((?to_i(Moneny) * 100), [{decimals, 0}]);
@@ -267,13 +267,13 @@ pay_yc(yc, Merchant, MchntCd, PayCode, Moneny) ->
 				   [Merchant, SysCode, SysMsg]), 
 			    BizCode = ?v(<<"biz_code">>, Result),
 			    PayResult = ?v(<<"pay_result">>, Result),
-			    ?DEBUG("biz_code ~p, pay_result ~p", [BizCode, PayResult]),
+			    %% ?DEBUG("biz_code ~p, pay_result ~p", [BizCode, PayResult]),
 			    
 			    <<PayCodePrefix:2/binary, _/binary>> = PayCode,
 			    PayType = get_pay_type(by_prefix, PayCodePrefix), 
 				case ?v(<<"need_query">>, Result) of
 				    <<"Y">> ->
-					?DEBUG("PayType ~p", [PayType]),
+					%% ?DEBUG("PayType ~p", [PayType]),
 					%% {ok, ?PAY_SCAN_NEED_QUERY, OutTradeNo, PayType}
 					{ok, ?PAY_SCAN_UNKOWN, OutTradeNo, PayType};
 				    _ ->
@@ -285,9 +285,9 @@ pay_yc(yc, Merchant, MchntCd, PayCode, Moneny) ->
 					    false ->
 						BizMsg = ?v(<<"biz_msg">>, Result),
 						?INFO("pay scan failed:"
-						      "merchant ~p, sys_code ~p, biz_code ~p,"
-						      "BizMsg ~ts",
-						      [Merchant, SysCode, BizCode, BizMsg]),
+						      "merchant ~p, sys_code ~p, sys_msg ~ts, biz_code ~p,"
+						      "BizMsg ~ts, s ~p",
+						      [Merchant, SysCode, SysMsg, BizCode, BizMsg, S]),
 						{error, ?PAY_SCAN_FAILED, BizCode}
 					end
 				end; 
@@ -295,7 +295,7 @@ pay_yc(yc, Merchant, MchntCd, PayCode, Moneny) ->
 		    Msg = ?v(<<"message">>, Result),
 			    ?DEBUG("code ~p, msg ~p", [CheckCode, Msg]),
 			    ?INFO("pay sacn http transe failed,"
-				  "merchant ~p, Code ~p, Msg ~ts", [Merchant, CheckCode, Msg]),
+				  "merchant ~p, Code ~p, msg ~ts", [Merchant, CheckCode, Msg]),
 			    {error, pay_http_trans_failed, CheckCode}
 		    end; 
 		{ok, {{"HTTP/1.1", HttpCode, _}, _Head, Reply}} ->
