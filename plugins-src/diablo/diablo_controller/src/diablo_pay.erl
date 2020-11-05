@@ -188,13 +188,13 @@ pay_yc(yc, Merchant, MchntCd, PayCode, Moneny) ->
 	    %% Service = "unified.trade.micropay",
 	    %% MchId = "800310000015826",
 	    OutTradeNo = "1000" ++ ?to_s(?inventory_sn:sn(pay_order_sn, Merchant)),
-	    GoodDesc = "test",
+	    GoodDesc = "",
 	    TotalFee = case is_float(Moneny) of
-			   true ->
-			       erlang:float_to_list((?to_i(Moneny) * 100), [{decimals, 0}]);
-			   false ->
-			       ?to_i(Moneny) * 100
-		       end,
+	    		   true ->
+	    		       erlang:float_to_list((?to_i(Moneny) * 100), [{decimals, 0}]);
+	    		   false ->
+	    		       ?to_i(Moneny) * 100
+	    	       end,
 	    ?DEBUG("total fee ~p", [TotalFee]),
 	    MchCreateIp = ?YC_AGENT_IP,
 	    AuthCode = PayCode,
@@ -375,7 +375,8 @@ pay_yc(query_yc, Merchant, MchntCd, MchntOrder) ->
 					    _ -> 1
 					end, 
 			     case TransState of
-				 <<"SUCCESS">> -> ?v(<<"total_fee">>, Result);
+				 <<"SUCCESS">> ->
+				     ?to_i(?v(<<"total_fee">>, Result, 0)) / 100;
 				 _ -> 0
 			     end};
 			false ->

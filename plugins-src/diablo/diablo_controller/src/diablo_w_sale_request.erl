@@ -2621,7 +2621,7 @@ start_pay(0, Merchant, ShopId, PayType, MchntCd, PayCode, Balance) ->
 	       {?err(pay_scan_failed, Merchant), [{<<"pay_code">>, ?to_b(Code)}]} 
     end;
 
-start_pay(1, Merchant, ShopId, PayType, MchntCd, PayCode, Balance) ->
+start_pay(1, Merchant, ShopId, PayType, MchntCd, PayCode, Balance) -> 
     case diablo_pay:pay_yc(yc, Merchant, MchntCd, PayCode, Balance) of
 	{ok, ?PAY_SCAN_SUCCESS, PayOrder, RealPayType} ->
 	    Extra = [{<<"pay_order">>, ?to_b(PayOrder)},

@@ -3602,7 +3602,8 @@ function wsaleNewProvide(
 	    if (result.ecode === 0) {
 		// success
 		get_pay_scan_balance(pay.sn, result.pay_type, result.balance);
-		pay.state = result.pay_state; 
+		pay.state = result.pay_state;
+		pay.balance = result.balance;
 	    } else if (result.ecode === 2686) {
 		get_pay_scan_balance(pay.sn, result.pay_type, result.balance);
 		pay.state = result.pay_state; 
