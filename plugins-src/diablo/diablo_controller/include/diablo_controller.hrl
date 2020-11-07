@@ -419,6 +419,11 @@
 -define(update_daily_cost,      ?right_w_sale + 16).
 -define(list_daily_cost,        ?right_w_sale + 17).
 -define(export_w_sale_new,      ?right_w_sale + 18).
+-define(new_w_sale_order,       ?right_w_sale + 19).
+-define(del_w_sale_order,       ?right_w_sale + 20).
+-define(update_w_sale_order,    ?right_w_sale + 21).
+-define(filter_w_sale_order,    ?right_w_sale + 22).
+-define(filter_w_sale_order_note,  ?right_w_sale + 23).
 
 %% inventory
 -define(new_w_inventory,             ?right_w_inventory + 4).

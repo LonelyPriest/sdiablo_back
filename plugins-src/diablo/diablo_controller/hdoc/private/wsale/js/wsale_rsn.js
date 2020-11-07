@@ -852,6 +852,7 @@ function payScanCtrlProvide (
     diabloFilter.reset_field();
     diabloFilter.add_field("pay_state", wsaleService.pay_state);
     diabloFilter.add_field("pay_type", wsaleService.pay_type);
+    diabloFilter.add_field("shop", $scope.shops);
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
 
