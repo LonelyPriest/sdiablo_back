@@ -797,6 +797,8 @@ alter table w_sale_detail add column oil DECIMAL(10,2) default 0 after rprice;
 --20-09-29
 alter table suppliers modify column mobile VARCHAR(16) not null default '';
 
+alter table w_pay modify column sn VARCHAR(16) not null default '-1';
+
 --2020-10-19
 -- alter table w_retailer_level add column rule TINYINT not null default 0 after level;
 

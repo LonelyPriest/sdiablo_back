@@ -924,7 +924,11 @@ function payScanCtrlProvide (
 
     $scope.page_changed = function() {
 	$scope.do_search($scope.current_page)
-    }; 
+    };
+
+    $scope.go_back = function() {
+	diablo_goto_page("#/new_wsale_detail");
+    };
 };
 
 function wsaleUploadCtrlProvide (

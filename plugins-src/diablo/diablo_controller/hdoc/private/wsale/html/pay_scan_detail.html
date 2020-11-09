@@ -4,11 +4,17 @@
 
       <div class="portlet-title">
 	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>支付明细</div> 
-	<div class="actions">
-	  <div class="btn-group btn-group-solid"> 
+	<div class="actions"> 
+	  <div class="btn-group btn-group-solid">
+
+	    <button type="button" class="btn red"
+		    x-ng-click="go_back()">返回
+	      <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+	    
 	    <button type="button" class="btn blue reload purple-stripe"
 		    x-ng-click="refresh()">刷新
 	      <i class="icon icon-spinner fg-white"></i></button>
+	    
 	  </div>
 	</div> 
       </div>

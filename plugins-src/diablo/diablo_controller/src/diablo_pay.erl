@@ -5,7 +5,9 @@
 
 -export([pay/3, pay/5]).
 -export([pay_yc/4, pay_yc/5]).
+-export([pack_sn/1]).
 
+-define(MIN_SN_LEN, 7).
 -define(YC_AGENT, "A103373").
 -define(YC_AGENT_KEY, "7/ZbQ08OhITuruxv1qqCMiEOopM38bEoHJuFicbczTc=").
 -define(YC_AGENT_IP, "120.24.39.174").
@@ -187,7 +189,7 @@ pay_yc(yc, Merchant, MchntCd, PayCode, Moneny) ->
 	    %% Path = "https://ipayfront.cloudwalk.cn/api/transaction/front/pay/gateway",
 	    %% Service = "unified.trade.micropay",
 	    %% MchId = "800310000015826",
-	    OutTradeNo = "1000" ++ ?to_s(?inventory_sn:sn(pay_order_sn, Merchant)),
+	    OutTradeNo = pack_sn(?to_s(?inventory_sn:sn(pay_order_sn, Merchant))),
 	    GoodDesc = "DaTangTongYong",
 	    TotalFee = case is_float(Moneny) of
 	    		   true ->
@@ -418,3 +420,19 @@ get_pay_type(by_prefix, PayCodePrefix) when PayCodePrefix =:= <<"62">> ->
     6;
 get_pay_type(by_prefix, _PayCodePrefix) ->
     1.    
+
+pack_sn(String) when length(String) =:= ?MIN_SN_LEN ->
+    "M" ++ String;
+pack_sn(String) when length(String) > ?MIN_SN_LEN ->
+    String;
+pack_sn(String) when length(String) < ?MIN_SN_LEN ->
+    pack_sn(String, "0").
+
+
+pack_sn(String, Pack) -> 
+    SS = ?to_string(String),
+    pack_sn(SS, ?to_string(Pack), length(SS)).
+pack_sn(String, _Pack, ?MIN_SN_LEN) -> 
+    "M" ++ String;
+pack_sn(String, Pack, Length) ->
+    pack_sn(Pack ++ String, Pack, Length + length(Pack)).
