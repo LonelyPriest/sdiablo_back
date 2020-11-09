@@ -1678,7 +1678,7 @@ handle_call({start_pay_scan, Merchant, Shop, {PayType, PayState, Live, PayOrderN
 	", shop"
 	", merchant"
 	", entry_date) values("
-	++ ?to_s(PayOrderNo) ++ ","
+	++ "\'" ++ ?to_s(PayOrderNo) ++ "\',"
 	
 	++ ?to_s(PayType) ++ ","
 	++ ?to_s(Live) ++ ","
@@ -1698,7 +1698,7 @@ handle_call({check_pay_scan, Merchant, Shop, {PayType, PayState, PayOrderNo, Bal
     Sql = "update w_pay set " ++ ?utils:to_sqls(proplists, comma, Updates)
 	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and shop=" ++ ?to_s(Shop)
-	++ " and sn=" ++ ?to_s(PayOrderNo),
+	++ " and sn=\'" ++ ?to_s(PayOrderNo) ++ "\'",
 
     Reply = ?sql_utils:execute(write, Sql, PayOrderNo),
     {reply, Reply, State};

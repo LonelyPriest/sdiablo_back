@@ -10,10 +10,15 @@
 -define(MIN_SN_LEN, 7).
 -define(YC_AGENT, "A103373").
 -define(YC_AGENT_KEY, "7/ZbQ08OhITuruxv1qqCMiEOopM38bEoHJuFicbczTc=").
--define(YC_AGENT_IP, "120.24.39.174").
 -define(YC_PATH, "https://apifacepay.cloudwalk.cn/api/transaction/front/pay/gateway").
+
+-define(YC_AGENT_IP, "120.24.39.174").
 -define(YC_PAY_SERVICE, "unified.trade.micropay").
 -define(YC_PAY_QUERY_SERVICE, "unified.trade.query").
+
+%% -define(YC_AGENT, "A100721").
+%% -define(YC_AGENT_KEY, "S6Fl7nurJ5E6zyrb2tBLxg40+21RNmEClZ0fivTIX+k=").
+%% -define(YC_PATH, "https://ipayfront.cloudwalk.cn/api/transaction/front/pay/gateway").
 
 pay(wwt, Merchant, MchntCd, PayCode, Moneny) ->
     ?DEBUG("pay wwt: merchant ~p, MchntCd ~p, PayCode ~p, Moneny ~p",
@@ -313,7 +318,7 @@ pay_yc(yc, Merchant, MchntCd, PayCode, Moneny) ->
 pay_yc(query_yc, Merchant, MchntCd, MchntOrder) ->
     %% Path = "https://ipayfront.cloudwalk.cn/api/transaction/front/pay/gateway",
     %% Service = "unified.trade.query",
-    %% MchId = "800310000015826", 
+    %% MchId = "800310000015826",
     AgentNo = ?YC_AGENT,
     Token = ?YC_AGENT_KEY,
     Random = ?utils:random(1000), 
