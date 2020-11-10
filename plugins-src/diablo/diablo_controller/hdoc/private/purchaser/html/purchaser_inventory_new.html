@@ -892,7 +892,10 @@
 		</div>
 
 		<div x-ng-if="!base_settings.hide_draw" class="form-group diablo-good-form-group">
-		  <label class="col-sm-3 col-md-3 control-label">提现额度</label>
+		  <label class="col-sm-3 col-md-3 control-label">
+		    <span x-ng-if="base_settings.fixed_mode===1">提现额度</span>
+		    <span x-ng-if="base_settings.fixed_mode===2">优惠额度</span>
+		  </label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
 		      <input class="form-control"

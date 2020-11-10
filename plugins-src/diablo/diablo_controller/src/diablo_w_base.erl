@@ -941,7 +941,7 @@ sys_config() ->
 	      %% [16]: none score with promotion 0:yes, 1:no
 	      %% [17-18]: 80-> vir_price * 0.8 = tag_price, 00 -> none
 	      %% [19]: print label with dialog 0: no dialog, 1: dialog
-	      %% [20]: hide draw, draw by good
+	      %% [20]: hide fixed draw or reduction, refer to hide_mode[30]
 	      %% [21]: hide commision
 	      {"h_stock",         "入库字段隐藏",
 	       "0001"++"1011"++"1111"++"0111"++"0000"++"11", "0"},
@@ -976,9 +976,10 @@ sys_config() ->
 	      %% [25]: disable withdarw on sale
 	      %% [26]: print score information of retailer
 	      %% [27]: interval print
-	      %% [28]: retailer use fixed draw
+	      %% [28]: stock with fixed mode, 1:fixed draw, 2:fixed reduction. refer to hide_mode[20]
 	      %% [29]: check retailer trans count, 0 means nocheck
-	      %% [30-31]:days when to check retailer transaction count, default 30 days
+	      %% [30]: remain
+	      %% [31]: remain
 	      %% [32]: which pay_scan to use 0:wwt, 1:yc, default 0
 	      {"p_balance",
 	       "销售模式",

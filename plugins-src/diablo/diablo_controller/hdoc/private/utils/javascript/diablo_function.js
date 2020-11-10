@@ -200,6 +200,12 @@ var diablo_stock_mode = "1111111";
 var diablo_gift_mode = "00"
 
 /*
+ * stock fixed mode
+ */
+var diablo_fixed_draw = 1;
+var diablo_fixed_reduction = 2;
+
+/*
  * batch mode
  */
 var diablo_batch_mode = "01111111";

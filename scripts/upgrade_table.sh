@@ -83,16 +83,27 @@ PASSWORD=$2
 
 
 ## 2020-07-02
-for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 71 72 73 74 79 90 98 101 103 104 105 106 107 108 109 110 111 112 113
+# for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 71 72 73 74 79 90 98 101 103 104 105 106 107 108 109 110 111 112 113
+# do
+#     echo w_inventory_${t}
+#     echo w_sale_detail_${t}
+#     mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
+# alter table w_inventory_${t} add column commision INTEGER not null default -1 after score;
+# alter table w_sale_${t} add column oil DECIMAL(10,2) not null default 0 after total;
+# alter table w_sale_detail_${t} add column commision INTEGER not null default -1;
+# alter table w_sale_detail_${t} add column oil DECIMAL(10,2) default 0 after rprice;
+# EOF
+# done
+
+## 2020-07-02
+for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 72 73 74 90 101 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120
 do
-    echo w_inventory_${t}
-    echo w_sale_detail_${t}
+    echo w_sale_${t}
     mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
-alter table w_inventory_${t} add column commision INTEGER not null default -1 after score;
-alter table w_sale_${t} add column oil DECIMAL(10,2) not null default 0 after total;
-alter table w_sale_detail_${t} add column commision INTEGER not null default -1;
-alter table w_sale_detail_${t} add column oil DECIMAL(10,2) default 0 after rprice;
+alter table w_sale_${t} modify column pay_sn VARCHAR(16) not null default '-1';
 EOF
 done
+
+
 
 

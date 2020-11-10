@@ -154,7 +154,7 @@
 			<th>特价</th>
 			<th>促销</th>
 			<th>积分</th>
-			<th x-ng-if="!setting.hide_draw">提现额度</th>
+			<th x-ng-if="!setting.hide_draw">额度</th>
 			<th x-ng-if="setting.gift_sale">赠送</th>
 			<th>用券</th>
 			<th x-ng-if="!setting.hide_oil">提成</th>
@@ -843,7 +843,7 @@
 	</div>
 
 	<div x-ng-if="!params.hide_draw" class="form-group">
-	  <label class="col-sm-2 col-md-2 control-label">提现额度</label>
+	  <label class="col-sm-2 col-md-2 control-label">额度</label>
 	  <div class="col-sm-10 col-md-10">
 	    <input class="form-control"
 		   type="number"

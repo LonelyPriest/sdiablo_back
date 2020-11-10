@@ -325,7 +325,7 @@ pay_yc(query_yc, Merchant, MchntCd, MchntOrder) ->
     S = [lists:concat(["agentNo=", AgentNo, "&"]),
 	 lists:concat(["mch_id=", ?to_s(MchntCd), "&"]) ,
 	 lists:concat(["nonce_str=", Random, "&"]),
-	 lists:concat(["out_trade_no=", MchntOrder, "&"]), 
+	 lists:concat(["out_trade_no=", ?to_s(MchntOrder), "&"]), 
 	 lists:concat(["service=", ?YC_PAY_QUERY_SERVICE, "&"]),
 	 lists:concat(["sign_token=", ?to_s(Token)])
 	],

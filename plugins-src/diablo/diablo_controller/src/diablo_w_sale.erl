@@ -294,7 +294,7 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 			++ ?to_s(Score) ++ "," 
 			++ "\'" ++ ?to_s(Comment) ++ "\'," 
 			++ ?to_s(type(new)) ++ ","
-			++ ?to_s(PayOrder) ++ "," 
+			++ "\'" ++ ?to_s(PayOrder) ++ "\'," 
 			++ "\'" ++ ?to_s(DateTime) ++ "\');",
 
 		    Sql3 = ["update w_retailer set consume=consume+"

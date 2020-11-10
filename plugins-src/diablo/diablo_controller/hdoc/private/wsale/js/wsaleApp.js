@@ -615,6 +615,7 @@ function wsaleNewProvide(
 	$scope.setting.barcode_auto  = wsaleUtils.barcode_auto(shopId, base);
 	$scope.setting.draw_score    = wsaleUtils.draw_score(shopId, base);
 	$scope.setting.draw_region   = wsaleUtils.draw_region(shopId, base);
+	$scope.setting.hide_fixed_stock = wsaleUtils.hide_fixed_stock(shopId, base);
 	$scope.setting.vip_mode      = wsaleUtils.vip_mode(shopId, base);
 	$scope.setting.vip_discount_mode = wsaleUtils.to_integer($scope.setting.vip_mode.charAt(0));
 	console.log($scope.setting.vip_discount_mode);
@@ -641,9 +642,9 @@ function wsaleNewProvide(
 	$scope.setting.pay_scan = wsaleUtils.to_integer(sale_mode.charAt(24));
 	$scope.setting.disableWithDraw = wsaleUtils.to_integer(sale_mode.charAt(25));
 	$scope.setting.interval_print = wsaleUtils.to_integer(sale_mode.charAt(27));
-	$scope.setting.fixed_draw = wsaleUtils.to_integer(sale_mode.charAt(28));
+	$scope.setting.fixed_mode = wsaleUtils.to_integer(sale_mode.charAt(28));
 	$scope.setting.trans_count = wsaleUtils.to_integer(sale_mode.charAt(29));
-	$scope.setting.pay_scan_use = wsaleUtils.to_integer(sale_mode.charAt(32)); 
+	$scope.setting.pay_scan_use = wsaleUtils.to_integer(sale_mode.charAt(32));
 
 	angular.extend($scope.setting, wsaleUtils.gift_sale(shopId, base));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
@@ -994,7 +995,7 @@ function wsaleNewProvide(
 	diabloFilter.check_retailer_charge(
 	    $scope.select.retailer.id,
 	    $scope.select.shop.id,
-	    $scope.setting.fixed_draw ? $scope.select.can_draw : $scope.select.should_pay,
+	    $scope.setting.fixed_mode===diablo_fixed_draw  ? $scope.select.can_draw:$scope.select.should_pay,
 	    $scope.select.surplus,
 	    $scope.select.retailer.draw_id
 	).then(function(result) {
@@ -2824,8 +2825,7 @@ function wsaleNewProvide(
 		var s = $scope.inventories[i];
 		s.$update = false;
 		s.o_fprice = s.fprice;
-		s.o_fdiscount = s.fdiscount;
-		
+		s.o_fdiscount = s.fdiscount; 
 		// s.fdiscount = s.discount;
 		// s.fprice = diablo_price(s.tag_price, s.fdiscount);
 	    }	    
@@ -3463,9 +3463,21 @@ function wsaleNewProvide(
 	    console.log(result); 
 	    // if (inv.sell !== result.sell) 
 	    // 	inv.$update_count = true;
-	    if (inv.fprice !== result.fprice || inv.fdiscount !== result.fdiscount) {
-		inv.$update = true;
+	    if (!$scope.setting.hide_fixed_stock
+		&& $scope.setting.fixed_mode === diablo_fixed_reduction
+		&& !$scope.right.master) {
+		if (inv.fprice !== result.fprice && inv.tag_price - result.fprice > inv.draw) {
+		    dialog.set_error("销售开单", 2718);
+		    return;
+		}
+		else if (inv.fdiscount !== result.fdiscount
+			 && inv.tag_price - diablo_price(inv.tag_price, result.fdiscount) > inv.draw) {
+		    dialog.set_error("销售开单", 2718);
+		    return;
+		} 
 	    }
+	    
+	    if (inv.fprice !== result.fprice || inv.fdiscount !== result.fdiscount) inv.$update = true;
 	    
 	    inv.amounts    = result.amounts;
 	    inv.sell       = result.sell;
@@ -3513,14 +3525,35 @@ function wsaleNewProvide(
 	// if (inv.amounts[0].sell_count !== inv.sell)
 	//     inv.$update_count = true; 
 	inv.amounts[0].sell_count = inv.sell;
-	if (inv.fprice !== inv.o_fprice || inv.fdiscount !== inv.o_fdiscount)
-	    inv.$update = true;
+
 	
+	// 	inv.$update_count = true;
+	if (!$scope.setting.hide_fixed_stock
+	    && $scope.setting.fixed_mode === diablo_fixed_reduction
+	    && !$scope.right.master) {
+	    if (inv.fprice !== inv.o_fprice && inv.tag_price - inv.fprice > inv.draw) {
+		inv.free_update = true;
+		inv.fprice = inv.o_fprice;
+		inv.fdiscount = inv.o_fdiscount;
+		dialog.set_error("销售开单", 2718); 
+		return;
+	    }
+	    else if (inv.fdiscount !== inv.o_fdiscount
+		     && inv.tag_price - diablo_price(inv.tag_price, inv.fdiscount) > inv.draw) {
+		inv.free_update = true;
+		inv.fprice = inv.o_fprice;
+		inv.fdiscount = inv.o_fdiscount;
+		dialog.set_error("销售开单", 2718);
+		return;
+	    }
+	}
+		
 	// save
 	// $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
+	if (inv.fprice !== inv.o_fprice || inv.fdiscount !== inv.o_fdiscount) inv.$update = true;
 
 	$scope.re_calculate();
-
+	
 	// reset
 	// $scope.inventories[0] = {$edit:false, $new:true};
 	$scope.focus_good_or_barcode();

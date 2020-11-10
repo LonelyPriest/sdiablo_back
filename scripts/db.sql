@@ -1377,7 +1377,7 @@ create table w_sale(
     ticket         DECIMAL(10, 2) default 0, -- max: 99999999.99
     verificate     DECIMAL(10, 2) default 0, -- max: 99999999.99
 
-    pay_sn         INTEGER not null default -1,
+    pay_sn         VARCHAR(16) not null default '-1',
     -- cbalance       INTEGER not null default 0, -- charge balance
     -- sbalance       INTEGER not null default 0, -- send balance of charging
     
@@ -1793,7 +1793,7 @@ create table print_template(
 create table w_pay
 (
     id              INTEGER AUTO_INCREMENT,
-    sn              INTEGER default -1 not null,
+    sn              VARCHAR(16) not null default '-1',
 
     type            TINYINT default -1 not null, -- 0:wxin, 1:alipay
     live            TINYINT default -1 not null, -- 0:sale, 1:recharge
