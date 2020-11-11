@@ -109,7 +109,7 @@
 		  <!-- <th class="text-center">成交价</th> -->
 		  <!-- <th class="text-center">折扣率</th>  -->
 		  <th class="text-center">合计</th>
-		  <th x-ng-if="setting.fixed_draw
+		  <th x-ng-if="setting.fixed_mode===1
 			       && select.retailer.type_id===1
 			       && select.retailer.balance!==0" class="text-center">提现</th>
 		  <th class="text-center">色/码</th>
@@ -230,7 +230,7 @@
 		  <td class="vert-align">
 		    <span class={{color_negative_sale(inv.negative)}}>{{inv.calc}}</span>
 		  </td>
-		  <td  x-ng-if="setting.fixed_draw
+		  <td  x-ng-if="setting.fixed_mode===1
 				&& select.retailer.type_id===1
 				&& select.retailer.balance!==0" class="vert-align">
 		    <span class={{color_negative_sale(inv.negative)}}>{{inv.draw}}</span>
