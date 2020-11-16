@@ -747,7 +747,8 @@ var diablo_price = function(price, discount){
     return diablo_rdight(p, 2);
 }
 
-var diablo_full_year = [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020];
+var diablo_full_year = [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024,
+			2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032, 2033, 2034, 2035, 2036];
 
 var diablo_print_field = {
     brand:        "品牌",

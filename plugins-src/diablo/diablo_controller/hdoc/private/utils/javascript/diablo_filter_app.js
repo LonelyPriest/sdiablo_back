@@ -803,11 +803,14 @@ function filterProvider(){
 			var ps = planes.map(function(p) {
 			    return {id        :p.id,
 				    name      :p.name,
+				    rule      :p.rule_id,
 				    py:diablo_pinyin(p.name),
 				    balance   :p.balance,
 				    mbalance  :p.mbalance,
 				    effect    :p.effect,
 				    expire    :p.expire,
+				    stime     :p.stime,
+				    etime     :p.etime,
 				    scount    :p.scount}
 			});
 

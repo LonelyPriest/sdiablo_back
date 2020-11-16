@@ -830,6 +830,7 @@ create table w_ticket_custom(
 create table w_ticket_plan(
     id              INTEGER AUTO_INCREMENT,
     name            VARCHAR(64) not null,
+    rule            TINYINT default 0 not null,
     balance         INTEGER not null,
     effect          TINYINT default -1,
     expire          TINYINT default -1,
@@ -837,7 +838,9 @@ create table w_ticket_plan(
     mbalance        INTEGER default -1, -- threshold balance when send ticket
     ubalance        INTEGER default -1, -- threshold balance when use ticket
     ishop           TINYINT default 0 not null, -- allowed consume at different shop. 0:yes; 1: no
-    remark          VARCHAR(128) not null,
+    stime           DATE default 0 not null,
+    etime           DATE default 0 not null,
+    remark          VARCHAR(128) not null, 
     merchant        INTEGER not null default -1, 
     entry_date      DATETIME default 0, 
     deleted         INTEGER default 0, -- 0: no;  1: yes 

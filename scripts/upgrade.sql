@@ -803,6 +803,11 @@ alter table w_sale modify column sn VARCHAR(16) not null default '-1';
 --2020-10-19
 -- alter table w_retailer_level add column rule TINYINT not null default 0 after level;
 
+--202-11-16
+alter table w_ticket_plan add column stime DATE not null default 0 after ishop;
+alter table w_ticket_plan add column etime DATE not null default 0 after stime;
+alter table w_ticket_plan add column rule TINYINT not null default 0 after name;
+
 
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;

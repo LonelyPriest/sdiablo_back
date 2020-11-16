@@ -1190,7 +1190,9 @@ function wsaleNewProvide(
 					   balance :t.plan.balance,
 					   count   :t.count,
 					   effect  :t.plan.effect,
-					   expire  :t.plan.expire});
+					   expire  :t.plan.expire,
+					   stime   :t.plan.stime,
+					   etime   :t.plan.etime});
 	    	    }
 		});
 		

@@ -1943,9 +1943,27 @@ handle_call({consume_ticket, Merchant, {TicketId, Comment, Score2Money}}, _From,
 handle_call({new_ticket_plan, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_ticket_plan: merchant ~p, attrs ~p", [Merchant, Attrs]),
     Name    = ?v(<<"name">>, Attrs),
+    Rule    = ?v(<<"rule">>, Attrs),
     Balance = ?v(<<"balance">>, Attrs),
-    Effect  = ?utils:dbvalue(?v(<<"effect">>, Attrs, 0)), 
-    Expire  = ?utils:dbvalue(?v(<<"expire">>, Attrs, 0)),
+    Effect  = case Rule of
+		  0 -> ?utils:dbvalue(?v(<<"effect">>, Attrs, 0));
+		  1 -> ?INVALID_OR_EMPTY
+	      end,
+    Expire  = case Rule of
+		  0 -> ?utils:dbvalue(?v(<<"expire">>, Attrs, 0));
+		  1 -> ?INVALID_OR_EMPTY
+	      end,
+    
+    STime   = case Rule of
+		  1 -> ?v(<<"stime">>, Attrs, 0);
+		  0 -> format_date(?INVALID_DATE)
+	      end,
+    
+    ETime   = case Rule of
+		  1 -> ?v(<<"etime">>, Attrs, 0);
+		  0 -> format_date(?INVALID_DATE)
+	      end,
+    
     MaxSend = ?v(<<"scount">>, Attrs, 1),
     MBalance= ?v(<<"mbalance">>, Attrs, -1),
     UBalance= ?v(<<"ubalance">>, Attrs, -1),
@@ -1960,9 +1978,12 @@ handle_call({new_ticket_plan, Merchant, Attrs}, _From, State) ->
 	{ok, []} ->
 	    Sql1 = "insert into w_ticket_plan("
 		"name"
+		", rule"
 		", balance"
 		", effect"
 		", expire"
+		", stime"
+		", etime"
 		", scount"
 		", mbalance"
 		", ubalance"
@@ -1971,12 +1992,15 @@ handle_call({new_ticket_plan, Merchant, Attrs}, _From, State) ->
 		", merchant"
 		", entry_date) values("
 		++ "\'" ++ ?to_s(Name) ++ "\',"
+		++ ?to_s(Rule) ++ ","
 		++ ?to_s(Balance) ++ ","
 		++ case Effect of
 		       0 -> ?to_s(?INVALID_OR_EMPTY);
 		       _ -> ?to_s(Effect)
 		   end ++ ","
 		++ ?to_s(Expire) ++ ","
+		++ "\'" ++ ?to_s(STime) ++ "\',"
+		++ "\'" ++ ?to_s(ETime) ++ "\',"
 		++ ?to_s(MaxSend) ++ ","
 		++ ?to_s(MBalance) ++ ","
 		++ ?to_s(UBalance) ++ ","
@@ -2038,17 +2062,21 @@ handle_call({list_ticket_plan, Merchant}, _From, State) ->
     Sql = "select id"
 	", merchant"
 	", name"
+	", rule as rule_id"
 	", balance"
 	", mbalance"
 	", ubalance"
 	", effect"
 	", expire"
+	", stime"
+	", etime"
 	", scount"
 	", mbalance"
 	", ishop"
 	", entry_date"
 	" from w_ticket_plan where merchant=" ++ ?to_s(Merchant)
-	++ " and deleted=" ++ ?to_s(?NO), 
+	++ " and deleted=" ++ ?to_s(?NO)
+	++ " order by id desc",
     {reply, ?sql_utils:execute(read, Sql), State};
 
 handle_call({delete_ticket_plan, Merchant, Plan}, _From, State) ->
@@ -3768,10 +3796,18 @@ search_custome_ticket(_Merchant, [], Success, Failed, AllBalance, AllCount, MinE
     {Success, Failed, AllBalance, AllCount, MinEffect};
 search_custome_ticket(Merchant, [{struct, Ticket}|T], Success, Failed, AllBalance, AllCount, MinEffect)->
     Plan     = ?v(<<"id">>, Ticket),
+    Rule     = ?v(<<"rule">>, Ticket),
     Balance  = ?v(<<"balance">>, Ticket),
     Count    = ?v(<<"count">>, Ticket),
-    Effect   = ?v(<<"effect">>, Ticket),
-    Expire   = ?v(<<"expire">>, Ticket),
+    Effect   = case Rule of
+		   0 -> ?v(<<"effect">>, Ticket);
+		   1 -> ?utils:diff_date(date, ?v(<<"stime">>, Ticket), current_date())
+	       end,
+    Expire   = case Rule of
+		   0 -> ?v(<<"expire">>, Ticket);
+		   1 -> ?utils:diff_date(date, ?v(<<"etime">>, Ticket), ?v(<<"stime">>, Ticket))
+	       end,
+    
     Batchs   = find_custome_ticket_batch(by_plan, Plan, Success, []),
     Sql = "select id"
 	", batch"
@@ -3806,10 +3842,10 @@ search_custome_ticket(Merchant, [{struct, Ticket}|T], Success, Failed, AllBalanc
 	      Failed,
 	      AllBalance + Balance,
 	      AllCount + Count,
-	     case MinEffect > Effect of
-		 true -> Effect;
-		 false -> MinEffect
-	     end)
+	      case MinEffect > Effect of
+		  true -> Effect;
+		  false -> MinEffect
+	      end)
     end.
 
 find_custome_ticket_batch(by_plan, _Plan, [], Sort) ->

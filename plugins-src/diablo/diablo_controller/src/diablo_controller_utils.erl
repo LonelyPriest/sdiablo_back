@@ -132,7 +132,14 @@ ecompare_date(date, {Y, M, D}, StringDate) ->
     ecompare_date(date, {Y, M, D}, to_date(date, StringDate));
 ecompare_date(date, StringDate0, StringDate1) ->
     ecompare_date(date, to_date(date, StringDate0), to_date(date, StringDate1)).
-			
+
+diff_date(date, {Y, M, D}, {Y1, M1, D1}) ->
+    calendar:date_to_gregorian_days({Y, M, D}) - calendar:date_to_gregorian_days({Y1, M1, D1});
+diff_date(date, {Y, M, D}, StringDate) ->
+    diff_date(date, {Y, M, D}, to_date(date, StringDate));
+diff_date(date, StringDate0, StringDate1) ->
+    diff_date(date, to_date(date, StringDate0), to_date(date, StringDate1)).
+
 datetime2seconds(Datetime) when is_binary(Datetime)->
     <<YY:4/binary, "-",  MM:2/binary, "-", DD:2/binary, " ",
       HH:2/binary, ":", MMM:2/binary, ":", SS:2/binary>> = Datetime,

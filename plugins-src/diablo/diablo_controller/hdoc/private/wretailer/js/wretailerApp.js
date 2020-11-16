@@ -249,8 +249,11 @@ function wretailerConfig(angular) {
 				{name:"季卡模式", id:diablo_quarter_unlimit_charge},
 				{name:"年卡模式", id:diablo_year_unlimit_charge},
 				{name:"半年卡模式", id:diablo_half_of_year_unlimit_charge},
-				{name:"余额卡模式", id:diablo_balance_limit_charge}
-			       ];
+				{name:"余额卡模式", id:diablo_balance_limit_charge}];
+	
+	this.custom_ticket_plan_rules = [
+	    {name:"期限模式", id:0},
+	    {name:"日期模式", id:1}];
 
 	// this.sale_rules = [{name:"折扣模式", id:diablo_retailer_sale_by_discount},
 	// 		   {name:"直减模式", id:diablo_retailer_sale_by_balance}];

@@ -80,11 +80,14 @@ function wretailerDetailCtrlProvide(
 	return !p.deleted && p.mbalance === diablo_invalid;
     }).map(function(p) {
 	return {id:       p.id,
+		rule:     p.rule,
 		name:     p.name + "-" + p.balance + "元",
 		balance:  p.balance,
 		mbalance: p.mbalance,
 		effect:   p.effect,
 		expire:   p.expire,
+		stime:    p.stime,
+		etime:    p.etime,
 		scount:   p.scount}
     });
     
@@ -857,10 +860,13 @@ function wretailerDetailCtrlProvide(
 	    angular.forEach(params.tickets, function(t) {
 	    	if (t.plan.id !== diablo_invalid_index) {
 	    	    send_tickets.push({id      :t.plan.id,
+				       rule    :t.plan.rule,
 				       balance :t.plan.balance,
 				       count   :t.count,
 				       effect  :t.plan.effect,
-				       expire  :t.plan.expire});
+				       expire  :t.plan.expire,
+				       stime   :t.plan.stime,
+				       etime   :t.plan.etime});
 	    	}
 	    }); 
 	    console.log(send_tickets);
@@ -2233,12 +2239,14 @@ function wretailerConsumeCtrlProvide(
 };
 
 function wretailerPlanCustomTicketCtrlProvide(
-    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, user){
+    $scope, diabloFilter, dateFilter, diabloPattern, diabloUtilsService, wretailerService, user){
     $scope.yes_no = retailerUtils.yes_no();
     var dialog = diabloUtilsService; 
     var lpattern = {name     :diabloPattern.chinese_name,
 		    number   :diabloPattern.number,
 		    remark   :diabloPattern.comment};
+
+    $scope.plan_rules = wretailerService.custom_ticket_plan_rules;
 
     $scope.refresh = function() {
 	wretailerService.list_ticket_plan().then(function(planes) {
@@ -2255,9 +2263,12 @@ function wretailerPlanCustomTicketCtrlProvide(
 	    console.log(params);
 	    wretailerService.new_ticket_plan(
 		{name: diablo_trim(params.name),
+		 rule: params.rule.id,
 		 balance: retailerUtils.to_integer(params.balance),
-		 effect:  retailerUtils.to_integer(params.effect),
-		 expire:  retailerUtils.to_integer(params.expire),
+		 effect:  params.rule.id===0 ? retailerUtils.to_integer(params.effect) : undefined,
+		 expire:  params.rule.id===0 ? retailerUtils.to_integer(params.expire) : undefined,
+		 stime:   params.rule.id===1 ? dateFilter(params.stime, "yyyy-MM-dd") : undefined,
+		 etime:   params.rule.id===1 ? dateFilter(params.etime, "yyyy-MM-dd") : undefined,
 		 scount:  retailerUtils.to_integer(params.scount),
 		 mbalance:retailerUtils.to_integer(params.mbalance),
 		 ubalance:retailerUtils.to_integer(params.ubalance),
@@ -2279,7 +2290,10 @@ function wretailerPlanCustomTicketCtrlProvide(
 	    undefined,
 	    callback,
 	    undefined,
-	    {ishop: $scope.yes_no[0], yes_no:$scope.yes_no});
+	    {ishop: $scope.yes_no[0],
+	     yes_no:$scope.yes_no,
+	     rule:  $scope.plan_rules[0],
+	     rules: $scope.plan_rules});
     };
 
     $scope.update_plan = function(p) {
