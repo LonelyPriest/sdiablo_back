@@ -51,8 +51,7 @@ gen_charge(merchant, Merchant) ->
     end.
 
 delete(member_not_used, Merchant) ->
-    Sql = "select id, merchant from w_retailer where merchant=" ++ ?to_s(Merchant)
-	++ " and id>11883 and id<18912",
+    Sql = "select id, merchant from w_retailer where merchant=" ++ ?to_s(Merchant),
     [_Total, Sqls] = 
 	case ?sql_utils:execute(read, Sql) of
 	    {ok, []} -> ok;

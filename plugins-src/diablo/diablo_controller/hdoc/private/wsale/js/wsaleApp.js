@@ -429,11 +429,14 @@ function wsaleNewProvide(
 	return !p.deleted && p.mbalance === diablo_invalid;
     }).map(function(p) {
 	return {id:       p.id,
+		rule:     p.rule,
 		name:     p.name + "-" + p.balance + "元",
 		balance:  p.balance,
 		mbalance: p.mbalance,
 		effect:   p.effect,
 		expire:   p.expire,
+		stime:    p.stime,
+		etime:    p.etime,
 		scount:   p.scount}
     });
     // console.log(filterCharge);
@@ -1187,6 +1190,7 @@ function wsaleNewProvide(
 		angular.forEach(params.tickets, function(t) {
 	    	    if (t.plan.id !== diablo_invalid_index) {
 	    		send_tickets.push({id      :t.plan.id,
+					   rule    :t.plan.rule,
 					   balance :t.plan.balance,
 					   count   :t.count,
 					   effect  :t.plan.effect,
@@ -3792,11 +3796,14 @@ function wsaleNewDetailProvide(
 	return p2.balance - p1.balance;
     }).map(function(p) {
 	return {id:       p.id,
+		rule:     p.rule,
 		name:     p.name + "-" + p.balance + "元",
 		balance:  p.balance,
 		mbalance: p.mbalance,
 		effect:   p.effect,
 		expire:   p.expire,
+		stime:    p.stime,
+		etime:    p.etime,
 		scount:   p.scount}
     }); 
 
@@ -4182,10 +4189,13 @@ function wsaleNewDetailProvide(
 		angular.forEach(params.tickets, function(t) {
 	    	    if (t.plan.id !== diablo_invalid_index) {
 	    		send_tickets.push({id      :t.plan.id,
+					   rule    :t.plan.rule,
 					   balance :t.plan.balance,
 					   count   :t.count,
 					   effect  :t.plan.effect,
-					   expire  :t.plan.expire});
+					   expire  :t.plan.expire,
+					   stime   :t.plan.stime,
+					   etime   :t.plan.etime});
 			gift_balance += t.plan.mbalance * t.count;
 	    	    }
 		}); 
