@@ -1572,7 +1572,6 @@ do_write(recharge, Do, _Seq, [], _Code, {AccCBalance, AccSBalance, _AccBalance})
        ++ ?d
        ++ ?d
        ++ ?d
-       ++ ?d
        ++ ?to_s(AccCBalance) ++ ?d
        ++ ?to_s(AccSBalance) ++ ?d
        ++ ?d
@@ -1619,9 +1618,9 @@ do_write(recharge, Do, Seq, [{H}|T], Code, {AccCBalance, AccSBalance, AccBalance
 	end,
     Do(Line),
     
-    do_write(recharge, Do, Seq + 1, T, {AccCBalance + CBalance,
-					AccSBalance + SBalance,
-					AccBalance + CurrentBalance}).
+    do_write(recharge, Do, Seq + 1, T, Code, {AccCBalance + CBalance,
+					      AccSBalance + SBalance,
+					      AccBalance + CurrentBalance}).
 
 retailer_type(0) -> "普通会员";
 retailer_type(1) -> "充值会员";
