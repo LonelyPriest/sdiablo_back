@@ -1033,6 +1033,7 @@
 		      <input type="text" readonly
 			     class="form-control"
 			     placeholder="默认为空"
+			     x-ng-enter="select_fabric()"
 			     x-ng-model="good.fabric_desc"/>
 		      <span class="input-group-btn">
 			<button class="btn btn-primary"
@@ -1725,6 +1726,7 @@
 			 name="fabric"
 			 required
 			 placeholder="请选择成份"
+			 x-ng-edit
 			 x-ng-model="c.fabric"
 			 typeahead-editable="false"
 			 uib-typeahead="f.name for f in params.fabrics|filter:$viewValue|limitTo:20"/>
@@ -1748,6 +1750,7 @@
 			 required
 			 placeholder="请输入百分比"
 			 x-ng-pattern="params.p_percent"
+			 x-ng-edit
 			 x-ng-model="c.percent"/>
 		</div>
 	      </form>

@@ -668,13 +668,10 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 invalid_size(Size) ->
     invalid_size(Size, ?CLOTHES_MODE).
+
 invalid_size("", _Mode) -> false;
-
-
 invalid_size(Size, ?CLOTHES_MODE) ->
     not lists:member(?to_s(Size), ?SIZE_TO_BARCODE);
-invalid_size(Size, ?CHILD_MODE) ->
-    not lists:member(?to_s(Size), ?SIZE_TO_BARCODE);
-invalid_size(_Size, ?HOME_MODE) ->
-    false.
+invalid_size(Size, _Mode) ->
+    not lists:member(?to_s(Size), ?SIZE_TO_BARCODE).
 

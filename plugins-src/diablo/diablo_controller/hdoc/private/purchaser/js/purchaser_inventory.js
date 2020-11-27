@@ -454,7 +454,8 @@ function purchaserInventoryNewCtrlProvide (
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
 		&& item.brand_id  === $scope.inventories[i].brand_id){
-		existStock = $scope.inventories[i]; 
+		existStock = $scope.inventories[i];
+		// if (angular.isUndefined(existStock.id)) existStock.id = item.id;
 	    }
 	    
 	    // do not check firm 
@@ -493,12 +494,13 @@ function purchaserInventoryNewCtrlProvide (
 	// $scope.auto_focus("sale");
 	
 	// add at first allways 
-	$scope.stock_at_first = $scope.inventories[0];
-	copy_select($scope.stock_at_first, item); 
-	console.log($scope.stock_at_first);
 	if (angular.isDefined(existStock)) {
+	    console.log(existStock);
 	    $scope.update_inventory_with_new(existStock);
 	} else {
+	    $scope.stock_at_first = $scope.inventories[0];
+	    copy_select($scope.stock_at_first, item); 
+	    console.log($scope.stock_at_first);
 	    if (!$scope.stock_at_first.free_color_size || $scope.tab_active[1].active){
 		$scope.add_inventory($scope.stock_at_first)
 	    } else {
@@ -869,6 +871,7 @@ function purchaserInventoryNewCtrlProvide (
 	    // $scope.good.sprice = $scope.yes_no[0];
 	    // $scope.stock_at_first = undefined;
 	    $scope.re_calculate();
+	    // console.log($scope.inventories);
 
 	    // auto focus
 	    if ($scope.tab_active[1].active) {
@@ -1038,6 +1041,7 @@ function purchaserInventoryNewCtrlProvide (
      * update inventory while stock in
      */
     $scope.update_inventory_with_new = function(inv){
+	console.log(inv);
 	var callback = function(params){
 	    var result    = add_callback(params);
 	    inv.amount    = result.amount;
@@ -1160,7 +1164,7 @@ function purchaserInventoryNewCtrlProvide (
     };
     
     $scope.add_exist_stock_color = function(inv, afterAddColorCallback) {
-	// console.log(inv);
+	console.log(inv);
 	// $scope.good.colors=""; 
 	// $scope.selectColors = [];
 	
@@ -1191,6 +1195,7 @@ function purchaserInventoryNewCtrlProvide (
 
 	var callback = function() {
 	    var update_good = {};
+	    console.log(inv);
 	    update_good.good_id = inv.id;
 	    update_good.o_style_number = inv.style_number;
 	    update_good.o_brand        = inv.brand_id;
@@ -1230,7 +1235,7 @@ function purchaserInventoryNewCtrlProvide (
      * update inventory
      */
     $scope.update_inventory = function(inv){
-	// console.log(inv);
+	console.log(inv);
 	inv.$update = true;
 	inv.o_org_price = inv.org_price;
 	inv.o_ediscount = inv.ediscount;
@@ -1270,7 +1275,9 @@ function purchaserInventoryNewCtrlProvide (
 	diabloFilter.get_purchaser_good(
 	    {style_number:inv.style_number, brand:inv.brand_id}
 	).then(function(result) {
+	    console.log(result);
 	    if(result.ecode === 0 && !diablo_is_empty(result.data)) {
+		// if (angular.isUndefined(inv.id)) inv.id = result.data.id;
 		inv.colors = result.data.color.split(",");
 		inv.sizes  = result.data.size.split(",");
 		inv.s_group = result.data.s_group;
@@ -1648,7 +1655,7 @@ function purchaserInventoryNewCtrlProvide (
 	    if (angular.isFunction(afterSelectCallback))
 		afterSelectCallback();
 
-	    document.getElementById("n-select-color").focus();
+	    // document.getElementById("n-select-color").focus();
 	    
 	}; 
 

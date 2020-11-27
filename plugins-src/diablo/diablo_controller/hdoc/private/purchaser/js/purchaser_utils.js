@@ -1389,6 +1389,22 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird);
     }
     
+
+    // brand
+    if (this.template.brand && this.template.solo_brand){
+	line = "品牌:";
+	if (2 === this.template.brand) line = "";
+	
+	if (diablo_trim(this.template.self_brand)) {
+	    line += diablo_trim(this.template.self_brand); 
+	} else {
+	    line += this.brand; 
+	}
+	
+	top = this.start_print(
+	    line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird); 
+    }
+
     // firm
     if (this.template.firm) {
 	var firm = angular.isUndefined(this.firm) ? diablo_empty_string : this.firm; 
@@ -1405,21 +1421,6 @@ stockPrintU.prototype.printBarcode2 = function() {
 	top = this.start_print(
 	    line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird); 
     }
-    
-    // brand
-    if (this.template.brand && this.template.solo_brand){
-	line = "品牌:";
-	if (2 === this.template.brand) line = "";
-	
-	if (diablo_trim(this.template.self_brand)) {
-	    line += diablo_trim(this.template.self_brand); 
-	} else {
-	    line += this.brand; 
-	}
-	
-	top = this.start_print(
-	    line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird); 
-    } 
 
     // type
     if (this.template.type) {

@@ -679,6 +679,7 @@ function filterProvider(){
 		return _retailerHttp.save(
 		    {operation: "update_w_retailer"},
 		    {id:       r.id,
+		     shop:     r.shop,
 		     name:     r.name,
 		     py:       r.py,
 		     password: r.password,

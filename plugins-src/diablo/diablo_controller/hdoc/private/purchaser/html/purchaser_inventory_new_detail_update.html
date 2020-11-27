@@ -720,10 +720,10 @@
 	    </td>
 	    <td x-ng-repeat="s in params.sizes">
 	      <form name="aform">
-		<div ng-class="{'has-error':aform.$invalid
-			       && !aform.$pristine}">
+		<div ng-class="{'has-error':aform.$invalid && !aform.$pristine}">
 		  <input class="form-control text-center modal-input"
 			 type="number" step="1"
+			 disable-key
 			 x-ng-model="amount.count"
 			 x-ng-pattern="/^[1-9][0-9]*$/"
 			 x-ng-init="amount=params.get_amount(c.cid, s, params.amount)"

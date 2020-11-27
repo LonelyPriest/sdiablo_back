@@ -344,6 +344,10 @@ var wsaleUtils = function(){
 	    return diablo_base_setting("r_discount", shop, base, function(s) {return s}, diablo_vip_mode);
 	},
 
+	shop_mode: function(shop, base) {
+	    return diablo_base_setting("shop_mode", shop, base, parseInt, diablo_clothes_mode);
+	},
+
 	gift_sale:function(shop, base) {
 	    var gift = diablo_base_setting("gift_sale", shop, base, function(s) {return s}, diablo_gift_mode);
 	    return {

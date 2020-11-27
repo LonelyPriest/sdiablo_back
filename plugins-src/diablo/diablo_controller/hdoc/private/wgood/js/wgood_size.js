@@ -5,19 +5,19 @@ function wgoodSizeDetailCtrlProvide(
     $scope.size_group = angular.copy(filterSizeGroup); 
     // console.log($scope.size_group);
     diablo_order($scope.size_group);
-    $scope.shop_mode = stockUtils.shop_mode(diablo_default_shop, base);
+    // $scope.shop_mode = stockUtils.shop_mode(diablo_default_shop, base);
     // console.log($scope.shop_mode);
 
-    $scope.pattern = {
-	size: function() {
-	    if ($scope.shop_mode !== diablo_home_mode)
-		return diabloPattern.size;
-	    else
-		return diabloPattern.home_size;
-	}()
-    };
+    // $scope.pattern = {
+    // 	size: function() {
+    // 	    if ($scope.shop_mode !== diablo_home_mode)
+    // 		return diabloPattern.size;
+    // 	    else
+    // 		return diabloPattern.home_size;
+    // 	}()
+    // };
 
-    console.log($scope.pattern);
+    // console.log($scope.pattern);
     
     $scope.refresh = function(){
 	wgoodService.list_purchaser_size().then(function(groups){
@@ -53,9 +53,9 @@ function wgoodSizeDetailCtrlProvide(
 
     var check_same = function(size, key, value){
 	if (value) {
-	    if ($scope.shop_mode !== diablo_home_mode) 
-		if (diablo_invalid_index === size_to_barcode.indexOf(value))
-		    return false;
+	    //if ($scope.shop_mode !== diablo_home_mode) 
+	    if (diablo_invalid_index === size_to_barcode.indexOf(value))
+		return false;
 	}
 	
 	for (var s in size){
@@ -82,7 +82,7 @@ function wgoodSizeDetailCtrlProvide(
 
 	    console.log(size);
 
-	    wgoodService.add_purchaser_size(size, $scope.shop_mode).then(function(state){
+	    wgoodService.add_purchaser_size(size, diablo_clothes_mode).then(function(state){
 	        console.log(state);
 	        if (state.ecode == 0){
 		    var append_size_group = function(gid){

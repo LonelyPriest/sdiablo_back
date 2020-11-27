@@ -32,7 +32,8 @@ require.config({
 	
 	"stock-utils" : "/private/purchaser/js/purchaser_utils",
 	
-	"diablo-error": '/private/utils/javascript/diablo_error'
+	"diablo-error": '/private/utils/javascript/diablo_error', 
+	"diablo-dashboard": '/private/utils/javascript/diablo_dashboard'
     },
     
     shim: {
@@ -165,7 +166,7 @@ require([
     "diablo-init", "diablo-function", "diablo-authen",
     "diablo-pattern", "diablo-user-right", "diablo-authen-right",
     "diablo-login-out", "diablo-utils", "diablo-filter", 
-    "stock-utils", "diablo-error", "purchaserApp", "load_stock"
+    "stock-utils", "diablo-error", "diablo-dashboard", "purchaserApp", "load_stock"
 ], function($, angular) {
     $(function() {
 	angular.bootstrap(document, ["wgoodApp", "purchaserApp"]);

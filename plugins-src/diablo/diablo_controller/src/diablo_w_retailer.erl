@@ -1249,9 +1249,14 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 		    LimitBalance = ?v(<<"ibalance">>, ChargeRule, ?INVALID_OR_EMPTY),
 		    LimitCount = ?v(<<"icount">>, ChargeRule, ?INVALID_OR_EMPTY),
 		    
-		    Sql20 = "select id, retailer, balance, cid from w_retailer_bank"
-			" where merchant=" ++ ?to_s(Merchant)
+		    Sql20 = "select id"
+			", retailer"
+			", balance"
+			", cid"
+			", shop"
+			" from w_retailer_bank where merchant=" ++ ?to_s(Merchant)
 			++ " and retailer=" ++ ?to_s(Retailer)
+			++ " and shop=" ++ ?to_s(Shop)
 			++ " and cid=" ++ ?to_s(ChargeId),
 		    Sql3 = 
 			case ?sql_utils:execute(s_read, Sql20) of

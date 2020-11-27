@@ -422,7 +422,7 @@ function wsaleNewProvide(
     // console.log(filterLevel);
     $scope.promotions = filterPromotion;
     $scope.commisions = filterCommision;
-    console.log($scope.commisions);
+    // console.log($scope.commisions); 
     $scope.scores     = filterScore;
     $scope.draws      = filterCharge.filter(function(d){return d.type === diablo_withdraw});
     $scope.ticketPlans = filterTicketPlan.filter(function(p) {
@@ -546,6 +546,7 @@ function wsaleNewProvide(
     $scope.f_mul           = diablo_float_mul;
     $scope.f_discount      = diablo_discount;
     $scope.wsale_mode      = wsaleService.wsale_mode;
+    $scope.face            = window.face;
     $scope.show_promotions = [];
     $scope.disable_refresh = true;
     $scope.has_withdrawed  = false;
@@ -618,10 +619,10 @@ function wsaleNewProvide(
 	$scope.setting.barcode_auto  = wsaleUtils.barcode_auto(shopId, base);
 	$scope.setting.draw_score    = wsaleUtils.draw_score(shopId, base);
 	$scope.setting.draw_region   = wsaleUtils.draw_region(shopId, base);
-	$scope.setting.hide_fixed_stock = wsaleUtils.hide_fixed_stock(shopId, base);
+	$scope.setting.hide_fixed_stock = wsaleUtils.hide_fixed_stock(shopId, base); 
 	$scope.setting.vip_mode      = wsaleUtils.vip_mode(shopId, base);
 	$scope.setting.vip_discount_mode = wsaleUtils.to_integer($scope.setting.vip_mode.charAt(0));
-	console.log($scope.setting.vip_discount_mode);
+	// console.log($scope.setting.vip_discount_mode);
 	// $scope.setting.gift_sale     = wsaleUtils.gift_sale(shopId, base);
 
 	var scan_mode = wsaleUtils.scan_only(shopId, base);
@@ -630,6 +631,8 @@ function wsaleNewProvide(
 					     
 	$scope.setting.maling_rang   = wsaleUtils.maling_rang(shopId, base);
 	$scope.setting.type_sale     = wsaleUtils.type_sale(shopId, base);
+
+	$scope.setting.shop_mode     = wsaleUtils.shop_mode(shopId, base);
 
 	var sale_mode = wsaleUtils.sale_mode(shopId, base);
 	// $scope.setting.print_perform  = wsaleUtils.to_integer(sale_mode.charAt(3));
@@ -707,7 +710,8 @@ function wsaleNewProvide(
     // console.log($scope.shops);
     if ($scope.shops.length !== 0){
 	$scope.select.shop = $scope.shops[0];
-	get_setting($scope.select.shop.id); 
+	get_setting($scope.select.shop.id);
+	// console.log($scope.face($scope.setting.shop_mode));
     }
 
     $scope.focus_good_or_barcode = function() {
@@ -898,25 +902,25 @@ function wsaleNewProvide(
 	return false;
     };
 
-    var get_unlimit_draw = function(limitCardDraw, unlimitCardDraw, retailerLeftBalance, draw_cards) {
-	var cardDraw = unlimitCardDraw;
-	if ($scope.select.should_pay > 0 && retailerLeftBalance > 0) {
-	    var max_draw = get_min_value($scope.select.surplus, $scope.select.should_pay); 
-	    cardDraw = get_min_value(
-		retailerLeftBalance, max_draw - limitCardDraw - unlimitCardDraw) + unlimitCardDraw;
-	} 
+    // var get_unlimit_draw = function(limitCardDraw, unlimitCardDraw, payLeftBalance, draw_cards) {
+    // 	var cardDraw = unlimitCardDraw;
+    // 	if ($scope.select.should_pay > 0 && retailerLeftBalance > 0) {
+    // 	    var max_draw = get_min_value($scope.select.surplus, $scope.select.should_pay); 
+    // 	    cardDraw = get_min_value(
+    // 		retailerLeftBalance, max_draw - limitCardDraw - unlimitCardDraw) + unlimitCardDraw;
+    // 	} 
 
-	if (cardDraw > unlimitCardDraw) {
-	    for (var i=0, l=draw_cards.length; i<l; i++) {
-		if (draw_cards[i].card === diablo_default_card) {
-		    draw_cards[i].draw = cardDraw;
-		    break; 
-		}
-	    }
-	}
+    // 	if (cardDraw > unlimitCardDraw) {
+    // 	    for (var i=0, l=draw_cards.length; i<l; i++) {
+    // 		if (draw_cards[i].card === diablo_default_card) {
+    // 		    draw_cards[i].draw = cardDraw;
+    // 		    break; 
+    // 		}
+    // 	    }
+    // 	}
 	
-	return cardDraw;
-    };
+    // 	return cardDraw;
+    // };
     
     $scope.withdraw = function(){
 	var callback = function(params){
@@ -966,8 +970,9 @@ function wsaleNewProvide(
 	    }); 
 	};
 	
-	var startWithdraw = function(limitCardDraw, unlimitCardDraw, retailerLeftBalance, draw_cards) {
-	    var unlimitWithdraw = get_unlimit_draw(limitCardDraw, unlimitCardDraw, retailerLeftBalance, draw_cards);
+	var startWithdraw = function(limitCardDraw, unlimitCardDraw, payLeftBalance, draw_cards) {
+	    // var unlimitWithdraw =
+	    // 	get_unlimit_draw(limitCardDraw, unlimitCardDraw, payLeftBalance, draw_cards);
 	    diabloUtilsService.edit_with_modal(
 	    	"new-withdraw.html",
 	    	undefined,
@@ -978,17 +983,18 @@ function wsaleNewProvide(
 	    	    name           :$scope.select.retailer.name,
 	    	    surplus        :$scope.select.surplus, 
 	    	    limitWithdraw  :limitCardDraw,
-		    unlimitWithdraw:unlimitWithdraw
+		    // unlimitWithdraw:unlimitWithdraw
+		    unlimitWithdraw:unlimitCardDraw
 	    	},
 
 		 cards: draw_cards, 
 	    	 hide_pwd: $scope.setting.hide_pwd,
 		 check_limit: function(limitWithdraw) {
 		     return limitWithdraw <= limitCardDraw;
-		 },
-		 
+		 }, 
 	    	 check_withdraw: function(balance, limitWithdraw){
-		     return balance <= unlimitWithdraw + limitCardDraw - limitWithdraw;
+		     // return balance <= unlimitWithdraw + limitCardDraw - limitWithdraw;
+		     return balance <= unlimitCardDraw + limitCardDraw - limitWithdraw;
 		 }, 
 	    	 check_zero: function(balance) {return balance === 0 ? true:false}
 	    	})
@@ -1007,31 +1013,51 @@ function wsaleNewProvide(
 		var calcDraw = result.cdraw; 
 		var cards = result.cards;
 
-		var retailerLeftBalance = $scope.select.surplus;
+		var payLeftBalance = $scope.select.should_pay;
 		var limitCardDraw = 0; 
 		var unlimitCardDraw = 0;
 
 		var draw_cards = [];
-		angular.forEach(cards, function(c) {
-		    // allCardBalance =+ c.cardBalance;
-		    retailerLeftBalance -= c.balance;
-		    if (c.type === 1) {
-			if ( !c.limit_shop || (c.limit_shop && c.same_shop) ) {
-			    limitCardDraw += c.draw;
+		for (var i=0, l=cards.length; i<l; i++) {
+		    var c = cards[i] 
+		    if (payLeftBalance < 0) {
+			break;
+		    } else {
+			if (c.type === 1) {
+			    if ( !c.limit_shop || (c.limit_shop && c.same_shop) ) {
+				limitCardDraw += c.draw;
+				draw_cards.push({card: c.card, draw:c.draw, type:c.type});
+			    }
+			} else {
+			    unlimitCardDraw += c.draw;
 			    draw_cards.push({card: c.card, draw:c.draw, type:c.type});
 			}
-		    } else {
-			unlimitCardDraw += c.draw;
-			draw_cards.push({card: c.card, draw:c.draw, type:c.type});
-		    } 
-		});
+		    }
+		    payLeftBalance -= c.balance;
+		}
+		
+		// angular.forEach(cards, function(c) {
+		//     // allCardBalance =+ c.cardBalance;
+		//     // retailerLeftBalance -= c.balance;
+		//     payLeftBalance -= c.balance;
+		//     if (c.type === 1) {
+		// 	if ( !c.limit_shop || (c.limit_shop && c.same_shop) ) {
+		// 	    limitCardDraw += c.draw;
+		// 	    draw_cards.push({card: c.card, draw:c.draw, type:c.type});
+		// 	}
+		//     } else {
+		// 	unlimitCardDraw += c.draw;
+		// 	draw_cards.push({card: c.card, draw:c.draw, type:c.type});
+		//     } 
+		// });
 
 		// consume with limited shop
 		console.log(limitCardDraw);
 		console.log(unlimitCardDraw);
-		console.log(retailerLeftBalance);
+		console.log(payLeftBalance);
 		console.log(draw_cards);
-		startWithdraw(limitCardDraw, unlimitCardDraw, retailerLeftBalance, draw_cards);
+		// startWithdraw(limitCardDraw, unlimitCardDraw, retailerLeftBalance, draw_cards);
+		startWithdraw(limitCardDraw, unlimitCardDraw, payLeftBalance, draw_cards);
 	    } else {
 		dialog.set_error("会员提现", result.ecode);
 	    } 
@@ -1626,6 +1652,7 @@ function wsaleNewProvide(
 	    var u = params.retailer;
 	    var uRetailer = {
 		id:       oRetailer.id,
+		shop:     $scope.select.shop.id,
 		name:     get_modified(u.name, oRetailer.wname),
 		py:       get_modified(pinyin(u.name), pinyin(oRetailer.wname)),
 		password: get_modified(u.password, oRetailer.password),

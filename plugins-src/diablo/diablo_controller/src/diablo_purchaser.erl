@@ -696,10 +696,10 @@ handle_call({update_good, Merchant, UTable, Attrs, OldAttrs}, _Form, State) ->
 	end,
 
     Sql1 = "update" ++ ?table:t(good, Merchant, UTable)
-	++ " set "
-	++ ?utils:to_sqls(proplists, comma, UpdateGood)
-	++ " where id=" ++ ?to_s(GoodId) 
-	++ " and merchant=" ++ ?to_s(Merchant),
+	++ " set " ++ ?utils:to_sqls(proplists, comma, UpdateGood)
+    %% ++ " where id=" ++ ?to_s(GoodId)
+	++ " where " ++ C(false, OrgStyleNumber, OrgBrand),
+    %%++ " and merchant=" ++ ?to_s(Merchant),
     
     case StyleNumber =:= undefined andalso Brand =:= undefined of
 	true -> 

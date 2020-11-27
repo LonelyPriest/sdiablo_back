@@ -497,7 +497,7 @@ create table w_retailer_bank
     merchant        INTEGER default -1,
     shop            INTEGER default -1, -- location of charge
     entry_date      DATETIME,
-    unique key      uk (merchant, retailer, cid),
+    unique key      uk (merchant, retailer, cid, shop),
     primary key     (id)
 ) default charset=utf8;
 

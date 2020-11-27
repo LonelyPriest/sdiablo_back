@@ -22,9 +22,14 @@ function wretailerNewCtrlProvide(
     };
 
     var sale_mode = retailerUtils.sale_mode($scope.shops[0].id, base);
-    $scope.setting = {hide_pwd:retailerUtils.to_integer(sale_mode.charAt(9))}; 
+    $scope.setting = {
+	hide_pwd:retailerUtils.to_integer(sale_mode.charAt(9)),
+	shop_mode: retailerUtils.shop_mode($scope.shops[0].id, base)
+    }; 
     
-    $scope.levels = diablo_retailer_levels;
+    $scope.face = window.face;
+    $scope.levels = $scope.face($scope.setting.shop_mode).retailer_levels;
+    
     $scope.lunars = diablo_lunar;
     $scope.retailer = {
 	birth:$.now(),
@@ -96,12 +101,21 @@ function wretailerDetailCtrlProvide(
     $scope.retailer_types  = wretailerService.retailer_types;
     $scope.months          = retailerUtils.months();
     $scope.date_of_month   = retailerUtils.date_of_month();
-    $scope.retailer_levels = diablo_retailer_levels;
+    // $scope.retailer_levels = diablo_retailer_levels;
     $scope.lunars          = diablo_lunar;
 
     var sale_mode = retailerUtils.sale_mode($scope.shops[0].id, base);
-    $scope.setting = {hide_pwd:retailerUtils.to_integer(sale_mode.charAt(9))}; 
+    $scope.setting = {
+	hide_pwd:retailerUtils.to_integer(sale_mode.charAt(9)),
+	shop_mode: retailerUtils.shop_mode($scope.shops[0].id, base)
+    };
+    //console.log($scope.setting.shop_mode);
+    // console.log(DASHBOARD_MODE[$scope.setting.shop_mode]);
+    // $scope.retailer_levels = DASHBOARD[DASHBOARD_MODE[$scope.setting.shop_mode]].retailer_levels;
+    $scope.face = window.face;
+    $scope.retailer_levels = $scope.face($scope.setting.shop_mode).retailer_levels;
     
+    // console.log($scope.levels); 
     $scope.select         = {phone:undefined};
 
     var dialog = diabloUtilsService;

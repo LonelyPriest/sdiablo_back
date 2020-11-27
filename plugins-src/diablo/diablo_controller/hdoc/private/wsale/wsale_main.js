@@ -37,6 +37,7 @@ require.config({
 
 	"wsale-utils" : "/private/wsale/js/wsale_utils",
 	"diablo-error": '/private/utils/javascript/diablo_error',
+	"diablo-dashboard": '/private/utils/javascript/diablo_dashboard',
 	"diablo-calendar": '/private/utils/javascript/diablo_calendar',
     },
     
@@ -200,7 +201,7 @@ require([
     "diablo-init", "diablo-function", "diablo-authen",
     "diablo-pattern", "diablo-user-right", "diablo-authen-right",
     "diablo-login-out", "diablo-utils", "diablo-filter", 
-    "wsale-utils", "diablo-error", "diablo-calendar",
+    "wsale-utils", "diablo-error", "diablo-dashboard", "diablo-calendar",
     "wsaleApp", "load_wsale"
 ], function($, angular) {
     $(function() {

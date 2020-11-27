@@ -1665,35 +1665,15 @@ draw_with_bank_card([Card|T], Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw,Acc)
 	    LimitShop       = ?v(<<"ishop">>, ChargePromotion), 
 	    LimitBalance     = ?v(<<"ibalance">>, ChargePromotion, ?INVALID_OR_EMPTY),
 	    ThresholdBalance = ?v(<<"mbalance">>, ChargePromotion),
-	    case LimitBalance =/= ?INVALID_OR_EMPTY andalso LimitBalance =/= 0 of
+	    case LimitShop =:= ?YES andalso same_shop(ConsumeShop, ChargeShop) =:= ?NO of
 		true ->
-		    LimitDraw = ?utils:min_value(
-				   CardBalance, Pay div ThresholdBalance * LimitBalance),
-		    CanDraw = ?utils:min_value(LimitDraw, MaxDraw),
-		    draw_with_bank_card(
-		      T,
-		      Merchant,
-		      ConsumeShop,
-		      Pay,
-		      MaxDraw - CanDraw,
-		      CalcDraw + CanDraw,
-		      [{BankCardId,
-			CanDraw,
-			CardBalance,
-			CardType,
-			same_shop(ConsumeShop, ChargeShop),
-			LimitShop,
-			ChargeShop}|Acc]);
+		    draw_with_bank_card(T, Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw, Acc);
 		false ->
-		    LimitCount = ?v(<<"icount">>, ChargePromotion),
-		    case LimitCount =/= ?INVALID_OR_EMPTY andalso LimitCount =/= 0 of
+		    case LimitBalance =/= ?INVALID_OR_EMPTY andalso LimitBalance =/= 0 of
 			true ->
-			    %% ?DEBUG("ChargePromotion ~p", [ChargePromotion]),
-			    CBalance     = ?v(<<"charge">>, ChargePromotion),
-			    SBalance     = ?v(<<"balance">>, ChargePromotion),
-			    OneTakeBalance = ?utils:min_value(
-						CardBalance, (CBalance + SBalance) div LimitCount),
-			    CanDraw = ?utils:min_value(OneTakeBalance, MaxDraw),
+			    LimitDraw = ?utils:min_value(
+					   CardBalance, Pay div ThresholdBalance * LimitBalance),
+			    CanDraw = ?utils:min_value(LimitDraw, MaxDraw),
 			    draw_with_bank_card(
 			      T,
 			      Merchant,
@@ -1707,23 +1687,48 @@ draw_with_bank_card([Card|T], Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw,Acc)
 				CardType,
 				same_shop(ConsumeShop, ChargeShop),
 				LimitShop,
-				ChargeShop}|Acc]); 
+				ChargeShop}|Acc]);
 			false ->
-			    CanDraw = ?utils:min_value(CardBalance, MaxDraw),
-			    draw_with_bank_card(
-			      T,
-			      Merchant,
-			      ConsumeShop,
-			      Pay,
-			      MaxDraw - CanDraw,
-			      CalcDraw + CanDraw,
-			      [{BankCardId,
-				CanDraw,
-				CardBalance,
-				CardType,
-				same_shop(ConsumeShop, ChargeShop),
-				LimitShop,
-				ChargeShop}|Acc])
+			    LimitCount = ?v(<<"icount">>, ChargePromotion),
+			    case LimitCount =/= ?INVALID_OR_EMPTY andalso LimitCount =/= 0 of
+				true ->
+				    %% ?DEBUG("ChargePromotion ~p", [ChargePromotion]),
+				    CBalance     = ?v(<<"charge">>, ChargePromotion),
+				    SBalance     = ?v(<<"balance">>, ChargePromotion),
+				    OneTakeBalance = ?utils:min_value(
+							CardBalance, (CBalance + SBalance) div LimitCount),
+				    CanDraw = ?utils:min_value(OneTakeBalance, MaxDraw),
+				    draw_with_bank_card(
+				      T,
+				      Merchant,
+				      ConsumeShop,
+				      Pay,
+				      MaxDraw - CanDraw,
+				      CalcDraw + CanDraw,
+				      [{BankCardId,
+					CanDraw,
+					CardBalance,
+					CardType,
+					same_shop(ConsumeShop, ChargeShop),
+					LimitShop,
+					ChargeShop}|Acc]); 
+				false ->
+				    CanDraw = ?utils:min_value(CardBalance, MaxDraw),
+				    draw_with_bank_card(
+				      T,
+				      Merchant,
+				      ConsumeShop,
+				      Pay,
+				      MaxDraw - CanDraw,
+				      CalcDraw + CanDraw,
+				      [{BankCardId,
+					CanDraw,
+					CardBalance,
+					CardType,
+					same_shop(ConsumeShop, ChargeShop),
+					LimitShop,
+					ChargeShop}|Acc])
+			    end
 		    end
 	    end
     end.

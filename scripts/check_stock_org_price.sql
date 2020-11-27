@@ -233,35 +233,35 @@ select a.id, insert(a.csn1, 3, 2, '') as csn2 from (select id, insert(csn, 1,2, 
 -- goods
 -- delete from w_inventory_good where merchant=63;
 
-delete from w_inventory_new_detail_amount where merchant=63;
-delete from w_inventory_new_detail where merchant=63;
-delete from w_inventory_new where merchant=63;
+delete from w_inventory_new_detail_amount_117 where merchant=117;
+delete from w_inventory_new_detail_117 where merchant=117;
+delete from w_inventory_new_117 where merchant=117;
 
 -- clear stock
-delete from w_inventory_amount where merchant=63;
-delete from w_inventory where merchant=63;
+delete from w_inventory_amount_117 where merchant=117;
+delete from w_inventory_117 where merchant=117;
 
 -- clear sale
-delete from w_sale_detail_amount where merchant=63;
-delete from w_sale_detail where merchant=63;
-delete from w_sale where merchant=63;
+delete from w_sale_detail_amount_117 where merchant=117;
+delete from w_sale_detail_117 where merchant=117;
+delete from w_sale_117 where merchant=117;
 
 -- clear batch sale
-delete from batch_sale where merchant=63;
-delete from batch_sale_detail where merchant=63;
-delete from batch_sale_detail_amount where merchant=63;
+delete from batch_sale where merchant=117;
+delete from batch_sale_detail where merchant=117;
+delete from batch_sale_detail_amount where merchant=117;
 -- delete from batchsaler where merchant=27 and type!=2;
 
 
 -- clear transefer
-delete from w_inventory_transfer_detail_amount where merchant=63;
-delete from w_inventory_transfer_detail where merchant=63;
-delete from w_inventory_transfer where merchant=63;
+delete from w_inventory_transfer_detail_amount where merchant=117;
+delete from w_inventory_transfer_detail where merchant=117;
+delete from w_inventory_transfer where merchant=117;
 
 
 -- report
-delete from w_daily_report where merchant=63;
-delete from w_change_shift where merchant=63;
+delete from w_daily_report where merchant=117;
+delete from w_change_shift where merchant=117;
 
 -- charge
 -- delete from w_charge_detail where merchant=27;

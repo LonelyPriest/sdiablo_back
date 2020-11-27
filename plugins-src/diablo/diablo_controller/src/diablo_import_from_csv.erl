@@ -59,7 +59,8 @@ delete(member_not_used, Merchant) ->
 		lists:foldr(
 		  fun({Member}, [Inc, Acc])->
 			  Id = ?v(<<"id">>, Member),
-			  Sql1 = "select rsn from w_sale where retailer=" ++ ?to_s(Id)
+			  Sql1 = "select rsn from" ++ ?table:t(sale_new, Merchant, 1)
+			      ++ " where retailer=" ++ ?to_s(Id)
 			      ++ " and merchant=" ++ ?to_s(Merchant),
 
 			  case ?sql_utils:execute(read, Sql1) of

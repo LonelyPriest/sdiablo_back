@@ -31,6 +31,7 @@ require.config({
 	
 	"diablo-filter": "/private/utils/javascript/diablo_filter_app", 
 	"diablo-error": '/private/utils/javascript/diablo_error',
+	"diablo-dashboard": '/private/utils/javascript/diablo_dashboard',
 	
 	"retailer-utils" : "/private/wretailer/js/wretailer_utils"
     },
@@ -161,7 +162,7 @@ require([
     "diablo-init", "diablo-function", "diablo-authen",
     "diablo-pattern", "diablo-user-right", "diablo-authen-right",
     "diablo-login-out", "diablo-utils", "diablo-filter", 
-    "retailer-utils", "diablo-error", "wretailerApp", "load_wretailer"
+    "retailer-utils", "diablo-error", "diablo-dashboard", "wretailerApp", "load_wretailer"
 ], function($, angular) {
     $(function() {
 	angular.bootstrap(document, ["wretailerApp"]);

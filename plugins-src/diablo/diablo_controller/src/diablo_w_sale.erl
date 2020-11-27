@@ -307,7 +307,8 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 			    ++ case Score == 0 andalso TicketScore =< 0 of
 				   true  -> [];
 				   false -> ", score=score+" ++ ?to_s(Score - TicketScore)
-			       end 
+			       end
+			    ++ ", change_date=\'" ++ ?to_s(DateTime) ++ "\'"
 			    ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))],
 
 		    Sql4 = case TicketBatchs of

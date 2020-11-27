@@ -1100,7 +1100,9 @@ sys_config() ->
 	      {"scan_only",         "扫码模式",           "0000000111", "0"},
 	      %% {"auto_level",        "会员自动升级",       "0",    "0"},
 	      {"maling_rang",       "抹零范围",           "3",    "0"},
-	      %% 1: clothes mode, 2: child mode, 3: home mode
+	      %% 1: different mode has different dashboard
+	      %% 0: clothes common
+	      %% 1: water common
 	      {"shop_mode",         "店铺模式",           "1",    "0"},
 	      {"type_sale",         "品类开单模式",       "0",    "0"},
 

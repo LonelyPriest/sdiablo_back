@@ -185,7 +185,7 @@
 
 		    <td>
 		      <button x-ng-if="r.type_id===1" class="btn green diablo-button"
-			      x-ng-click="charge(r)">充值
+			      x-ng-click="charge(r)">{{face(setting.shop_mode).charge.name}}
 			<i class="glyphicon glyphicon-yen"></i></button>
 		      <button x-ng-if="r.type_id!==2" class="btn red diablo-button"
 			      x-ng-click="gift_ticket(r)">赠券
