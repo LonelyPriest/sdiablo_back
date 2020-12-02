@@ -136,6 +136,7 @@
 			<th>会员类型</th>
 			<th>手机号码</th>
 			<th>消费次数</th>
+			<th>消费频率</th>
 			<th>登记店铺</th> 
 		      </tr>
 		    </thead>
@@ -151,7 +152,8 @@
 			    <span x-ng-if="a.type_id===2" class="bg-lightOrange">{{a.type.name}}</span>
 			  </td>
 			  <td x-ng-bind="a.phone"></td>
-			  <td x-ng-bind="a.amount"></td> 
+			  <td x-ng-bind="a.amount"></td>
+			  <td x-ng-bind="a.frequency"></td>
 			  <td x-ng-bind="a.shop.name"></td> 
 			</tr>
 		    </tbody>

@@ -22,7 +22,7 @@
     };
 
     window.face = function(shop_mode) {
-	return DASHBOARD[DASHBOARD_MODE[shop_mode]];
+	return DASHBOARD[DASHBOARD_MODE[shop_mode - 1]];
     }
 })(window);
 

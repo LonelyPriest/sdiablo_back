@@ -714,10 +714,10 @@ function filterProvider(){
 		    {id:retailerId, shop:shopId}).$promise;
 	    },
 
-	    check_retailer_charge: function(retailerId, shopId, pay, balance, retailerDraw) {
+	    check_retailer_charge: function(retailerId, shopId, pay, balance, retailerDraw, drawRegion) {
 		return _retailerHttp.save(
 		    {operation: "check_w_retailer_charge"},
-		    {id:retailerId, shop:shopId, pay:pay, balance:balance, draw:retailerDraw}).$promise;
+		    {id:retailerId, shop:shopId, pay:pay, balance:balance, draw:retailerDraw, region:drawRegion}).$promise;
 	    },
 
 	    check_retailer_trans_count: function(retailerId, retailerPhone, shopId, count) {

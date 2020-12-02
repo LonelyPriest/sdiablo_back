@@ -411,6 +411,13 @@ function wretailerDetailCtrlProvide(
 	return rule_id === diablo_balance_limit_charge;
     };
 
+    var is_time_card = function(rule_id) {
+	return rule_id === diablo_month_unlimit_charge
+	    || rule_id === diablo_quarter_unlimit_charge
+	    || rule_id === diablo_half_of_year_unlimit_charge
+	    || rule_id === diablo_year_unlimit_charge
+    };
+
     var get_charge = function(charge_id) {
 	// console.log(charges);
 	for (var i=0, l=$scope.charges.length; i<l; i++){
@@ -472,9 +479,14 @@ function wretailerDetailCtrlProvide(
 		    gtime += retailerUtils.to_integer(goods[i].count);
 		}
 	    }
-		
 
 	    if (is_unlimit_card(promotion.rule_id)) stime = dateFilter(params.stime, "yyyy-MM-dd");
+
+	    if (is_time_card(promotion.rule_id)) {
+		goods = params.goods.filter(function(g) {
+		    return angular.isDefined(g.select) && g.select;
+		});
+	    }
 
 	    if (diablo_giving_charge === promotion.rule_id
 		&& send_balance !== 0 && send_balance !== retailerUtils.to_integer(params.sbalance)) {
@@ -483,7 +495,10 @@ function wretailerDetailCtrlProvide(
 		       && (retailerUtils.to_integer(ctime) === 0
 			   || (angular.isDefined(goods) && goods.length === 0)
 			   || retailerUtils.to_integer(gtime) === 0)) {
-		dialog.set_error("会员充值", 2173);
+		dialog.set_error("会员充值", 2173); 
+	    } else if (is_time_card(promotion.rule_id)
+		       && (angular.isDefined(goods) && goods.length === 0)) {
+		dialog.set_error("会员充值", 2173); 
 	    } else {
 		wretailerService.new_recharge({
 		    shop:           params.retailer.select_shop.id, 
@@ -597,6 +612,8 @@ function wretailerDetailCtrlProvide(
 		 pattern:pattern,
 		 get_charge: get_charge,
 		 unlimit_card: is_unlimit_card,
+		 time_card: is_time_card,
+		 theoretic_card: is_theoretic_card,
 		 calc_card_count: function(goods, ctime, cstime) {
 		     var all_times = ctime + retailerUtils.to_integer(cstime);
 		     var good_count = 0;
@@ -2164,8 +2181,8 @@ function wretailerLevelCtrlProvide(
 };
 
 function wretailerConsumeCtrlProvide(
-    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, filterShop, user){
-    $scope.levels = diablo_retailer_levels;
+    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, filterShop, user, base){
+    // $scope.levels = diablo_retailer_levels;
     $scope.retailer_types = diablo_retailer_types;
     var dialog = diabloUtilsService;
     
@@ -2175,6 +2192,10 @@ function wretailerConsumeCtrlProvide(
     // $scope.current_page = $scope.default_page;
     // $scope.total_items = 0;
     $scope.shops = user.sortShops.filter(function(s) {return s.deleted === 0;});
+    $scope.setting = {
+	shop_mode: retailerUtils.shop_mode($scope.shops[0].id, base)
+    };
+    $scope.levels = window.face($scope.setting.shop_mode).retailer_levels;
 
     $scope.tab = {money:true, amount:false};
     $scope.consume = {
@@ -2233,6 +2254,12 @@ function wretailerConsumeCtrlProvide(
 			$scope.consume.consumes = result.data;
 			$scope.consume.current_page = page; 
 		    } else if ($scope.tab.amount)  {
+			var diff_date = diablo_diff_date($scope.time.start_time, $scope.time.end_time);
+			// console.log(diff_date);
+			angular.forEach(result.data, function(d) {
+			    d.frequency = retailerUtils.to_decimal(d.amount / diff_date);
+			});
+			
 			$scope.amount.amounts = result.data;
 			$scope.amount.current_page = page;
 		    }

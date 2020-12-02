@@ -23,7 +23,7 @@
 -export([retailer/2, retailer/3, retailer/4, retailer/5, retailer/6, default_profile/2]).
 -export([charge/2, charge/3, threshold_card/3, threshold_card/4, threshold_card_good/3]).
 -export([score/2, score/3, ticket/2, ticket/3, ticket/4, get_ticket/3, get_ticket/4, make_ticket/3]).
--export([bank_card/3]).
+-export([bank_card/3, bank_card/4]).
 -export([filter/4, filter/6]).
 -export([gift/3, gift/4]).
 -export([match/3, syn/2, syn/3, get/2, card/3, sms/2]).
@@ -132,8 +132,12 @@ charge(list, Merchant) ->
 
 %% bank card
 bank_card(get, Merchant, RetailerId) ->
+    %% Name = ?wpool:get(?MODULE, Merchant),
+    %% gen_server:call(Name, {get_bank_card, Merchant, RetailerId}).
+    bank_card(get, Merchant, RetailerId, []).
+bank_card(get, Merchant, RetailerId, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {get_bank_card, Merchant, RetailerId}).
+    gen_server:call(Name, {get_bank_card, Merchant, RetailerId, Conditions}).
 
 %% score
 score(new, Merchant, Attrs) ->
@@ -1125,7 +1129,7 @@ handle_call({get_charge, Merchant, ChargeId}, _From, State) ->
 
     {reply, Reply, State};
 
-handle_call({get_bank_card, Merchant, RetailerId}, _From, State) ->
+handle_call({get_bank_card, Merchant, RetailerId, Conditions}, _From, State) ->
     ?DEBUG("get_bank_card: merchant ~p, retailer ~p", [Merchant, RetailerId]),
     Sql = "select id"
 	", retailer as retailer_id"
@@ -1136,6 +1140,7 @@ handle_call({get_bank_card, Merchant, RetailerId}, _From, State) ->
 	" from w_retailer_bank"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and retailer=" ++ ?to_s(RetailerId)
+	++ ?sql_utils:condition(proplists, Conditions)
 	++ " and balance > 0",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};

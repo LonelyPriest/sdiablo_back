@@ -288,8 +288,33 @@ action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
     Pay             = ?v(<<"pay">>, Payload),
     RetailerBalance = ?v(<<"balance">>, Payload),
     RetailerDraw    = ?v(<<"draw">>, Payload),
+    DrawRegion      = ?v(<<"region">>, Payload, -1),
     MaxDraw         = ?utils:min_value(RetailerBalance, Pay),
     ?DEBUG("MaxDraw ~p", [MaxDraw]),
+
+    SameRegionShops = 
+	case DrawRegion =:= ?NO of
+	    true -> [];
+	    false  ->
+		case ?shop:lookup(Merchant) of
+		    {ok, []} -> {<<"shop">>, ConsumeShop};
+		    {ok, Shops} ->
+			[ConsumeShopRegion] = [?v(<<"region_id">>, S)
+					       || {S} <- Shops, ?v(<<"id">>, S) =:= ConsumeShop],
+			{<<"shop">>,
+			 lists:foldr(
+			   fun({Shop}, Acc) ->
+				   case ?v(<<"region_id">>, Shop) =:= ConsumeShopRegion of
+				       true -> [?v(<<"id">>, Shop)|Acc];
+				       false -> Acc
+				   end
+			   end, [], Shops)};
+		    {error, _Error} ->
+			{<<"shop">>, ConsumeShop}
+		end
+	end,
+    ?DEBUG("SameRegionShops ~p", [SameRegionShops]),
+	
     %% get last charge
     %% case ?w_retailer:retailer(last_recharge, Merchant, Id) of
     %% 	{ok, []} ->
@@ -329,7 +354,7 @@ action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
     
     %% has bank card
     case 
-	case ?w_retailer:bank_card(get, Merchant, Id) of
+	case ?w_retailer:bank_card(get, Merchant, Id, SameRegionShops) of
 	    {ok, []} ->
 		case ?w_retailer:retailer(last_recharge, Merchant, Id) of
 		    {ok, []} ->
@@ -406,7 +431,7 @@ action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
 	    {ok, BankCards} ->
 		SortBankCards = sort_bank_card(BankCards, []),
 		{CalcDraw, Draws} =
-		    draw_with_bank_card(SortBankCards, Merchant, ConsumeShop, Pay, MaxDraw, 0, []),
+		    draw_with_bank_card(SortBankCards, Merchant, ConsumeShop, DrawRegion, Pay, MaxDraw, 0, []),
 		?DEBUG ("calcDraw ~p, Draws ~p", [CalcDraw, Draws]),
 		{ok, CalcDraw, Draws}
 		%% case MaxDraw > CalcDraw of
@@ -1648,11 +1673,11 @@ sort_bank_card([Card|T], Acc) ->
 	    sort_bank_card(T, Acc ++ [Card])
     end.
 	    
-draw_with_bank_card(_Cards, _Merchant, _ConsumeShop, _Pay, MaxDraw, CalcDraw, Acc) when MaxDraw =<0 ->
+draw_with_bank_card(_Cards, _Merchant, _ConsumeShop, _Region, _Pay, MaxDraw, CalcDraw, Acc) when MaxDraw =<0 ->
     {CalcDraw, Acc};
-draw_with_bank_card([], _Merchant, _ConsumeShop, _Pay, _MaxDraw, CalcDraw, Acc) ->
+draw_with_bank_card([], _Merchant, _ConsumeShop, _Region, _Pay, _MaxDraw, CalcDraw, Acc) ->
     {CalcDraw, Acc};
-draw_with_bank_card([Card|T], Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw,Acc) ->
+draw_with_bank_card([Card|T], Merchant, ConsumeShop, Region, Pay, MaxDraw, CalcDraw,Acc) ->
     ChargeId = ?v(<<"charge_id">>, Card),
     BankCardId = ?v(<<"id">>, Card),
     ChargeShop = ?v(<<"shop_id">>, Card),
@@ -1660,14 +1685,18 @@ draw_with_bank_card([Card|T], Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw,Acc)
     CardType  = ?v(<<"type">>, Card),
     case ?w_retailer:charge(get_charge, Merchant, ChargeId) of
 	{ok, []} ->
-	    draw_with_bank_card(T, Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw, Acc);
+	    draw_with_bank_card(T, Merchant, ConsumeShop, Region, Pay, MaxDraw, CalcDraw, Acc);
 	{ok, ChargePromotion} ->
-	    LimitShop       = ?v(<<"ishop">>, ChargePromotion), 
+	    LimitShop        = ?v(<<"ishop">>, ChargePromotion),
+	    %% ?DEBUG("limitShop ~p, consumeShop ~p, chargeShop ~p",
+	    %% 	   [LimitShop, ConsumeShop, ChargeShop]),
 	    LimitBalance     = ?v(<<"ibalance">>, ChargePromotion, ?INVALID_OR_EMPTY),
 	    ThresholdBalance = ?v(<<"mbalance">>, ChargePromotion),
-	    case LimitShop =:= ?YES andalso same_shop(ConsumeShop, ChargeShop) =:= ?NO of
+	    case Region =:= ?NO
+		andalso LimitShop =:= ?YES
+		andalso same_shop(ConsumeShop, ChargeShop) =:= ?NO of
 		true ->
-		    draw_with_bank_card(T, Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw, Acc);
+		    draw_with_bank_card(T, Merchant, ConsumeShop, Region, Pay, MaxDraw, CalcDraw, Acc);
 		false ->
 		    case LimitBalance =/= ?INVALID_OR_EMPTY andalso LimitBalance =/= 0 of
 			true ->
@@ -1678,6 +1707,7 @@ draw_with_bank_card([Card|T], Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw,Acc)
 			      T,
 			      Merchant,
 			      ConsumeShop,
+			      Region,
 			      Pay,
 			      MaxDraw - CanDraw,
 			      CalcDraw + CanDraw,
@@ -1703,6 +1733,7 @@ draw_with_bank_card([Card|T], Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw,Acc)
 				      Merchant,
 				      ConsumeShop,
 				      Pay,
+				      Region,
 				      MaxDraw - CanDraw,
 				      CalcDraw + CanDraw,
 				      [{BankCardId,
@@ -1719,6 +1750,7 @@ draw_with_bank_card([Card|T], Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw,Acc)
 				      Merchant,
 				      ConsumeShop,
 				      Pay,
+				      Region,
 				      MaxDraw - CanDraw,
 				      CalcDraw + CanDraw,
 				      [{BankCardId,

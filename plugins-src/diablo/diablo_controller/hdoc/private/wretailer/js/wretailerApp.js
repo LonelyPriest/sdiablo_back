@@ -170,7 +170,7 @@ function wretailerConfig(angular) {
 	    when('/consume', {
 		templateUrl: '/private/wretailer/html/retailer_consume.html',
 		controller: 'wretailerConsumeCtrl',
-		resolve: angular.extend({}, shop, user)
+		resolve: angular.extend({}, shop, user, base)
 	    }).
 	    // gift
 	    when('/gift', {

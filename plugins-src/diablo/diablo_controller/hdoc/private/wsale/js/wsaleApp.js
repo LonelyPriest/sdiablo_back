@@ -471,8 +471,9 @@ function wsaleNewProvide(
     
     $scope.today = function(){return $.now();}; 
     $scope.back  = function(){diablo_goto_page("#/new_wsale_detail");};
-
+    
     $scope.setting = {q_backend:true, check_sale:true, negative_sale:false};
+    $scope.face = window.face;
 
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.right = authen.authenSaleRight();
@@ -633,6 +634,7 @@ function wsaleNewProvide(
 	$scope.setting.type_sale     = wsaleUtils.type_sale(shopId, base);
 
 	$scope.setting.shop_mode     = wsaleUtils.shop_mode(shopId, base);
+	$scope.retailer_levels      = $scope.face($scope.setting.shop_mode).retailer_levels;
 
 	var sale_mode = wsaleUtils.sale_mode(shopId, base);
 	// $scope.setting.print_perform  = wsaleUtils.to_integer(sale_mode.charAt(3));
@@ -1006,7 +1008,8 @@ function wsaleNewProvide(
 	    $scope.select.shop.id,
 	    $scope.setting.fixed_mode===diablo_fixed_draw  ? $scope.select.can_draw:$scope.select.should_pay,
 	    $scope.select.surplus,
-	    $scope.select.retailer.draw_id
+	    $scope.select.retailer.draw_id,
+	    $scope.setting.draw_region
 	).then(function(result) {
 	    console.log(result);
 	    if (result.ecode === 0) {
@@ -1628,9 +1631,9 @@ function wsaleNewProvide(
 		    birth:$.now(),
 		    lunar:diablo_lunar[0],
 		    type :$scope.retailer_types[0],
-		    level:diablo_retailer_levels[0]
+		    level:$scope.retailer_levels[0]
 		},
-		levels: diablo_retailer_levels,
+		levels: $scope.retailer_levels,
 		lunars: diablo_lunar,
 		retailer_types:$scope.retailer_types,
 		pattern: {name:diabloPattern.chinese_name,

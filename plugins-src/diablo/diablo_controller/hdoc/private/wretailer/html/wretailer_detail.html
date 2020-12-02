@@ -711,7 +711,7 @@
 	  </div> 
 	</div>
 
-	<div x-ng-if="params.retailer.select_charge.rule_id===2" class="form-group">
+	<div x-ng-if="params.theoretic_card(params.retailer.select_charge.rule_id)" class="form-group">
 	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">赠送次数</span>
 	  <div class="col-md-8 col-sm-8 col-xs-8">
 	    <input type="number"
@@ -726,7 +726,7 @@
 	  </div> 
 	</div>
 
-	<div x-ng-if="params.retailer.select_charge.rule_id===2" class="form-group">
+	<div x-ng-if="params.theoretic_card(params.retailer.select_charge.rule_id)" class="form-group">
 	  <div class="col-md-3 col-sm-3 col-xs-3 control-label">消费商品</div>
 	  <div class="col-md-8 col-sm-8 col-xs-8">
 	    <div class="row">
@@ -748,6 +748,30 @@
 		      <td class="col-md-8 col-sm-8 col-xs-8">
 			<input class="form-control" type="number" x-ng-model="g.count" />
 		      </td>
+		    </tr>
+		  </tbody>
+		</table>
+	      </div>
+	    </div>
+	  </div> 
+	</div>
+
+	<div x-ng-if="params.time_card(params.retailer.select_charge.rule_id)" class="form-group">
+	  <div class="col-md-3 col-sm-3 col-xs-3 control-label">消费商品</div>
+	  <div class="col-md-8 col-sm-8 col-xs-8">
+	    <div class="row">
+	      <div class="col-md-12 col-sm-12 col-xs-12" class="table-responsive">
+		<table class="table diablo-form-table table-striped table-condensed table-bordered">
+		  <tbody>
+		    <tr class="text-right" x-ng-repeat="g in params.goods">
+		      <td class="vert-align col-md-2 col-sm-2 col-xs-2">
+			<div class="checkbox checkbox-danger checkbox-circle">
+			  <input id="{{g.id}}" type="checkbox"
+				 x-ng-model="g.select"/>
+			  <label for="{{g.id}}"></label>
+			</div>
+		      </td>
+		      <td class="text-center vert-align" x-ng-bind="g.name"></td> 
 		    </tr>
 		  </tbody>
 		</table>

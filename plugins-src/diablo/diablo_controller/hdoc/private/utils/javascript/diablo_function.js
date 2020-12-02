@@ -88,8 +88,9 @@ var diablo_withdraw = 1;
  * shop mode
  */
 var diablo_clothes_mode = 1;
-var diablo_child_mode = 2;
-var diablo_home_mode = 3;
+var diablo_water_mode = 2;
+// var diablo_child_mode = 2;
+// var diablo_home_mode = 3;
 
 /*
  * sale mode
@@ -724,6 +725,10 @@ var diablo_abs = function(v) {
     return Math.abs(v);
 };
 
+var diablo_floor = function(v) {
+    return Math.floor(v);
+};
+
 var diablo_rdight = function(dight, how){  
     var d = Math.round(dight * Math.pow(10,how)) / Math.pow(10,how);  
     return d;
@@ -812,6 +817,10 @@ var diablo_get_time = function(date){
     } else {
 	return date;
     }
+};
+
+var diablo_diff_date = function(start_date, end_date) {
+    return diablo_floor((end_date - start_date) / diablo_day_millisecond) + 1;
 };
 
 var diablo_format_datetime = function(dateFilter, datetime) {
