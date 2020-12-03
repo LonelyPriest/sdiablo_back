@@ -831,7 +831,7 @@ inventory(set_gift, {Merchant, UTable}, GiftState, Conditions) ->
     %% Updates = ?utils:v(gift, integer, GiftState), 
     ["update" ++ ?table:t(stock, Merchant, UTable)
      %%++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
-     ++ " set " ++ update_stock(state, 1, GiftState)
+     ++ " set " ++ update_stock(state, 2, GiftState)
      ++ " where " 
      ++ ?sql_utils:condition(proplists_suffix, NewConditions)
      ++ "merchant=" ++ ?to_s(Merchant)
@@ -843,7 +843,7 @@ inventory(set_gift, {Merchant, UTable}, GiftState, Conditions) ->
      
      "update" ++ ?table:t(good, Merchant, UTable)
      %%++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
-     ++ " set " ++ update_stock(state, 1, GiftState)
+     ++ " set " ++ update_stock(state, 2, GiftState)
      ++ " where " 
      ++ ?sql_utils:condition(proplists_suffix, lists:keydelete(<<"shop">>, 1, NewConditions))
      ++ "merchant=" ++ ?to_s(Merchant) 

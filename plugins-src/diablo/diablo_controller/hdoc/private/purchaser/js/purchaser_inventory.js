@@ -2315,7 +2315,7 @@ function purchaserInventoryDetailCtrlProvide(
 	update_good:   rightAuthen.authen(
 	    user.type, rightAuthen.good_action()["update_w_good"], user.right),
 	gift_stock: rightAuthen.authen(
-	    user.type, rightAuthen.good_action()["gift_w_stock"], user.right),
+	    user.type, rightAuthen.stock_action()["gift_w_stock"], user.right),
 	show_stock_firm_info: rightAuthen.authen(
 	    user.type, rightAuthen.stock_action()["show_stock_firm_info"], user.right)
     };
@@ -2380,7 +2380,7 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.setting.saler_stock     = stockUtils.saler_stock(diablo_default_shop, base);
     $scope.setting.print_access    = stockUtils.print_num(user.loginShop, base);
     angular.extend($scope.setting, stockUtils.stock_in_hide_mode(user.loginShop, base));
-    angular.extend($scope.setting, stockUtils.gift_sale(diablo_default_shop, base))
+    angular.extend($scope.setting, stockUtils.gift_sale(user.loginShop, base))
     // if (needCLodop()) loadCLodop(print_mode.protocal); 
     
     // var hide_mode  = stockUtils.stock_in_hide_mode(diablo_default_shop, base); 

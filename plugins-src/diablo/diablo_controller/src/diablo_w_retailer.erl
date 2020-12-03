@@ -1140,8 +1140,8 @@ handle_call({get_bank_card, Merchant, RetailerId, Conditions}, _From, State) ->
 	" from w_retailer_bank"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and retailer=" ++ ?to_s(RetailerId)
-	++ ?sql_utils:condition(proplists, Conditions)
-	++ " and balance > 0",
+	++ ?sql_utils:condition(proplists, Conditions),
+    %% ++ " and balance > 0",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
