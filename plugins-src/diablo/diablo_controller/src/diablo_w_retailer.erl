@@ -1226,8 +1226,12 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 			    ++ ?to_s(Cash) ++ ","
 			    ++ ?to_s(Card) ++ ","
 			    ++ ?to_s(Wxin) ++ ","
-			    ++ case Rule of
-				?THEORETIC_CHARGE ->
+			    ++ case Rule =:= ?THEORETIC_CHARGE
+				   orelse Rule =:= ?MONTH_UNLIMIT_CHARGE
+				   orelse Rule =:= ?QUARTER_UNLIMIT_CHARGE
+				   orelse Rule =:= ?YEAR_UNLIMIT_CHARGE
+				   orelse Rule =:= ?HALF_YEAR_UNLIMIT_CHARGE of
+				   true ->
 				       NewGoods = 
 					   lists:foldr(
 					     fun({struct, Good}, Acc) ->
@@ -1240,9 +1244,27 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					   _ ->
 					       "\'" ++ ?to_s(ejson:encode(NewGoods)) ++ "\'"
 				       end;
-				_ ->
-				    "\'" ++ ?to_s(Stock) ++ "\'"
-			    end ++ ","
+				   false ->
+				       "\'" ++ ?to_s(Stock) ++ "\'"
+			       end
+			    %% ++ case Rule of
+			    %% 	?THEORETIC_CHARGE ->
+			    %% 	       NewGoods = 
+			    %% 		   lists:foldr(
+			    %% 		     fun({struct, Good}, Acc) ->
+			    %% 			     [{[{<<"g">>, ?v(<<"id">>, Good)},
+			    %% 				{<<"c">>, ?v(<<"count">>, Good)}]}|Acc]
+			    %% 		     end, [], Goods),
+			    %% 	       %% ?DEBUG("NewGoods ~p", [NewGoods]),
+			    %% 	       case NewGoods of
+			    %% 		   [] -> "\'\'";
+			    %% 		   _ ->
+			    %% 		       "\'" ++ ?to_s(ejson:encode(NewGoods)) ++ "\'"
+			    %% 	       end;
+			    %% 	_ ->
+			    %% 	    "\'" ++ ?to_s(Stock) ++ "\'"
+			    %% end
+			    ++ ","
 			    ++ "\'" ++ ?to_s(Comment) ++ "\'," 
 			    ++ "\'" ++ ?to_s(Entry) ++ "\')"
 		end, 
@@ -1288,9 +1310,9 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 			    {ok, BankCard} ->
 				"update w_retailer_bank set balance=balance+"
 				    ++ ?to_s(CBalance + SBalance)
-				    ++ ", shop=" ++ ?to_s(Shop)
 				    ++ " where merchant=" ++ ?to_s(Merchant)
 				    ++ " and retailer=" ++ ?to_s(Retailer)
+				    ++ " and shop=" ++ ?to_s(Shop)
 				    ++ " and cid=" ++ ?to_s(ChargeId)
 				    ++ " and id=" ++ ?to_s(?v(<<"id">>, BankCard))
 		    end,
@@ -1433,24 +1455,38 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				  ++ ?to_s(Shop) ++ "," 
 				  ++ "\'" ++ ?to_s(Entry) ++ "\')"]
 
-				 ++ case Rule of
-					?THEORETIC_CHARGE ->
+				 ++ case Rule =:= ?THEORETIC_CHARGE
+				    orelse Rule =:= ?MONTH_UNLIMIT_CHARGE
+				    orelse Rule =:= ?QUARTER_UNLIMIT_CHARGE
+				    orelse Rule =:= ?YEAR_UNLIMIT_CHARGE
+				    orelse Rule =:= ?HALF_YEAR_UNLIMIT_CHARGE of
+					true ->
 					    lists:foldr(
 					      fun({struct, Good}, Acc) ->
 						      [ChildTheoreticCardSql(
 							 CardSN,
 							 ?v(<<"id">>, Good),
-							 ?v(<<"count">>, Good)) | Acc]
+							 ?v(<<"count">>, Good,
+							    ?UNLIMIT_TIME_COUNT_CARD)) | Acc]
 					      end, [], Goods);
-					%% ?BALANCE_LIMIT_CHARGE ->
-					%%     ["update w_retailer set balance=balance+"
-					%%      ++ ?to_s(CBalance + SBalance)
-					%%      ++ " where id=" ++ ?to_s(Retailer)];
-					_ ->
+					false ->
 					    []
-				    end 
-				};
-			    
+				    end
+				      %% ?THEORETIC_CHARGE ->
+				      %% 	lists:foldr(
+				      %% 	  fun({struct, Good}, Acc) ->
+				      %% 		      [ChildTheoreticCardSql(
+				      %% 			 CardSN,
+				      %% 			 ?v(<<"id">>, Good),
+				      %% 			 ?v(<<"count">>, Good)) | Acc]
+				      %% 	      end, [], Goods);
+				      %% 	%% ?BALANCE_LIMIT_CHARGE ->
+				      %% 	%%     ["update w_retailer set balance=balance+"
+				      %% 	%%      ++ ?to_s(CBalance + SBalance)
+				      %% 	%%      ++ " where id=" ++ ?to_s(Retailer)];
+				      %% 	_ ->
+				      %% 	    []
+				}; 
 			    {ok, OCard} ->
 				%% ?DEBUG("old card ..., startDate ~p", [StartDate]),
 				LastEndDate = ?v(<<"edate">>, OCard),
@@ -1522,7 +1558,6 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 						 12 -> {Year + 1, Month, Date};
 						 _ ->
 						     UYear = (Period + Month) div 12,
-						     %% UMonth = (Period + Month) rem 12,
 						     UMonth = case (Period + Month) rem 12 of
 								  0 -> 12;
 								  _UMonth ->_UMonth
@@ -1551,45 +1586,54 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				     end
 				 ++ " where id=" ++ ?to_s(?v(<<"id">>, OCard))]
 				 
-				 ++ case Rule of
-					?THEORETIC_CHARGE ->
+				 ++ case Rule =:= ?THEORETIC_CHARGE
+					orelse Rule =:= ?MONTH_UNLIMIT_CHARGE
+					orelse Rule =:= ?QUARTER_UNLIMIT_CHARGE
+					orelse Rule =:= ?YEAR_UNLIMIT_CHARGE
+					orelse Rule =:= ?HALF_YEAR_UNLIMIT_CHARGE of
+					true ->
 					    lists:foldr(
 					      fun({struct, Good}, Acc) ->
 						      GoodId = ?v(<<"id">>, Good), 
-						      GoodCount = ?v(<<"count">>, Good),
+						      GoodCount = ?v(<<"count">>,
+								     Good, ?UNLIMIT_TIME_COUNT_CARD),
 						      case ?sql_utils:execute(
 							   s_read,
-							   "select csn, good, retailer, merchant"
-							   " from w_child_card"
-							   " where csn=\'" ++ ?to_s(CardSN) ++ "\'"
-							   ++ " and retailer=" ++ ?to_s(Retailer)
-							   ++ " and good=" ++ ?to_s(GoodId))
+							      "select csn, good, retailer, merchant"
+							      " from w_child_card"
+							      " where csn=\'" ++ ?to_s(CardSN) ++ "\'"
+							      ++ " and retailer=" ++ ?to_s(Retailer)
+							      ++ " and good=" ++ ?to_s(GoodId))
 						      of
 							  {ok, []} ->
 							      [ChildTheoreticCardSql(
 								 CardSN,
 								 GoodId,
 								 GoodCount) | Acc];
-							  {ok, _E} -> 
-							      ["update w_child_card set "
-							       "ctime=ctime+" ++ ?to_s(GoodCount)
-							       ++ " where csn=\'"
-							       ++ ?to_s(CardSN) ++ "\'"
-							       ++ " and merchant=" ++ ?to_s(Merchant)
-							       ++ " and retailer=" ++ ?to_s(Retailer)
-							       ++ " and good=" ++ ?to_s(GoodId)|Acc]
+							  {ok, _E} ->
+							      case Rule =:= ?THEORETIC_CHARGE of
+								  true ->
+								      ["update w_child_card set "
+								       "ctime=ctime+" ++ ?to_s(GoodCount)
+								       ++ " where csn=\'"
+								       ++ ?to_s(CardSN) ++ "\'"
+								       ++ " and merchant=" ++ ?to_s(Merchant)
+								       ++ " and retailer=" ++ ?to_s(Retailer)
+								       ++ " and good=" ++ ?to_s(GoodId)|Acc];
+								  false ->
+								      []
+							      end
 						      end
 					      end, [], Goods);
 					%% ?BALANCE_LIMIT_CHARGE ->
 					%%     ["update w_retailer set balance=balance+"
 					%%      ++ ?to_s(CBalance + SBalance)
 					%%      ++ " where id=" ++ ?to_s(Retailer)];
-					_ ->
+					false ->
 					    []
 				    end
 				}
-			end,
-
+			end, 
 		    Reply =
 			case ?sql_utils:execute(transaction, Sql22, SN) of
 			    {ok, SN} ->

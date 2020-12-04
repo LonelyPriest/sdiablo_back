@@ -67,27 +67,27 @@
 	      <table class="table table-bordered table-striped table-hover table-condensed table-advanced">
 		<thead>
 		  <tr>
-		    <th>序号</th>
-		    <th>名称</th>
-		    <th>联系方式</th>
-		    <th>卡名称</th>
-		    <th>卡类型</th>
-		    <th>剩余次数/余额</th>
-		    <th>开始日期</th> 
-		    <th>结束日期</th> 
-		    <th>办卡日期</th>
-		    <th>办卡店铺</th>
-		    <th>操作</th>
+		    <th class="text-center">序号</th>
+		    <th class="text-center">名称</th>
+		    <th class="text-center">联系方式</th>
+		    <th class="text-center">卡名称</th>
+		    <th class="text-center">卡类型</th>
+		    <th class="text-center">剩余次数/余额</th>
+		    <th class="text-center">开始日期</th> 
+		    <th class="text-center">结束日期</th> 
+		    <th class="text-center">办卡日期</th>
+		    <th class="text-center">办卡店铺</th>
+		    <th class="text-center">操作</th>
 		  </tr>
 		</thead>
 		<tbody>
 		  <tr ng-repeat="c in tcards">
-		    <td x-ng-bind=c.order_id></td>
-		    <td x-ng-bind=c.retailer></td>
-		    <td x-ng-bind=c.mobile></td>
-		    <td x-ng-bind=c.cname></td> 
-		    <td x-ng-bind=c.rule.name></td> 
-		    <td>
+		    <td class="text-center" x-ng-bind=c.order_id></td>
+		    <td class="text-center" x-ng-bind=c.retailer></td>
+		    <td class="text-center" x-ng-bind=c.mobile></td>
+		    <td class="text-center" x-ng-bind=c.cname></td> 
+		    <td class="text-center" x-ng-bind=c.rule.name></td> 
+		    <td class="text-center">
 		      <div x-ng-switch on=c.rule_id>
 			<span x-ng-switch-when=2>{{c.ctime}}</span>
 			<span x-ng-switch-when=7>{{c.ctime}}</span>
@@ -95,7 +95,7 @@
 		      </div>
 		    </td>
 
-		    <td>
+		    <td class="text-center">
 		      <div x-ng-switch on=c.rule_id>
 			<span x-ng-switch-when=2>-</span>
 			<span x-ng-switch-when=7>-</span>
@@ -103,16 +103,16 @@
 		      </div>
 		    </td>
 
-		    <td>
+		    <td class="text-center">
 		      <div x-ng-switch on=c.rule_id>
 			<span x-ng-switch-when=2>-</span>
 			<span x-ng-switch-when=7>-</span>
 			<span x-ng-switch-default>{{c.edate}}</span>
 		      </div>
 		    </td> 
-		    <td x-ng-bind=c.entry_date></td>
-		    <td x-ng-bind=c.shop.name></td>
-		    <td>
+		    <td class="text-center" x-ng-bind=c.entry_date></td>
+		    <td class="text-center" x-ng-bind=c.shop.name></td>
+		    <td class="text-center">
 		      <button class="btn diablo-button green"
 			      x-ng-click="consume(c)">刷卡
 			<i class="glyphicon glyphicon-yen"></i>
@@ -231,7 +231,7 @@
 	      <div class="col-md-12 col-sm-12 col-xs-12" class="table-responsive">
 		<table class="table diablo-form-table table-striped table-condensed table-bordered"> 
 		  <tbody>
-		    <tr class="text-right" x-ng-repeat="g in params.goods">
+		    <tr class="text-center" x-ng-repeat="g in params.goods">
 		      <td class="vert-align col-md-2 col-sm-2 col-xs-2">
 			<div class="checkbox checkbox-danger checkbox-circle">
 			  <input id="{{g.id}}" type="checkbox"
@@ -239,14 +239,25 @@
 			  <label for="{{g.id}}"></label>
 			</div>
 		      </td>
-		      <td class="text-center vert-align" x-ng-bind="g.name"></td>
-		      <td class="text-center vert-align" >
-			<div x-ng-if="params.card.rule===7">{{g.tag_price}}</div>
-			<div x-ng-if="params.card.rule===2">{{g.left}}</div>
+		      <td class="text-left vert-align" x-ng-bind="g.name"></td>
+		      <td class="text-left vert-align" x-ng-switch on="params.card.rule">
+			<!-- <div x-ng-switch-when=7>{{g.tag_price}}</div> -->
+			<div x-ng-switch-when=2>{{g.left}}</div>
+			<div x-ng-switch-default>{{g.tag_price}}</div>
+			<!-- <div x-ng-if="params.card.rule===7">{{g.tag_price}}</div> -->
+			<!-- <div x-ng-if="params.card.rule===2">{{g.left}}</div> -->
 		      </td>
-		      <td class="col-md-6 col-sm-6 col-xs-6">
+		      <td x-ng-if="params.card.rule===7 || params.card.rule===2"
+			  class="col-md-6 col-sm-6 col-xs-6">
 			<input class="form-control" type="number" x-ng-model="g.count" />
 		      </td>
+		      <!-- <td x-ng-if="params.card.rule===3 -->
+		      <!-- 		   || params.card.rule===4 -->
+		      <!-- 		   || params.card.rule===5 -->
+		      <!-- 		   || params.card.rule===6"  -->
+		      <!-- 	  class="col-md-6 col-sm-6 col-xs-6"> -->
+		      <!-- 	<input class="form-control" readonly type="number" x-ng-model="g.count"/> -->
+		      <!-- </td> -->
 		    </tr>
 		  </tbody>
 		</table>

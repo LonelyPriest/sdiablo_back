@@ -88,6 +88,7 @@
 
 -define(FIRM_BILL, 9).
 -define(INVALID_OR_EMPTY, -1).
+-define(UNLIMIT_TIME_COUNT_CARD, -9999).
 
 -define(FIRM_PREFIX, 1000).
 -define(ONE_DAY, (24 * 60 * 60)).

@@ -1278,7 +1278,7 @@ handle_call({new_inventory, Merchant, UTable, Inventories, Props}, _From, State)
 
     case ?sql_utils:execute(s_read, Sql0) of 
 	{ok, Account} ->
-	    ?INFO("account ~p", [Account]),
+	    %% ?INFO("account ~p", [Account]),
 	    LastBalance = FF(?v(<<"lbalance">>, Account, 0))
 		+ FF(?v(<<"should_pay">>, Account, 0))
 		+ FF(?v(<<"e_pay">>, Account, 0))

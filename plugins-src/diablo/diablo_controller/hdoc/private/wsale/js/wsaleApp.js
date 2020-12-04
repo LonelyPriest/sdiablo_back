@@ -1036,7 +1036,7 @@ function wsaleNewProvide(
 			    draw_cards.push({card: c.card, draw:c.draw, type:c.type});
 			}
 		    }
-		    payLeftBalance -= c.balance;
+		    payLeftBalance -= c.draw;
 		}
 		
 		// angular.forEach(cards, function(c) {

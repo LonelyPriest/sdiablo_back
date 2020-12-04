@@ -1769,12 +1769,11 @@ function wretailerThresholdCardDetailCtrlProvide(
 		 goods: goods,
 		 shops: $scope.shops,
 		 
-		 card: {
-		     rule    :card.rule_id,
-		     retailer:card.retailer, 
-		     mobile  :card.mobile,
-		     ctime   :card.ctime,
-		     edate   :card.edate},
+		 card: {rule    :card.rule_id,
+			retailer:card.retailer, 
+			mobile  :card.mobile,
+			ctime   :card.ctime,
+			edate   :card.edate},
 		 
 		 has_child_card: has_child,
 		 count: has_child ? undefined : 1,
@@ -1813,7 +1812,11 @@ function wretailerThresholdCardDetailCtrlProvide(
 	    );
 	}; 
 	
-	if (card.rule_id === diablo_theoretic_charge) {
+	if (card.rule_id === diablo_theoretic_charge
+	    || card.rule_id === diablo_month_unlimit_charge
+	    || card.rule_id === diablo_quarter_unlimit_charge
+	    || card.rule_id === diablo_half_of_year_unlimit_charge
+	    || card.rule_id === diablo_year_unlimit_charge) {
 	    // get child card
 	    wretailerService.list_threshold_child_card(
 		card.retailer_id, card.csn
