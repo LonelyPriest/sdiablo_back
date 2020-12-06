@@ -13,7 +13,7 @@
 %% @desc: GET action
 %%--------------------------------------------------------------------
 action(Session, Req) ->
-    ?DEBUG("GET Req ~n~p", [Req]),
+    %% ?DEBUG("GET Req ~n~p", [Req]),
     {ok, HTMLOutput} = wretailer_frame:render(
 			 [
 			  {navbar, ?menu:navbars(?MODULE, Session)},
@@ -1215,6 +1215,18 @@ action(Session, Req, {"add_threshold_card_good"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"update_threshold_card_good", Id}, Payload) ->
+    ?DEBUG("update_threshold_card_good with session ~p, payload ~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session), 
+    case ?w_retailer:threshold_card_good(update, Merchant, {Id, Payload}) of
+	{ok, GoodId} ->
+	    %% ?w_user_profile:update(charge, Merchant),
+	    ?utils:respond(
+	       200, Req, ?succ(add_threshold_card_good, GoodId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"filter_threshold_card_detail"}, Payload) ->
     ?DEBUG("filter_threshold_card_detail with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant  = ?session:get(merchant, Session),
@@ -1237,6 +1249,19 @@ action(Session, Req, {"filter_threshold_card_sale"}, Payload) ->
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 	       ?w_retailer:filter(threshold_card_sale, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
+       end, Req, Payload);
+
+action(Session, Req, {"filter_threshold_card_sale_note"}, Payload) ->
+    ?DEBUG("filter_threshold_card_sale_note with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session),
+
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_retailer:filter(total_threshold_card_sale_note, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_retailer:filter(threshold_card_sale_note,
+				  Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
        end, Req, Payload);
 
 action(Session, Req, {"filter_threshold_card_good"}, Payload) ->
@@ -1505,7 +1530,8 @@ sidebar(Session) ->
     ThresholdCard = [{{"threshold_card", "次/月/季/年卡", "glyphicon glyphicon-credit-card" },
 		      [{"card_detail",   "卡类详情", "glyphicon glyphicon-credit-card"},
 		       {"card_good",     "按次商品", "glyphicon glyphicon-book"}, 
-		       {"card_sale",     "消费记录", "glyphicon glyphicon-bookmark"}
+		       {"card_sale",     "消费记录", "glyphicon glyphicon-bookmark"},
+		       {"card_sale_note",     "消费明细", "glyphicon glyphicon-map-marker"}
 		      ] 
 		     }],
 

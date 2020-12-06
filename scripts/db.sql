@@ -598,6 +598,7 @@ create table w_card_sale
     card            INTEGER not null default -1, -- refer to w_card
     cid             INTEGER not null default -1, -- refer to w_charge
     amount          INTEGER not null default -1,
+    oil             DECIMAL(10,2) not null default 0,
     -- cgood           INTEGER default -1, -- refer to card_good
     -- tag_price       INTEGER default -1, 
     merchant        INTEGER default -1,
@@ -622,6 +623,7 @@ create table w_card_sale_detail
     amount          INTEGER not null default -1,    
     good            INTEGER default -1, -- refer to card_good
     tag_price       INTEGER default -1,
+    oil             DECIMAL(10,2) not null default 0,
     
     merchant        INTEGER default -1,
     shop            INTEGER default -1,

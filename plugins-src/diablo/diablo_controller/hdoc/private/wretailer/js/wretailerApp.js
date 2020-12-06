@@ -160,6 +160,11 @@ function wretailerConfig(angular) {
 		controller: 'wretailerThresholdCardSaleCtrl',
 		resolve: angular.extend({}, employee, shop)
 	    }).
+	    when('/threshold_card/card_sale_note', {
+		templateUrl: '/private/wretailer/html/threshold_card_sale_note.html',
+		controller: 'wretailerThresholdCardSaleNoteCtrl',
+		resolve: angular.extend({}, employee, shop)
+	    }).
 	    // level
 	    when('/level', {
 		templateUrl: '/private/wretailer/html/retailer_level.html',
@@ -570,7 +575,17 @@ function wretailerConfig(angular) {
 	    return http.save({operation: "add_threshold_card_good"},
 			     {shop: card.shop,
 			      name: card.name,
-			      price: card.price}).$promise;
+			      price: card.price,
+			      oil: card.oil}).$promise;
+	};
+
+	this.update_threshold_card_good = function(card) {
+	    return http.save({operation: "update_threshold_card_good"},
+			     {id: card.id,
+			      shop: card.shop,
+			      name: card.name,
+			      price: card.price,
+			      oil: card.oil}).$promise;
 	};
 
 	this.filter_threshold_card_good = function(match, fields, currentPage, itemsPerpage){
@@ -585,6 +600,15 @@ function wretailerConfig(angular) {
 	this.filter_threshold_card_sale = function(match, fields, currentPage, itemsPerpage){
 	    return http.save(
 		{operation: "filter_threshold_card_sale"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
+	};
+
+	this.filter_threshold_card_sale_note = function(match, fields, currentPage, itemsPerpage){
+	    return http.save(
+		{operation: "filter_threshold_card_sale_note"},
 		{match:  angular.isDefined(match) ? match.op : undefined,
 		 fields: fields,
 		 page:   currentPage,

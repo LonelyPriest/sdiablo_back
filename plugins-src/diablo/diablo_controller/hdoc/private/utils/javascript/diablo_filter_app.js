@@ -736,7 +736,8 @@ function filterProvider(){
 			    return {id        :g.id,
 				    name      :g.name,
 				    shop_id   :g.shop_id,
-				    tag_price :g.tag_price}
+				    tag_price :g.tag_price,
+				    oil:       g.oil}
 			});
 
 			set_storage(cookie, "tcard_good", goods);

@@ -1646,15 +1646,16 @@ function wretailerThresholdCardDetailCtrlProvide(
 		    var cgoods_to_print = [];
 		    var total_count = 0;
 		    
-		    if (card.rule_id === diablo_theoretic_charge
-			// && card.rule_id !== diablo_balance_limit_charge 
-			&& !params.has_child_card) {
+		    if (card.rule_id === diablo_theoretic_charge && !params.has_child_card) {
 			total_count = params.count; 
 			cgoods_to_print.push({g:params.good.id,
 					      n:params.good.name,
 					      c:params.count,
 					      p:params.good.tag_price}); 
-			cgoods.push({g:params.good.id, c:params.count, p:params.good.tag_price});
+			cgoods.push({g:params.good.id,
+				     c:params.count,
+				     p:params.good.tag_price,
+				     o:params.good.oil});
 		    } else {
 			angular.forEach(params.goods, function(g) {
 			    if (g.select) {
@@ -1663,7 +1664,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 						      n:g.name,
 						      c:g.count,
 						      p:g.tag_price});
-				cgoods.push({g:g.id, c:g.count, p:g.tag_price});
+				cgoods.push({g:g.id, c:g.count, p:g.tag_price, o:g.oil});
 			    }
 			});
 		    }
@@ -1679,6 +1680,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 			cgoods    :cgoods,
 			// tag_price :params.good.tag_price,
 			count     :total_count,
+			oil       :params.oil,
 			fbalance  :params.fbalance,
 			shop      :params.shop.id,
 			shop_name :params.shop.name,
@@ -1808,10 +1810,21 @@ function wretailerThresholdCardDetailCtrlProvide(
 			 valid = true;
 		     } 
 		     return valid;
-		 }}
+		 },
+
+		 calc_oil: function(goods) {
+		     var oil = 0;
+		     for (var i=0, l=goods.length; i<l; i++) {
+			 if (goods[i].select) {
+			     oil += goods[i].oil * goods[i].count;
+			 }
+		     }
+		     return oil;
+		 }
+		}
 	    );
 	}; 
-	
+
 	if (card.rule_id === diablo_theoretic_charge
 	    || card.rule_id === diablo_month_unlimit_charge
 	    || card.rule_id === diablo_quarter_unlimit_charge
@@ -1830,7 +1843,8 @@ function wretailerThresholdCardDetailCtrlProvide(
 				child_goods.push(
 				    {id:$scope.card_goods[j].id,
 				     name:$scope.card_goods[j].name,
-				     tag_price:$scope.card_goods[j].tag_price, 
+				     tag_price:$scope.card_goods[j].tag_price,
+				     oil:$scope.card_goods[j].oil,
 				     left:result.child[i].ctime,
 				     count:1});
 			    }
@@ -1850,6 +1864,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 		    {id:$scope.card_goods[i].id,
 		     name:$scope.card_goods[i].name,
 		     tag_price:$scope.card_goods[i].tag_price,
+		     oil:$scope.card_goods[i].oil,
 		     count:1});
 	    }
 	    start_consume(child_goods, true);
@@ -1928,6 +1943,7 @@ function wretailerThresholdCardSaleCtrlProvide(
 
     $scope.filters = []; 
     diabloFilter.reset_field();
+    diabloFilter.add_field("employee",    filterEmployee);
     diabloFilter.add_field("retailer", function(viewValue){
 	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
     });
@@ -1949,11 +1965,12 @@ function wretailerThresholdCardSaleCtrlProvide(
 		    if (page === $scope.default_page){
 			$scope.total_items = result.total;
 			$scope.amount_items = result.amount;
+			$scope.total_oil = result.oil;
 		    }
 
 		    angular.forEach($scope.sales, function(s) {
 			s.employee = diablo_get_object(s.employee_id, filterEmployee);
-			s.cgood    = diablo_get_object(s.cgood_id, $scope.card_goods);
+			// s.cgood    = diablo_get_object(s.cgood_id, $scope.card_goods);
 			s.shop     = diablo_get_object(s.shop_id, filterShop);
 			s.card     = wretailerService.threshold_cards[s.rule_id - 2];
 		    });
@@ -2010,6 +2027,84 @@ function wretailerThresholdCardSaleCtrlProvide(
     };
 };
 
+function wretailerThresholdCardSaleNoteCtrlProvide(
+    $scope, $q, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, filterEmployee, filterShop){
+    var dialog = diabloUtilsService; 
+    var deferred = $q.defer(); 
+    diabloFilter.list_threshold_card_good(deferred, $scope.shopIds);
+    deferred.promise.then(function(goods) {
+	console.log(goods);
+	$scope.card_goods = goods;
+	$scope.refresh();
+    });
+    
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = 10;
+    $scope.default_page = 1; 
+    $scope.current_page = $scope.default_page;
+    $scope.total_items = 0;
+
+    $scope.select         = {phone:undefined};
+
+    $scope.filters = []; 
+    diabloFilter.reset_field();
+    diabloFilter.add_field("employee",    filterEmployee);
+    diabloFilter.add_field("retailer", function(viewValue){
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
+    });
+    
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt(); 
+
+    var now = retailerUtils.first_day_of_month(); 
+    $scope.time = diabloFilter.default_time(now.first, now.current);
+    
+    $scope.do_search = function(page){
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    wretailerService.filter_threshold_card_sale_note(
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result){
+		console.log(result);
+		$scope.notes = result.data; 
+		if (result.ecode === 0){
+		    if (page === $scope.default_page){
+			$scope.total_items = result.total;
+			$scope.amount_items = result.amount;
+			$scope.total_oil = result.oil;
+		    }
+
+		    angular.forEach($scope.notes, function(s) {
+			s.employee = diablo_get_object(s.employee_id, filterEmployee);
+			s.good    = diablo_get_object(s.good_id, $scope.card_goods);
+			s.shop     = diablo_get_object(s.shop_id, filterShop);
+			s.card     = wretailerService.threshold_cards[s.rule_id - 2];
+		    });
+		    
+		    diablo_order_page(page, $scope.items_perpage, $scope.notes);
+		    $scope.current_page = page; 
+		} 
+	    })
+	})
+    };
+
+
+    $scope.match_retailer_phone = function(viewValue){
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
+    };
+
+    $scope.refresh = function(){
+	$scope.do_search($scope.default_page)
+    };
+
+    $scope.page_changed = function(page){
+	$scope.do_search(page)
+    };
+
+    $scope.update_card_sale_note = function(sale) {
+	diabloUtilsService.response(false, "修改消费明细", "暂不支持该操作");
+    };
+};
+
 
 function wretailerThresholdCardGoodCtrlProvide(
     $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, user){
@@ -2019,6 +2114,7 @@ function wretailerThresholdCardGoodCtrlProvide(
     $scope.shops = user.sortShops;
     $scope.right = {
 	add_good        :retailerUtils.authen(user.type, user.right, 'add_card_good'),
+	update_good     :retailerUtils.authen(user.type, user.right, 'update_card_good'),
 	delete_good     :retailerUtils.authen(user.type, user.right, 'delete_card_good') 
     };
 
@@ -2067,7 +2163,10 @@ function wretailerThresholdCardGoodCtrlProvide(
 	var callback = function(params) {
 	    console.log(params);
 	    wretailerService.add_threshold_card_good(
-		{shop:params.shop.id, name:params.name, price:params.tag_price}
+		{shop: params.shop.id,
+		 name: params.name,
+		 price: retailerUtils.to_integer(params.tag_price),
+		 oil: retailerUtils.to_integer(params.oil)}
 	    ).then(function(result) {
 		console.log(result);
 		if (result.ecode === 0) {
@@ -2087,7 +2186,41 @@ function wretailerThresholdCardGoodCtrlProvide(
 	    {shops: $scope.shops,
 	     shop:  $scope.shops[0],
 	     tag_price: 0,
-	     name_pattern: diabloPattern.ch_name_address}); 
+	     oil:   0,
+	     name_pattern: diabloPattern.ch_name_address});
+    };
+
+    $scope.update_card_good = function(g) {
+	var callback = function(params) {
+	    console.log(params);
+	    wretailerService.update_threshold_card_good(
+		{id:g.id,
+		 shop: diablo_get_modified(params.shop.id, g.shop_id),
+		 name: diablo_get_modified(params.name, g.name),
+		 price:diablo_get_modified(retailerUtils.to_integer(params.tag_price), g.tag_price),
+		 oil: diablo_get_modified(retailerUtils.to_integer(params.oil), g.oil)}
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true, "修改按次消费商品", "修改按次消费商品成功！！", undefined, $scope.refresh);
+		} else {
+		    dialog.set_error("修改按次消费商品", result.ecode); 
+		}
+	    });
+	};
+	
+	dialog.edit_with_modal(
+	    "new-card-good.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {shops: $scope.shops,
+	     shop:  diablo_get_object(g.shop_id, $scope.shops),
+	     name:  g.name,
+	     tag_price: g.tag_price,
+	     oil: g.oil,
+	     name_pattern: diabloPattern.ch_name_address});
     };
 
     $scope.delete_card_good = function() {
@@ -2398,6 +2531,7 @@ define (["wretailerApp"], function(app){
     app.controller("wretailerThresholdCardDetailCtrl", wretailerThresholdCardDetailCtrlProvide);
     app.controller("wretailerThresholdCardGoodCtrl", wretailerThresholdCardGoodCtrlProvide);
     app.controller("wretailerThresholdCardSaleCtrl", wretailerThresholdCardSaleCtrlProvide);
+    app.controller("wretailerThresholdCardSaleNoteCtrl", wretailerThresholdCardSaleNoteCtrlProvide);
     app.controller("wretailerLevelCtrl", wretailerLevelCtrlProvide);
     app.controller("wretailerConsumeCtrl", wretailerConsumeCtrlProvide);
     app.controller("wretailerPlanCustomTicketCtrl", wretailerPlanCustomTicketCtrlProvide);

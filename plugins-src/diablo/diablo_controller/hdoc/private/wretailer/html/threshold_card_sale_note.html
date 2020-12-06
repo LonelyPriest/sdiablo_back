@@ -4,7 +4,7 @@
       
       <div class="portlet-title">
 	<div class="caption">
-	  <i class="glyphicon glyphicon-menu-hamburger"></i>消费记录</div>
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>消费明细</div>	
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid"> 
@@ -62,16 +62,17 @@
 		    <th>联系方式</th>
 		    <th>卡名称</th>
 		    <th>卡类型</th> 
-		    <th>消费次数/金额</th>
+		    <th>名称</th>
+		    <th>单价</th>
+		    <th>次数</th> 
 		    <th>提成</th> 
-		    <th>消费店铺</th>
-		    <th>备注</th> 
+		    <th>店铺</th>
 		    <th>日期</th>
 		    <th>操作</th>
 		  </tr>
 		</thead>
 		<tbody>
-		  <tr ng-repeat="s in sales">
+		  <tr ng-repeat="s in notes">
 		    <td x-ng-bind=s.order_id></td>
 		    <td x-ng-bind=s.rsn></td>
 		    <td x-ng-bind=s.employee.name></td>
@@ -79,23 +80,24 @@
 		    <td x-ng-bind=s.mobile></td>
 		    <td x-ng-bind=s.cname></td>
 		    <td x-ng-bind=s.card.name></td> 
-		    <td x-ng-bind=s.amount></td>
-		    <td x-ng-bind=s.oil></td>
+		    <td x-ng-bind=s.good.name></td>
+		    <td x-ng-bind=s.good.tag_price></td>
+		    <td x-ng-bind=s.amount></td> 
+		    <td>{{s.oil*s.amount}}</td>
 		    <td x-ng-bind=s.shop.name></td>
-		    <td x-ng-bind=s.comment></td>
 		    <td x-ng-bind=s.entry_date></td>
 		    <td>
-		      <button class="btn diablo-button red"
-			      x-ng-click="cancel_card_sale(s)">删除
-			<i class="glyphicon glyphicon-erase"></i>
+		      <button class="btn diablo-button yellow"
+			      x-ng-click="update_card_sale_note(s)">修改
+			<i class="glyphicon glyphicon-edit"></i>
 		    </td>
 		  </tr>
 		  
 		  <tr x-ng-if="total_items!==0">
-		    <td colspan=7></td>
+		    <td colspan=9></td>
 		    <td x-ng-bind=amount_items></td>
 		    <td x-ng-bind=total_oil></td>
-		    <td colspan=4></td>
+		    <td colspan=3></td>
 		  </tr>
 		</tbody>
 		
@@ -131,5 +133,3 @@
     </div>
   </div>
 </div>
-
-

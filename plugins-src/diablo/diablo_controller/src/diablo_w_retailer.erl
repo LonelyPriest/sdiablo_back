@@ -208,7 +208,10 @@ make_ticket(batch, Merchant, Attrs) ->
 %% threshold_card
 threshold_card_good(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {add_threshold_card_good, Merchant, Attrs}); 
+    gen_server:call(Name, {add_threshold_card_good, Merchant, Attrs});
+threshold_card_good(update, Merchant, {GoodId, Attrs}) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {update_threshold_card_good, Merchant, GoodId, Attrs});
 threshold_card_good(list, Merchant, Shops) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {list_threshold_card_good, Merchant, Shops}).
@@ -269,6 +272,9 @@ filter(total_threshold_card, 'and', Merchant, Conditions) ->
 filter(total_threshold_card_sale, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {total_threshold_card_sale, Merchant, Conditions});
+filter(total_threshold_card_sale_note, 'and', Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {total_threshold_card_sale_note, Merchant, Conditions});
 filter(total_threshold_card_good, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {total_threshold_card_good, Merchant, Conditions});
@@ -311,7 +317,11 @@ filter(threshold_card, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) -
 filter(threshold_card_sale, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(
-      Name, {filter_threshold_card_sale, Merchant, Conditions, CurrentPage, ItemsPerPage}); 
+      Name, {filter_threshold_card_sale, Merchant, Conditions, CurrentPage, ItemsPerPage});
+filter(threshold_card_sale_note, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(
+      Name, {filter_threshold_card_sale_note, Merchant, Conditions, CurrentPage, ItemsPerPage});
 filter(threshold_card_good, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(
@@ -2951,7 +2961,11 @@ handle_call({filter_threshold_card, Merchant, Conditions, CurrentPage, ItemsPerP
 
 %% threshold card good
 handle_call({list_threshold_card_good, Merchant, Shops}, _From, State) ->
-    Sql = "select id, name, tag_price, shop as shop_id from w_card_good"
+    Sql = "select id"
+	", name"
+	", tag_price"
+	", oil"
+	", shop as shop_id from w_card_good"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, Shops),
     Reply = ?sql_utils:execute(read, Sql),
@@ -2960,11 +2974,13 @@ handle_call({list_threshold_card_good, Merchant, Shops}, _From, State) ->
 handle_call({total_threshold_card_sale, Merchant, Conditions}, _From, State) ->
     ?DEBUG("total_threshold_card_sale: merchant ~p, conditions ~p", [Merchant, Conditions]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
+    CorrectCondition = correct_condition(card_sale, NewConditions, []),
     Sql = "select count(*) as total"
 	", sum(amount) as amount"
+	", sum(oil) as oil"
 	" from w_card_sale"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:condition(proplists, CorrectCondition)
 	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime), 
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
@@ -2973,7 +2989,9 @@ handle_call({total_threshold_card_sale, Merchant, Conditions}, _From, State) ->
 handle_call({filter_threshold_card_sale, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
     ?DEBUG("filter_threshold_card_sale: merchant ~p, conditions ~p, page ~p",
 	   [Merchant, Conditions, CurrentPage]),
-    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    CorrectCondition = correct_condition(card_sale, Conditions, []),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, CorrectCondition),
+    
     Sql = 
 	"select a.id"
 	", a.rsn"
@@ -2981,8 +2999,7 @@ handle_call({filter_threshold_card_sale, Merchant, Conditions, CurrentPage, Item
 	", a.retailer as retailer_id" 
 	", a.card as card_id"
 	", a.amount"
-    %% ", a.cgood as cgood_id"
-    %% ", a.tag_price"
+	", a.oil"
 	", a.shop as shop_id"
 	", a.comment" 
 	", a.entry_date"
@@ -3005,12 +3022,85 @@ handle_call({filter_threshold_card_sale, Merchant, Conditions, CurrentPage, Item
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
+
+handle_call({total_threshold_card_sale_note, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_threshold_card_sale_note: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
+    CorrectCondition = correct_condition(card_sale, NewConditions, []),
+    Sql = "select count(*) as total"
+	", sum(amount) as amount"
+	", sum(oil * amount) as oil"
+	" from w_card_sale_detail"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, CorrectCondition)
+	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime), 
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({filter_threshold_card_sale_note, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+    ?DEBUG("filter_threshold_card_sale_note: merchant ~p, conditions ~p, page ~p",
+	   [Merchant, Conditions, CurrentPage]),
+    CorrectCondition = correct_condition(card_sale, Conditions, []), 
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, CorrectCondition),
+    Sql =
+	"select a.id"
+	", a.rsn"
+	", a.employee_id"
+	", a.retailer_id" 
+	", a.card_id"
+	", a.cid"
+	", a.good_id"
+	", a.amount"
+	", a.oil"
+	", a.shop_id"
+	", a.entry_date"
+
+	", b.name as retailer"
+	", b.mobile" 
+	", c.rule as rule_id" 
+	", d.name as cname"
+	
+	" from("
+	"select a.id"
+	", a.rsn"
+	", a.employee as employee_id"
+	", a.retailer as retailer_id" 
+	", a.card as card_id"
+	", a.good as good_id"
+	", a.cid"
+	", a.amount"
+	", a.oil"
+	", a.shop as shop_id"
+	", a.entry_date"
+
+	%% ", c.name as retailer"
+	%% ", c.mobile" 
+	%% ", d.rule as rule_id" 
+	%% ", e.name as cname"
+
+	" from w_card_sale_detail a, w_card_sale b"
+	" where a.rsn=b.rsn and a.merchant=b.merchant and a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
+	++ ") a"
+	
+	" left join w_retailer b on b.id=a.retailer_id"
+	" left join w_card c on c.id=a.card_id"
+	" left join w_charge d on d.id=a.cid"
+
+	%% " where a.rsn=b.rsn and a.merchant=b.merchant and a.merchant=" ++ ?to_s(Merchant)
+	%% ++ ?sql_utils:condition(proplists, NewConditions)
+	%% ++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
+	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
     
 handle_call({add_threshold_card_good, Merchant, Attrs}, _From, State) ->
     ?DEBUG("add_threshold_card_good: merchant ~p, attrs ~p", [Merchant, Attrs]),
     Name = ?v(<<"name">>, Attrs),
     Shop = ?v(<<"shop">>, Attrs),
     TagPrice = ?v(<<"price">>, Attrs),
+    Oil = ?v(<<"oil">>, Attrs, 0),
     CurrentTime = ?utils:current_time(format_localtime),
 
     case Name =:= undefined orelse Shop =:= undefined orelse TagPrice =:= undefined of
@@ -3023,9 +3113,16 @@ handle_call({add_threshold_card_good, Merchant, Attrs}, _From, State) ->
 
 	    case ?sql_utils:execute(s_read, Sql0) of
 		{ok, []} ->
-		    Sql = "insert into w_card_good(name, tag_price, merchant, shop, entry_date) values("
+		    Sql = "insert into w_card_good("
+			"name"
+			", tag_price"
+			", oil"
+			", merchant"
+			", shop"
+			", entry_date) values("
 			++ "\'" ++ ?to_s(Name) ++ "\',"
 			++ ?to_s(TagPrice) ++ ","
+			++ ?to_s(Oil) ++ ","
 			++ ?to_s(Merchant) ++ ","
 			++ ?to_s(Shop) ++ ","
 			++ "\'" ++ ?to_s(CurrentTime) ++ "\')",
@@ -3037,6 +3134,28 @@ handle_call({add_threshold_card_good, Merchant, Attrs}, _From, State) ->
 		    {reply, Error, State}
 	    end
     end;
+
+handle_call({update_threshold_card_good, Merchant, GoodId, Attrs}, _From, State) ->
+    ?DEBUG("update_threshold_card_good: merchant ~p, attrs ~p", [Merchant, Attrs]),
+    Name = ?v(<<"name">>, Attrs),
+    Shop = ?v(<<"shop">>, Attrs),
+    TagPrice = ?v(<<"price">>, Attrs),
+    Oil = ?v(<<"oil">>, Attrs),
+    Updates = ?utils:v(name, string, Name)
+	++ ?utils:v(shop, integer, Shop)
+	++ ?utils:v(tag_price, float, TagPrice)
+	++ ?utils:v(oil, float, Oil),
+    Reply = 
+	case Updates of
+	    [] -> {ok, GoodId};
+	    _ ->
+		Sql1 = "update w_card_good set " ++ ?utils:to_sqls(proplists, comma, Updates)
+		    ++ " where merchant=" ++ ?to_s(Merchant)
+		    ++ " and id=" ++ ?to_s(GoodId),
+
+		?sql_utils:execute(write, Sql1, GoodId)
+	end,
+    {reply, Reply, State};
 
 handle_call({total_threshold_card_good, Merchant, Conditions}, _From, State) ->
     ?DEBUG("total_threshold_card_good: merchant ~p, conditions ~p", [Merchant, Conditions]),
@@ -3057,7 +3176,8 @@ handle_call({filter_threshold_card_good, Merchant, Conditions, CurrentPage, Item
 	"select a.id" 
 	", a.name" 
 	", a.tag_price"
-	", a.shop" 
+	", a.oil"
+	", a.shop as shop_id" 
 	", a.entry_date" 
 	", b.name as shop"
 
@@ -3100,7 +3220,8 @@ handle_call({delete_threshold_card, Merchant, CardAttr}, _Frobm, State) ->
 handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
     ?DEBUG("threshold_card_consume: merchant ~p, card ~p, attrs ~p", [Merchant, CardId, Attrs]),
     CardSN   = ?v(<<"csn">>, Attrs),
-    CGoods   = ?v(<<"cgoods">>, Attrs), 
+    CGoods   = ?v(<<"cgoods">>, Attrs),
+    Oil      = ?v(<<"oil">>, Attrs, 0),
     ChargeId = ?v(<<"charge">>, Attrs),
     Retailer = ?v(<<"retailer">>, Attrs),
     Employee = ?v(<<"employee">>, Attrs),
@@ -3138,14 +3259,23 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 				    ++ " and rule=" ++ ?to_s(?THEORETIC_CHARGE),
 
 				    "insert into w_card_sale(rsn"
-				    ", employee, retailer, card, cid, amount, merchant"
-				    ", shop, comment, entry_date) values("
+				    ", employee"
+				    ", retailer"
+				    ", card"
+				    ", cid"
+				    ", amount"
+				    ", oil"
+				    ", merchant"
+				    ", shop"
+				    ", comment"
+				    ", entry_date) values("
 				    ++ "\'" ++ ?to_s(SN) ++ "\',"
 				    ++ "\'" ++ ?to_s(Employee) ++ "\',"
 				    ++ ?to_s(Retailer) ++ ","
 				    ++ ?to_s(CardId) ++ ","
 				    ++ ?to_s(ChargeId) ++ "," 
-				    ++ ?to_s(Count) ++ "," 
+				    ++ ?to_s(Count) ++ ","
+				    ++ ?to_s(Oil) ++ "," 
 				    ++ ?to_s(Merchant) ++ ","
 				    ++ ?to_s(Shop) ++ ","
 				    ++ "\'" ++ ?to_s(Comment) ++ "\',"
@@ -3163,6 +3293,7 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 					   ", good"
 					   ", amount" 
 					   ", tag_price"
+					   ", oil"
 
 					   ", merchant"
 					   ", shop"
@@ -3176,6 +3307,7 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 					   ++ ?to_s(?v(<<"g">>, Good)) ++ ","
 					   ++ ?to_s(?v(<<"c">>, Good)) ++ ","
 					   ++ ?to_s(?v(<<"p">>, Good)) ++ ","
+					   ++ ?to_s(?v(<<"o">>, Good)) ++ ","
 
 					   ++ ?to_s(Merchant) ++ ","
 					   ++ ?to_s(Shop) ++ ","
@@ -3223,14 +3355,23 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 					    %% ++ " and merchant=" ++ ?to_s(Merchant),
 
 					    "insert into w_card_sale(rsn"
-					    ", employee, retailer, card, cid, amount, merchant"
-					    ", shop, comment, entry_date) values("
+					    ", employee"
+					    ", retailer"
+					    ", card"
+					    ", cid"
+					    ", amount"
+					    ", oil"
+					    ", merchant"
+					    ", shop"
+					    ", comment"
+					    ", entry_date) values("
 					    ++ "\'" ++ ?to_s(SN) ++ "\',"
 					    ++ "\'" ++ ?to_s(Employee) ++ "\',"
 					    ++ ?to_s(Retailer) ++ ","
 					    ++ ?to_s(CardId) ++ ","
 					    ++ ?to_s(ChargeId) ++ "," 
-					    ++ ?to_s(FBalance) ++ "," 
+					    ++ ?to_s(FBalance) ++ ","
+					    ++ ?to_s(Oil) ++ ","
 					    ++ ?to_s(Merchant) ++ ","
 					    ++ ?to_s(Shop) ++ ","
 					    ++ "\'" ++ ?to_s(Comment) ++ "\',"
@@ -3248,6 +3389,7 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 						   ", good"
 						   ", amount" 
 						   ", tag_price"
+						   ", oil"
 
 						   ", merchant"
 						   ", shop"
@@ -3261,6 +3403,7 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 						   ++ ?to_s(?v(<<"g">>, Good)) ++ ","
 						   ++ ?to_s(?v(<<"c">>, Good)) ++ ","
 						   ++ ?to_s(?v(<<"p">>, Good)) ++ ","
+						   ++ ?to_s(?v(<<"o">>, Good)) ++ ","
 
 						   ++ ?to_s(Merchant) ++ ","
 						   ++ ?to_s(Shop) ++ ","
@@ -3284,8 +3427,9 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 
 handle_call({expire_card_consume, Merchant, CardId, Attrs}, _From, State) ->
     ?DEBUG("threshold_card_consume: merchant ~p, card ~p, attrs ~p", [Merchant, CardId, Attrs]),
-    CGoods = ?v(<<"cgoods">>, Attrs),
-    Count = ?v(<<"count">>, Attrs),
+    CGoods   = ?v(<<"cgoods">>, Attrs),
+    Count    = ?v(<<"count">>, Attrs),
+    Oil      = ?v(<<"oil">>, Attrs, 0),
     ChargeId = ?v(<<"charge">>, Attrs),
     Retailer = ?v(<<"retailer">>, Attrs),
     Employee = ?v(<<"employee">>, Attrs),
@@ -3314,14 +3458,23 @@ handle_call({expire_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 		    Datetime = ?utils:current_time(format_localtime),
 		    
 		    Sql1 = "insert into w_card_sale(rsn"
-			", employee, retailer, card, cid, amount, merchant"
-			", shop, comment, entry_date) values("
+			", employee"
+			", retailer"
+			", card"
+			", cid"
+			", amount"
+			", oil"
+			", merchant"
+			", shop"
+			", comment"
+			", entry_date) values("
 			++ "\'" ++ ?to_s(SN) ++ "\',"
 			++ "\'" ++ ?to_s(Employee) ++ "\',"
 			++ ?to_s(Retailer) ++ ","
 			++ ?to_s(CardId) ++ ","
 			++ ?to_s(ChargeId) ++ ","
 			++ ?to_s(Count) ++ ","
+			++ ?to_s(Oil) ++ ","
 		    %%++ ?to_s(CGood) ++ ","
 		    %% ++ ?to_s(Price) ++ ","
 			++ ?to_s(Merchant) ++ ","
@@ -3341,6 +3494,7 @@ handle_call({expire_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 				   ", good"
 				   ", amount" 
 				   ", tag_price"
+				   ", oil"
 
 				   ", merchant"
 				   ", shop"
@@ -3354,6 +3508,7 @@ handle_call({expire_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 				   ++ ?to_s(?v(<<"g">>, Good)) ++ ","
 				   ++ ?to_s(?v(<<"c">>, Good)) ++ ","
 				   ++ ?to_s(?v(<<"p">>, Good)) ++ ","
+				   ++ ?to_s(?v(<<"o">>, Good)) ++ ","
 
 				   ++ ?to_s(Merchant) ++ ","
 				   ++ ?to_s(Shop) ++ ","
@@ -3939,3 +4094,11 @@ ticket_condition(custome, [{<<"ticket_batch">>, Value}|T], Acc) ->
     ticket_condition(custome, T, [{<<"batch">>, Value}|Acc]);
 ticket_condition(custome, [H|T], Acc) ->
     ticket_condition(custome, T, [H|Acc]).
+
+correct_condition(card_sale, [], Acc) ->
+    Acc;
+correct_condition(card_sale, [{<<"employ">>, Value}|T], Acc) ->
+    correct_condition(card_sale, T, [{<<"employee">>, Value}|Acc]);
+correct_condition(card_sale, [H|T], Acc) ->
+    correct_condition(card_sale, T, [H|Acc]).
+

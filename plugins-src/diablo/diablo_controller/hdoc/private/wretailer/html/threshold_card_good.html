@@ -32,6 +32,7 @@
 		    <th>序号</th>
 		    <th>名称</th>
 		    <th>价格</th>
+		    <th>提成</th>
 		    <th>店铺</th> 
 		    <th>日期</th>
 		    <th>操作</th>
@@ -42,9 +43,14 @@
 		    <td x-ng-bind=g.order_id></td>
 		    <td x-ng-bind=g.name></td>
 		    <td x-ng-bind=g.tag_price></td>
+		    <td x-ng-bind=g.oil></td>
 		    <td x-ng-bind=g.shop></td>
 		    <td x-ng-bind=g.entry_date></td>
 		    <td>
+		      <button x-ng-if="right.update_good" class="btn diablo-button yellow"
+		      	      x-ng-click="update_card_good(g)">修改
+			<i class="glyphicon glyphicon-edit"></i>
+		      </button>
 		      <button x-ng-if="right.delete_good" class="btn diablo-button red"
 		      	      x-ng-click="delete_card_good(g)">删除
 			<i class="glyphicon glyphicon-erase"></i>
@@ -145,7 +151,26 @@
 	      <span class="fg-red">价格只能是整数，默认为0</span>
 	    </div> 
 	  </div> 
-	</div> 
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">商品提成</label> 
+	  <div class="col-sm-8 col-md-8">
+	    <div class="input-group">
+	      <input class="form-control"
+		     type="number" step="1"
+		     required
+		     disable-key 
+		     name="oil"
+		     x-ng-pattern="/^\d+$/"
+		     x-ng-model="params.oil"/>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div ng-show="gForm.oil.$invalid && !gForm.oil.$pristine">
+	      <span class="fg-red">提成只能是整数，默认为0</span>
+	    </div> 
+	  </div> 
+	</div>
 	
       </div>
   </div>

@@ -809,7 +809,9 @@ alter table w_ticket_plan add column etime DATE not null default 0 after stime;
 alter table w_ticket_plan add column rule TINYINT not null default 0 after name;
 
 --2020-12-04
-alter table w_card_good add column oil DECIMAL(10,2) default 0 after tag_price;
+alter table w_card_good add column oil DECIMAL(10,2) not null default 0 after tag_price;
+alter table w_card_sale add column oil DECIMAL(10,2) not null default 0 after amount;
+alter table w_card_sale_detail add column oil DECIMAL(10,2) not null default 0 after tag_price;
 
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
