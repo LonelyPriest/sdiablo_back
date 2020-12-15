@@ -7,18 +7,24 @@ select a.style_number, a.brand, a.amount, a.org_price, b.org_price as nprice fro
 
 
 -- check stock
-select sum(x.intotal), sum(x.amount), sum(x.stotal) from (select a.style_number, a.brand, a.intotal, b.amount, c.stotal from (select style_number, brand, sum(amount) as intotal from w_inventory_new_detail where rsn like 'm-40-s-139-%' group by style_number, brand) a left join (select style_number, brand, amount from w_inventory where shop=139) b on a.style_number=b.style_number and a.brand=b.brand left join (select style_number, brand, sum(total) as stotal from w_sale_detail where rsn like 'm-40-s-139-%' group by style_number, brand) c on a.style_number=c.style_number and a.brand=c.brand) x;
+select sum(x.intotal), sum(x.amount), sum(x.stotal) from \
+(select a.style_number, a.brand, a.intotal, b.amount, c.stotal from \
+(select style_number, brand, sum(amount) as intotal from w_inventory_new_detail_101 where merchant=101 and shop=282 group by style_number, brand) a left join \
+(select style_number, brand, amount from w_inventory_101 where merchant=101 and shop=282) b on a.style_number=b.style_number and a.brand=b.brand left join \
+(select style_number, brand, sum(total) as stotal from w_sale_detail_101 where merchant=10 and shop=282 group by style_number, brand) c on a.style_number=c.style_number and a.brand=c.brand) x;
 
 -- all stock
 select sum(x.intotal), sum(x.amount), sum(x.stotal), sum(x.ftotal), sum(x.ttotal) from \
 (select a.style_number, a.brand, b.intotal, a.amount, c.stotal, d.ftotal, e.ttotal from \
-(select style_number, brand, amount from w_inventory where shop=110) a \
-left join (select style_number, brand, sum(amount) as intotal from w_inventory_new_detail where rsn like 'm-15-s-110-%' group by style_number, brand) b on a.style_number=b.style_number and a.brand=b.brand \
-left join (select style_number, brand, sum(total) as stotal from w_sale_detail where rsn like 'm-15-s-110-%' group by style_number, brand) c on a.style_number=c.style_number and a.brand=c.brand \
-left join (select a.style_number, brand, sum(a.amount) as ftotal from w_inventory_transfer_detail a, w_inventory_transfer b where a.fshop=110 and a.rsn=b.rsn and b.state=1 group by style_number, brand) d \
-on a.style_number=d.style_number and a.brand=d.brand \
-left join (select a.style_number, brand, sum(a.amount) as ttotal from w_inventory_transfer_detail a, w_inventory_transfer b where a.tshop=110 and a.rsn=b.rsn and b.state=1 group by style_number, brand) e \
-on a.style_number=e.style_number and a.brand=e.brand) x;
+(select style_number, brand, amount from w_inventory_101 where merchant=101 and shop=282) a \
+left join (select style_number, brand, sum(amount) as intotal from w_inventory_new_detail_101 where rsn like 'm-101-s-282-%' group by style_number, brand) b on \
+a.style_number=b.style_number and a.brand=b.brand 
+left join (select style_number, brand, sum(total) as stotal from w_sale_detail_101 where rsn like 'm-101-s-282-%' group by style_number, brand) c on \
+a.style_number=c.style_number and a.brand=c.brand \
+left join (select a.style_number, brand, sum(a.amount) as ftotal from w_inventory_transfer_detail_101 a, w_inventory_transfer_101 b \
+where a.fshop=282 and a.rsn=b.rsn and b.state=1 group by style_number, brand) d on a.style_number=d.style_number and a.brand=d.brand \
+left join (select a.style_number, brand, sum(a.amount) as ttotal from w_inventory_transfer_detail_101 a, w_inventory_transfer_101 b \
+where a.tshop=282 and a.rsn=b.rsn and b.state=1 group by style_number, brand) e on a.style_number=e.style_number and a.brand=e.brand) x;
 
 
 -- w_inventory to transfer
@@ -33,20 +39,20 @@ select sum(x.ftotal), sum(x.amount) from
 left join w_inventory b on a.style_number=b.style_number and a.brand=b.brand and b.shop=17) x;
 
 -- check transfer
-select a.rsn, a.total, b.amount from (select rsn, total from w_inventory_transfer where fshop=93) a \
-left join (select a.rsn, a.amount from (select rsn, sum(amount) as amount from w_inventory_transfer_detail where fshop=93 group by rsn) a) b on a.rsn=b.rsn where a.total!=b.amount;
+select a.rsn, a.total, b.amount from (select rsn, total from w_inventory_transfer_101 where fshop=282) a \
+left join (select a.rsn, a.amount from (select rsn, sum(amount) as amount from w_inventory_transfer_detail_101 where fshop=282 group by rsn) a) b on a.rsn=b.rsn where a.total!=b.amount;
 
 /*
 * check stock in
 */
 select x.rsn, x.total, x.amount from \
-(select a.rsn, b.style_number, b.brand, a.total, b.amount from w_inventory_new a left join \
-(select rsn, style_number, brand, sum(amount) as amount from w_inventory_new_detail where rsn like 'm-43-s-146-%' group by rsn) b on \
-a.rsn=b.rsn where a.rsn like 'm-43-s-146-%') x where x.total!=x.amount;
+(select a.rsn, b.style_number, b.brand, a.total, b.amount from w_inventory_new_101 a left join \
+(select rsn, style_number, brand, sum(amount) as amount from w_inventory_new_detail_101 where merchant=101 and shop=282 group by rsn) b on \
+a.rsn=b.rsn where a.rsn like 'm-101-s-282-%') x where x.total!=x.amount;
 
 select a.rsn, a.style_number, a.brand, a.total, b.amount from \
-(select rsn, style_number, brand, sum(total) as total from w_inventory_new_detail_amount where rsn like 'm-23-s-93-%' group by rsn) a left join \
-(select rsn,style_number, brand, sum(amount) as amount from w_inventory_new_detail where rsn like 'm-23-s-93-%' group by rsn) b \
+(select rsn, style_number, brand, sum(total) as total from w_inventory_new_detail_amount_101 where rsn like 'm-101-s-282-%' group by rsn) a left join \
+(select rsn,style_number, brand, sum(amount) as amount from w_inventory_new_detail_101 where rsn like 'm-101-s-282-%' group by rsn) b \
 on a.rsn=b.rsn where a.total!=b.amount;
 
 -- syn shop of w_inventory_new_detail
@@ -79,12 +85,12 @@ set a.discount=b.discount;
 
 
 -- check stock
-select a.style_number, a.brand, a.amount, b.total from w_inventory a left join \
-(select style_number, brand, sum(total) as total from w_inventory_amount a where a.merchant=43 and shop=146 group by a.style_number, a.brand) b \
-on a.style_number=b.style_number and a.brand=b.brand where a.merchant=43 and a.shop=146 and a.amount!=b.total;
+select a.style_number, a.brand, a.amount, b.total from w_inventory_101 a left join \
+(select style_number, brand, sum(total) as total from w_inventory_amount_101 a where a.merchant=101 and shop=282 group by a.style_number, a.brand) b \
+on a.style_number=b.style_number and a.brand=b.brand where a.merchant=101 and a.shop=282 and a.amount!=b.total;
 
-select a.style_number, a.brand, a.total , b.amount from (select style_number, brand, sum(total) as total from w_inventory_amount where merchant=43 and shop=146 group by style_number, brand) a \
-left join (select style_number, brand, amount from w_inventory where merchant=43 and shop=146) b \
+select a.style_number, a.brand, a.total , b.amount from (select style_number, brand, sum(total) as total from w_inventory_amount_101 where merchant=101 and shop=282 group by style_number, brand) a \
+left join (select style_number, brand, amount from w_inventory_101 where merchant=101 and shop=282) b \
 on a.style_number=b.style_number and a.brand=b.brand;
 
 select a.merchant, a.shop, a.style_number, a.brand, a.amount, b.total from w_inventory a \
@@ -205,8 +211,8 @@ on a.style_number=b.style_number and a.brand=b.brand and a.merchant=b.merchant s
 where a.merchant=101 and a.style_number='nph9831'
 
 -- check sale
-select a.merchant, a.rsn, a.total, b.rsn, c.name from w_sale a left join w_sale_detail b on a.rsn=b.rsn left join merchants c on a.merchant=c.id where b.rsn is null and a.total!=0;
-select a.entry_date, a.rsn, a.total, b.rsn, b.total from w_sale a left join (select rsn, sum(total) as total from w_sale_detail group by rsn) b on a.rsn=b.rsn where a.total != b.total;
+select a.merchant, a.rsn, a.total, b.rsn, c.name from w_sale a left join w_sale_detail_101 b on a.rsn=b.rsn left join merchants c on a.merchant=c.id where b.rsn is null and a.total!=0;
+select a.entry_date, a.rsn, a.total, b.rsn, b.total from w_sale_101 a left join (select rsn, sum(total) as total from w_sale_detail_101 group by rsn) b on a.rsn=b.rsn where a.total != b.total;
 
 -- check firm
 select * from \

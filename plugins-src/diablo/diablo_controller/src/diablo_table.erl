@@ -48,6 +48,14 @@ t(stock, Merchant, UTable) ->
 t(stock_note, Merchant, UTable) ->
     " w_inventory_amount" ++ t_suffix(Merchant, UTable);
 
+
+t(sale_order, Merchant, UTable) ->
+    " w_sale_order" ++ t_suffix(Merchant, UTable);
+t(sale_order_detail, Merchant, UTable) ->
+    " w_sale_order_detail" ++ t_suffix(Merchant, UTable);
+t(sale_order_note, Merchant, UTable) ->
+    " w_sale_order_note" ++ t_suffix(Merchant, UTable);
+
 t(sale_new, Merchant, UTable) ->
     " w_sale" ++ t_suffix(Merchant, UTable);
 t(sale_detail, Merchant, UTable) ->

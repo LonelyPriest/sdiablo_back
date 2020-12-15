@@ -112,6 +112,10 @@ sn(pay_order_sn, Merchant) ->
     Key = ?to_atom("pay-sn-" ++ ?to_s(Merchant)),
     gen_server:call(?SERVER, {new, Key});
 
+sn(sale_order, Merchant) ->
+    Key = ?to_atom("sale-order-sn-" ++ ?to_s(Merchant)),
+    gen_server:call(?SERVER, {new, Key});
+
 sn(gift_draw, Merchant) ->
     Key = ?to_atom("gift-sn-" ++ ?to_s(Merchant)),
     gen_server:call(?SERVER, {new, Key});
@@ -228,6 +232,7 @@ handle_call({init, Merchant}, _From, State) ->
 		mnesia:write(#unique_ids{merchant=?to_atom("batch-sale-new-sn-" ++ M) , id=0}),
 
 		mnesia:write(#unique_ids{merchant=?to_atom("pay-sn-" ++ M) , id=0}),
+		mnesia:write(#unique_ids{merchant=?to_atom("sale-order-sn-" ++ M) , id=0}),
 		
 		mnesia:write(#unique_ids{merchant=?to_atom("gift-sn-" ++ M) , id=0})
 	end,

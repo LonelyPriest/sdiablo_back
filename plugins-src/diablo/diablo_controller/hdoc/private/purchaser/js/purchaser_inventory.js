@@ -2286,7 +2286,8 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.tab_active = {time: true, chart:false};
     $scope.chart_data = {};
     
-    $scope.shops     = user.sortShops.filter(function(s) {return s.deleted===0});
+    // $scope.shops     = user.sortShops.filter(function(s) {return s.deleted===0});
+    $scope.shops     = user.sortShops;
     $scope.shopIds   = user.shopIds;
     
     $scope.sexs      = diablo_sex;

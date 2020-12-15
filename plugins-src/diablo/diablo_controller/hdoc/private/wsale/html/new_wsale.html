@@ -87,9 +87,6 @@
       
       <!--BEGN portlet body--> 
       <div class="portlet-body"> 
-	<!--BEGIN panel-->
-	<!-- <uib-tabset> -->
-	<!-- <uib-tab heading="{{wsale_mode[0].title}}" active="wsale_mode[0].active"> -->
 	<div class="panel panel-default"> 
 	  <div class="table-responsive">
 	    <!--EBGIN table supplier-->
@@ -144,12 +141,10 @@
 		    <span class={{color_negative_sale(inv.negative)}}>{{inv.total}}</span>
 		  </td> 
 		  <td class="col-md-1 vert-align">
-		    <!-- <div x-ng-if="select.sysVip"> -->
 		    <div class={{color_negative_sale(inv.negative)}}>
 		      <span x-ng-if="inv.vir_price>inv.tag_price" x-ng-bind="inv.vir_price"></span>
 		      <span x-ng-if="inv.vir_price<=inv.tag_price" x-ng-bind="inv.tag_price"></span>
 		    </div>
-		    <!-- <div x-ng-if="!select.sysVip" x-ng-bind="inv.tag_price"></div> -->
 		  </td>
 
 		  <!--discount-->
@@ -315,6 +310,7 @@
 	  <span class="fg-color-darken"><strong>{{select.score}}</strong></span>
 	  
 	</div>
+	
 	<div x-ng-repeat="p in show_promotions">
 	  <div>{{p.name}}&nbsp&nbsp&nbsp&nbsp
 	    
@@ -374,68 +370,69 @@
 	      <div class="btn-group">
 		<button type="button" class="btn blue reload"
 			x-ng-click="refresh_pay_scan()">刷新<i class="icon icon-spinner fg-white"></i>
-		</button> 
-	      </div>
-	    </div>
-	    <div class="tools"></div>
-	  </div>
-
-	  <div class="portlet-body">
-	    <div class="panel panel-default">
-	      <div class="table-responsive">
-		<table class="table table-bordered table-striped table-hover
-			      table-condensed table-advanced">
-		  <thead>
-		    <tr>
-		      <th class="text-center">序号</th>
-		      <th class="text-center">订单号</th>
-		      <th class="text-center">类型</th> 
-		      <th class="text-center">金额</th> 
-		      <th class="text-center">状态</th> 
-		      <th class="text-center">日期</th>
-		      <th class="text-center">操作</th>
-		    </tr>
-		  </thead>
-		  <tbody>
-		    <tr class="text-center" x-ng-repeat="h in pay_scan_history">
-		      <td x-ng-bind="h.order_id"></td>
-		      <td x-ng-bind="h.sn"></td>
-		      <td>
-			<div x-ng-switch on="h.type">
-			  <div x-ng-switch-when=0>微信</div>
-			  <div x-ng-switch-when=1>支付宝</div>
-			  <div x-ng-switch-default>未知</div>
-			</div> 
-		      </td>
-		      <td x-ng-bind="h.balance"></td>
-		      <td>
-			<div x-ng-switch on="h.state">
-			  <div x-ng-switch-when=0><span class="fg-green">成功</span></div>
-			  <div x-ng-switch-when=1><span class="fg-red">失败</span></div>
-			  <div x-ng-switch-when=2><span class="fg-pink">支付中</span></div>
-			  <div x-ng-switch-when=3><span class="fg-magenta">转入退款</span></div>
-			  <div x-ng-switch-when=4><span class="fg-green">退款成功</span></div>
-			  <div x-ng-switch-when=5><span class="fg-red">退款失败</span></div>
-			  <div x-ng-switch-when=9><span class="fg-yellow">未知</span></div>
-			</div> 
-		      </td>
-		      <td x-ng-bind="h.entry_date"></td>
-		      <td>
-			<button x-ng-if="h.state===9 || h.state===2 || h.state===3"
-				class="btn diablo-button btn-danger"
-		    		x-ng-click="check_pay_scan(h)">
-			  核实<i class="glyphicon glyphicon-check"></i>
-			</button>
-		      </td>
-		    </tr>
-		  </tbody>
-		  <tfoot></tfoot>
-		</table>
+		</button>
 	      </div>
 	    </div>
 	  </div>
-	  
+	  <div class="tools"></div>
 	</div>
+
+	<div class="portlet-body">
+	  <div class="panel panel-default">
+	    <div class="table-responsive">
+	      <table class="table table-bordered table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th class="text-center">序号</th>
+		    <th class="text-center">订单号</th>
+		    <th class="text-center">类型</th> 
+		    <th class="text-center">金额</th> 
+		    <th class="text-center">状态</th> 
+		    <th class="text-center">日期</th>
+		    <th class="text-center">操作</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr class="text-center" x-ng-repeat="h in pay_scan_history">
+		    <td x-ng-bind="h.order_id"></td>
+		    <td x-ng-bind="h.sn"></td>
+		    <td>
+		      <div x-ng-switch on="h.type">
+			<div x-ng-switch-when=0>微信</div>
+			<div x-ng-switch-when=1>支付宝</div>
+			<div x-ng-switch-default>未知</div>
+		      </div> 
+		    </td>
+		    <td x-ng-bind="h.balance"></td>
+		    <td>
+		      <div x-ng-switch on="h.state">
+			<div x-ng-switch-when=0><span class="fg-green">成功</span></div>
+			<div x-ng-switch-when=1><span class="fg-red">失败</span></div>
+			<div x-ng-switch-when=2><span class="fg-pink">支付中</span></div>
+			<div x-ng-switch-when=3><span class="fg-magenta">转入退款</span></div>
+			<div x-ng-switch-when=4><span class="fg-green">退款成功</span></div>
+			<div x-ng-switch-when=5><span class="fg-red">退款失败</span></div>
+			<div x-ng-switch-when=9><span class="fg-yellow">未知</span></div>
+		      </div> 
+		    </td>
+		    <td x-ng-bind="h.entry_date"></td>
+		    <td>
+		      <button x-ng-if="h.state===9 || h.state===2 || h.state===3"
+			      class="btn diablo-button btn-danger"
+		    	      x-ng-click="check_pay_scan(h)">
+			核实<i class="glyphicon glyphicon-check"></i>
+		      </button>
+		    </td>
+		  </tr>
+		</tbody>
+		<tfoot></tfoot>
+	      </table>
+	      
+	    </div>
+	  </div>
+	</div>
+	
       </div>
     </div>
     
@@ -680,10 +677,10 @@
 	    <div class="input-group">
 	      <span class="input-group-addon">
 	    	<i class="glyphicon glyphicon-ban-circle fg-red"></i>核销</span>
-		<input class="form-control"
-		       type="number" step="1"
-		       x-ng-edit
-	  	       x-ng-model="select.verificate"/> 
+	      <input class="form-control"
+		     type="number" step="1"
+		     x-ng-edit
+	  	     x-ng-model="select.verificate"/> 
 	    </div>
 	    <!-- <div x-ng-show="!check_verificate(select.retailer)"> -->
 	    <!--   <span class="fg-red">核销金额超过上限</span> -->

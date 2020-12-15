@@ -1264,93 +1264,93 @@ create table w_inventory_transfer_detail_amount(
 /*
 * order
 */
-create table w_inventory_order_101(
-    id             INTEGER AUTO_INCREMENT,
-    rsn            VARCHAR(32) not null, -- record sn
-    account        INTEGER not null default -1,
-    employ         VARCHAR(8) not null,
+-- create table w_inventory_order(
+--     id             INTEGER AUTO_INCREMENT,
+--     rsn            VARCHAR(32) not null, -- record sn
+--     account        INTEGER not null default -1,
+--     employ         VARCHAR(8) not null,
     
-    shop           INTEGER default -1,  -- which shop saled the goods
-    merchant       INTEGER default -1,
+--     shop           INTEGER default -1,  -- which shop saled the goods
+--     merchant       INTEGER default -1,
 
-    firm           INTEGER default -1, 
-    comment        VARCHAR(255) default null,
+--     firm           INTEGER default -1, 
+--     comment        VARCHAR(255) default null,
 
-    should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99
-    h_total        INTEGER default 0, -- hope total
-    r_total        INTEGER default 0, -- recieve total
+--     should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99
+--     h_total        INTEGER default 0, -- hope total
+--     r_total        INTEGER default 0, -- recieve total
     
-    state          TINYINT  default 0,  -- 0: wait for check, 1: checked
-    entry_date     DATETIME default 0,
-    op_date        DATETIME default 0, 
-    deleted        INTEGER  default 0, -- 0: no;  1: yes
-    unique  key uk (rsn),
-    key     dk (merchant, shop, firm),
-    primary key    (id)
-)default charset=utf8;
+--     state          TINYINT  default 0,  -- 0: wait for check, 1: checked
+--     entry_date     DATETIME default 0,
+--     op_date        DATETIME default 0, 
+--     deleted        INTEGER  default 0, -- 0: no;  1: yes
+--     unique  key uk (rsn),
+--     key     dk (merchant, shop, firm),
+--     primary key    (id)
+-- )default charset=utf8;
 
-create table w_inventory_order_detail_101(
-    id             INTEGER AUTO_INCREMENT,
-    rsn            VARCHAR(32) not null, -- record sn
+-- create table w_inventory_order_detail(
+--     id             INTEGER AUTO_INCREMENT,
+--     rsn            VARCHAR(32) not null, -- record sn
     
-    style_number   VARCHAR(64) not null,
-    brand          INTEGER default -1, 
+--     style_number   VARCHAR(64) not null,
+--     brand          INTEGER default -1, 
     
-    type           INTEGER default -1,
-    sex            TINYINT default -1,
+--     type           INTEGER default -1,
+--     sex            TINYINT default -1,
 
-    year           YEAR(4) not null default 0,
-    season         TINYINT, -- 0:spring, 1:summer, 2:autumn, 3:winter
+--     year           YEAR(4) not null default 0,
+--     season         TINYINT, -- 0:spring, 1:summer, 2:autumn, 3:winter
     
-    firm           INTEGER default -1, 
-    s_group        VARCHAR(32) default 0,  -- which size group 
-    free           TINYINT default 0,  -- free color and free size
+--     firm           INTEGER default -1, 
+--     s_group        VARCHAR(32) default 0,  -- which size group 
+--     free           TINYINT default 0,  -- free color and free size
     
-    org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
-    tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
-    ediscount      DECIMAL(4, 1)  default 100, -- max: 100
-    discount       DECIMAL(4, 1)  default 100, -- max: 100
+--     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
+--     tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
+--     ediscount      DECIMAL(4, 1)  default 100, -- max: 100
+--     discount       DECIMAL(4, 1)  default 100, -- max: 100
 
-    state          VARCHAR(16) default 0, -- [1]->promotion price, [2] gift, [3] ticket
-    path           VARCHAR(255) default null, -- the image path
-    unit           TINYINT not null default 0,
+--     state          VARCHAR(16) default 0, -- [1]->promotion price, [2] gift, [3] ticket
+--     path           VARCHAR(255) default null, -- the image path
+--     unit           TINYINT not null default 0,
 
-    h_total        INTEGER default 0,
-    r_total        INTEGER default 0, -- recieve total 
+--     h_total        INTEGER default 0,
+--     r_total        INTEGER default 0, -- recieve total 
     
-    merchant       INTEGER default -1,
-    shop           INTEGER default -1,
+--     merchant       INTEGER default -1,
+--     shop           INTEGER default -1,
 
-    op_date        DATETIME default 0, 
-    entry_date     DATETIME default 0, 
-    deleted        INTEGER default 0, -- 0: no;  1: yes
+--     op_date        DATETIME default 0, 
+--     entry_date     DATETIME default 0, 
+--     deleted        INTEGER default 0, -- 0: no;  1: yes
     
-    unique  key uk (rsn, style_number, brand),
-    key     dk (merchant, shop, style_number, brand, firm),
-    primary key    (id)
-)default charset=utf8;
+--     unique  key uk (rsn, style_number, brand),
+--     key     dk (merchant, shop, style_number, brand, firm),
+--     primary key    (id)
+-- )default charset=utf8;
 
-create table w_inventory_order_note_101(
-    id             INTEGER AUTO_INCREMENT,
-    rsn            VARCHAR(32) not null, -- record sn
+-- create table w_inventory_order_note(
+--     id             INTEGER AUTO_INCREMENT,
+--     rsn            VARCHAR(32) not null, -- record sn
     
-    style_number   VARCHAR(64) not null,
-    brand          INTEGER default -1,
-    color          INTEGER default -1,
-    size           VARCHAR(8) default null, -- S/26, M/27....
+--     style_number   VARCHAR(64) not null,
+--     brand          INTEGER default -1,
+--     color          INTEGER default -1,
+--     size           VARCHAR(8) default null, -- S/26, M/27....
     
-    h_total        INTEGER default 0,
-    r_total        INTEGER default 0, -- recieve total
+--     h_total        INTEGER default 0,
+--     r_total        INTEGER default 0, -- recieve total
     
-    merchant       INTEGER default -1,
-    shop           INTEGER default -1,
-    op_date        DATETIME default 0,
-    entry_date     DATETIME default 0,
-    deleted        INTEGER default 0, -- 0: no;  1: yes
-    unique  key uk (rsn, style_number, brand, color, size),
-    key dk (merchant, shop, style_number, brand),
-    primary key    (id)
-)default charset=utf8;
+--     merchant       INTEGER default -1,
+--     shop           INTEGER default -1,
+--     op_date        DATETIME default 0,
+--     entry_date     DATETIME default 0,
+--     deleted        INTEGER default 0, -- 0: no;  1: yes
+--     unique  key uk (rsn, style_number, brand, color, size),
+--     key dk (merchant, shop, style_number, brand),
+--     primary key    (id)
+-- )default charset=utf8;
 
 /*
 * sale
@@ -1475,6 +1475,98 @@ create table w_sale_detail_amount(
     unique  key  uk (rsn, style_number, brand, color, size),
     key     dk      (merchant, shop),
     primary key    (id)
+)default charset=utf8;
+
+create table w_sale_order(
+    id             INTEGER AUTO_INCREMENT,
+    rsn            VARCHAR(32) not null, -- record sn
+    account        INTEGER not null default -1,
+    employ         VARCHAR(8) not null,
+    retailer       INTEGER not null default -1, 
+    shop           INTEGER not null default -1, 
+    merchant       INTEGER not null default -1,
+    
+    base_pay       DECIMAL(10, 2) default 0, -- max: 99999999.99
+    should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99 
+    total          INTEGER not null default 0,
+    
+    comment        VARCHAR(255) default null, 
+
+    state          TINYINT  not null default 0,  -- 0: unfinished; 1: part finishe 2: complete finish
+    op_date        DATETIME default 0,  -- date of last change
+    entry_date     DATETIME default 0,
+    deleted        INTEGER default 0, -- 0: no;  1: yes
+    
+    unique  key uk (rsn),
+    key     dk     (merchant, shop, employ, retailer),
+    primary key    (id)
+    
+)default charset=utf8;
+
+create table w_sale_order_detail(
+    id             INTEGER AUTO_INCREMENT,
+    rsn            VARCHAR(32) not null, -- record sn 
+    merchant       INTEGER not null default -1,
+    shop           INTEGER not null default -1,
+    retailer       INTEGER not null default -1,
+
+    style_number   VARCHAR(64) not null,
+    brand          INTEGER not null default -1,
+    
+    type           INTEGER default -1, -- reference to inv_type
+    sex            TINYINT default -1, -- 0: man, 1:woman 
+    s_group        VARCHAR(32) default 0,  -- which size group
+    free           TINYINT default 0,  -- free color and free size 
+    
+    season         TINYINT default -1, -- 0:spring, 1:summer, 2:autumn, 3:winter
+    firm           INTEGER default -1,
+    year           YEAR(4),
+    in_datetime    DATETIME default 0,
+    
+    total          INTEGER default 0,
+    finish         INTEGER not null default 0, 
+
+    org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
+    tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
+    discount       DECIMAL(4, 1), -- max: 100
+    
+    fdiscount      DECIMAL(4, 1), -- max: 100
+    fprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
+
+    path           VARCHAR(255) default null, -- the image path
+    comment        VARCHAR(127) default null,
+
+    state          TINYINT not null default 0, -- 0: unfinished; 2: part finishe 3: complete finish
+    op_date        DATETIME default 0,  -- date of last change
+    entry_date     DATETIME default 0,
+    deleted        INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key uk (rsn, style_number, brand),
+    key     dk     (merchant, shop, retailer, style_number, brand),
+    primary key    (id)
+)default charset=utf8;
+
+create table w_sale_order_note(
+    id             INTEGER AUTO_INCREMENT,
+    rsn            VARCHAR(32) not null, -- record sn
+    merchant       INTEGER default -1,
+    shop           INTEGER default -1,
+    
+    style_number   VARCHAR(64) not null,
+    brand          INTEGER default -1,
+    color          INTEGER default -1,
+    size           VARCHAR(8) default null, -- S/26, M/27....
+    total          INTEGER default 0,
+    finish         INTEGER not null default 0,
+
+    state          TINYINT not null default 0, -- 0: unfinished; 2: part finishe 3: complete finish
+    op_date        DATETIME default 0,  -- date of last change
+    entry_date     DATETIME default 0, 
+    deleted        INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key  uk (rsn, style_number, brand, color, size),
+    key     dk      (merchant, shop),
+    primary key     (id)
 )default charset=utf8;
 
 /* charge */

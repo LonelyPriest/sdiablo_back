@@ -242,7 +242,14 @@ action(Session, Req, {"list_sales_children"}) ->
 			 ?print_w_sale,
 			 ?update_w_sale,
 			 ?check_w_sale,
-			 ?list_w_sale]},
+			 ?list_w_sale,
+			 
+			 %% order
+			 ?new_w_sale_order,
+			 ?del_w_sale_order,
+			 ?update_w_sale_order,
+			 ?filter_w_sale_order,
+			 ?filter_w_sale_order_note]},
     
     {ok, Children} =
 	?right_init:get_children(children_only, [{<<"id">>, RightId}]),

@@ -650,6 +650,21 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
     end;
 
 %% =============================================================================
+%% order
+%% =============================================================================
+action(Session, Req, {"new_w_sale_order"}, Payload) ->
+    ?DEBUG("new_w_sale_order with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session),
+    _UTable = ?session:get(utable, Session), 
+    UserId = ?session:get(id, Session),
+
+    Invs            = ?v(<<"inventory">>, Payload, []),
+    {struct, Base}  = ?v(<<"base">>, Payload), 
+    
+    start(new_sale_order, Req, {Merchant, 0}, Invs, Base ++ [{<<"user">>, UserId}]);
+	
+
+%% =============================================================================
 %% reject
 %% =============================================================================
 action(Session, Req, {"reject_w_sale"}, Payload) ->
@@ -1431,6 +1446,28 @@ sidebar(Session) ->
 			     "日常费用", "glyphicon glyphicon-euro"}];
 		       _ -> []
 		   end,
+
+	    Order =
+                [{{"order", "销售定单", "glyphicon glyphicon-ok-sign"},
+                  ?w_inventory_request:authen_shop_action(
+                    {?new_w_sale_order, 
+                     "new_order",
+                     "新增定单",
+                     "glyphicon glyphicon-shopping-cart"},
+                    Shops)
+		  ++ ?w_inventory_request:authen_shop_action(
+		       {?filter_w_sale_order, 
+			"order_detail",
+			"定单记录",
+			"glyphicon glyphicon-download"},
+		       Shops)
+		  ++ ?w_inventory_request:authen_shop_action(
+		       {?filter_w_sale_order_note, 
+			"order_note",
+			"定单明细",
+			"glyphicon glyphicon-map-marker"},
+		       Shops)
+                 }],
 	    
 	    Merchant = ?session:get(merchant, Session),
 	    BaseSettings = ?w_report_request:get_setting(Merchant, -1),
@@ -1459,8 +1496,10 @@ sidebar(Session) ->
 		
 	    L1 = ?menu:sidebar(
 		    level_1_menu, WSale ++ WReject ++ SaleR ++ PayScan ++ UploadMenu),
+
+	    L2 = ?menu:sidebar(level_2_menu, Order),
 	    
-	    L1
+	    L1 ++ L2
 		
     end. 
 
@@ -2366,6 +2405,37 @@ start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props) ->
 	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
+    end;
+
+start(new_sale_order, Req, {Merchant, UTable}, Invs, Base) ->
+    Round            = ?v(<<"round">>, Base, 1),
+    ShouldPay        = ?v(<<"should_pay">>, Base),
+    ShopId           = ?v(<<"shop">>, Base), 
+    Datetime         = ?v(<<"datetime">>, Base),
+    
+    %% half an hour
+    case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 1800 of
+	true ->
+	    CurDatetime = ?utils:current_time(format_localtime), 
+	    ?utils:respond(200,
+			   Req,
+			   ?err(wsale_invalid_date, "new_w_sale"),
+			   [{<<"fdate">>, Datetime},
+			    {<<"bdate">>, ?to_b(CurDatetime)}]);
+	false-> 
+	    case check_inventory(
+		   {oncheck, Merchant, ShopId, UTable, ?NO}, Round, 0, ShouldPay, Invs) of
+		{ok, _} -> 
+		    case ?w_sale:order(new, {Merchant, UTable}, Invs, Base) of 
+			{ok, RSN} -> 
+			    ?utils:respond(
+			       200, Req, ?succ(new_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}]);
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end;
+		CheckError ->
+		    check_inventory_error(Req, CheckError) 
+	    end
     end.
     
 check_inventory({oncheck, _Merchant, _Shop, _UTable, _CheckSale}, Round, Moneny, ShouldPay, []) ->
@@ -2386,16 +2456,20 @@ check_inventory({oncheck, _Merchant, _Shop, _UTable, _CheckSale}, Round, Moneny,
 check_inventory(
   {oncheck, Merchant, Shop, UTable, CheckSale}, Round, Money, ShouldPay, [{struct, Inv}|T]) ->
     StyleNumber = ?v(<<"style_number">>, Inv),
-    Brand = ?v(<<"brand">>, Inv), 
-    Amounts = ?v(<<"amounts">>, Inv),
-    Count = ?v(<<"sell_total">>, Inv),
-    DCount = lists:foldr(
-              fun({struct, A}, Acc)->
-                      ?v(<<"sell_count">>, A) + Acc
-              end, 0, Amounts),
+    Brand       = ?v(<<"brand">>, Inv), 
+    Amounts     = ?v(<<"amounts">>, Inv),
+    Count       = ?v(<<"sell_total">>, Inv),
+    DCount      = lists:foldr(
+		    fun({struct, A}, Acc)->
+			    ?v(<<"sell_count">>, A) + Acc
+		    end, 0, Amounts),
 
     %% FDiscount = ?v(<<"rdiscount">>, Inv),
-    FPrice = ?v(<<"rprice">>, Inv),
+    FPrice = case ?v(<<"rprice">>, Inv) of
+		 undefined -> ?v(<<"fprice">>, Inv);
+		 _RPrice -> _RPrice
+	     end,
+    
     Calc = FPrice * Count,
     %% end,
     %% ?DEBUG("StyleNumber ~p", [StyleNumber]),
@@ -2698,4 +2772,31 @@ check_pay(1, Merchant, ShopId, MchntCd, PayOrder) ->
 	    ?err(check_pay_http_failed, Reason); 
 	{error, pay_scan_failed, Code} ->
 	    {?err(check_pay_scan_failed, Code), [{<<"pay_code">>, ?to_b(Code)}]}
+    end.
+
+check_inventory_error(Req, Error) ->
+    case Error of
+	{error, EInv} ->
+	    StyleNumber = ?v(<<"style_number">>, EInv),
+	    ?utils:respond(
+	       200,
+	       Req,
+	       ?err(wsale_invalid_inv, StyleNumber),
+	       [{<<"style_number">>, StyleNumber},
+		{<<"order_id">>, ?v(<<"order_id">>, EInv)}]);
+	{error, Moneny, ShouldPay} ->
+	    ?utils:respond(
+	       200,
+	       Req,
+	       ?err(wsale_invalid_pay, Moneny),
+	       [{<<"should_pay">>, ShouldPay},
+		{<<"check_pay">>, Moneny}]);
+	{db_error, StyleNumber} ->
+	    ?utils:respond(200, Req, ?err(db_error, StyleNumber));
+	{not_enought_stock, StyleNumber} ->
+	    ?utils:respond(
+	       200,
+	       Req,
+	       ?err(not_enought_stock, StyleNumber),
+	       [{<<"style_number">>, StyleNumber}])
     end.

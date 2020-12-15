@@ -17,6 +17,7 @@
 -export([start_link/1]).
 -export([sale/3, sale/4, pay_order/3, pay_order/4, pay_scan/4]).
 -export([rsn_detail/3, get_modified/2]).
+-export([order/4]).
 -export([filter/4, filter/6, export/3]).
 -export([direct/1]).
 
@@ -86,6 +87,10 @@ sale(match_rsn, {Merchant, UTable}, {ViewValue, Condition}) ->
 rsn_detail(rsn, {Merchant, UTable}, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {rsn_detail, Merchant, UTable, Condition}).
+
+order(new, {Merchant, UTable}, Inventories, Props) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {new_order, Merchant, UTable, Inventories, Props}).
 
 
 filter(total_news, 'and', {Merchant, UTable}, Conditions) ->
@@ -1737,6 +1742,74 @@ handle_call({filter_pay_scan, Merchant, CurrentPage, ItemsPerPage, Conditions}, 
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
+
+handle_call({new_order, Merchant, UTable, Inventories, Props}, _From, State) ->
+    ?DEBUG("new_order with merchant ~p~n~p, props ~p", [Merchant, Inventories, Props]),
+    UserId = ?v(<<"user">>, Props, -1), 
+    Retailer   = ?v(<<"retailer">>, Props),
+    Shop       = ?v(<<"shop">>, Props), 
+    Datetime   = ?utils:correct_datetime(datetime, ?v(<<"datetime">>, Props)),
+    Employe    = ?v(<<"employee">>, Props),
+    Comment    = ?v(<<"comment">>, Props, []),
+    
+    BasePay    = ?v(<<"base_pay">>, Props, 0),
+    ShouldPay  = ?v(<<"should_pay">>, Props, 0),
+    Total      = ?v(<<"total">>, Props, 0),
+
+    OrderSn = lists:concat(
+	       [?inventory_sn:sn(sale_order, Merchant), "-M-", ?to_i(Merchant), "-S-", ?to_i(Shop)]),
+
+    Sql1 = "insert into" ++ ?table:t(sale_order, Merchant, UTable)
+	++ "(rsn"
+	", account"
+	", employ"
+	", retailer"
+	", shop"
+	", merchant"
+
+	", base_pay"
+	", should_pay" 
+	", total" 
+	", comment"
+
+	", state"
+	", op_date" 
+	", entry_date) values("
+	++ "\"" ++ ?to_s(OrderSn) ++ "\","
+	++ ?to_s(UserId) ++ ","
+	++ "\'" ++ ?to_s(Employe) ++ "\',"
+	++ ?to_s(Retailer) ++ ","
+	++ ?to_s(Shop) ++ ","
+	++ ?to_s(Merchant) ++ ","
+
+
+	++ ?to_s(BasePay) ++ "," 
+	++ ?to_s(ShouldPay) ++ "," 
+	++ ?to_s(Total) ++ "," 
+	++ "\'" ++ ?to_s(Comment) ++ "\',"
+
+	++ ?to_s(?ORDER_START) ++ ","
+	++ "\'" ++ ?to_s(Datetime) ++ "\'," 
+	++ "\'" ++ ?to_s(Datetime) ++ "\');",
+    
+    try
+	Sql2 = 
+	    lists:foldr(
+	      fun({struct, Inv}, Acc0)-> 
+		      Amounts = ?v(<<"amounts">>, Inv), 
+		      order(new,
+			    OrderSn,
+			    Datetime,
+			    {Merchant, UTable}, Shop, Retailer, Inv, Amounts) ++ Acc0
+	      end, [], Inventories),
+	Sqls = [Sql1] ++ Sql2,
+	?DEBUG("Sqls ~p", [Sqls]),
+	Reply = ?sql_utils:execute(transaction, Sqls, OrderSn),
+	{reply, Reply, State} 
+    catch
+	_:{db_error, Error} ->
+	    {reply, {error, Error}, State}
+    end;
     
 handle_call(Request, _From, State) ->
     ?DEBUG("unkown request ~p", [Request]),
@@ -2501,6 +2574,187 @@ wsale(Action, RSN, SaleRsn, Datetime, {Merchant, UTable}, Shop, Inventory, Amoun
 		    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		    ++ " and brand=" ++ ?to_s(Brand)]
 	   end.
+
+
+order(new, RSN, Datetime, {Merchant, UTable}, Shop, Retailer, Inventory, Amounts) -> 
+    ?DEBUG("order new with inv ~p, amounts ~p", [Inventory, Amounts]),
+    StyleNumber = ?v(<<"style_number">>, Inventory),
+    Brand       = ?v(<<"brand">>, Inventory),
+    Type        = ?v(<<"type">>, Inventory),
+    Sex         = ?v(<<"sex">>, Inventory),
+    Firm        = ?v(<<"firm">>, Inventory),
+    Season      = ?v(<<"season">>, Inventory), 
+    Year        = ?v(<<"year">>, Inventory),
+    SizeGroup   = ?v(<<"s_group">>, Inventory),
+    Free        = ?v(<<"free">>, Inventory),
+    Path        = ?v(<<"path">>, Inventory, []),
+    Comment     = ?v(<<"comment">>, Inventory, []),
+    InDatetime  = ?v(<<"entry">>, Inventory),
+    
+    
+    Total       = ?v(<<"sell_total">>, Inventory), 
+    OrgPrice    = ?v(<<"org_price">>, Inventory),
+    TagPrice    = ?v(<<"tag_price">>, Inventory),
+    Discount    = ?v(<<"discount">>, Inventory),
+    FDiscount   = ?v(<<"fdiscount">>, Inventory),
+    FPrice      = ?v(<<"fprice">>, Inventory), 
+    
+    C2 =
+	fun(Color, Size) ->
+		?utils:to_sqls(
+		   proplists, [{<<"rsn">>, ?to_b(RSN)},
+			       {<<"merchant">>, Merchant},
+			       {<<"style_number">>, StyleNumber},
+			       {<<"brand">>, Brand},
+			       {<<"color">>, Color},
+			       {<<"size">>, Size}])
+	end,
+    
+    Sql00 = "select rsn, style_number, brand, type"
+	" from" ++ ?table:t(sale_order_detail, Merchant, UTable)
+	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+	" and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+	" and brand=" ++ ?to_s(Brand), 
+
+    [case ?sql_utils:execute(s_read, Sql00) of
+	 {ok, []} -> 
+	     "insert into" ++ ?table:t(sale_order_detail, Merchant, UTable)
+		 ++ "(rsn"
+		 ", merchant"
+		 ", shop"
+		 ", retailer"
+		 
+		 ", style_number"
+		 ", brand"
+		 
+		 ", type"
+		 ", sex"
+		 ", s_group"
+		 ", free"
+		 
+		 ", season"
+		 ", firm"
+		 ", year"
+		 ", in_datetime"
+		 
+		 ", total"
+		 ", finish"
+		 
+		 ", org_price"
+		 ", tag_price" 
+		 ", discount"		 
+		 ", fdiscount"
+		 ", fprice"
+		 
+		 ", path"
+		 ", comment"
+
+		 ", state"
+		 ", op_date"
+		 ", entry_date) values("
+		 ++ "\"" ++ ?to_s(RSN) ++ "\","
+		 ++ ?to_s(Merchant) ++ ","
+		 ++ ?to_s(Shop) ++ ","
+		 ++ ?to_s(Retailer) ++ ","
+
+		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
+		 ++ ?to_s(Brand) ++ ","
+		 
+		 ++ ?to_s(Type) ++ ","
+		 ++ ?to_s(Sex) ++ ","
+		 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
+		 ++ ?to_s(Free) ++ ","
+		 
+		 ++ ?to_s(Season) ++ ","
+		 ++ ?to_s(Firm) ++ ","
+		 ++ ?to_s(Year) ++ ","
+		 ++ "\'" ++ ?to_s(InDatetime) ++ "\',"
+
+		 ++ ?to_s(Total) ++ ","
+		 ++ ?to_s(0) ++ "," 
+
+		 ++ ?to_s(OrgPrice) ++ ","
+		 ++ ?to_s(TagPrice) ++ "," 
+		 ++ ?to_s(Discount) ++ "," 
+		 ++ ?to_s(FDiscount) ++ ","
+		 ++ ?to_s(FPrice) ++ ","
+		 
+		 ++ "\'" ++ ?to_s(Path) ++ "\',"
+		 ++ "\'" ++ ?to_s(Comment) ++ "\',"
+		 
+		 ++ ?to_s(?ORDER_START) ++ ","
+		 ++ "\'" ++ ?to_s(Datetime) ++ "\',"
+		 ++ "\'" ++ ?to_s(Datetime) ++ "\')";
+	 {ok, _} ->
+	     "update" ++ ?table:t(sale_order_detail, Merchant, UTable)
+		 ++ " set total=" ++ ?to_s(Total)
+		 ++ ", org_price=" ++ ?to_s(OrgPrice)
+		 ++ ", tag_price=" ++ ?to_s(TagPrice)
+		 ++ ", discount=" ++ ?to_s(Discount)
+		 ++ ", fdiscount=" ++ ?to_s(FDiscount)
+		 ++ ", fprice=" ++ ?to_s(FPrice)
+		 ++ ", op_date=\'" ++ ?to_s(Datetime) ++ "\'"
+		 ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+		 ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+		 ++ " and brand=" ++ ?to_s(Brand);
+	 {error, E00} ->
+	     throw({db_error, E00})
+     end] ++ 
+	lists:foldr(
+	  fun({struct, A}, Acc1)->
+		  Color    = ?v(<<"cid">>, A),
+		  Size     = ?v(<<"size">>, A), 
+		  Count    = ?v(<<"sell_count">>, A), 
+		  Sql01 = "select rsn"
+		      ", style_number"
+		      ", brand, color"
+		      ", size"
+		      " from"
+		      ++ ?table:t(sale_order_note, Merchant, UTable)
+		      ++ " where " ++ C2(Color, Size),
+
+		  [case ?sql_utils:execute(s_read, Sql01) of
+		       {ok, []} ->
+			   "insert into" 
+			       ++ ?table:t(sale_order_note, Merchant, UTable)
+			       ++ "(rsn"
+			       ", merchant"
+			       ", shop"
+			       
+			       ", style_number"
+			       ", brand"
+			       ", color"
+			       ", size"
+			       ", total"
+			       ", finish"
+
+			       ", state"
+			       ", op_date" 
+			       ", entry_date) values("
+			       ++ "\'" ++ ?to_s(RSN) ++ "\',"
+			       ++ ?to_s(Merchant) ++ ","
+			       ++ ?to_s(Shop) ++ ","
+			       
+			       ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
+			       ++ ?to_s(Brand) ++ ","
+			       ++ ?to_s(Color) ++ ","
+			       ++ "\'" ++ ?to_s(Size) ++ "\'," 
+			       ++ ?to_s(Count) ++ ","
+			       ++ ?to_s(0) ++ ","
+
+			       ++ ?to_s(?ORDER_START) ++ ","
+			       ++ "\'" ++ ?to_s(Datetime) ++ "\',"
+			       ++ "\'" ++ ?to_s(Datetime) ++ "\')";
+		       {ok, _} ->
+			   "update"
+			       ++ ?table:t(sale_order_note, Merchant, UTable)
+			       ++ " set total=" ++ ?to_s(Count)
+			       ++ ", op_date=\'" ++ ?to_s(Datetime) ++ "\'"
+			       ++ " where " ++ C2(Color, Size);
+		       {error, E01} ->
+			   throw({db_error, E01})
+		   end|Acc1] 
+	  end, [], Amounts). 
 
 count_table(w_sale, {Merchant, UTable}, Conditions) -> 
     SortConditions = sort_condition(wsale, Merchant, Conditions),

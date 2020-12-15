@@ -336,18 +336,18 @@ init([]) ->
 	 {?new_daily_cost,    <<"新增日常费用">>, <<"new_daily_cost">>,       ?right_w_sale},
 	 {?delete_daily_cost, <<"删除日常费用">>, <<"delete_dailycost">>,     ?right_w_sale},
 	 {?update_daily_cost, <<"修改日常费用">>, <<"update_daily_cost">>,    ?right_w_sale},
-	 {?list_daily_cost,   <<"查询日常费用">>, <<"list_daily_cost">>,      ?right_w_sale}
+	 {?list_daily_cost,   <<"查询日常费用">>, <<"list_daily_cost">>,      ?right_w_sale},
 
-	 %% {?new_w_sale_order,
-	 %%  <<"新增销售定单">>, <<"new_stock_order">>, ?right_w_sale},
-	 %% {?del_w_sale_order,
-	 %%  <<"删除销售定单">>, <<"del_w_sale_order">>, ?right_w_sale},
-	 %% {?update_w_sale_order,
-	 %%  <<"修改销售定单">>, <<"update_w_sale_order">>, ?right_w_sale},
-	 %% {?filter_stock_order,
-	 %%  <<"查询销售定单">>, <<"filter_w_sale_order">>, ?right_w_sale},
-	 %% {?filter_stock_order_note,
-	 %%  <<"查询销售定单明细">>, <<"filter_w_sale_order_note">>, ?right_w_sale}
+	 {?new_w_sale_order,
+	  <<"新增销售定单">>, <<"new_w_sale_order">>, ?right_w_sale},
+	 {?del_w_sale_order,
+	  <<"删除销售定单">>, <<"del_w_sale_order">>, ?right_w_sale},
+	 {?update_w_sale_order,
+	  <<"修改销售定单">>, <<"update_w_sale_order">>, ?right_w_sale},
+	 {?filter_w_sale_order,
+	  <<"查询销售定单">>, <<"filter_w_sale_order">>, ?right_w_sale},
+	 {?filter_w_sale_order_note,
+	  <<"查询销售定单明细">>, <<"filter_w_sale_order_note">>, ?right_w_sale}
 	],
 
     %% batch sale

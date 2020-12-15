@@ -222,6 +222,10 @@
 
 -define(STOCK_STATE_ORDER, [<<"sprice">>, <<"commision">>, <<"gift">>]).
 
+-define(ORDER_START, 0).
+-define(ORDER_PART_FINISHED, 1).
+-define(ORDER_COMPLETED_FINISHED, 2).
+
 %% pagination
 -define(DEFAULT_ITEMS_PERPAGE, 5).
 

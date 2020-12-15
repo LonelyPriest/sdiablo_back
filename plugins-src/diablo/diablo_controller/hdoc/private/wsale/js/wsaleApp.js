@@ -156,7 +156,23 @@ function wsaleConfg(angular){
 		templateUrl: '/private/wsale/html/pay_scan_detail.html',
 		controller: 'payScanCtrl',
 		resolve: angular.extend({}, user) 
-	    }). 
+	    }).
+	    when('/order/new_order', {
+		templateUrl: '/private/wsale/html/new_wsale_order.html',
+		controller: 'wsaleOrderNewCtrl',
+		resolve: angular.extend(
+		    {}, user, promotion, score, sysretailer, employee, s_group, type, color, level, base) 
+	    }).
+	    when('/order/update_order', {
+		templateUrl: '/private/wsale/html/update_wsale_order.html',
+		controller: 'wsaleOrderUpdateCtrl',
+		resolve: angular.extend({}, user) 
+	    }).
+	    when('order/order_detail', {
+		templateUrl: '/private/wsale/html/wsale_order_detail.html',
+		controller: 'wsaleOrderDetailCtrl',
+		resolve: angular.extend({}, user) 
+	    }).
 	    otherwise({
 		templateUrl: '/private/wsale/html/new_wsale_detail.html',
 		controller: 'wsaleNewDetailCtrl',
@@ -363,6 +379,13 @@ function wsaleConfg(angular){
 	this.csv_export = function(e_type, condition){
 	    return http.save({operation: "w_sale_export"},
 			     {condition: condition, e_type:e_type}).$promise;
+	};
+
+	/*
+	 * order
+	 */
+	this.new_w_sale_order = function(inventory){
+	    return http.save({operation: "new_w_sale_order"}, inventory).$promise;
 	};
 
 	/*
@@ -3708,7 +3731,7 @@ function wsaleNewProvide(
 	var callback = function(params) {
 	    console.log(params);
 	    if (params.pay_code.toString().length !== diablo_scan_code_length) {
-		dialog.set_error("扫码支付：", 2617);
+		dialog.set_error("扫码支付", 2617);
 	    } else {
 		diabloFilter.pay_scan(
 		    $scope.select.shop.id,
