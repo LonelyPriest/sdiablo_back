@@ -428,7 +428,7 @@
 -define(del_w_sale_order,       ?right_w_sale + 20).
 -define(update_w_sale_order,    ?right_w_sale + 21).
 -define(filter_w_sale_order,    ?right_w_sale + 22).
--define(filter_w_sale_order_note,  ?right_w_sale + 23).
+-define(filter_w_sale_order_detail,  ?right_w_sale + 23).
 
 %% inventory
 -define(new_w_inventory,             ?right_w_inventory + 4).
@@ -476,7 +476,7 @@
 -define(del_stock_order, ?right_w_inventory + 40).
 -define(update_stock_order, ?right_w_inventory + 41).
 -define(filter_stock_order, ?right_w_inventory + 42).
--define(filter_stock_order_note, ?right_w_inventory + 43).
+-define(filter_stock_order_detail, ?right_w_inventory + 43).
 
 -define(transfer_w_inventory_fast, ?right_w_inventory + 44).
 -define(show_stock_firm_info, ?right_w_inventory + 45).

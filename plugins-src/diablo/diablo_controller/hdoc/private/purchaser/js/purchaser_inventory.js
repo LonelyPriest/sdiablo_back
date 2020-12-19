@@ -4067,34 +4067,35 @@ function purchaserInventoryNewDetailCtrlProvide (
 	    add_search_condition(search);
 	    
 	    purchaserService.filter_w_inventory_new(
-		$scope.match, search, page, $scope.items_perpage).then(function(result){
-		    console.log(result);
-		    if (page === 1){
-			$scope.total_items      = result.total
-			$scope.total_amounts    = result.t_amount;
-			$scope.total_spay       = result.t_spay;
-			$scope.total_hpay       = result.t_hpay;
-			$scope.total_cash       = result.t_cash;
-			$scope.total_card       = result.t_card;
-			$scope.total_wire       = result.t_wire;
-			$scope.total_verificate = result.t_verificate;
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result){
+		console.log(result);
+		if (page === 1){
+		    $scope.total_items      = result.total
+		    $scope.total_amounts    = result.t_amount;
+		    $scope.total_spay       = result.t_spay;
+		    $scope.total_hpay       = result.t_hpay;
+		    $scope.total_cash       = result.t_cash;
+		    $scope.total_card       = result.t_card;
+		    $scope.total_wire       = result.t_wire;
+		    $scope.total_verificate = result.t_verificate;
 
-			$scope.records = [];
-			$scope.save_stastic();
-		    }
-		    
-		    angular.forEach(result.data, function(d){
-			d.firm = diablo_get_object(d.firm_id, filterFirm);
-			d.shop = diablo_get_object(d.shop_id, $scope.shops);
-			d.employee = diablo_get_object(d.employee_id, filterEmployee);
-			d.acc_balance =
-			    stockUtils.to_decimal(
-				d.balance + d.should_pay + d.e_pay - d.has_pay - d.verificate);
-		    });
-		    
-		    $scope.records = result.data;
-		    diablo_order_page(page, $scope.items_perpage, $scope.records);
-		}) 
+		    $scope.records = [];
+		    $scope.save_stastic();
+		}
+		
+		angular.forEach(result.data, function(d){
+		    d.firm = diablo_get_object(d.firm_id, filterFirm);
+		    d.shop = diablo_get_object(d.shop_id, $scope.shops);
+		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
+		    d.acc_balance =
+			stockUtils.to_decimal(
+			    d.balance + d.should_pay + d.e_pay - d.has_pay - d.verificate);
+		});
+		
+		$scope.records = result.data;
+		diablo_order_page(page, $scope.items_perpage, $scope.records);
+	    }) 
 	})
     };
 

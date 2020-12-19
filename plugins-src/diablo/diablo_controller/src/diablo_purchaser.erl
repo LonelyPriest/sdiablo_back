@@ -153,8 +153,11 @@ purchaser_inventory(syn_barcode, {Merchant, UTable}, Barcode, Conditions) ->
 
 purchaser_inventory(get_note, {Merchant, UTable}, Shop, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {get_stock_note, Merchant, UTable, Shop, Conditions}).
+    gen_server:call(Name, {get_stock_note, Merchant, UTable, Shop, Conditions});
 
+purchaser_inventory(get_note_ex, {Merchant, UTable}, Shop, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {get_stock_note_ex, Merchant, UTable, Shop, Conditions}).
 
 
 %%
@@ -250,8 +253,6 @@ purchaser_inventory(gen_barcode, AutoBarcode, {Merchant, UTable}, Shop, StyleNum
 purchaser_inventory(reset_barcode, AutoBarcode, {Merchant, UTable}, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {reset_barcode, AutoBarcode, Merchant, UTable, Shop, StyleNumber, Brand}).
-
-
 
 
 %%
@@ -2905,9 +2906,14 @@ handle_call({get_stock_note, Merchant, UTable, Shop, Conditions}, _From, State) 
     ?DEBUG("get_stock_note: Merchant ~p, Shop ~p, condition ~p", [Merchant, Shop, Conditions]), 
     Sql = ?w_good_sql:get_inventory(note, Merchant, UTable, Shop, Conditions),
     Reply =  ?sql_utils:execute(s_read, Sql),
-    ?DEBUG("reply ~p", [Reply]),
+    %% ?DEBUG("reply ~p", [Reply]),
     {reply, Reply, State};
 
+handle_call({get_stock_note_ex, Merchant, UTable, Shop, Conditions}, _From, State) ->
+    ?DEBUG("get_stock_note: Merchant ~p, condition ~p", [Merchant, Conditions]), 
+    Sql = ?w_good_sql:get_inventory(note_ex, Merchant, UTable, Shop, Conditions),
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
 
 %% handle_call({last_reject, Merchant, Conditions}, _From, State) ->
 %%     ?DEBUG("last_reject with merchant ~p, Conditions ~p", [Merchant, Conditions]),

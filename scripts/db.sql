@@ -1489,6 +1489,7 @@ create table w_sale_order(
     base_pay       DECIMAL(10, 2) default 0, -- max: 99999999.99
     should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99 
     total          INTEGER not null default 0,
+    finish         INTEGER not null default 0,     
     
     comment        VARCHAR(255) default null, 
 

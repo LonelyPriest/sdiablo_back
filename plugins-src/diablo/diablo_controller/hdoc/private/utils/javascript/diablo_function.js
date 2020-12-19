@@ -246,6 +246,8 @@ var diablo_print_px    = 5.56;
 var diablo_key_wsale_trans            = "q-wsale-trans";
 var diablo_key_wsale_trans_detail     = "q-wsale-trans-detail";
 var diablo_key_wsale_firm_detail      = "q-wsale-firm-detail";
+var diablo_key_wsale_order_detail     = "q-wsale-order-detail";
+var diablo_key_wsale_order_note       = "q-wsale-order-note";
 
 // inventory
 var diablo_key_inventory_detail       = "q-inventory-detail"
@@ -399,6 +401,7 @@ var diablo_retailer_types = [{name: "普通会员", id:0},
 			     {name: "系统会员", id:2}];
 
 var diablo_season = ["春", "夏", "秋", "冬"];
+
 var diablo_season2number = function(season){
     if (season == "春")
 	return 0;
@@ -430,6 +433,8 @@ var diablo_sex2object = [
 var diablo_sex = ["女", "男", "童", "鞋", "配", "食品", "用品"];
 
 var diablo_sizegroup = ["si", "sii", "siii", "siv", "sv", "svi", "svii"];
+
+var diablo_order_state = ["未开始", "部分完成", "已完成"];
 
 var diablo_shop = 0;
 var diablo_repo = 1;
@@ -796,8 +801,7 @@ var diablo_now_datetime = function() {
 var diablo_set_date = function(date){
     // console.log(date);
     var a = date.split("-"); 
-    return new Date(parseInt(a[0]), parseInt(a[1]) - 1, parseInt(a[2]))
-	.getTime();
+    return new Date(parseInt(a[0]), parseInt(a[1]) - 1, parseInt(a[2])).getTime();
 };
 
 var diablo_set_date_obj = function(date){
@@ -834,6 +838,10 @@ var diablo_format_datetime = function(dateFilter, datetime) {
 
 var diablo_array_last = function(arrary) {
     return arrary[arrary.length - 1];
+};
+
+var diablo_array_first = function(arrary) {
+    return arrary[0];
 };
 
 diablo_get_amount = function(cid, size, sorts){

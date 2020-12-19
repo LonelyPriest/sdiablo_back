@@ -162,15 +162,20 @@ function wsaleConfg(angular){
 		controller: 'wsaleOrderNewCtrl',
 		resolve: angular.extend(
 		    {}, user, promotion, score, sysretailer, employee, s_group, type, color, level, base) 
+	    }). 
+	    when('/order/order_detail', {
+		templateUrl: '/private/wsale/html/wsale_order_detail.html',
+		controller: 'wsaleOrderDetailCtrl',
+		resolve: angular.extend({}, user, employee, base) 
+	    }).
+	    when('/order/order_note', {
+		templateUrl: '/private/wsale/html/wsale_order_note.html',
+		controller: 'wsaleOrderNoteCtrl',
+		resolve: angular.extend({}, user, employee, brand, type, ctype, firm, base) 
 	    }).
 	    when('/order/update_order', {
 		templateUrl: '/private/wsale/html/update_wsale_order.html',
 		controller: 'wsaleOrderUpdateCtrl',
-		resolve: angular.extend({}, user) 
-	    }).
-	    when('order/order_detail', {
-		templateUrl: '/private/wsale/html/wsale_order_detail.html',
-		controller: 'wsaleOrderDetailCtrl',
 		resolve: angular.extend({}, user) 
 	    }).
 	    otherwise({
@@ -247,9 +252,7 @@ function wsaleConfg(angular){
 	// =========================================================================
 	var http = $resource("/wsale/:operation/:id",
     			     {operation: '@operation', id: '@id'},
-			     {
-				 query_by_post: {method: 'POST', isArray: true}
-			     });
+			     {query_by_post: {method: 'POST', isArray: true}});
 
 	this.new_w_sale = function(inventory){
 	    return http.save({operation: "new_w_sale"}, inventory).$promise;
@@ -386,6 +389,36 @@ function wsaleConfg(angular){
 	 */
 	this.new_w_sale_order = function(inventory){
 	    return http.save({operation: "new_w_sale_order"}, inventory).$promise;
+	};
+
+	this.filter_w_sale_order = function(match, fields, currentPage, itemsPerpage){
+	    return http.save(
+		{operation: "filter_w_sale_order"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
+	};
+
+	this.filter_w_sale_order_detail = function(match, fields, currentPage, itemsPerpage){
+	    return http.save(
+		{operation: "filter_w_sale_order_detail"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
+	};
+
+	this.get_retailer_order = function(shop, retailer) {
+	    return http.query_by_post(
+		{operation: "get_w_sale_order"},
+		{shop:shop, retailer:retailer}).$promise;
+	};
+
+	this.fix_retailer_order_by_rsn = function(shop, retailer, rsn) {
+	    return http.save(
+		{operation: "fix_w_sale_order_by_rsn"},
+		{shop:shop, retailer:retailer, rsn:rsn}).$promise;
 	};
 
 	/*
@@ -3819,6 +3852,66 @@ function wsaleNewProvide(
 	// $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
 	$scope.re_calculate();
     };
+
+    /*
+     * order
+     */
+    $scope.get_order = function() {
+	var callback = function(params) {
+	    var select_order = undefined;
+	    for (var i=0, l=params.orders.length; i<l; i++) {
+		if (params.orders[i].select) {
+		    select_order = params.orders[i];
+		    break;
+		}
+	    } 
+
+	    if (select_order) {
+		wsaleService.fix_retailer_order_by_rsn(
+		    $scope.select.shop.id, $scope.select.retailer.id, select_order.rsn 
+		).then(function(result) {
+		    console.log(result);
+		})
+	    }
+	    
+	}
+	
+	wsaleService.get_retailer_order(
+	    $scope.select.shop.id, $scope.select.retailer.id
+	).then(function(result) {
+	    var orders = [];
+	    angular.forEach(result, function(o) {
+		o.crsn = diablo_array_first(o.rsn.split(diablo_date_seprator));
+		o.employee = diablo_get_object(o.employee_id, filterEmployee);
+		orders.push(o);
+	    });
+
+	    dialog.edit_with_modal(
+		"wsale-retailer-order.html",
+		undefined,
+		callback,
+		undefined,
+		{orders: orders,
+		 order_state: diablo_order_state,
+		 valid: function(orders){
+		     for (var i=0, l=orders.length; i<l; i++){
+			 if (angular.isDefined(orders[i].select) && orders[i].select){
+			     return true;
+			 }
+		     } 
+		     return false;
+		 },
+		 select: function(orders, o){
+		     for (var i=0, l=orders.length; i<l; i++){
+			 if (o.rsn !== orders[i].rsn){
+			     orders[i].select = false;
+			 }
+		     }
+		 }
+		}
+	    )
+	});
+    }
 };
 
 function wsaleNewDetailProvide(

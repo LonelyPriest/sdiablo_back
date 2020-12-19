@@ -17,7 +17,7 @@
 -export([start_link/1]).
 -export([sale/3, sale/4, pay_order/3, pay_order/4, pay_scan/4]).
 -export([rsn_detail/3, get_modified/2]).
--export([order/4]).
+-export([order/3, order/4]).
 -export([filter/4, filter/6, export/3]).
 -export([direct/1]).
 
@@ -91,7 +91,12 @@ rsn_detail(rsn, {Merchant, UTable}, Condition) ->
 order(new, {Merchant, UTable}, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {new_order, Merchant, UTable, Inventories, Props}).
-
+order(list, {Merchant, UTable}, Condition) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {list_order, Merchant, UTable, Condition});
+order(list_note, {Merchant, UTable}, Condition) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {list_order_note, Merchant, UTable, Condition}).
 
 filter(total_news, 'and', {Merchant, UTable}, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -111,7 +116,14 @@ filter(total_employee_evaluation, 'and', {Merchant, UTable}, Conditions) ->
 
 filter(total_pay_scan, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_pay_scan, Merchant, Conditions}).
+    gen_server:call(Name, {total_pay_scan, Merchant, Conditions});
+
+filter(total_orders, 'and', {Merchant, UTable}, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {total_orders, Merchant, UTable, Conditions});
+filter(total_order_detail, 'and', {Merchant, UTable}, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {total_order_detail, Merchant, UTable, Conditions}).
 
 filter(news, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -141,7 +153,14 @@ filter(employee_evaluation, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage
 
 filter(pay_scan, 'and', Merchant, CurrentPage, ItemsPerPage, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {filter_pay_scan, Merchant, CurrentPage, ItemsPerPage, Conditions}).
+    gen_server:call(Name, {filter_pay_scan, Merchant, CurrentPage, ItemsPerPage, Conditions});
+
+filter(orders, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {filter_orders, Merchant, UTable, CurrentPage, ItemsPerPage, Conditions});
+filter(order_detail, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {filter_order_detail, Merchant, UTable, CurrentPage, ItemsPerPage, Conditions}).
 
 pay_scan(start, Merchant, Shop, {PayType, PayState, Live, PayOrderNo, Balance}) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -1769,7 +1788,9 @@ handle_call({new_order, Merchant, UTable, Inventories, Props}, _From, State) ->
 
 	", base_pay"
 	", should_pay" 
-	", total" 
+	", total"
+	", finish"
+	
 	", comment"
 
 	", state"
@@ -1785,7 +1806,9 @@ handle_call({new_order, Merchant, UTable, Inventories, Props}, _From, State) ->
 
 	++ ?to_s(BasePay) ++ "," 
 	++ ?to_s(ShouldPay) ++ "," 
-	++ ?to_s(Total) ++ "," 
+	++ ?to_s(Total) ++ ","
+	++ ?to_s(?ORDER_START) ++ ","
+
 	++ "\'" ++ ?to_s(Comment) ++ "\',"
 
 	++ ?to_s(?ORDER_START) ++ ","
@@ -1810,6 +1833,210 @@ handle_call({new_order, Merchant, UTable, Inventories, Props}, _From, State) ->
 	_:{db_error, Error} ->
 	    {reply, {error, Error}, State}
     end;
+
+handle_call({total_orders, Merchant, UTable, Conditions}, _From, State) ->
+    ?DEBUG("total_orders: Merchant ~p, Conditions ~p", [Merchant, Conditions]),
+
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+    
+    CountSql = "select count(*) as total" 
+	" from" ++ ?table:t(sale_order, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime),
+    
+    Reply = ?sql_utils:execute(s_read, CountSql),
+    {reply, Reply, State};
+
+handle_call({filter_orders, Merchant, UTable, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
+    ?DEBUG("filter_orders:" "currentPage ~p, ItemsPerpage ~p, Merchant ~p~n" "fields ~p",
+	   [CurrentPage, ItemsPerPage, Merchant, Fields]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, Fields),
+    
+    Sql = "select a.id"
+	", a.rsn"
+	", a.account as account_id"
+	", a.employ as employee_id"
+    	", a.retailer as retailer_id"
+	", a.shop as shop_id"
+	
+	", a.base_pay"
+	", a.should_pay"
+	", a.total"
+	", a.finish"
+
+	", a.comment"
+	", a.state"
+	", a.entry_date"
+
+	", b.name as retailer"
+	", b.mobile"
+	", c.name as account"
+
+	" from" ++ ?table:t(sale_order, Merchant, UTable) ++ " a"
+	++ " left join w_retailer b on a.retailer=b.id"
+	++ " left join users c on a.account=c.id"
+
+    	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime)
+	++ ?sql_utils:condition(page_desc, {use_datetime, 0}, CurrentPage, ItemsPerPage),
+    
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({total_order_detail, Merchant, UTable, Conditions}, _From, State) ->
+    ?DEBUG("total_order_detail: Merchant ~p, Conditions ~p", [Merchant, Conditions]), 
+    {DConditions, SConditions} = filter_condition(wsale, Conditions, [], []),
+    {StartTime, EndTime, CutSConditions} = ?sql_utils:cut(fields_with_prifix, SConditions),
+    
+    {_, _, CutDCondtions} = ?sql_utils:cut(fields_no_prifix, DConditions),
+    CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
+
+    CountSql = "select count(*) as total"
+	" from "
+	++ ?table:t(sale_order_detail, Merchant, UTable) ++ " b,"
+	++ ?table:t(sale_order, Merchant, UTable) ++ " a"
+	++ " where b.rsn=a.rsn"
+	++ " and b.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, CorrectCutDConditions)
+	++ ?sql_utils:condition(proplists, CutSConditions)
+	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime), 
+
+    Reply = ?sql_utils:execute(s_read, CountSql),
+    {reply, Reply, State};
+
+handle_call({filter_order_detail, Merchant, UTable, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
+    ?DEBUG("filter_order_detail:currentPage ~p, ItemsPerpage ~p, Merchant ~p~n Conditions ~p",
+	   [CurrentPage, ItemsPerPage, Merchant, Conditions]),
+    
+    {DConditions, SConditions} = filter_condition(wsale, Conditions, [], []),
+    {StartTime, EndTime, CutSConditions} = ?sql_utils:cut(fields_with_prifix, SConditions),
+
+    {_, _, CutDCondtions} = ?sql_utils:cut(fields_no_prifix, DConditions),
+    CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
+    
+    Sql = 
+	"select b.id"
+	", b.rsn"
+	", b.merchant"
+	", b.shop as shop_id"
+
+	", b.style_number"
+	", b.brand as brand_id"
+
+	", b.type as type_id"
+	", b.sex"
+	", b.s_group"
+	", b.free"
+
+	", b.season"
+	", b.firm as firm_id"
+	", b.year"
+	", b.in_datetime"
+
+	", b.total"
+	", b.finish"
+
+	", b.tag_price"
+	", b.discount"
+
+	", b.fdiscount"
+	", b.fprice"
+
+	", b.path"
+	", b.comment"
+
+	", b.state"
+	", b.entry_date"
+
+	", a.account as account_id"
+	", a.retailer as retailer_id"
+	", a.employ as employee_id"
+
+	", c.name as retailer"
+	", d.name as account"
+
+
+	" from" ++ ?table:t(sale_order_detail, Merchant, UTable) ++ " b,"
+	++ ?table:t(sale_order, Merchant, UTable) ++ " a"
+	" left join w_retailer c on c.id=a.retailer"
+	" left join users d on d.id=a.account"
+	
+	" where b.rsn=a.rsn"
+    	" and b.merchant=" ++ ?to_s(Merchant)
+
+	++ ?sql_utils:condition(proplists, CorrectCutDConditions)
+	++ ?sql_utils:condition(proplists, CutSConditions)
+	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime)
+	++ ?sql_utils:condition(page_desc, {use_datetime, 0}, CurrentPage, ItemsPerPage),
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({list_order, Merchant, UTable, Conditions}, _From, State) ->
+    ?DEBUG("list_order:" "merchant ~p, Conditions ~p", [Merchant, Conditions]),
+    {_, _, NewConditions} = ?sql_utils:cut(fields_with_prifix, Conditions),
+    Sql = "select a.id"
+	", a.rsn"
+	", a.employ as employee_id"
+    	", a.retailer as retailer_id"
+	", a.shop as shop_id"
+	
+	", a.should_pay"
+	", a.total"
+	", a.finish"
+
+	", a.comment"
+	", a.state"
+	", a.entry_date"
+
+	", b.name as retailer"
+	", b.mobile"
+	
+	" from" ++ ?table:t(sale_order, Merchant, UTable) ++ " a"
+	++ " left join w_retailer b on a.retailer=b.id" 
+    	++ " where a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.state in(0,1)"
+	++ ?sql_utils:condition(proplists, NewConditions), 
+
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({list_order_note, Merchant, UTable, Conditions}, _From, State) ->
+    ?DEBUG("list_order:" "merchant ~p, Conditions ~p", [Merchant, Conditions]),
+    {_, _, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+    Sql =
+	"select a.rsn"
+	", a.shop"
+	", a.style_number"
+	", a.brand_id"
+	", a.o_total"
+	", a.finish"
+
+	", b.color as color_id"
+	", b.size"
+	", b.total as cs_total"
+	", b.finish as cs_finish" 
+	
+	" from "
+	
+	"(select rsn"
+	", shop"
+	", style_number"
+	", brand as brand_id"
+	", total as o_total"
+	", finish" 
+	" from"
+	++ ?table:t(sale_order_detail, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions) ++ ") a"
+	++ " inner join" ++ ?table:t(sale_order_note, Merchant, UTable)
+	++ " b on a.rsn=b.rsn"
+	++ " and a.style_number=b.style_number"
+	++ " and a.brand_id=b.brand"
+	++ " and a.shop=b.shop", 
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
     
 handle_call(Request, _From, State) ->
     ?DEBUG("unkown request ~p", [Request]),

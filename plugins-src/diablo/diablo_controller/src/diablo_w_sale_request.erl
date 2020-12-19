@@ -26,7 +26,7 @@ action(Session, Req) ->
 			 [
 			  {navbar, ?menu:navbars(?MODULE, Session)},
 			  {basebar, ?menu:w_basebar(Session)},
-			  {sidebar, sidebar(Session)}
+			  {sidebar, sidebar(Session)} 
 			  %% {ngapp, "wsaleApp"},
 			  %% {ngcontroller, "wsaleCtrl"}
 			  %% {baseapp, "baseApp"},
@@ -655,15 +655,154 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 action(Session, Req, {"new_w_sale_order"}, Payload) ->
     ?DEBUG("new_w_sale_order with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
-    _UTable = ?session:get(utable, Session), 
-    UserId = ?session:get(id, Session),
-
+    %% UTable = ?session:get(utable, Session),
+    UTable = ?NO,
+    UserId = ?session:get(id, Session), 
     Invs            = ?v(<<"inventory">>, Payload, []),
-    {struct, Base}  = ?v(<<"base">>, Payload), 
+    {struct, Base}  = ?v(<<"base">>, Payload),
     
-    start(new_sale_order, Req, {Merchant, 0}, Invs, Base ++ [{<<"user">>, UserId}]);
-	
+    start(new_sale_order, Req, {Merchant, UTable}, Invs, Base ++ [{<<"user">>, UserId}]);
 
+action(Session, Req, {"filter_w_sale_order"}, Payload) ->
+    ?DEBUG("filter_w_sale_order with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session),
+    %% UTable = ?session:get(utable, Session),
+    UTable = ?NO,
+
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_sale:filter(total_orders, ?to_a(Match), {Merchant, UTable}, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_sale:filter(
+		  orders,
+		  Match,
+		  {Merchant, UTable},
+		  CurrentPage, ItemsPerPage, Conditions)
+       end, Req, Payload);
+
+action(Session, Req, {"filter_w_sale_order_detail"}, Payload) ->
+    ?DEBUG("filter_w_sale_order_note with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session),
+    %% UTable = ?session:get(utable, Session),
+    UTable = ?NO,
+
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_sale:filter(total_order_detail, ?to_a(Match), {Merchant, UTable}, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_sale:filter(
+		  order_detail,
+		  Match,
+		  {Merchant, UTable},
+		  CurrentPage, ItemsPerPage, Conditions)
+       end, Req, Payload);
+
+action(Session, Req, {"get_w_sale_order"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    %% UTable = ?session:get(utable, Session),
+    UTable = ?NO, 
+    batch_responed(fun() -> ?w_sale:order(list, {Merchant, UTable}, Payload) end, Req);
+
+action(Session, Req, {"fix_w_sale_order_by_rsn"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    %% UTable = ?session:get(utable, Session),
+    UTable = ?NO, 
+
+    %% get order
+    Retailer = ?v(<<"retailer">>, Payload),
+    Shop     = ?v(<<"shop">>, Payload),
+    RSN      = ?v(<<"rsn">>, Payload),
+    case RSN of
+	undefined ->
+	    ?utils:respond(200, Req, ?err(params_error, <<"rsn">>));
+	_ ->
+	    {ok, Orders} = ?w_sale:order(
+			      list_note,
+			      {Merchant, UTable},
+			      [{<<"retailer">>, Retailer}, {<<"shop">>, Shop}, {<<"rsn">>, RSN}]),
+
+	    ?DEBUG("Orders ~p", [Orders]),
+	    
+	    %% sort order 
+	    SortOrders = 
+		lists:foldr(
+		  fun({O}, Acc) ->
+			  OrderAttr = {[{<<"color_id">>, ?v(<<"color_id">>, O)},
+					{<<"size">>, ?v(<<"size">>, O)},
+					{<<"cs_total">>, ?v(<<"cs_total">>, O)},
+					{<<"cs_finish">>, ?v(<<"cs_finish">>, O)}]}, 
+			  case [{R} || {R} <- Acc,
+				       ?v(<<"style_number">>, O) =:= ?v(<<"style_number">>, R),
+				       ?v(<<"brand_id">>, O) =:= ?v(<<"brand_id">>, R)] of 
+			      [] ->
+				  [{[{<<"style_number">>, ?v(<<"style_number">>, O)},
+				     {<<"brand_id">>, ?v(<<"brand_id">>, O)},
+				     {<<"o_total">>, ?v(<<"o_total">>, O)},
+				     {<<"order">>, [OrderAttr]}]}] ++ Acc;
+			      [{S}] ->
+				  ExistOrder = ?v(<<"order">>, S),
+				  %% ?DEBUG("ExistOrder ~p", [ExistOrder]),
+				  UpdateOrder = lists:keydelete(<<"order">>, 1, S),
+				  %% ?DEBUG("UpdateOrder ~p", [UpdateOrder]),
+				  (Acc -- [{S}])
+				      ++ [{UpdateOrder ++ [{<<"order">>, [OrderAttr] ++ ExistOrder}]}]
+				  
+			  end
+		  end, [], Orders), 
+	    ?DEBUG("SortOrders ~p", [SortOrders]),
+
+	    %% sort stock
+	    MStocks = 
+		lists:foldr(
+		  fun({O}, Acc0) ->
+			  {ok, Stocks} = ?w_inventory:purchaser_inventory(
+					    get_note_ex,
+					    {Merchant, ?session:get(utable, Session)},
+					    Shop,
+					    [{<<"style_number">>, ?v(<<"style_number">>, O)},
+					     {<<"brand">>, ?v(<<"brand_id">>, O)}]),
+			  %% ?DEBUG("Stocks ~p", [Stocks]),
+
+			  SortStocks = 
+			      lists:foldr(
+				fun({S}, Acc1) ->
+					StyleNumber = ?v(<<"style_number">>, S),
+					Brand = ?v(<<"brand_id">>, S),
+					StockAttr = {[{<<"color_id">>, ?v(<<"color_id">>, S)},
+						      {<<"size">>, ?v(<<"size">>, S)},
+						      {<<"cs_total">>, ?v(<<"cs_total">>, S)}]},
+					case [{R} || {R} <- Acc1,
+						     StyleNumber =:= ?v(<<"style_number">>, R),
+						     Brand =:= ?v(<<"brand_id">>, R)] of 
+					    [] ->
+						[{[{<<"style_number">>, StyleNumber},
+						   {<<"brand_id">>, Brand},
+						   {<<"s_total">>, ?v(<<"total">>, S)},
+						   {<<"order">>, ?v(<<"order">>, O)},
+						   {<<"stock">>, [StockAttr]}]}] ++ Acc1;
+					    [{V}] ->
+						ExistStock = ?v(<<"stock">>, V),
+						UpdateStock = lists:keydelete(<<"stock">>, 1, V),
+						(Acc1 -- [{V}])
+						    ++ [{UpdateStock
+							 ++ [{<<"stock">>,
+							      [StockAttr] ++ ExistStock}]}]
+					end 
+				end, [], Stocks),
+			  SortStocks ++ Acc0
+		  end, [], SortOrders),
+	    ?DEBUG("MStocks ~p", [MStocks]),
+	    
+	    ?utils:respond(200, Req, ?err(params_error, <<"rsn">>))
+	    %% Stocks = ?w_inventory:purchaser_inventory(
+	    %% 		get_note_ex,
+	    %% 		{Merchant, UTable},
+	    %% 		Shop)
+	    
+    end;
+	
 %% =============================================================================
 %% reject
 %% =============================================================================
@@ -1462,9 +1601,9 @@ sidebar(Session) ->
 			"glyphicon glyphicon-download"},
 		       Shops)
 		  ++ ?w_inventory_request:authen_shop_action(
-		       {?filter_w_sale_order_note, 
+		       {?filter_w_sale_order_detail, 
 			"order_note",
-			"定单明细",
+			"定单详情",
 			"glyphicon glyphicon-map-marker"},
 		       Shops)
                  }],

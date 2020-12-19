@@ -1271,7 +1271,7 @@ diabloUtils.controller("diabloEditDialogCtrl", function($scope, $uibModalInstanc
     	});
     } else {
 	$uibModalInstance.result.then(function (reason) {
-	    console.log(reason);
+	    // console.log(reason);
 	}, function (reason) {
 	    console.log(reason);
 	    cancel_callback();

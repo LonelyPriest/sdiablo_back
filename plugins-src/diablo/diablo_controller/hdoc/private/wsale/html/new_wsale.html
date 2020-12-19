@@ -457,7 +457,7 @@
 	    	    x-ng-click="withdraw()">提现<i class="glyphicon glyphicon-yen"></i>
 	    </button>
 	    
-	    <button class="btn red"
+	    <button x-ng-if="select.retailer.type_id!==2" class="btn red"
 	    	    x-ng-click="get_ticket()">取券<i class="glyphicon glyphicon-bookmark"></i>
 	    </button>
 	    
@@ -526,14 +526,27 @@
 	      </span>
 	      <span x-ng-show="loading_retailer">
 	  	<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
-	      </span>
-	      <span x-ng-if="select.retailer && select.retailer.type_id!==2" class="input-group-btn"> 
-		<button class="btn btn-warning" x-ng-click="update_retailer()">
-		  <i class="glyphicon glyphicon-edit"></i></button>
-	      </span>
+	      </span> 
 	      <span x-ng-if="select.retailer.type_id===1" class="input-group-btn"> 
 		<button class="btn btn-danger" x-ng-click="start_charge()">
 		  <i class="glyphicon glyphicon-yen"></i></button>
+	      </span>
+	      <span x-ng-if="select.retailer && select.retailer.type_id!==2" class="input-group-btn"> 
+		<!-- <button class="btn btn-warning" x-ng-click="update_retailer()"> -->
+		<!--   <i class="glyphicon glyphicon-edit"></i></button> -->
+		<button class="btn btn-warning"
+			data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> 
+		  <span class="sr-only">Toggle Dropdown</span>
+		  <i class="glyphicon glyphicon-hand-down"></i>
+		</button>
+		<ul class="dropdown-menu">
+		  <li>
+		    <a href="javascript:;" x-ng-click="update_retailer()">
+		      <i class="glyphicon glyphicon-edit fg-red"></i>修改</a>
+		    <a href="javascript:;" x-ng-click="get_order()">
+		      <i class="glyphicon glyphicon-shopping-cart fg-red"></i>定单</a>
+		  </li>
+		</ul>
 	      </span>
 	    </div> 
 	  </div> 
@@ -1101,7 +1114,10 @@
 	  <tr x-ng-repeat="d in params.drafts">
 	    <td class="vert-align">
 	      <div class="checkbox checkbox-danger checkbox-circle">
-		<input id={{d.sn}} type="checkbox" x-ng-model="d.select"/>
+		<input id={{d.sn}}
+		       type="checkbox"
+		       x-ng-model="d.select"
+		       x-ng-change="params.select(params.drafts, d)"/>
 		<label for={{d.sn}}></label>
 	      </div>
 	    </td>
@@ -1690,4 +1706,53 @@
     </form>
     
   </div> 
+</script>
+
+<script type="text/ng-template" id="wsale-retailer-order.html">
+  <div class="modal-body">
+    <div class="table-responsive">
+      <table class="table table-bordered
+		    table-striped table-condensed table-advanced">
+	<thead>
+	  <tr>
+	    <th></th>
+	    <th>单号</th>
+	    <th>营业员</th>
+	    <th>会员</th>
+	    <th>联系方式</th>
+	    <th>数量</th>
+	    <th>状态</th>
+	    <th>日期</th> 
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr x-ng-repeat="o in params.orders">
+	    <td class="vert-align">
+	      <div class="checkbox checkbox-danger checkbox-circle">
+		<input id={{o.rsn}}
+		       type="checkbox"
+		       x-ng-model="o.select"
+		       x-ng-change="params.select(params.orders, o)"/>
+		<label for={{o.rsn}}></label>
+	      </div>
+	    </td>
+	    <td>{{o.crsn}}</td>
+	    <td>{{o.employee.name}}</td>
+	    <td>{{o.retailer}}</td>
+	    <td>{{o.mobile}}</td>
+	    <td>{{o.total}}</td>
+	    <td>{{params.order_state[o.state]}}</td>
+	    <td>{{o.entry_date}}</td>
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="!params.valid(params.orders)"
+	    x-ng-click="ok()">确定</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
 </script>

@@ -1993,6 +1993,31 @@ get_inventory(barcode, Merchant, UTable, Shop, Firm, Barcode, ExtraConditions) -
 	++ ?sql_utils:condition(
 	      proplists, ?utils:correct_condition(<<"a.">>, ExtraConditions)).
 
+get_inventory(note_ex, Merchant, UTable, Shop, Conditions) ->
+    Sql = "select a.style_number"
+	", a.brand as brand_id"
+	", a.color as color_id"
+	", a.size"
+	", a.total as cs_total"
+	", a.shop as shop_id"
+	
+	", b.amount as total"
+	", b.free"
+	", b.s_group"
+	
+	" from"
+	++ ?table:t(stock_note, Merchant, UTable) ++ " a,"
+	++ ?table:t(stock, Merchant, UTable) ++ " b"
+	++ " where a.merchant=b.merchant"
+	++ " and a.shop=b.shop"
+	++ " and a.style_number=b.style_number"
+	++ " and a.brand = b.brand"
+	++ " and a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.shop=" ++ ?to_s(Shop)
+	++ ?sql_utils:condition(
+	      proplists, ?utils:correct_condition(<<"a.">>, Conditions)),
+    Sql;
+
 get_inventory(note, Merchant, UTable, Shop, Conditions) ->
     Sql = "select style_number"
 	", brand as brand_id"

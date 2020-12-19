@@ -346,8 +346,8 @@ init([]) ->
 	  <<"修改销售定单">>, <<"update_w_sale_order">>, ?right_w_sale},
 	 {?filter_w_sale_order,
 	  <<"查询销售定单">>, <<"filter_w_sale_order">>, ?right_w_sale},
-	 {?filter_w_sale_order_note,
-	  <<"查询销售定单明细">>, <<"filter_w_sale_order_note">>, ?right_w_sale}
+	 {?filter_w_sale_order_detail, 
+	  <<"查询销售定单详情">>, <<"filter_w_sale_order_detail">>, ?right_w_sale}
 	],
 
     %% batch sale
@@ -470,8 +470,8 @@ init([]) ->
 	  <<"修改采购定单记录">>, <<"update_stock_order">>, ?right_w_inventory},
 	 {?filter_stock_order,
 	  <<"查询采购定单记录">>, <<"filter_stock_order">>, ?right_w_inventory},
-	 {?filter_stock_order_note,
-	  <<"查询采购定单明细">>, <<"filter_stock_order_note">>, ?right_w_inventory}, 
+	 {?filter_stock_order_detail, 
+	  <<"查询采购定单详情">>, <<"filter_stock_order_detail">>, ?right_w_inventory}, 
 	 {?transfer_w_inventory_fast,
 	  <<"店铺一键调出">>, <<"transfer_w_inventory_fast">>, ?right_w_inventory},
 	 {?show_stock_firm_info,
@@ -1162,6 +1162,8 @@ pass_action(wholesaler) ->
      <<"w_pay_scan">>,
      <<"filter_w_pay_scan">>,
      <<"check_w_pay_scan">>,
+     <<"get_w_sale_order">>,
+     <<"fix_w_sale_order_by_rsn">>,
 
      %% base_setting
      <<"list_w_bank_card">>,

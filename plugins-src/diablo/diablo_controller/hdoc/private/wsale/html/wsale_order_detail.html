@@ -1,0 +1,140 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+
+      <div class="portlet-title">
+	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>订单记录</div> 
+	<div class="actions">
+	  <div class="btn-group btn-group-solid"> 
+	    <a type="button" class="btn blue reload purple-stripe"
+		    x-ng-click="refresh()">刷新
+	      <i class="icon icon-spinner fg-white"></i></a>
+	  </div>
+	</div> 
+      </div>
+
+      <!--BEGIN table container-->
+      <div class="portlet-body">
+	<div class="table-toolbar util-btn-margin-bottom-5">
+	  <div class="row">
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <time-search
+		 glyphicon="glyphicon glyphicon-arrow-left fg-red"
+		 time="time.start_time" ok="do_search(default_page)">
+	      </time-search>
+            </div>
+
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <time-search
+		 glyphicon="glyphicon glyphicon-arrow-right fg-red"
+		 time="time.end_time" ok="do_search(default_page)">
+	      </time-search>
+            </div> 
+	    
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <query-pattern ng-model="match"
+                             filters="filters"
+                             filter="filter">
+	      </query-pattern>
+            </div>
+	  </div>
+
+	  <query-group filters="filters"
+		       prompt="prompt"
+		       ok="do_search(default_page)">
+	  </query-group> 
+	</div>
+	
+	<!--BEGN portlet body-->
+	<div class="portlet-body">
+	  <!--BEGIN panel-->
+	  <div class="panel panel-default">
+	    <!--EBGIN table responsive-->
+	    <div class="table-responsive">
+	      <!--BEGIN member table-->
+	      <table class="table table-bordered table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>序号</th>
+		    <th>单号</th>
+		    <th>收营员</th> 
+		    <th>店员</th>
+		    <th>客户</th>
+		    <th>数量</th>
+		    <th class="success">已购</th>
+		    <th>金额</th>
+		    <th>状态</th>
+		    <th>店铺</th>
+		    <th>日期</th>
+		    <th>操作</th> 
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr ng-repeat="o in orders">
+		    <td>{{o.order_id}}</td>
+		    <td>{{o.crsn}}</td>
+		    <td>{{o.account}}</td>
+		    <td>{{o.employee.name}}</td>
+		    <td>{{o.retailer}}</td>
+		    <td>{{o.total}}</td>
+		    <td class="success">{{o.finish}}</td>
+		    <td>{{o.should_pay}}</td>
+		    <td x-ng-switch on="o.state">
+		      <span x-ng-switch-when=0><span class="fg-red">未开始</span></span>
+		      <span x-ng-switch-when=1><span class="fg-yellow">部分完成</span></span>
+		      <span x-ng-switch-when=2><span class="fg-green">已完成</span></span>
+		    </td>
+		    
+		    <td>{{o.shop.name}}</td>
+		    <td>{{o.entry_date}}</td>
+		    <td>
+		      <button class="btn diablo-button btn-primary"
+			      x-ng-click="update_order(c)">明细
+			<i class="glyphicon glyphicon-map-marker"></i></button>
+		      
+		      <button class="btn diablo-button yellow"
+			      x-ng-click="update_order(c)">修改
+			<i class="glyphicon glyphicon-edit"></i></button>
+		      
+		      <button class="btn diablo-button blue-hoki hidden-xs"
+			      x-ng-click="print_order(c)">打印
+			<i class="glyphicon glyphicon-print"></i></button> 
+		    </td>
+
+		  </tr>
+		</tbody>
+
+	      </table> <!--END VM table-->
+	    </div> <!--END table responsive-->
+
+	  </div> <!--END panel-->
+	</div> <!--END portlet body-->
+
+	<div x-ng-show="total_items>items_perpage" class="row">
+	  <div class="col-md-12, col-sm-12, col-xs-12">
+	    <div>
+	      <sapn>
+		<span>显示第 {{current_page}} / {{num_pages}} 项结果，
+		  共 {{total_items}} 项</span> 
+		<uib-pagination
+		   class="table-pagination pagination-lg pull-right "
+	      	   total-items="total_items"
+	      	   items-per-page="items_perpage"
+	      	   num-pages="num_pages"
+	      	   max-size="max_page_size"
+	      	   boundary-links="true"
+	      	   previous-text="&lsaquo;" next-text="&rsaquo;"
+	      	   first-text="&laquo;" last-text="&raquo;"
+	      	   x-ng-model="current_page"
+	      	   x-ng-change="page_changed()">
+		</uib-pagination> 
+	    </div>
+	  </div>
+	</div>
+	
+      </div> <!--END table container-->
+
+    </div>
+  </div>
+</div>
