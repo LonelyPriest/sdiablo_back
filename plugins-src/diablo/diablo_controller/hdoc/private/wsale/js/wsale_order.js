@@ -562,7 +562,7 @@ function wsaleOrderNewCtrlProvide(
 	return index;
     }
     
-    $scope.save_update_order = function(){
+    $scope.save_order = function(){
 	$scope.has_saved = true; 
 	console.log($scope.inventories); 
 	// console.log($scope.select);

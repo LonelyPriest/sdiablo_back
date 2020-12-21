@@ -33,7 +33,7 @@ start(normal, _StartArgs) ->
 	    %% retailer level
 	    ok = diablo_auto_gen_report:retailer_level(check, {5, 0, am}),
 	    %% birth sms
-	    %% ok = diablo_auto_gen_report:birth(congratulation, {9, 0, am}),
+	    ok = diablo_auto_gen_report:birth(congratulation, {9, 0, am}),
 	    
 
 	    GCTask = {
