@@ -83,6 +83,8 @@ var diablo_asc  = 1;
 var diablo_charge = 0;
 var diablo_withdraw = 1;
 
+var diablo_print_none = 2;
+
 
 /*
  * shop mode
@@ -1252,6 +1254,7 @@ var diabloHelp = function(){
 
 		if (!in_sort(sorts, inv)){
 		    sorts.push({cid     :inv.color_id,
+				cname   :color.cname,
 				size    :inv.size,
 				alarm_a :inv.alarm_a,
 				exist   :diablo_set_integer(inv.exist),

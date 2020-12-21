@@ -1,0 +1,87 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple table-panel">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>交易记录打印</div>
+	
+	<div class="actions"> 
+	  <button class="btn red" type="button"
+		  x-ng-click="go_back()">返回
+	    <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+
+	  <button class="btn green" type="button"
+		  x-ng-click="print()">打印
+	    <i class="glyphicon glyphicon-print"></i></button>
+	  
+	</div> 
+      </div> 
+      
+      <!--BEGN portlet body-->
+      <div id="sale_detail" class="portlet-body">
+	<div style="text-align:center">
+	  <h2><strong>{{sale.shop.name}}</strong></h2>
+	  <h3 style="text-align:center;margin-top:-10px"><strong>{{sale.shop.addr}}</strong></h3>
+	  <h4 style="margin-top:-5px">
+	    <div style="text-align:center">
+	      <span>单号：{{sale.rsn}}&nbsp;&nbsp;&nbsp;&nbsp;</span>
+	      <span>店员：{{sale.employee.name}}&nbsp;&nbsp;&nbsp;&nbsp;</span> 
+	      <span>备注：{{sale.comment}}</span>
+	    </div>
+	  </h4>
+	  <h4 style="margin-top:-5px">
+	    <div style="text-align:center">
+	      <span>客户：{{sale.retailer}}/{{sale.mobile}}&nbsp;&nbsp;&nbsp;&nbsp;</span>
+	      <span>地址：{{sale.address}}</span>
+	      <span>日期：{{sale.entry_date}}</span>
+	    </div>
+	  </h4>
+	</div>
+	
+	<div class="table-responsive">
+	  <table class="table table-bordered table-striped" style="margin-bottom:5px"> 
+	    <thead>
+	      <tr>
+		<th class="text-center">序号</th>
+		<th class="text-center">货号</th>
+		<th class="text-center">品名</th>
+		<th class="text-center">类型</th>
+		<th class="text-center">吊牌价</th>
+		<th class="text-center">成交价</th>
+		<th class="text-center">数量</th>
+		<th class="text-center">小计</th>
+		<!-- <th class="text-center">色/码</th> -->
+	      </tr>
+	    </thead>
+	    
+	    <tbody>
+	      <tr x-ng-repeat="d in details"> 
+		<td class="text-center" x-ng-bind=d.order_id></td>
+		<td class="text-center" x-ng-bind=d.style_number></td>
+		<td class="text-center" x-ng-bind=d.brand.name></td>
+		<td class="text-center" x-ng-bind=d.type.name></td>
+		<td class="text-center" x-ng-bind=d.tag_price></td>
+		<td class="text-center" x-ng-bind=d.rprice></td>
+		<td class="text-center" x-ng-bind=d.total></td>
+		<td class="text-center" x-ng-bind=d.calc></td> 
+		<!-- <td class="text-center" x-ng-bind=n.note></td> -->
+	      </tr>
+	      
+	      <tr>
+		<td colspan="6"></td>
+		<td class="text-center" x-ng-bind=sale.total></td>
+		<td class="text-center" x-ng-bind=sale.should_pay></td>
+	      </tr>
+	    </tbody> 
+	  </table> <!--END table--> 
+	</div>
+
+	<!-- <h5 class="text-center"><span><strong>地址：{{sale.shop.addr}}</strong></span></h5>  -->
+      </div>
+    </div>
+    
+  </div>
+ 
+</div>
+

@@ -190,6 +190,11 @@
 			明细<i class="glyphicon glyphicon-map-marker"></i>
 		      </button>
 
+		      <button x-ng-if="setting.print_a4" class="btn diablo-button purple"
+		    	      x-ng-click="start_print_a4(r)">
+			打印<i class="glyphicon glyphicon-print"></i>
+		      </button>
+
 		      <button x-ng-if="shop_right.update_w_sale && !r.check"
 			      class="btn diablo-button yellow-crusta"
 		      	      x-ng-click="update_detail(r)">修改

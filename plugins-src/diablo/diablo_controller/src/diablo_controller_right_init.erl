@@ -1164,6 +1164,7 @@ pass_action(wholesaler) ->
      <<"check_w_pay_scan">>,
      <<"get_w_sale_order">>,
      <<"fix_w_sale_order_by_rsn">>,
+     <<"get_w_sale_order_group_by_rsn">>,
 
      %% base_setting
      <<"list_w_bank_card">>,

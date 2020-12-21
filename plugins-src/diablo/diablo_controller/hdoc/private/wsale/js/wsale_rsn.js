@@ -1028,8 +1028,8 @@ function wsalePrintNoteCtrlProvide(
     // console.log($scope.shops);
     
     var LODOP;
-    var print_access  = wsaleUtils.print_num(user.loginShop, base); 
-    if (needCLodop()) loadCLodop(print_access.protocal); 
+    var print_mode  = wsaleUtils.print_num(user.loginShop, base); 
+    if (needCLodop()) loadCLodop(print_mode.protocal); 
     var dialog = diabloUtilsService;
 
     var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
@@ -1092,10 +1092,89 @@ function wsalePrintNoteCtrlProvide(
     
 };
 
+function wsalePrintA4CtrlProvide(
+    $scope, $routeParams, diabloUtilsService, wsaleService,
+    filterBrand, filterEmployee, filterType, filterColor, user, base){
+    // console.log($routeParams);
+    $scope.rsn = $routeParams.rsn; 
+    $scope.shops = user.sortShops;
+    
+    var LODOP;
+    var print_mode  = wsaleUtils.print_num(user.loginShop, base); 
+    if (needCLodop()) loadCLodop(print_mode.protocal); 
+    var dialog = diabloUtilsService;
+
+    var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
+    var pageWidth  = diablo_base_setting("prn_w_page", user.loginShop, base, parseFloat, 21.3);
+    
+    // console.log(base);
+    // console.log($scope.rbill_comment);
+    
+    wsaleService.get_w_print_content($scope.rsn).then(function(result){
+    	console.log(result);
+	if (result.ecode === 0) {
+	    var order_id = 0;
+	    $scope.sale = result.sale;
+	    $scope.sale.shop = diablo_get_object($scope.sale.shop_id, $scope.shops);
+	    $scope.sale.employee = diablo_get_object($scope.sale.employ_id, filterEmployee);
+	    $scope.details = result.detail;
+	    angular.forEach($scope.details, function(d) {
+		d.order_id = ++ order_id;
+		d.brand = diablo_get_object(d.brand_id, filterBrand);
+		d.type = diablo_get_object(d.type_id, filterType);
+		d.calc = wsaleUtils.to_decimal(d.rprice * d.total);
+	    });
+	    // $scope.total = 0;
+	    // $scope.calc  = 0;
+	    // for (var i=0,l=$scope.notes.length; i<l; i++) {
+	    // 	var n = $scope.notes[i];
+	    // 	n.order_id = order_id;
+	    // 	n.calc = wsaleUtils.to_decimal(n.rprice * n.total);
+	    // 	$scope.total += n.total;
+	    // 	$scope.calc += n.calc;
+	    // 	order_id++;
+	    // } 
+	    // $scope.calc = wsaleUtils.to_decimal($scope.calc);
+	} else {
+	    dialog.response(
+		false,
+		"交易记录打印",
+		"交易记录打印失败：获取交易记录失败，请核对后再打印！！")
+	}
+    });
+    
+    var strBodyStyle="<style>"
+	+ ".table-response {min-height: .01%; overflow-x:auto;}"
+	+ "table {border-spacing:0; border-collapse:collapse; width:100%}"
+	+ "td,th {padding:0; border:1 solid #000000; text-align:center;}"
+	+ ".table-bordered {border:1 solid #000000;}" 
+	+ "</style>";
+    $scope.print = function() {
+	if (angular.isUndefined(LODOP)) {
+	    LODOP = getLodop();
+	}
+
+	if (LODOP.CVERSION) {
+	    LODOP.PRINT_INIT("task_print_sale_detail");
+	    LODOP.SET_PRINTER_INDEX(wsaleUtils.printer_bill(user.loginShop, base));
+	    LODOP.SET_PRINT_PAGESIZE(0, pageWidth * 100, pageHeight * 100, "");
+	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+	    LODOP.ADD_PRINT_HTM(
+		"5%", "5%",  "90%", "BottomMargin:15mm",
+		strBodyStyle + "<body>" + document.getElementById("sale_detail").innerHTML + "</body>");
+	    LODOP.PREVIEW(); 
+	}
+    };
+
+    $scope.go_back = function() {diablo_goto_page("#/new_wsale_detail");};
+    
+};
+
 define (["wsaleApp"], function(app){
     app.controller("wsaleRsnDetailCtrl", wsaleRsnDetailCtrlProvide);
     app.controller("dailyCostCtrl", dailyCostCtrlProvide);
     app.controller("payScanCtrl", payScanCtrlProvide);
     app.controller("wsalePrintNoteCtrl", wsalePrintNoteCtrlProvide);
+    app.controller("wsalePrintA4Ctrl", wsalePrintA4CtrlProvide);
     app.controller("wsaleUploadCtrl", wsaleUploadCtrlProvide);
 });

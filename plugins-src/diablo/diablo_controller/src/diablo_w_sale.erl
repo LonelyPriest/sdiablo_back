@@ -213,7 +213,8 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
     Score      = ?v(<<"score">>, Props, 0),
     Oil        = ?v(<<"oil">>, Props, 0),
 
-    BankCards  = ?v(<<"cards">>, Props, []), 
+    BankCards  = ?v(<<"cards">>, Props, []),
+    OrderRSN   = ?v(<<"order_rsn">>, Props, []),
     %% ScoreId    = ?v(<<"sid">>, Props, 0),
     %% DrawScore  = ?v(<<"draw_score">>, Props, 0),
 
@@ -321,6 +322,18 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 			++ "\'" ++ ?to_s(PayOrder) ++ "\'," 
 			++ "\'" ++ ?to_s(DateTime) ++ "\');",
 
+		    %% sale order
+		    Sql6 = order_process(
+			     stock,
+			     {Merchant, 0},
+			     Shop,
+			     OrderRSN,
+			     DateTime,
+			     Inventories,
+			     0,
+			     []),
+		    ?DEBUG("Sql6 ~p", [Sql6]),
+
 		    Sql3 = ["update w_retailer set consume=consume+"
 			    %% ++ ?to_s(ShouldPay - Verificate)
 			    ++ ?to_s(ShouldPay)
@@ -400,20 +413,28 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 				     end, [], NewBankCards);
 			       false -> []
 			   end,
-		    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4 ++ Sql5,
+		    
+		    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4 ++ Sql5 ++ Sql6,
 		    ?DEBUG("AllSql ~p", [AllSql]),
+		    %% {reply, {ok,
+		    %% 	     {SaleSn,
+		    %% 	      ?v(<<"mobile">>, Account),
+		    %% 	      ShouldPay,
+		    %% 	      CurrentBalance - NewWithdraw,
+		    %% 	      ?v(<<"score">>, Account) + Score - TicketScore} 
+		    %% 	    }, State}
 		    case ?sql_utils:execute(transaction, AllSql, SaleSn) of
-			{ok, SaleSn} -> 
-			    {reply, {ok,
-				     {SaleSn,
-				      ?v(<<"mobile">>, Account),
-				      ShouldPay,
-				      CurrentBalance - NewWithdraw,
-				      ?v(<<"score">>, Account) + Score - TicketScore} 
-				    }, State};
-			Error ->
-			    {reply, Error, State}
-		    end 
+		    	{ok, SaleSn} -> 
+		    	    {reply, {ok,
+		    		     {SaleSn,
+		    		      ?v(<<"mobile">>, Account),
+		    		      ShouldPay,
+		    		      CurrentBalance - NewWithdraw,
+		    		      ?v(<<"score">>, Account) + Score - TicketScore} 
+		    		    }, State};
+		    	Error ->
+		    	    {reply, Error, State}
+		    end
 	    end;
 	Error ->
 	    {reply, Error, State}
@@ -763,35 +784,41 @@ handle_call({list_new, Merchant, UTable, Conditions}, _From, State) ->
 
 handle_call({get_new, Merchant, UTable, RSN}, _From, State) ->
     ?DEBUG("get_new with merchant ~p, rsn ~p", [Merchant, RSN]),
-    Sql = "select id"
-	", rsn"
-	", employ as employ_id"
-	", retailer as retailer_id"
-	", shop as shop_id"
-	", tbatch"
-	", tcustom"
-	", balance"
-	", should_pay"
-	", cash"
-	", card"
-	", wxin"
-	", aliPay"
-	", withdraw"
-	", ticket"
-	", g_ticket"
-	", verificate"
-	", total"
-	", oil"
-	", lscore"
-	", score"
-	", comment"
-	", type"
-	", state"
-	", entry_date" 
-    %% " from w_sale"
-	" from" ++ ?table:t(sale_new, Merchant, UTable)
-	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
-	++ " and merchant=" ++ ?to_s(Merchant), 
+    Sql = "select a.id"
+	", a.rsn"
+	", a.employ as employ_id"
+	", a.retailer as retailer_id"
+	", a.shop as shop_id"
+	", a.tbatch"
+	", a.tcustom"
+	", a.balance"
+	", a.should_pay"
+	", a.cash"
+	", a.card"
+	", a.wxin"
+	", a.aliPay"
+	", a.withdraw"
+	", a.ticket"
+	", a.g_ticket"
+	", a.verificate"
+	", a.total"
+	", a.oil"
+	", a.lscore"
+	", a.score"
+	", a.comment"
+	", a.type"
+	", a.state"
+	", a.entry_date"
+
+	", b.name as retailer"
+	", b.mobile"
+	", b.address"
+	
+	" from" ++ ?table:t(sale_new, Merchant, UTable) ++ " a"
+	" left join w_retailer b on a.retailer=b.id and a.merchant=b.merchant"
+	
+	++ " where a.rsn=\'" ++ ?to_s(RSN) ++ "\'"
+	++ " and a.merchant=" ++ ?to_s(Merchant), 
     Reply =  ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
@@ -1983,6 +2010,7 @@ handle_call({list_order, Merchant, UTable, Conditions}, _From, State) ->
 	", a.shop as shop_id"
 	
 	", a.should_pay"
+	", a.base_pay"
 	", a.total"
 	", a.finish"
 
@@ -1991,12 +2019,12 @@ handle_call({list_order, Merchant, UTable, Conditions}, _From, State) ->
 	", a.entry_date"
 
 	", b.name as retailer"
+	", b.level as retailer_level"
 	", b.mobile"
 	
 	" from" ++ ?table:t(sale_order, Merchant, UTable) ++ " a"
 	++ " left join w_retailer b on a.retailer=b.id" 
     	++ " where a.merchant=" ++ ?to_s(Merchant)
-	++ " and a.state in(0,1)"
 	++ ?sql_utils:condition(proplists, NewConditions), 
 
     Reply =  ?sql_utils:execute(read, Sql),
@@ -2010,7 +2038,7 @@ handle_call({list_order_note, Merchant, UTable, Conditions}, _From, State) ->
 	", a.shop"
 	", a.style_number"
 	", a.brand_id"
-	", a.o_total"
+	", a.total"
 	", a.finish"
 
 	", b.color as color_id"
@@ -2024,14 +2052,15 @@ handle_call({list_order_note, Merchant, UTable, Conditions}, _From, State) ->
 	", shop"
 	", style_number"
 	", brand as brand_id"
-	", total as o_total"
-	", finish" 
+	", total"
+	", finish"
+	", state"
 	" from"
 	++ ?table:t(sale_order_detail, Merchant, UTable)
 	++ " where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions) ++ ") a"
-	++ " inner join" ++ ?table:t(sale_order_note, Merchant, UTable)
-	++ " b on a.rsn=b.rsn"
+	++ " inner join" ++ ?table:t(sale_order_note, Merchant, UTable) ++ " b"
+	++ " on a.rsn=b.rsn"
 	++ " and a.style_number=b.style_number"
 	++ " and a.brand_id=b.brand"
 	++ " and a.shop=b.shop", 
@@ -2982,6 +3011,152 @@ order(new, RSN, Datetime, {Merchant, UTable}, Shop, Retailer, Inventory, Amounts
 			   throw({db_error, E01})
 		   end|Acc1] 
 	  end, [], Amounts). 
+
+order_process(stock, {Merchant, UTable}, Shop, OrderRSN, Datetime, [], Total, Sqls) ->
+    case Total =/= 0 of
+	true ->
+	    Sql0 = "select rsn, total, finish"
+		" from" ++ ?table:t(sale_order, Merchant, UTable)
+		++ " where rsn=\'" ++ ?to_s(OrderRSN) ++ "\'"
+		++ " and merchant=" ++ ?to_s(Merchant)
+		++ " and shop=" ++ ?to_s(Shop),
+	    {ok, R} = ?sql_utils:execute(s_read, Sql0),
+
+	    ["update" ++ ?table:t(sale_order, Merchant, UTable)
+	     ++ " set finish=finish+"  ++ ?to_s(Total)
+	     ++ case ?v(<<"finish">>, R) + Total >= ?v(<<"total">>, R) of
+		    true -> ", state=2";
+		    false -> ", state=1"
+		end
+	     ++ ", op_date=\'" ++ ?to_s(Datetime) ++ "\'"
+	     ++ " where rsn=\'" ++ ?to_s(OrderRSN) ++ "\'"
+	     ++ " and merchant=" ++ ?to_s(Merchant)
+	     ++ " and shop=" ++ ?to_s(Shop)] ++ Sqls;
+	false ->
+	    []
+    end;
+
+order_process(stock, {Merchant, UTable}, Shop, OrderRSN, Datetime, Invs, Total, Sqls) ->
+    ?DEBUG("order start sale with inv ~p", [Invs]),
+    [{struct, S}|T] = Invs,
+    StyleNumber = ?v(<<"style_number">>, S),
+    Brand       = ?v(<<"brand">>, S),
+    C = [{<<"shop">>, Shop},
+	 {<<"style_number">>, StyleNumber},
+	 {<<"brand">>, Brand}],
+    
+    case ?v(<<"order_rsn">>, S) =:= OrderRSN of
+	true ->
+	    {OrderCount, NoteSqls} = order_process(
+				   stock_note,
+				   {Merchant, UTable},
+				   Shop,
+				   OrderRSN,
+				   Datetime,
+				   S,
+				   ?v(<<"amounts">>, S),
+				   0,
+				   []),
+	    case OrderCount =/= 0 of 
+		true ->
+		    Sql0 = "select style_number, brand, total, finish"
+			" from " ++ ?table:t(sale_order_detail, Merchant, UTable)
+			++ " where rsn=\'" ++ ?to_s(OrderRSN) ++ "\'"
+			++ " and merchant=" ++ ?to_s(Merchant)
+			++ ?sql_utils:condition(proplists, C),
+		    case ?sql_utils:execute(s_read, Sql0) of
+			{ok, R} ->
+			    Sql1 = "update" ++ ?table:t(sale_order_detail, Merchant, UTable)
+				++ " set finish=finish+"  ++ ?to_s(OrderCount)
+				++ case ?v(<<"finish">>, R) +  OrderCount >= ?v(<<"total">>, R) of
+				       true -> ", state=2";
+				       false -> ", state=1"
+				   end
+				++ ", op_date=\'" ++ ?to_s(Datetime) ++ "\'"
+				++ " where rsn=\'" ++ ?to_s(OrderRSN) ++ "\'"
+				++ " and merchant=" ++ ?to_s(Merchant)
+				++ ?sql_utils:condition(proplists, C),
+			    order_process(stock,
+					  {Merchant, UTable},
+					  Shop,
+					  OrderRSN,
+					  Datetime,
+					  T,
+					  Total + OrderCount,
+					  [Sql1] ++ NoteSqls ++ Sqls)
+		    end;
+		false ->
+		    order_process(stock, {Merchant, UTable}, Shop, OrderRSN, Datetime, T, Total, Sqls)
+	    end;
+	false ->
+	    order_process(stock, {Merchant, UTable}, Shop, OrderRSN, Datetime, T, Total, Sqls)
+    end.
+
+order_process(stock_note, {_Merchant, _UTable}, _Shop, _OrderRSN, _DateTime, _Inv, [], Total, Sqls) ->
+    {Total, Sqls};
+    
+order_process(stock_note, {Merchant, UTable}, Shop, OrderRSN, Datetime, Inv, [{struct, A}|Amounts], Total, Sqls) ->
+    StyleNumber = ?v(<<"style_number">>, Inv),
+    Brand       = ?v(<<"brand">>, Inv),
+    Color = ?v(<<"cid">>, A),
+    Size = ?v(<<"size">>, A),
+    OrderCount = ?v(<<"sell_count">>, A),
+    C = [{<<"shop">>, Shop},
+	 {<<"style_number">>, StyleNumber},
+	 {<<"brand">>, Brand},
+	 {<<"color">>, Color},
+	 {<<"size">>, Size}],
+    
+    case ?v(<<"order_rsn">>, A) =:= OrderRSN andalso OrderCount =/= 0 of
+	true ->
+	    Sql0 = "select style_number, brand, color, size, total, finish"
+		" from " ++ ?table:t(sale_order_note, Merchant, UTable)
+		++ " where rsn=\'" ++ ?to_s(OrderRSN) ++ "\'"
+		++ " and merchant=" ++ ?to_s(Merchant)
+		++ ?sql_utils:condition(proplists, C),
+	    case ?sql_utils:execute(s_read, Sql0) of
+		{ok, R} ->
+		    Sql1 = "update" ++ ?table:t(sale_order_note, Merchant, UTable)
+			++ " set finish=finish+"  ++ ?to_s(OrderCount)
+			++ case ?v(<<"finish">>, R) + OrderCount >= ?v(<<"total">>, R) of
+			       true -> ", state=2";
+			       false -> ", state=1"
+			   end
+			++ ", op_date=\'" ++ ?to_s(Datetime) ++ "\'"
+			++ " where rsn=\'" ++ ?to_s(OrderRSN) ++ "\'"
+			++ " and merchant=" ++ ?to_s(Merchant)
+			++ ?sql_utils:condition(proplists, C),
+		    order_process(stock_note,
+			  {Merchant, UTable},
+			  Shop,
+			  OrderRSN,
+			  Datetime,
+			  Inv,
+			  Amounts,
+			  Total + OrderCount,
+			  [Sql1|Sqls]);
+		_ ->
+		    order_process(stock_note,
+				  {Merchant, UTable},
+				  Shop,
+				  OrderRSN,
+				  Datetime,
+				  Inv,
+				  Amounts,
+				  Total,
+				  Sqls)
+	    end; 
+	false ->
+	    order_process(stock_note,
+			  {Merchant, UTable},
+			  Shop,
+			  OrderRSN,
+			  Datetime,
+			  Inv,
+			  Amounts,
+			  Total,
+			  Sqls)
+    end.
 
 count_table(w_sale, {Merchant, UTable}, Conditions) -> 
     SortConditions = sort_condition(wsale, Merchant, Conditions),

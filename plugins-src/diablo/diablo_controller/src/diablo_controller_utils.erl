@@ -228,6 +228,11 @@ respond(200, object, Req, Content) ->
 		 [{"Content-Type", "application/json"}],
 		 ejson:encode(Content)});
 
+respond(200, object_mochijson, Req, Content) ->
+    Req:respond({200,
+		 [{"Content-Type", "application/json"}],
+		 mochijson2:encode(Content)});
+
 respond(200, Req, {ECode, EInfo}, Extra) when is_tuple(Extra)->
     respond(200, Req, {ECode, EInfo}, [Extra]); 
 

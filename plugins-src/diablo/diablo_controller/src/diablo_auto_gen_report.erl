@@ -1243,8 +1243,8 @@ travel_retailer_score(Retailer, Merchant, [{Score2Money}|T], IsCheck, Datetime, 
     case RetailerScore >= AccScore of
 	true ->
 	    SendBalance = ?v(<<"balance">>, Score2Money),
-	    %% TicketBalance = RetailerScore div AccScore * SendBalance,
-	    TicketBalance = SendBalance, 
+	    TicketBalance = RetailerScore div AccScore * SendBalance,
+	    %% TicketBalance = SendBalance, 
 	    travel_retailer_score(
 	      Retailer,
 	      Merchant,

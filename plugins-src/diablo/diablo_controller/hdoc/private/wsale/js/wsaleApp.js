@@ -114,7 +114,12 @@ function wsaleConfg(angular){
 		templateUrl: '/private/wsale/html/wsale_print_note.html',
 		controller: 'wsalePrintNoteCtrl',
 		resolve: angular.extend({}, user, brand, firm, s_group, type, color, base)
-	    }). 
+	    }).
+	    when('/wsale_print_a4/:rsn?', {
+		templateUrl: '/private/wsale/html/wsale_print_a4.html',
+		controller: 'wsalePrintA4Ctrl',
+		resolve: angular.extend({}, user, brand, employee, s_group, type, color, base)
+	    }).
 	    when('/wsale_firm_detail', {
 		templateUrl: '/private/wsale/html/wsale_firm_detail.html',
 		controller: 'wsaleFirmDetailCtrl',
@@ -173,10 +178,11 @@ function wsaleConfg(angular){
 		controller: 'wsaleOrderNoteCtrl',
 		resolve: angular.extend({}, user, employee, brand, type, ctype, firm, base) 
 	    }).
-	    when('/order/update_order', {
+	    when('/order/update_order/:rsn?', {
 		templateUrl: '/private/wsale/html/update_wsale_order.html',
 		controller: 'wsaleOrderUpdateCtrl',
-		resolve: angular.extend({}, user) 
+		resolve: angular.extend(
+		    {}, user, promotion, score, sysretailer, employee, s_group, type, color, level, base) 
 	    }).
 	    otherwise({
 		templateUrl: '/private/wsale/html/new_wsale_detail.html',
@@ -421,6 +427,11 @@ function wsaleConfg(angular){
 		{shop:shop, retailer:retailer, rsn:rsn}).$promise;
 	};
 
+	this.get_w_sale_order_group_by_rsn = function(rsn) {
+	    return http.save(
+		{operation: "get_w_sale_order_group_by_rsn"}, {rsn:rsn}).$promise;
+	};
+
 	/*
 	 * daily cost
 	 */
@@ -622,7 +633,8 @@ function wsaleNewProvide(
 	withdraw: undefined,
 	limitdraw: undefined,
 	unlimitdraw: undefined,
-	draw_cards:   undefined, 
+	draw_cards:  undefined,
+	order_rsn: undefined,
 	
 	ticket_batchs: [],
 	ticket_balance: 0,
@@ -1792,6 +1804,7 @@ function wsaleNewProvide(
 	$scope.select.limitWithdraw   = undefined;
 	$scope.select.unlimitWithdraw = undefined;
 	$scope.select.draw_cards      = undefined;
+	$scope.select.order_rsn       = undefined;
 	
 	$scope.select.ticket_batchs = [];
 	$scope.select.ticket_balance = 0;
@@ -2523,7 +2536,8 @@ function wsaleNewProvide(
 		    cid:        a.cid,
 		    size:       a.size, 
 		    sell_count: wsaleUtils.to_integer(amounts[i].sell_count),
-		    exist:      a.count
+		    exist:      a.count,
+		    order_rsn:  a.order_rsn
 		}; 
 		sale_amounts.push(new_a); 
 	    }
@@ -2702,6 +2716,7 @@ function wsaleNewProvide(
 		    s_group     : add.s_group,
 		    colors      : add.colors,
 		    free        : add.free,
+		    order_rsn   : add.order_rsn,
 		    comment     : sets(add.comment), 
 		    amounts     : details0
 		})
@@ -2759,6 +2774,7 @@ function wsaleNewProvide(
 	    score:          $scope.select.score,
 	    cards:          angular.isArray($scope.select.draw_cards)
 		&& $scope.select.draw_cards.length !== 0 ? $scope.select.draw_cards : undefined,
+	    order_rsn:      $scope.select.order_rsn,
 	    
 	    round:          $scope.setting.round,
 	};
@@ -2804,12 +2820,23 @@ function wsaleNewProvide(
 		};
 		
 		$scope.select.rsn = result.rsn;
-		if (diablo_backend === p_mode){
-		    $scope.print_backend(result, im_print);
-		    success_callback(); 
+		if (diablo_print_none === im_print) {
+		    if (result.sms_code !== 0) {
+			var ERROR = require("diablo-error");
+			dialog.response(false,
+					"销售开单",
+					"开单成功！！发送短消息失败：" + ERROR[result.sms_code]); 
+		    }
+		    success_callback();
 		} else {
-		    $scope.print_front(result, im_print, success_callback); 
+		    if (diablo_backend === p_mode){
+			$scope.print_backend(result, im_print);
+			success_callback(); 
+		    } else {
+			$scope.print_front(result, im_print, success_callback); 
+		    }
 		}
+		
 	    } else {
 		dialog.response_with_callback(
 	    	    false,
@@ -3230,7 +3257,7 @@ function wsaleNewProvide(
 	// inv.fdiscount = $scope.calc_discount(inv); 
 	// inv.fprice    = diablo_price(inv.tag_price, inv.fdiscount);
 
-	inv.o_fdiscount = inv.discount;
+	inv.o_fdiscount = inv.fdiscount;
 	inv.o_fprice    = inv.fprice;
 	
 	// if ($scope.setting.check_sale === diablo_no && inv.free === 0){
@@ -3380,7 +3407,7 @@ function wsaleNewProvide(
 			     && inv.amounts[i].size === bcode_size ) {
 			    inv.amounts[i].sell_count = 1; 
 			    inv.amounts[i].focus = true;
-
+			    
 			    inv.sell      = inv.amounts[i].sell_count;
 			    inv.fdiscount = inv.discount;
 			    inv.fprice    = diablo_price(inv.tag_price, inv.fdiscount);
@@ -3871,10 +3898,75 @@ function wsaleNewProvide(
 		    $scope.select.shop.id, $scope.select.retailer.id, select_order.rsn 
 		).then(function(result) {
 		    console.log(result);
+		    if (0 === result.ecode) {
+			$scope.select.order_rsn = select_order.rsn;
+			var order_id = 0;
+			angular.forEach(result.data, function(s) {
+			    var add = $scope.copy_select({}, s); 
+			    var order_sizes = diabloHelp.usort_size_group(add.s_group, filterSizeGroup);
+			    //console.log(order_sizes);
+			    var sort = diabloHelp.sort_stock(s.stock, order_sizes, filterColor);
+			    // console.log(sort); 
+			    add.total = sort.total;
+			    add.sizes = sort.size;
+			    add.colors = sort.color;
+			    add.amounts = sort.sort;
+
+			    
+			    add.fdiscount = add.discount;
+			    add.fprice = diablo_price(add.tag_price, add.fdiscount);
+			    add.o_fdiscount = add.fdiscount;
+			    add.o_fprice    = add.fprice;
+
+			    add.sell = 0;
+			    add.note = diablo_empty_string;
+			    add.order_rsn = select_order.rsn; 
+			    add.free_color_size = false;
+			    
+			    if (0 === add.free) {
+				add.free_color_size = true;
+				add.sell = s.o_total - s.o_finish;
+				if (add.sell !==0) {
+				    add.amounts[0].sell_count = add.sell;
+				    add.amounts[0].order_rsn = select_order.rsn; 
+				    if (add.sell > s.total) {
+					add.negative = diablo_yes;
+				    }
+				}
+			    } else {
+				add.free_color_size = false;
+				angular.forEach(s.order, function(o) {
+				    for (var i=0, l=add.amounts.length; i<l; i++) {
+					var a = add.amounts[i];
+					if (o.color_id === a.cid && o.size === a.size) {
+					    var sell_count = o.cs_total - o.cs_finish;
+					    if (sell_count !== 0) {
+						a.order_rsn = select_order.rsn;
+						a.sell_count = sell_count;
+						add.sell += sell_count;
+						add.note += a.cname + a.size + ";";
+						if (sell_count > a.count) {
+						    add.negative = diablo_yes;
+						}
+					    }
+					}
+				    }
+				}); 
+			    }
+
+			    console.log(add);
+			    add.$edit = true;
+			    add.$new = false;
+			    $scope.inventories.unshift(add);
+			    add.order_id = $scope.inventories.length;
+			    $scope.re_calculate();
+			})
+		    }
+		    
 		})
 	    }
 	    
-	}
+	};
 	
 	wsaleService.get_retailer_order(
 	    $scope.select.shop.id, $scope.select.retailer.id
@@ -4054,12 +4146,16 @@ function wsaleNewDetailProvide(
 
     // console.log($scope.filter);
     // console.log($scope.prompt); 
-    $scope.sequence_pagination = wsaleUtils.sequence_pagination(diablo_default_shop, base); 
-    var sale_mode = wsaleUtils.sale_mode(diablo_default_shop, base);
+    $scope.sequence_pagination = wsaleUtils.sequence_pagination(user.loginShop, base);
+    
+    var sale_mode = wsaleUtils.sale_mode(user.loginShop, base);
     $scope.setting.gift_ticket_on_sale = wsaleUtils.to_integer(sale_mode.charAt(19));
     $scope.setting.gift_ticket_strategy = wsaleUtils.to_integer(sale_mode.charAt(22));
-    $scope.setting.solo_retailer = wsaleUtils.solo_retailer(
-	$scope.shopIds.length === 1 ? $scope.shopIds[0] : diablo_default_shop, base);
+    $scope.setting.solo_retailer = wsaleUtils.solo_retailer(user.loginShop, base);
+    
+    $scope.setting.print_a4 = wsaleUtils.to_integer(
+	wsaleUtils.print_num(user.loginShop, base).print_a4);
+    // if (needCLodop()) loadCLodop(print_mode.protocal);
     
     /*
      * pagination 
@@ -4484,6 +4580,16 @@ function wsaleNewDetailProvide(
 	    // }); 
 	} 
     };
+
+    $scope.start_print_a4 = function(r) {
+	console.log(r);
+	var callback = function() {
+	    diablo_goto_page("#/wsale_print_a4/" + r.rsn); 
+	}
+	
+	dialog.request(
+	    "销售单打印", "请确认打印机已连接好，确认要打印吗？", callback, undefined, undefined);
+    }
     
     $scope.export_to = function(){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){

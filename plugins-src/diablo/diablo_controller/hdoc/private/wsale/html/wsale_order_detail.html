@@ -90,15 +90,15 @@
 		    <td>{{o.entry_date}}</td>
 		    <td>
 		      <button class="btn diablo-button btn-primary"
-			      x-ng-click="update_order(c)">明细
+			      x-ng-click="order_note(o)">明细
 			<i class="glyphicon glyphicon-map-marker"></i></button>
 		      
 		      <button class="btn diablo-button yellow"
-			      x-ng-click="update_order(c)">修改
+			      x-ng-click="update_order(o)">修改
 			<i class="glyphicon glyphicon-edit"></i></button>
 		      
-		      <button class="btn diablo-button blue-hoki hidden-xs"
-			      x-ng-click="print_order(c)">打印
+		      <button class="btn diablo-button purple hidden-xs"
+			      x-ng-click="print_order(o)">打印
 			<i class="glyphicon glyphicon-print"></i></button> 
 		    </td>
 

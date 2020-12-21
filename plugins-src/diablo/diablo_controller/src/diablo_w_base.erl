@@ -896,8 +896,11 @@ sys_config() ->
     %% [0]: common print num
     %% [1]: swiming print num
     %% [2]: print protocal 0:http 1:https default 0
+    %% [3]: print with A4
     Values = [{"pum",             "打印份数",            "1101",  "0"},
-	      {"ptype",           "打印方式",            "1",     "0"}, %% 0: front; 1:backend
+	      %% 0: front;
+	      %% 1: backend
+	      {"ptype",           "打印方式",            "1",     "0"}, 
 	      {"pim_print",       "立即打印",            "0",     "0"},
 
 	      {"qtime_start",     "联想开始时间",        DefaultDate,  "0"}, 

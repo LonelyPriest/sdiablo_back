@@ -316,8 +316,7 @@ function printOptionCtrlProvide(
 	    angular.extend(s, {retailers: $scope.retailers});
 	};
 	
-	if (s.ename === 'pim_print'
-	    || s.ename === 'reject_negative'
+	if (s.ename === 'reject_negative'
 	    || s.ename === 'check_sale'
 	    || s.ename === 'se_pagination'
 	    || s.ename === 'stock_alarm'

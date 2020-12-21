@@ -25,7 +25,7 @@ function wsaleOrderNewCtrlProvide(
     $scope.setting = {check_sale:true};
     $scope.face = window.face;
 
-    var response_title = "销售订单";
+    var response_title = "新增销售订单";
     var dialog = diabloUtilsService; 
 
     var authen = new diabloAuthen(user.type, user.right, user.shop);
@@ -42,24 +42,13 @@ function wsaleOrderNewCtrlProvide(
 
     $scope.disable_start_sale = function() {
 	return $scope.inventories.length === 0;
-    };
-    
-    $scope.q_typeahead = function(){
-	// default prompt comes from backend
-	return wsaleUtils.typeahead($scope.select.shop.id, base); 
     }; 
     
     $scope.sexs            = diablo_sex;
     $scope.seasons         = diablo_season;
     $scope.retailer_types  = diablo_retailer_types.filter(function(t) {
 	return t.id !== 2;
-    });
-    
-    $scope.f_add           = diablo_float_add;
-    $scope.f_sub           = diablo_float_sub;
-    $scope.f_mul           = diablo_float_mul;
-    $scope.f_discount      = diablo_discount;
-    $scope.wsale_mode      = wsaleService.wsale_mode;
+    }); 
     $scope.face            = window.face;
     $scope.show_promotions = [];
     $scope.disable_refresh = true; 
@@ -85,7 +74,7 @@ function wsaleOrderNewCtrlProvide(
     
     var dialog = diabloUtilsService; 
     var get_setting = function(shopId){
-	$scope.setting.q_backend     = $scope.q_typeahead(shopId);
+	$scope.setting.q_backend     = wsaleUtils.typeahead(shopId, base);
 	$scope.setting.round         = wsaleUtils.round(shopId, base);
 	$scope.setting.solo_retailer = wsaleUtils.solo_retailer(shopId, base);
 	$scope.setting.semployee     = wsaleUtils.s_employee(shopId, base);
@@ -405,7 +394,7 @@ function wsaleOrderNewCtrlProvide(
 	return wsaleUtils.start_time(shopId, base, now, dateFilter);
     };
     
-    $scope.setting.q_backend = $scope.q_typeahead($scope.select.shop.id); 
+    // $scope.setting.q_backend = $scope.q_typeahead($scope.select.shop.id); 
     
     $scope.match_style_number = function(viewValue){
 	if (diablo_yes === $scope.setting.type_sale) {
@@ -470,8 +459,8 @@ function wsaleOrderNewCtrlProvide(
     var fail_response = function(code, callback){
 	diabloUtilsService.response_with_callback(
 	    false,
-	    "销售开单",
-	    "开单失败：" + wsaleService.error[code],
+	    "新增销售订单",
+	    "新增销售订单失败：" + wsaleService.error[code],
 	    undefined,
 	    callback);
     };
@@ -573,7 +562,7 @@ function wsaleOrderNewCtrlProvide(
 	return index;
     }
     
-    $scope.save_order = function(){
+    $scope.save_update_order = function(){
 	$scope.has_saved = true; 
 	console.log($scope.inventories); 
 	// console.log($scope.select);
@@ -609,7 +598,6 @@ function wsaleOrderNewCtrlProvide(
 	    console.log(add);
 	    var sell_total = wsaleUtils.to_integer(add.sell); 
 	    var index = index_of_sale(add, added)
-	    // console.log(index);
 	    if (diablo_invalid_index !== index) {
 		var existSale = added[index];
 		existSale.sell_total += sell_total;
@@ -637,7 +625,6 @@ function wsaleOrderNewCtrlProvide(
 		    } 
 		})
 	    } else {
-		// var batch = add.batch;
 		// console.log(batch);
 		var details0 = get_sale_detail(add.amounts);
 		added.push({
@@ -649,7 +636,6 @@ function wsaleOrderNewCtrlProvide(
 		    type_name   : add.type,
 		    sex         : add.sex,
 		    firm        : add.firm_id,
-		    // sex         : add.sex,
 		    season      : add.season,
 		    year        : add.year,
 		    s_group     : add.s_group,
@@ -668,9 +654,7 @@ function wsaleOrderNewCtrlProvide(
 		    
 		    all_fprice  : wsaleUtils.to_decimal(add.fprice * sell_total),
 		    all_tagprice: wsaleUtils.to_decimal(add.tag_price * sell_total),
-		    		    
-		    // sizes       : add.sizes, 
-		    // colors      : add.colors, 
+		    
 		    amounts     : details0
 		})
 	    } 
@@ -813,14 +797,14 @@ function wsaleOrderNewCtrlProvide(
 	$scope.focus_good_or_barcode(); 
     };
     
-    $scope.calc_discount = function(inv){
-	if (inv.pid !== -1 && inv.promotion.rule_id === 0){
-	    return inv.discount < inv.promotion.discount ? inv.discount : inv.promotion.discount;
-	} 
-	else {
-	    return inv.discount;
-	}
-    };
+    // $scope.calc_discount = function(inv){
+    // 	if (inv.pid !== -1 && inv.promotion.rule_id === 0){
+    // 	    return inv.discount < inv.promotion.discount ? inv.discount : inv.promotion.discount;
+    // 	} 
+    // 	else {
+    // 	    return inv.discount;
+    // 	}
+    // };
     
     $scope.add_inventory = function(inv){
 	// console.log(inv); 
@@ -1345,6 +1329,11 @@ function wsaleOrderDetailCtrlProvide(
     $scope.page_changed = function(){
 	$scope.do_search($scope.current_page);
     };
+
+    $scope.update_order = function(o) {
+	console.log(o);
+	diablo_goto_page("#/order/update_order/" + o.rsn);
+    };
     
 };
 
@@ -1485,8 +1474,791 @@ function wsaleOrderNoteCtrlProvide(
     
 };
 
+function wsaleOrderUpdateCtrlProvide(
+    $scope, $q, $timeout, $interval, $routeParams, dateFilter, localStorageService,
+    diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter,
+    diabloPattern, wsaleService,
+    user, filterPromotion, filterScore, filterSysRetailer, filterEmployee,
+    filterSizeGroup, filterType, filterColor, filterLevel, base){
+    // console.log($routeParams);
+    $scope.rsn = $routeParams.rsn; 
+    $scope.shops     = user.sortShops.filter(function(s) {return s.deleted===0});
+    $scope.promotions = filterPromotion;
+    $scope.scores     = filterScore;
+    
+    $scope.pattern    = {
+	money:        diabloPattern.decimal_2,
+	sell:         diabloPattern.integer_except_zero,
+	discount:     diabloPattern.discount,
+	barcode:      diabloPattern.number,
+	name:         diabloPattern.chinese_name,
+	comment:      diabloPattern.comment,
+	tel_mobile:   diabloPattern.tel_mobile
+    };
+
+    var response_title = "销售订单编辑";
+    var dialog = diabloUtilsService;
+    
+    var authen = new diabloAuthen(user.type, user.right, user.shop); 
+    $scope.right = authen.authenSaleRight();
+
+    $scope.color_negative_order = function(negative) {
+    	return negative ? "bg-red" : "";
+    };
+    
+    $scope.focus_attr = {style_number:false, barcode:false};
+    $scope.auto_focus = function(attr){
+	for (var o in $scope.focus_attr){
+	    $scope.focus_attr[o] = false;
+	}
+	$scope.focus_attr[attr] = true; 
+    };
+    
+    $scope.focus_good_or_barcode = function() {
+	$scope.sale.style_number = undefined;
+	$scope.sale.barcode = undefined;
+	if ($scope.setting.scan_only) {
+	    $scope.auto_focus('barcode');
+	} else {
+	    if ($scope.setting.barcode_mode && !$scope.setting.focus_style_number) {
+		$scope.auto_focus('barcode'); 
+	    } else {
+		$scope.auto_focus('style_number');
+	    }
+	} 
+    };
+
+    $scope.focus_by_element = function() {
+	$scope.sale.style_number = undefined;
+	$scope.sale.barcode = undefined;
+	if ($scope.setting.scan_only) {
+	    document.getElementById("barcode").focus();
+	} else {
+	    if ($scope.setting.barcode_mode && !$scope.setting.focus_style_number) {
+		document.getElementById("barcode").focus();
+	    }
+	    else {
+		document.getElementById("snumber").focus();
+	    }
+	} 
+    };
+
+    $scope.match_style_number = function(viewValue){
+	if (diablo_yes === $scope.setting.type_sale) {
+	    return diabloFilter.match_w_sale(
+		viewValue,
+		$scope.select.shop.id,
+		diablo_type_sale,
+		diablo_is_ascii_string(viewValue));
+	} else {
+	    if (angular.isUndefined(diablo_set_string(viewValue)) || viewValue.length < diablo_filter_length) return; 
+	    
+	    return diabloFilter.match_w_sale(viewValue, $scope.select.shop.id);
+	} 
+    };
+
+    $scope.match_retailer_phone = function(viewValue){
+	return wsaleUtils.match_retailer_phone(
+	    viewValue,
+	    diabloFilter,
+	    $scope.select.shop.id,
+	    $scope.setting.solo_retailer);
+    };
+
+    $scope.copy_select = function(add, src){
+	console.log(src);
+	// add.id           = src.id;
+	add.bcode        = src.bcode;
+	add.full_bcode   = src.full_bcode;
+	add.style_number = src.style_number;
+	
+	add.brand_id     = src.brand_id;
+	add.brand        = src.brand;
+	
+	add.type_id      = src.type_id;
+	add.type         = src.type;
+	
+	add.firm_id      = src.firm_id; 
+	
+	add.sex          = src.sex;
+	add.season       = src.season;
+	add.year         = src.year;
+	
+	add.pid          = src.pid;
+	add.promotion    = diablo_get_object(src.pid, $scope.promotions);
+	add.sid          = src.sid;
+	add.score        = diablo_get_object(src.sid, $scope.scores);
+	add.mid          = src.mid;
+	// add.commision    = diablo_get_object(src.mid, $scope.commisions);
+	
+	add.org_price    = src.org_price;
+	add.ediscount    = src.ediscount;
+	add.tag_price    = src.tag_price; 
+	add.discount     = src.discount;
+	add.vir_price    = src.vir_price;
+	add.draw         = src.draw;
+	
+	add.path         = src.path; 
+	add.s_group      = src.s_group;
+	add.free         = src.free;
+	
+	add.state        = src.state;
+	add.bargin_price = wsaleUtils.to_integer(src.state.charAt(0)); 
+	add.gift         = wsaleUtils.to_integer(src.state.charAt(1));	
+	add.entry        = src.entry_date;
+
+	add.full_name    = add.style_number + "/" + add.brand + "/" + add.type; 
+	return add; 
+    };
+
+    var fail_response = function(code, callback){
+	diabloUtilsService.response_with_callback(
+	    false,
+	    "销售订单编辑",
+	    "销售订单编辑失败：" + wsaleService.error[code],
+	    undefined,
+	    callback);
+    };
+    
+    $scope.on_select_good = function(item, model, label){
+	console.log(item); 
+	if (item.tag_price < 0){
+	    fail_response(2193, function(){}); 
+	} else {
+	    // auto focus
+	    $scope.auto_focus("sell"); 
+	    var add  = {$new:true}; 
+	    $scope.copy_select(add, item);
+	    console.log(add);
+	    $scope.add_inventory(add); 
+	} 
+    };
+
+    $scope.barcode_scanner = function(full_bcode) {
+	// console.log($scope.inventories);
+    	console.log(full_bcode);
+	if (angular.isUndefined(full_bcode) || !diablo_trim(full_bcode))
+	    return;
+	
+	// get stock by barcode
+	// stock info 
+	var barcode = diabloHelp.correct_barcode(full_bcode, $scope.setting.barcode_auto); 
+	console.log(barcode);
+
+	// invalid barcode
+	if (!barcode.cuted || !barcode.correct) {
+	    dialog.set_error(response_title, 2196);
+	    return;
+	}
+	
+	diabloFilter.get_stock_by_barcode(barcode.cuted, $scope.select.shop.id).then(function(result){
+	    console.log(result);
+	    if (result.ecode === 0) {
+		if (diablo_is_empty(result.stock)) {
+		    dialog.set_error(response_title, 2195);
+		} else {
+		    result.stock.full_bcode = barcode.correct;
+		    $scope.on_select_good(result.stock);
+		}
+	    } else {
+		dialog.set_error(response_title, result.ecode);
+	    }
+	});
+	
+    };
+
+    $scope.disable_save = function(){
+	// save one time only
+	return $scope.has_saved || $scope.inventories.length === 0 ? true :false; 
+    };
+
+    $scope.re_calculate = function(){
+	$scope.select.total        = 0; 
+	$scope.select.abs_total    = 0;
+	$scope.select.should_pay   = 0;
+	$scope.select.base_pay     = 0;
+	
+	var calc = wsaleCalc.calculate(
+	    true,
+	    $scope.setting.vip_mode,
+	    wsaleUtils.get_retailer_discount($scope.select.retailer.level, $scope.levels),
+	    $scope.inventories,
+	    $scope.show_promotions,
+	    diablo_sale,
+	    0,
+	    $scope.setting.round,
+	    0);
+	
+	// console.log(calc);
+	// console.log($scope.show_promotions);
+	$scope.select.total      = calc.total;
+	$scope.select.abs_total  = calc.abs_total;
+	$scope.select.should_pay = calc.should_pay;
+	$scope.select.base_pay   = calc.base_pay; 
+    }; 
+    
+    // init
+    $scope.disable_start_sale = function() {
+	return $scope.inventories.length === 0;
+    };
+
+    $scope.sexs            = diablo_sex;
+    $scope.seasons         = diablo_season;
+    $scope.retailer_types  = diablo_retailer_types.filter(function(t) {return t.id !== 2;});
+
+    $scope.sale = {barcode:undefined, style_number:undefined};
+    $scope.inventories = [];
+    $scope.setting = {};
+    $scope.face = window.face;
+    $scope.show_promotions = [];
+    $scope.disable_refresh = true; 
+    
+    var get_setting = function(shopId){
+	$scope.setting.q_backend     = wsaleUtils.typeahead(shopId, base);
+	$scope.setting.round         = wsaleUtils.round(shopId, base);
+	$scope.setting.solo_retailer = wsaleUtils.solo_retailer(shopId, base);
+	$scope.setting.semployee     = wsaleUtils.s_employee(shopId, base);
+	$scope.setting.barcode_mode  = wsaleUtils.barcode_mode(shopId, base);
+	$scope.setting.barcode_auto  = wsaleUtils.barcode_auto(shopId, base);
+	
+	$scope.setting.vip_mode      = wsaleUtils.vip_mode(shopId, base);
+	$scope.setting.vip_discount_mode = wsaleUtils.to_integer($scope.setting.vip_mode.charAt(0));
+
+	var scan_mode = wsaleUtils.scan_only(shopId, base);
+	$scope.setting.scan_only     = wsaleUtils.to_integer(scan_mode.charAt(0));
+	$scope.setting.focus_style_number = wsaleUtils.to_integer(scan_mode.charAt(4));
+
+	var sale_mode = wsaleUtils.sale_mode(shopId, base);
+	$scope.setting.hide_pwd       = wsaleUtils.to_integer(sale_mode.charAt(9));
+	
+	$scope.setting.type_sale     = wsaleUtils.type_sale(shopId, base); 
+	$scope.setting.shop_mode  = wsaleUtils.shop_mode(shopId, base);
+	$scope.retailer_levels    = $scope.face($scope.setting.shop_mode).retailer_levels; 
+	console.log($scope.setting);
+	
+	$scope.levels = filterLevel.filter(function(l) {
+	    return l.shop_id === shopId;
+	})
+
+	if ($scope.levels.length === 0) {
+	    $scope.levels = filterLevel.filter(function(l) {
+		return l.shop_id === user.loginShop;
+	    })
+	} 
+    };
+
+    var valid_all_sell = function(amounts){
+	var renumber = /^[+|\-]?[1-9][0-9]*$/; 
+	var unchanged = 0;
+	for(var i=0, l=amounts.length; i<l; i++){
+	    var sell = amounts[i].sell_count;
+	    if (0 === wsaleUtils.to_integer(sell)){
+		unchanged++;
+		continue;
+	    } 
+	    if (!renumber.test(sell)) return false; 
+	};
+
+	return unchanged === l ? false : true; 
+    };
+
+    var get_amount = function(cid, sname, amounts){
+	for (var i=0, l=amounts.length; i<l; i++){
+	    if (amounts[i].cid === cid && amounts[i].size === sname){
+		return amounts[i];
+	    }
+	}
+	return undefined;
+    }; 
+
+    var add_callback = function(params){
+	console.log(params.amounts); 
+	var sell_total = 0, note = "";
+	angular.forEach(params.amounts, function(a){
+	    if (angular.isDefined(a.sell_count) && a.sell_count){
+		sell_total += wsaleUtils.to_integer(a.sell_count);
+		note += diablo_find_color(a.cid, filterColor).cname + a.size + ";"
+	    }
+	}); 
+
+	return {amounts:     params.amounts,
+		sell:        sell_total,
+		fdiscount:   params.fdiscount,
+		fprice:      params.fprice,
+		note:        note};
+    };
+
+    $scope.add_free_inventory = function(inv){
+	// console.log(inv); 
+	if (angular.isUndefined($scope.select.retailer) || diablo_is_empty($scope.select.retailer)){
+	    diabloUtilsService.response(
+		false, response_title,  response_title + "失败：" + wsaleService.error[2192]);
+	    return; 
+	};
+
+	inv.$edit = true;
+	inv.$new  = false;
+	inv.amounts[0].sell_count = inv.sell;
+	$scope.inventories.unshift(inv);
+	inv.order_id = $scope.inventories.length; 
+	$scope.disable_refresh = false;
+	$scope.re_calculate();	    
+	$scope.focus_good_or_barcode(); 
+    };
+
+    $scope.add_inventory = function(inv){
+	// console.log(inv); 
+	if (angular.isUndefined($scope.select.retailer) || diablo_is_empty($scope.select.retailer)){
+	    diabloUtilsService.response(
+	    	false, response_title, response_title + "失败：" + wsaleService.error[2192]);
+	    return;
+	};
+	
+	inv.fdiscount = inv.discount;
+	inv.fprice    = diablo_price(inv.tag_price, inv.discount); 
+	inv.o_fdiscount = inv.discount;
+	inv.o_fprice    = inv.fprice;
+	
+	var promise = diabloPromise.promise; 
+	var calls = [promise(diabloFilter.list_purchaser_inventory,
+			     {style_number: inv.style_number,
+			      brand:        inv.brand_id,
+			      shop:         $scope.select.shop.id
+			     })()];
+	
+	$q.all(calls).then(function(data){
+	    if (data.length === 0 ){
+		diabloUtilsService.response(
+		    false, response_title, response_title + "失败：" + wsaleService.error[2194]);
+		return; 
+	    };
+	    
+	    var shop_now_inv = data[0]; 
+	    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+	    var sort = diabloHelp.sort_stock(shop_now_inv, order_sizes, filterColor);
+	    
+	    inv.total   = sort.total;
+	    inv.sizes   = sort.size;
+	    inv.colors  = sort.color;
+	    inv.amounts = sort.sort; 
+
+	    // console.log(inv.sizes);
+	    // console.log(inv.colors);
+	    // console.log(inv.amounts); 
+
+	    if(inv.free === 0){
+		$scope.auto_focus("sell");
+		inv.free_color_size = true;
+		inv.amounts = [{cid:0, size:0, count:inv.total}];
+		inv.sell = 1; 
+		$scope.auto_save_free(inv);
+	    } else{
+		var after_add = function(){
+		    inv.$edit = true;
+		    inv.$new = false;
+		    $scope.disable_refresh = false;
+		    $scope.inventories.unshift(inv); 
+		    inv.order_id = $scope.inventories.length;
+		    $scope.re_calculate();
+		    $scope.focus_good_or_barcode();
+		};
+
+		var callback = function(params){
+		    console.log(params);
+		    var result  = add_callback(params);
+		    // console.log(result);
+		    if (inv.fprice !== result.fprice || inv.fdiscount !== result.fdiscount) {
+			inv.$update = true;
+		    }
+		    inv.amounts    = result.amounts;
+		    inv.sell       = result.sell;
+		    inv.fdiscount  = result.fdiscount;
+		    inv.fprice     = result.fprice;
+		    inv.note       = result.note;
+		    inv.negative   = result.negative;
+		    after_add();
+		};
+
+		var focus_first = function() {
+		    for (var i=0, l=inv.amounts.length; i<l; i++) {
+			inv.amounts[i].focus = false;
+			if (wsaleUtils.to_integer(inv.amounts[i].count) !==0) {
+			    inv.amounts[i].focus = true;
+			}
+		    }
+		}
+
+		var modal_size = diablo_valid_dialog(inv.sizes);
+		var large_size = modal_size === 'lg' ? true : false;
+		var payload = {
+		    fdiscount:      inv.fdiscount,
+		    fprice:         inv.fprice,
+		    sizes:          inv.sizes,
+		    large_size:     large_size,
+		    colors:         inv.colors,
+		    amounts:        inv.amounts,
+		    path:           inv.path,
+		    get_amount:     get_amount,
+		    valid:          valid_all_sell,
+		    cancel_callback:  function(close) {
+			$scope.focus_by_element();},
+		    right:          $scope.right
+		}; 
+		
+		inv.free_color_size = false; 
+		if ($scope.setting.barcode_mode && angular.isDefined(inv.full_bcode)) {
+		    var color_size = inv.full_bcode.substr(inv.bcode.length, inv.full_bcode.length);
+		    console.log(color_size);
+
+		    var bcode_color = wsaleUtils.to_integer(color_size.substr(0, 3));
+		    var bcode_size_index = wsaleUtils.to_integer(
+			color_size.substr(3, color_size.length));
+		    
+		    var bcode_size = bcode_size_index === 0 ? diablo_free_size:size_to_barcode[bcode_size_index]; 
+		    var scan_found = false;
+		    for (var i=0, l=inv.amounts.length; i<l; i++) {
+			var color;
+			inv.amounts[i].focus = false; 
+			// find color first
+			for (var j=0, k=inv.colors.length; j<k; j++) {
+			    if (inv.amounts[i].cid === inv.colors[j].cid) {
+				color = inv.colors[j];
+				break;
+			    }
+			} 
+			// console.log(color);
+			
+			// find size
+			if ( angular.isDefined(color) && angular.isObject(color)
+			     && color.bcode === bcode_color
+			     && inv.amounts[i].size === bcode_size ) {
+			    inv.amounts[i].sell_count = 1; 
+			    inv.amounts[i].focus = true;
+
+			    inv.sell      = inv.amounts[i].sell_count;
+			    inv.fdiscount = inv.discount;
+			    inv.fprice    = diablo_price(inv.tag_price, inv.fdiscount);
+			    inv.note      = color.cname + inv.amounts[i].size + ";"
+			    scan_found    = true;
+			    break;
+			}
+		    }
+		    
+		    if (scan_found){
+			after_add();
+		    } 
+		    else {
+			focus_first();
+			diabloUtilsService.edit_with_modal(
+			    "wsale-update-order-new.html",
+			    modal_size,
+			    callback,
+			    undefined,
+			    payload); 
+		    }
+		} else {
+		    focus_first();
+		    diabloUtilsService.edit_with_modal(
+			"wsale-update-order-new.html",
+			modal_size,
+			callback,
+			undefined,
+			payload); 
+		    
+		}
+	    }
+	});
+    };
+
+    /*
+     * delete inventory
+     */
+    $scope.delete_inventory_head = function() {
+	$scope.inventories.splice(0, 1);
+	$scope.focus_good_or_barcode();
+    };
+    
+    $scope.delete_inventory = function(inv){
+	console.log(inv); 
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
+	    if(inv.order_id === $scope.inventories[i].order_id){
+		break;
+	    }
+	}
+
+	$scope.inventories.splice(i, 1);
+	
+	// reorder
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
+	    $scope.inventories[i].order_id = l - i;
+	} 
+
+	$scope.re_calculate();
+	
+	// promotion
+	for (var i=0, l=$scope.show_promotions.length; i<l; i++){
+	    if (inv.order_id === $scope.show_promotions[i].order_id){
+		break;
+	    }
+	}
+
+	$scope.show_promotions.splice(i, 1);
+	for (var i=0, l=$scope.show_promotions.length; i<l; i++){
+	    $scope.show_promotions[i].order_id = l - i; 
+	}
+	
+	$scope.focus_by_element();
+    };
+
+    /*
+     * lookup inventory 
+     */
+    $scope.inventory_detail = function(inv){
+	var payload = {sizes:        inv.sizes,
+		       colors:       inv.colors,
+		       fdiscount:    inv.fdiscount,
+		       fprice:       inv.fprice,
+		       amounts:      inv.amounts,
+		       path:         inv.path,
+		       get_amount:   get_amount};
+	diabloUtilsService.edit_with_modal(
+	    "wsale-update-order-detail.html", undefined, undefined, $scope, payload)
+    };
+
+    /*
+     * update inventory
+     */
+    $scope.update_inventory = function(inv, updateCallback, scan){
+	console.log(inv);
+	// inv.$update = true; 
+	if (inv.free_color_size){
+	    inv.free_update = true;
+	    if (angular.isDefined(scan) && scan) {
+	    	if (wsaleUtils.to_integer(inv.sell) === 0)
+	    	    inv.sell = 1;
+	    	else
+	    	    inv.sell += 1;
+
+	    	$scope.auto_save_free(inv);
+	    } else {
+	    	$scope.auto_focus("sell");
+	    }
+	    
+	    return;
+	}
+
+	if (angular.isDefined(scan)
+	    && scan
+	    && $scope.setting.barcode_mode
+	    && angular.isDefined(inv.full_bcode)) {
+	    // get color, size from barcode 
+	    var color_size = inv.full_bcode.substr(inv.bcode.length, inv.full_bcode.length);
+	    console.log(color_size);
+
+	    var bcode_color = wsaleUtils.to_integer(color_size.substr(0, 3));
+	    var bcode_size_index = wsaleUtils.to_integer(color_size.substr(3, color_size.length));
+	    
+	    var bcode_size = bcode_size_index === 0 ? diablo_free_size : size_to_barcode[bcode_size_index];
+	    // console.log(bcode_color);
+	    // console.log(bcode_size);
+	    angular.forEach(inv.amounts, function(a) {
+		// console.log(a.cid, inv.colors);
+		a.focus = false;
+		var color;
+		for (var i=0, l=inv.colors.length; i<l; i++) {
+		    if (a.cid === inv.colors[i].cid) {
+			color = inv.colors[i];
+			break;
+		    }
+		} 
+		// console.log(color); 
+		if (angular.isDefined(color) && color.bcode === bcode_color && a.size === bcode_size) {
+		    if (wsaleUtils.to_integer(a.sell_count) === 0)
+			a.sell_count = 1;
+		    else
+			a.sell_count += 1;
+		    a.focus = true;
+		}
+	    });
+	} else {
+	    for (var i=0, l=inv.amounts.length; i<l; i++) {
+		var a = inv.amounts[i];
+		a.focus = false;
+		if (a.cid === inv.colors[0].cid && a.size === inv.sizes[0]) {
+		    a.focus = true;
+		}
+	    }
+	}
+	
+	var callback = function(params){
+	    var result  = add_callback(params);
+	    console.log(result); 
+	    
+	    if (inv.fprice !== result.fprice || inv.fdiscount !== result.fdiscount) inv.$update = true;
+	    
+	    inv.amounts    = result.amounts;
+	    inv.sell       = result.sell;
+	    inv.fdiscount  = result.fdiscount;
+	    inv.fprice     = result.fprice;
+	    inv.note       = result.note;
+	    
+	    // inv.note 
+	    $scope.re_calculate();
+	    $scope.focus_by_element();
+
+	    if (angular.isDefined(updateCallback) && angular.isFunction(updateCallback))
+		updateCallback();
+	};
+
+	var modal_size = diablo_valid_dialog(inv.sizes);
+	var large_size = modal_size === 'lg' ? true : false;
+	
+	var payload = {fdiscount:    inv.fdiscount,
+		       fprice:       inv.fprice,
+		       sizes:        inv.sizes,
+		       large_size:   large_size,
+		       colors:       inv.colors, 
+		       amounts:      inv.amounts,
+		       path:         inv.path,
+		       get_amount:   get_amount, 
+		       valid:        valid_all_sell,
+		       cancel_callback:  function() {
+			   $scope.focus_by_element();
+		       },
+		       right:        $scope.right};
+	console.log(payload);
+	diabloUtilsService.edit_with_modal(
+	    "wsale-update-order-new.html", modal_size, callback, undefined, payload)
+    };
+
+    $scope.save_free_update = function(inv){
+	inv.free_update = false; 
+	inv.amounts[0].sell_count = inv.sell;
+	
+	if (inv.fprice !== inv.o_fprice || inv.fdiscount !== inv.o_fdiscount) inv.$update = true;
+
+	$scope.re_calculate(); 
+	$scope.focus_good_or_barcode(); 
+    };
+
+    $scope.cancel_free_update = function(inv){
+	// console.log(inv); 
+	inv.free_update = false;
+	inv.sell      = inv.amounts[0].sell_count;
+	inv.fdiscount = inv.o_fdiscount;
+	inv.fprice    = inv.o_fprice; 
+	$scope.re_calculate(); 
+    };
+
+    $scope.reset_inventory = function(inv){
+	$scope.focus_good_or_barcode(); 
+    };
+
+    $scope.auto_save_free = function(inv){
+	var sell = wsaleUtils.to_integer(inv.sell);
+	if (sell !== 0 && angular.isDefined(inv.style_number)) {
+	    if (inv.$new && inv.free_color_size){
+		$scope.add_free_inventory(inv);
+	    } 
+
+	    if (!inv.$new && inv.free_update){
+		$scope.save_free_update(inv); 
+	    } 
+	} 
+    }; 
+
+    $scope.get_employee = function(){
+	var select = wsaleUtils.get_login_employee(
+	    $scope.select.shop.id, user.loginEmployee, filterEmployee);
+
+	$scope.employees = select.filter;
+	$scope.select.employee = select.login;
+	if ($scope.setting.semployee) $scope.select.employee = undefined;
+    };
+    
+    wsaleService.get_w_sale_order_group_by_rsn($scope.rsn).then(function(result) {
+	console.log(result);
+	if (result.ecode === 0) {
+	    var order = result.order; 
+	    $scope.select = {
+		rsn:  order.rsn,
+		shop: diablo_get_object(order.shop_id, $scope.shops),
+		retailer: {id:order.retailer_id,
+			   name:order.retailer + "/" + order.mobile,
+			   mobile:order.mobile,
+			   level:order.retailer_level}, 
+		datetime:     diablo_set_datetime(order.entry_date)
+	    };
+
+	    get_setting(order.shop_id); 
+	    $scope.get_employee();
+	    $scope.select.employee = diablo_get_object(order.employee_id, filterEmployee);
+	    // console.log($scope.employees);
+
+	    angular.forEach(result.data, function(s) {
+		var add = $scope.copy_select({}, s);
+		var order_sizes = diabloHelp.usort_size_group(add.s_group, filterSizeGroup);
+		var sort = diabloHelp.sort_stock(s.stock, order_sizes, filterColor); 
+		add.total = sort.total;
+		add.sizes = sort.size;
+		add.colors = sort.color;
+		add.amounts = sort.sort;
+
+		add.fdiscount = add.discount;
+		add.fprice = diablo_price(add.tag_price, add.fdiscount);
+		add.o_fdiscount = add.fdiscount;
+		add.o_fprice    = add.fprice;
+
+		add.note = diablo_empty_string;
+		add.sell = 0;
+		add.free_color_size = false;
+
+		if (0 === add.free) {
+		    add.free_color_size = true;
+		    add.sell = s.o_total;
+		    add.amounts[0].sell_count = add.sell;
+		    if (s.sell > s.total) {
+			add.negative = diablo_yes;
+		    }
+		} else {
+		    add.free_color_size = false;
+		    angular.forEach(s.order, function(o) {
+			for (var i=0, l=add.amounts.length; i<l; i++) {
+			    var a = add.amounts[i];
+			    if (o.color_id === a.cid && o.size === a.size) {
+				var sell_count = o.cs_total;
+				a.sell_count = sell_count;
+				add.sell += sell_count;
+				add.note += a.cname + a.size + ";";
+				if (sell_count > a.count) {
+				    add.negative = diablo_yes;
+				}
+			    }
+			}
+		    }); 
+		}
+
+		// console.log(add);
+		add.$edit = true;
+		add.$new = false;
+		$scope.inventories.unshift(add);
+		add.order_id = $scope.inventories.length;		
+	    });
+
+	    $scope.old_select = angular.copy($scope.select);
+	    console.log($scope.old_select);
+	    $scope.old_inventories = angular.copy($scope.inventories);
+	    console.log($scope.old_inventories);
+	    $scope.re_calculate();
+
+	    $scope.focus_good_or_barcode();
+	}
+    });
+};
+
 define (["wsaleApp"], function(app){
     app.controller("wsaleOrderNewCtrl", wsaleOrderNewCtrlProvide);
     app.controller("wsaleOrderDetailCtrl", wsaleOrderDetailCtrlProvide);
-    app.controller("wsaleOrderNoteCtrl", wsaleOrderNoteCtrlProvide); 
+    app.controller("wsaleOrderNoteCtrl", wsaleOrderNoteCtrlProvide);
+    app.controller("wsaleOrderUpdateCtrl", wsaleOrderUpdateCtrlProvide); 
 });

@@ -1537,7 +1537,7 @@ create table w_sale_order_detail(
     path           VARCHAR(255) default null, -- the image path
     comment        VARCHAR(127) default null,
 
-    state          TINYINT not null default 0, -- 0: unfinished; 2: part finishe 3: complete finish
+    state          TINYINT not null default 0, -- 0: unfinished; 2: part finishe 2: complete finish
     op_date        DATETIME default 0,  -- date of last change
     entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
@@ -1560,7 +1560,7 @@ create table w_sale_order_note(
     total          INTEGER default 0,
     finish         INTEGER not null default 0,
 
-    state          TINYINT not null default 0, -- 0: unfinished; 2: part finishe 3: complete finish
+    state          TINYINT not null default 0, -- 0: unfinished; 1: part finishe 2: complete finish
     op_date        DATETIME default 0,  -- date of last change
     entry_date     DATETIME default 0, 
     deleted        INTEGER default 0, -- 0: no;  1: yes

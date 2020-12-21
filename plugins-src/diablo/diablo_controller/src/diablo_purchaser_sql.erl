@@ -1996,26 +1996,55 @@ get_inventory(barcode, Merchant, UTable, Shop, Firm, Barcode, ExtraConditions) -
 get_inventory(note_ex, Merchant, UTable, Shop, Conditions) ->
     Sql = "select a.style_number"
 	", a.brand as brand_id"
+	
 	", a.color as color_id"
 	", a.size"
-	", a.total as cs_total"
-	", a.shop as shop_id"
+	", a.total as amount"
+	", a.alarm_a"
 	
-	", b.amount as total"
-	", b.free"
+	", b.shop as shop_id" 
+	", b.bcode"
+	", b.type as type_id"
+	", b.sex"
+	", b.season"
+	", b.firm as firm_id"
 	", b.s_group"
+	", b.free"
+	", b.year"
+	", b.alarm_day"
+
+	", b.promotion as pid"
+	", b.score as sid"
+	", b.commision as mid"
+	", b.org_price"
+	", b.vir_price"
+	", b.tag_price"
+	", b.draw"
+	", b.ediscount"
+	", b.discount"
+	", b.amount as total"
+
+	", b.state"
+	", b.unit"
+	", b.path"
+	", b.entry_date"
+
+	", c.name as brand"
+	", c.name as type"
 	
 	" from"
 	++ ?table:t(stock_note, Merchant, UTable) ++ " a,"
 	++ ?table:t(stock, Merchant, UTable) ++ " b"
+	++ " left join brands c on c.id=b.brand"
+	++ " left join inv_types d on d.id=b.type"
+	
 	++ " where a.merchant=b.merchant"
 	++ " and a.shop=b.shop"
 	++ " and a.style_number=b.style_number"
 	++ " and a.brand = b.brand"
 	++ " and a.merchant=" ++ ?to_s(Merchant)
 	++ " and a.shop=" ++ ?to_s(Shop)
-	++ ?sql_utils:condition(
-	      proplists, ?utils:correct_condition(<<"a.">>, Conditions)),
+	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, Conditions)),
     Sql;
 
 get_inventory(note, Merchant, UTable, Shop, Conditions) ->

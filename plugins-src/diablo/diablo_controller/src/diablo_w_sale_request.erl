@@ -37,36 +37,62 @@ action(Session, Req) ->
 action(Session, Req, {"get_w_print_content", RSN}) ->
     ?DEBUG("get_w_print_content with session ~p, rsn ~p", [Session, RSN]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
     try
-	{ok, Sale}     = ?w_sale:sale(get_new, Merchant, RSN),
-	{ok, Employee} = ?w_user_profile:get(
-			    employee, Merchant, ?v(<<"employ_id">>, Sale)),
-	{ok, Retailer} = ?w_user_profile:get(
-			    retailer, Merchant, ?v(<<"retailer_id">>, Sale)),
+	{ok, Sale}     = ?w_sale:sale(get_new, {Merchant, UTable}, RSN),
+	?DEBUG("Sale ~p", [Sale]),
+	{ok, Details} = ?w_sale:sale(trans_detail, {Merchant, UTable}, {<<"rsn">>, ?to_b(RSN)}),
+	?DEBUG("Details ~p", [Details]),
+	%% sort detail
+	SortDetails = 
+	    lists:foldr(
+	      fun({D}, Acc)->
+		      StyleNumber = ?v(<<"style_number">>, D),
+		      BrandId = ?v(<<"brand_id">>, D),
+		      Attr = [{<<"color_id">>, ?v(<<"color_id">>, D)},
+			      {<<"size">>, ?v(<<"size">>, D)},
+			      {<<"sell_count">>, ?v(<<"amount">>, D)}],
+		      case [{R} || {R} <- Acc,
+				   StyleNumber =:= ?v(<<"style_number">>, R),
+				   BrandId =:= ?v(<<"brand_id">>, R)] of 
+			  [] ->
+			      [{[{<<"style_number">>, StyleNumber},
+				 {<<"brand_id">>, BrandId},
+				 {<<"type_id">>, ?v(<<"type_id">>, D)},
+				 {<<"total">>, ?v(<<"total">>, D)},
+				 {<<"tag_price">>, ?v(<<"tag_price">>, D)},
+				 {<<"rprice">>, ?v(<<"rprice">>, D)},
+				 {<<"rdiscount">>, ?v(<<"rdiscount">>, D)},
+				 {<<"amounts">>, [Attr]}]}] ++ Acc;
+			  [{S}] ->
+			      ExistAmouts = ?v(<<"amounts">>, S),
+			      %% ?DEBUG("ExistOrder ~p", [ExistOrder]),
+			      UpdateDetail = lists:keydelete(<<"amounts">>, 1, S),
+			      %% ?DEBUG("UpdateOrder ~p", [UpdateOrder]),
+			      (Acc -- [{S}])
+				  ++ [{UpdateDetail ++ [{<<"amounts">>, [Attr] ++ ExistAmouts}]}]
 
-	{ok, Details} = ?w_sale:sale(
-			   trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}),
-	
-	{ok, MerchantInfo} = ?w_user_profile:get(merchant, Merchant),
-	{ok, Banks} = ?w_user_profile:get(bank, Merchant),
+		      end
+	      end, [], Details),
+	?DEBUG("SortDetails ~p", [SortDetails]),
+	%% {ok, MerchantInfo} = ?w_user_profile:get(merchant, Merchant),
+	%% {ok, Banks} = ?w_user_profile:get(bank, Merchant),
 
-	ShopId = ?v(<<"shop_id">>, Sale),
-	{ok, PSetting} = ?w_user_profile:get(setting, Merchant, ShopId), 
-	{ok, PFormat}  = ?w_user_profile:get(print_format, Merchant, ShopId), 
-	{ok, ShopInfo} = ?w_user_profile:get(shop, Merchant, ShopId),
+	%% ShopId = ?v(<<"shop_id">>, Sale),
+	%% {ok, PSetting} = ?w_user_profile:get(setting, Merchant, ShopId), 
+	%% {ok, PFormat}  = ?w_user_profile:get(print_format, Merchant, ShopId), 
+	%% {ok, ShopInfo} = ?w_user_profile:get(shop, Merchant, ShopId),
 
 	?utils:respond(
-	   200, object, Req,
+	   200, object_mochijson, Req,
 	   {[{<<"ecode">>, 0},
-	     {<<"sale">>, {[{<<"employee">>, ?v(<<"name">>, Employee)},
-			    {<<"retailer">>, ?v(<<"name">>, Retailer)}
-			    |Sale]}},
-	     {<<"detail">>, Details},
-	     {<<"psetting">>, PSetting},
-	     {<<"merchant">>, {MerchantInfo}},
-	     {<<"banks">>, Banks},
-	     {<<"pformat">>, PFormat},
-	     {<<"shop">>, ShopInfo}
+	     {<<"sale">>, Sale},
+	     {<<"detail">>, SortDetails}
+	     %% {<<"psetting">>, PSetting},
+	     %% {<<"merchant">>, {MerchantInfo}},
+	     %% {<<"banks">>, Banks}
+	     %% {<<"pformat">>, PFormat},
+	     %% {<<"shop">>, ShopInfo}
 	    ]})
     catch
 	_:{badmatch, {error, Error}} ->
@@ -703,7 +729,10 @@ action(Session, Req, {"get_w_sale_order"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     %% UTable = ?session:get(utable, Session),
     UTable = ?NO, 
-    batch_responed(fun() -> ?w_sale:order(list, {Merchant, UTable}, Payload) end, Req);
+    batch_responed(
+      fun() ->
+	      ?w_sale:order(list, {Merchant, UTable}, [{<<"state">>, [0, 1]}|Payload])
+      end, Req);
 
 action(Session, Req, {"fix_w_sale_order_by_rsn"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
@@ -721,8 +750,10 @@ action(Session, Req, {"fix_w_sale_order_by_rsn"}, Payload) ->
 	    {ok, Orders} = ?w_sale:order(
 			      list_note,
 			      {Merchant, UTable},
-			      [{<<"retailer">>, Retailer}, {<<"shop">>, Shop}, {<<"rsn">>, RSN}]),
-
+			      [{<<"retailer">>, Retailer},
+			       {<<"shop">>, Shop},
+			       {<<"rsn">>, RSN},
+			       {<<"state">>, [0, 1]}]), 
 	    ?DEBUG("Orders ~p", [Orders]),
 	    
 	    %% sort order 
@@ -739,7 +770,9 @@ action(Session, Req, {"fix_w_sale_order_by_rsn"}, Payload) ->
 			      [] ->
 				  [{[{<<"style_number">>, ?v(<<"style_number">>, O)},
 				     {<<"brand_id">>, ?v(<<"brand_id">>, O)},
-				     {<<"o_total">>, ?v(<<"o_total">>, O)},
+				     {<<"o_total">>, ?v(<<"total">>, O)},
+				     {<<"o_finish">>, ?v(<<"finish">>, O)},
+				     
 				     {<<"order">>, [OrderAttr]}]}] ++ Acc;
 			      [{S}] ->
 				  ExistOrder = ?v(<<"order">>, S),
@@ -751,8 +784,8 @@ action(Session, Req, {"fix_w_sale_order_by_rsn"}, Payload) ->
 				  
 			  end
 		  end, [], Orders), 
-	    ?DEBUG("SortOrders ~p", [SortOrders]),
-
+	    %% ?DEBUG("SortOrders ~p", [SortOrders]),
+	    
 	    %% sort stock
 	    MStocks = 
 		lists:foldr(
@@ -772,14 +805,47 @@ action(Session, Req, {"fix_w_sale_order_by_rsn"}, Payload) ->
 					Brand = ?v(<<"brand_id">>, S),
 					StockAttr = {[{<<"color_id">>, ?v(<<"color_id">>, S)},
 						      {<<"size">>, ?v(<<"size">>, S)},
-						      {<<"cs_total">>, ?v(<<"cs_total">>, S)}]},
+						      {<<"alarm_a">>, ?v(<<"alarm_a">>, S)},
+						      {<<"amount">>, ?v(<<"amount">>, S)}]},
 					case [{R} || {R} <- Acc1,
 						     StyleNumber =:= ?v(<<"style_number">>, R),
 						     Brand =:= ?v(<<"brand_id">>, R)] of 
 					    [] ->
 						[{[{<<"style_number">>, StyleNumber},
 						   {<<"brand_id">>, Brand},
-						   {<<"s_total">>, ?v(<<"total">>, S)},
+						   
+						   {<<"bcode">>, ?v(<<"bcode">>, S)},
+						   {<<"type_id">>, ?v(<<"type_id">>, S)},
+						   {<<"sex">>, ?v(<<"sex">>, S)},
+						   {<<"season">>, ?v(<<"season">>, S)},
+						   {<<"firm_id">>, ?v(<<"firm_id">>, S)},
+						   {<<"s_group">>, ?v(<<"s_group">>, S)},
+						   {<<"free">>, ?v(<<"free">>, S)},
+						   {<<"year">>, ?v(<<"year">>, S)},
+						   {<<"alarm_day">>, ?v(<<"alarm_day">>, S)},
+
+						   {<<"pid">>, ?v(<<"pid">>, S)},
+						   {<<"sid">>, ?v(<<"sid">>, S)},
+						   {<<"mid">>, ?v(<<"mid">>, S)},
+						   {<<"org_price">>, ?v(<<"org_price">>, S)},
+						   {<<"vir_price">>, ?v(<<"vir_price">>, S)},
+						   {<<"tag_price">>, ?v(<<"tag_price">>, S)},
+						   {<<"draw">>, ?v(<<"draw">>, S)},
+						   {<<"ediscount">>, ?v(<<"ediscount">>, S)},
+						   {<<"discount">>, ?v(<<"discount">>, S)},
+						   
+						   {<<"state">>, ?v(<<"state">>, S)},
+						   {<<"unit">>, ?v(<<"unit">>, S)},
+						   {<<"path">>, ?v(<<"path">>, S)},
+						   {<<"entry_date">>, ?v(<<"entry_date">>, S)},
+
+						   {<<"brand">>, ?v(<<"brand">>, S)},
+						   {<<"type">>, ?v(<<"type">>, S)},
+						   {<<"total">>, ?v(<<"total">>, S)},
+						   
+						   {<<"o_total">>, ?v(<<"o_total">>, O)},
+						   {<<"o_finish">>, ?v(<<"o_finish">>, O)},
+						   
 						   {<<"order">>, ?v(<<"order">>, O)},
 						   {<<"stock">>, [StockAttr]}]}] ++ Acc1;
 					    [{V}] ->
@@ -791,18 +857,130 @@ action(Session, Req, {"fix_w_sale_order_by_rsn"}, Payload) ->
 							      [StockAttr] ++ ExistStock}]}]
 					end 
 				end, [], Stocks),
-			  SortStocks ++ Acc0
+			  SortStocks ++ Acc0 
 		  end, [], SortOrders),
-	    ?DEBUG("MStocks ~p", [MStocks]),
-	    
-	    ?utils:respond(200, Req, ?err(params_error, <<"rsn">>))
-	    %% Stocks = ?w_inventory:purchaser_inventory(
-	    %% 		get_note_ex,
-	    %% 		{Merchant, UTable},
-	    %% 		Shop)
-	    
+	    %% ?DEBUG("MStocks ~p", [MStocks]),
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"data">>, MStocks}]}) 
     end;
-	
+
+action(Session, Req, {"get_w_sale_order_group_by_rsn"}, Payload) ->
+    ?DEBUG("get_w_sale_order_group: season ~p, Payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    %% UTable = ?session:get(utable, Session),
+    UTable = ?NO, 
+
+    %% get order 
+    RSN  = ?v(<<"rsn">>, Payload),
+    case RSN of
+	undefined ->
+	    ?utils:respond(200, Req, ?err(params_error, <<"rsn">>));
+	_ ->
+	    {ok, [Order]} = ?w_sale:order(list, {Merchant, UTable}, [{<<"rsn">>, RSN}]), 
+	    {ok, OrderDetails} = ?w_sale:order(list_note, {Merchant, UTable}, [{<<"rsn">>, RSN}]), 
+	    ?DEBUG("OrderDetails ~p", [OrderDetails]),
+	    
+	    SortOrders = 
+		lists:foldr(
+		  fun({O}, Acc) ->
+			  StyleNumber = ?v(<<"style_number">>, O),
+			  BrandId = ?v(<<"brand_id">>, O),
+			  OrderAttr = {[{<<"color_id">>, ?v(<<"color_id">>, O)},
+					{<<"size">>, ?v(<<"size">>, O)},
+					{<<"cs_total">>, ?v(<<"cs_total">>, O)}]}, 
+			  case [{R} || {R} <- Acc,
+				       StyleNumber =:= ?v(<<"style_number">>, R),
+				       BrandId =:= ?v(<<"brand_id">>, R)] of 
+			      [] ->
+				  [{[{<<"style_number">>, StyleNumber},
+				     {<<"brand_id">>, BrandId},
+				     {<<"o_total">>, ?v(<<"total">>, O)},
+				     {<<"order">>, [OrderAttr]}]}] ++ Acc;
+			      [{S}] ->
+				  ExistOrder = ?v(<<"order">>, S),
+				  UpdateOrder = lists:keydelete(<<"order">>, 1, S),
+				  (Acc -- [{S}])
+				      ++ [{UpdateOrder ++ [{<<"order">>, [OrderAttr] ++ ExistOrder}]}]
+
+			  end
+		  end, [], OrderDetails), 
+	    
+	    %% sort stock
+	    MStocks = 
+		lists:foldr(
+		  fun({O}, Acc0) ->
+			  {ok, Stocks} = ?w_inventory:purchaser_inventory(
+					    get_note_ex,
+					    {Merchant, ?session:get(utable, Session)},
+					    ?v(<<"shop_id">>, Order),
+					    [{<<"style_number">>, ?v(<<"style_number">>, O)},
+					     {<<"brand">>, ?v(<<"brand_id">>, O)}]), 
+			  SortStocks = 
+			      lists:foldr(
+				fun({S}, Acc1) ->
+					StyleNumber = ?v(<<"style_number">>, S),
+					Brand = ?v(<<"brand_id">>, S),
+					StockAttr = {[{<<"color_id">>, ?v(<<"color_id">>, S)},
+						      {<<"size">>, ?v(<<"size">>, S)},
+						      {<<"amount">>, ?v(<<"amount">>, S)}]},
+					case [{R} || {R} <- Acc1,
+						     StyleNumber =:= ?v(<<"style_number">>, R),
+						     Brand =:= ?v(<<"brand_id">>, R)] of 
+					    [] ->
+						[{[{<<"style_number">>, StyleNumber},
+						   {<<"brand_id">>, Brand},
+
+						   {<<"bcode">>, ?v(<<"bcode">>, S)},
+						   {<<"type_id">>, ?v(<<"type_id">>, S)},
+						   {<<"sex">>, ?v(<<"sex">>, S)},
+						   {<<"season">>, ?v(<<"season">>, S)},
+						   {<<"firm_id">>, ?v(<<"firm_id">>, S)},
+						   {<<"s_group">>, ?v(<<"s_group">>, S)},
+						   {<<"free">>, ?v(<<"free">>, S)},
+						   {<<"year">>, ?v(<<"year">>, S)},
+						   {<<"alarm_day">>, ?v(<<"alarm_day">>, S)},
+
+						   {<<"pid">>, ?v(<<"pid">>, S)},
+						   {<<"sid">>, ?v(<<"sid">>, S)},
+						   {<<"mid">>, ?v(<<"mid">>, S)},
+						   {<<"org_price">>, ?v(<<"org_price">>, S)},
+						   {<<"vir_price">>, ?v(<<"vir_price">>, S)},
+						   {<<"tag_price">>, ?v(<<"tag_price">>, S)},
+						   {<<"draw">>, ?v(<<"draw">>, S)},
+						   {<<"ediscount">>, ?v(<<"ediscount">>, S)},
+						   {<<"discount">>, ?v(<<"discount">>, S)},
+
+						   {<<"state">>, ?v(<<"state">>, S)},
+						   {<<"unit">>, ?v(<<"unit">>, S)},
+						   {<<"path">>, ?v(<<"path">>, S)},
+						   {<<"entry_date">>, ?v(<<"entry_date">>, S)},
+
+						   {<<"brand">>, ?v(<<"brand">>, S)},
+						   {<<"type">>, ?v(<<"type">>, S)},
+						   {<<"total">>, ?v(<<"total">>, S)},
+
+						   {<<"o_total">>, ?v(<<"o_total">>, O)},
+						   {<<"o_finish">>, ?v(<<"o_finish">>, O)},
+
+						   {<<"order">>, ?v(<<"order">>, O)},
+						   {<<"stock">>, [StockAttr]}]}] ++ Acc1;
+					    [{V}] ->
+						ExistStock = ?v(<<"stock">>, V),
+						UpdateStock = lists:keydelete(<<"stock">>, 1, V),
+						(Acc1 -- [{V}])
+						    ++ [{UpdateStock
+							 ++ [{<<"stock">>,
+							      [StockAttr] ++ ExistStock}]}]
+					end 
+				end, [], Stocks),
+			  SortStocks ++ Acc0 
+		  end, [], SortOrders),
+	    %% ?DEBUG("MStocks ~p", [MStocks]),
+	    ?utils:respond(200,
+			   object,
+			   Req,
+			   {[{<<"ecode">>, 0}, {<<"data">>, MStocks}, {<<"order">>, Order}]}) 
+    end;
+
 %% =============================================================================
 %% reject
 %% =============================================================================
@@ -1603,7 +1781,7 @@ sidebar(Session) ->
 		  ++ ?w_inventory_request:authen_shop_action(
 		       {?filter_w_sale_order_detail, 
 			"order_note",
-			"定单详情",
+			"定单明细",
 			"glyphicon glyphicon-map-marker"},
 		       Shops)
                  }],
@@ -2382,7 +2560,7 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
     Datetime         = ?v(<<"datetime">>, Base),
 
     BaseSettings = ?w_report_request:get_setting(Merchant, ShopId),
-    ?DEBUG("Shop ~p, BaseSettings ~p", [ShopId, BaseSettings]),
+    %% ?DEBUG("Shop ~p, BaseSettings ~p", [ShopId, BaseSettings]),
     SMS = ?utils:nth(1,?w_report_request:get_config(<<"consume_sms">>, BaseSettings)), 
     ?DEBUG("sms notify ~p", [SMS]), 
     CheckSale = ?utils:nth(1, ?w_report_request:get_config(<<"check_sale">>, BaseSettings)),
