@@ -162,22 +162,16 @@
 		  
 		  <!-- sell count-->
 		  <td class="vert-align col-md-1">
-		    <div x-ng-if="!inv.free_update">
-		      <span x-ng-bind="inv.sell"></span> 
-		    </div>
+		    <div x-ng-if="!inv.free_update"><span x-ng-bind="inv.sell"></span></div>
 		    <form name="inv.form.sell" x-ng-if="!inv.$new && inv.free_update">
-		      <div ng-class="{'has-error':(inv.form.sell.$invalid &&!inv.form.sell.$pristine)
-				     || !inv.sell
-				     || (!setting.negative_sale && inv.sell<0)
-				     || (setting.check_sale && inv.sell > inv.total)
-				     || inv.invalid_sell}">
+		      <div ng-class="{'has-error':(inv.form.sell.$invalid
+				     &&!inv.form.sell.$pristine)}">
 		  	<input type="number" step="1"
 		  	       class="form-control"
 		  	       placeholder="数量"
 		  	       required
 		  	       disable-key
 		  	       x-ng-edit
-		  	       x-ng-pattern="pattern.sell"
 		  	       x-ng-model="inv.sell"
 		  	       x-ng-enter="inv.form.sell.$invalid || auto_save_free(inv)" />
 		      </div>
@@ -202,17 +196,17 @@
 				x-ng-click="update_inventory(inv)">修改
 			  <i class="glyphicon glyphicon-edit"></i></button>
 			
-			<button class="btn diablo-input-button btn-danger"
+			<button x-ng-if="inv.o_finish===0" class="btn diablo-input-button btn-danger"
 				x-ng-click="delete_inventory(inv)">删除
 			  <i class="glyphicon glyphicon-erase"></i></button> 
 		      </div>
 
 		      <div class="btn-group btn-group-solid" x-ng-if="inv.free_update">
 			<button class="btn diablo-input-button btn-success"
-				x-ng-disabled="inv.form.good.$invalid
-					       || inv.form.sell.$invalid
+				x-ng-disabled="inv.form.sell.$invalid
 			    		       || inv.form.fprice.$invalid
-			    		       || inv.form.fdiscount.$invalid" 
+			    		       || inv.form.fdiscount.$invalid
+					       || !check_free_update(inv)" 
 				x-ng-click="auto_save_free(inv)">保存
 			  <i class="glyphicon glyphicon-plus"></i></button> 
 			
@@ -232,7 +226,7 @@
 		  <td></td>
 		  <td>{{select.abs_pay}}</td>
 		  <td colspan="2"></td>
-		  <td class="vert-align">{{select.abs_total}}</td> 
+		  <td class="vert-align">{{select.total}}</td> 
 		  <td class="vert-align">{{select.should_pay}}</td> 
 		  <td></td>
 		  <td></td>
@@ -297,8 +291,7 @@
 	<div class="actions">
 	  <div class="btn-group"> 
 	    <button class="btn btn-success"
-	    	    x-ng-disabled="disable_save()"
-	    	    x-ng-click="save_order()">保存 <i class="glyphicon glyphicon-save"></i></button>
+	    	    x-ng-click="save_update_order()">保存<i class="glyphicon glyphicon-save"></i></button>
 	  </div>
 	</div>
       </div>
@@ -449,8 +442,7 @@
 
     
     <div class="table-responsive">
-      <table class="table table-bordered
-		    table-striped table-condensed table-advanced" navtable>
+      <table class="table table-bordered table-striped table-condensed table-advanced" navtable>
 	<tbody>
 	  <tr>
 	    <td></td>
@@ -473,8 +465,7 @@
 	    </td>
 
 	    <td x-ng-repeat="s in params.sizes">
-	      <div x-ng-if="(amount=params.get_amount(c.cid, s, params.amounts))?true:false">
-		
+	      <div x-ng-if="(amount=params.get_amount(c.cid, s, params.amounts))?true:false"> 
 		<div class="input-group">
 		  <span class="input-group-addon modal-input-group-addon">
 		    {{amount.count}}

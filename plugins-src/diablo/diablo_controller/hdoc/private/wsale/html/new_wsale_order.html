@@ -210,8 +210,7 @@
 
 		      <div class="btn-group btn-group-solid" x-ng-if="inv.free_update">
 			<button class="btn diablo-input-button btn-success"
-				x-ng-disabled="inv.form.good.$invalid
-					       || inv.form.sell.$invalid
+				x-ng-disabled=" inv.form.sell.$invalid
 			    		       || inv.form.fprice.$invalid
 			    		       || inv.form.fdiscount.$invalid" 
 				x-ng-click="auto_save_free(inv)">保存
@@ -233,7 +232,7 @@
 		  <td></td>
 		  <td>{{select.abs_pay}}</td>
 		  <td colspan="2"></td>
-		  <td class="vert-align">{{select.abs_total}}</td> 
+		  <td class="vert-align">{{select.total}}</td> 
 		  <td class="vert-align">{{select.should_pay}}</td> 
 		  <td></td>
 		  <td></td>

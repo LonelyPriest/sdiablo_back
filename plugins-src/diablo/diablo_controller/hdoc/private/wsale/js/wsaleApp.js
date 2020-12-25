@@ -432,6 +432,14 @@ function wsaleConfg(angular){
 		{operation: "get_w_sale_order_group_by_rsn"}, {rsn:rsn}).$promise;
 	};
 
+	this.update_w_sale_order = function(inventory){
+	    return http.save({operation: "update_w_sale_order"}, inventory).$promise;
+	};
+
+	this.delete_w_sale_order = function(order){
+	    return http.save({operation: "del_w_sale_order"}, {rsn:order.rsn}).$promise;
+	};
+
 	/*
 	 * daily cost
 	 */

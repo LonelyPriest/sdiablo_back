@@ -1486,7 +1486,7 @@ create table w_sale_order(
     shop           INTEGER not null default -1, 
     merchant       INTEGER not null default -1,
     
-    base_pay       DECIMAL(10, 2) default 0, -- max: 99999999.99
+    abs_pay        DECIMAL(10, 2) default 0, -- max: 99999999.99
     should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99 
     total          INTEGER not null default 0,
     finish         INTEGER not null default 0,     

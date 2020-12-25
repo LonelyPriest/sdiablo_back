@@ -681,13 +681,55 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 action(Session, Req, {"new_w_sale_order"}, Payload) ->
     ?DEBUG("new_w_sale_order with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
-    %% UTable = ?session:get(utable, Session),
-    UTable = ?NO,
+    UTable = ?session:get(utable, Session),
     UserId = ?session:get(id, Session), 
     Invs            = ?v(<<"inventory">>, Payload, []),
     {struct, Base}  = ?v(<<"base">>, Payload),
     
     start(new_sale_order, Req, {Merchant, UTable}, Invs, Base ++ [{<<"user">>, UserId}]);
+
+action(Session, Req, {"update_w_sale_order"}, Payload) ->
+    ?DEBUG("new_w_sale_order with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    Invs            = ?v(<<"inventory">>, Payload, []),
+    {struct, Base}  = ?v(<<"base">>, Payload), 
+    RSN             = ?v(<<"rsn">>, Base),
+    
+    case check_stock(amount, Invs) of
+	{ok, _} ->
+	    case ?w_sale:order(list, {Merchant, UTable}, [{<<"rsn">>, RSN}]) of
+		{ok, [OldBase]} ->
+		    case ?w_sale:order(update, {Merchant, UTable}, Invs, {Base, OldBase}) of 
+			{ok, RSN} -> 
+			    ?utils:respond(
+			       200, Req, ?succ(new_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}]);
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end;
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
+	CheckError ->
+	    check_inventory_error(Req, CheckError) 
+    end;
+
+action(Session, Req, {"del_w_sale_order"}, Payload) ->
+    ?DEBUG("new_w_sale_order with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    case ?v(<<"rsn">>, Payload) of
+	undefined ->
+	    ?utils:respond(200, Req, ?err(params_error, <<"rsn">>));
+	RSN -> 
+	    case ?w_sale:order(delete_by_rsn, {Merchant, UTable}, RSN) of 
+		{ok, RSN} -> 
+		    ?utils:respond(
+		       200, Req, ?succ(new_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}]);
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end 
+    end;
 
 action(Session, Req, {"filter_w_sale_order"}, Payload) ->
     ?DEBUG("filter_w_sale_order with session ~p, paylaod~n~p", [Session, Payload]), 
@@ -710,9 +752,8 @@ action(Session, Req, {"filter_w_sale_order"}, Payload) ->
 action(Session, Req, {"filter_w_sale_order_detail"}, Payload) ->
     ?DEBUG("filter_w_sale_order_note with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
-    %% UTable = ?session:get(utable, Session),
-    UTable = ?NO,
-
+    UTable = ?session:get(utable, Session),
+    
     ?pagination:pagination(
        fun(Match, Conditions) ->
 	       ?w_sale:filter(total_order_detail, ?to_a(Match), {Merchant, UTable}, Conditions)
@@ -736,9 +777,8 @@ action(Session, Req, {"get_w_sale_order"}, Payload) ->
 
 action(Session, Req, {"fix_w_sale_order_by_rsn"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
-    %% UTable = ?session:get(utable, Session),
-    UTable = ?NO, 
-
+    UTable = ?session:get(utable, Session),
+    
     %% get order
     Retailer = ?v(<<"retailer">>, Payload),
     Shop     = ?v(<<"shop">>, Payload),
@@ -792,7 +832,7 @@ action(Session, Req, {"fix_w_sale_order_by_rsn"}, Payload) ->
 		  fun({O}, Acc0) ->
 			  {ok, Stocks} = ?w_inventory:purchaser_inventory(
 					    get_note_ex,
-					    {Merchant, ?session:get(utable, Session)},
+					    {Merchant, UTable},
 					    Shop,
 					    [{<<"style_number">>, ?v(<<"style_number">>, O)},
 					     {<<"brand">>, ?v(<<"brand_id">>, O)}]),
@@ -832,7 +872,7 @@ action(Session, Req, {"fix_w_sale_order_by_rsn"}, Payload) ->
 						   {<<"tag_price">>, ?v(<<"tag_price">>, S)},
 						   {<<"draw">>, ?v(<<"draw">>, S)},
 						   {<<"ediscount">>, ?v(<<"ediscount">>, S)},
-						   {<<"discount">>, ?v(<<"discount">>, S)},
+						   {<<"discount">>, ?v(<<"discount">>, S)}, 
 						   
 						   {<<"state">>, ?v(<<"state">>, S)},
 						   {<<"unit">>, ?v(<<"unit">>, S)},
@@ -845,6 +885,8 @@ action(Session, Req, {"fix_w_sale_order_by_rsn"}, Payload) ->
 						   
 						   {<<"o_total">>, ?v(<<"o_total">>, O)},
 						   {<<"o_finish">>, ?v(<<"o_finish">>, O)},
+						   %% {<<"fdiscount">>, ?v(<<"fdiscount">>, 0)},
+						   %% {<<"fprice">>, ?v(<<"fprice">>, 0)},
 						   
 						   {<<"order">>, ?v(<<"order">>, O)},
 						   {<<"stock">>, [StockAttr]}]}] ++ Acc1;
@@ -866,9 +908,8 @@ action(Session, Req, {"fix_w_sale_order_by_rsn"}, Payload) ->
 action(Session, Req, {"get_w_sale_order_group_by_rsn"}, Payload) ->
     ?DEBUG("get_w_sale_order_group: season ~p, Payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
-    %% UTable = ?session:get(utable, Session),
-    UTable = ?NO, 
-
+    UTable = ?session:get(utable, Session),
+    
     %% get order 
     RSN  = ?v(<<"rsn">>, Payload),
     case RSN of
@@ -877,7 +918,6 @@ action(Session, Req, {"get_w_sale_order_group_by_rsn"}, Payload) ->
 	_ ->
 	    {ok, [Order]} = ?w_sale:order(list, {Merchant, UTable}, [{<<"rsn">>, RSN}]), 
 	    {ok, OrderDetails} = ?w_sale:order(list_note, {Merchant, UTable}, [{<<"rsn">>, RSN}]), 
-	    ?DEBUG("OrderDetails ~p", [OrderDetails]),
 	    
 	    SortOrders = 
 		lists:foldr(
@@ -886,14 +926,18 @@ action(Session, Req, {"get_w_sale_order_group_by_rsn"}, Payload) ->
 			  BrandId = ?v(<<"brand_id">>, O),
 			  OrderAttr = {[{<<"color_id">>, ?v(<<"color_id">>, O)},
 					{<<"size">>, ?v(<<"size">>, O)},
-					{<<"cs_total">>, ?v(<<"cs_total">>, O)}]}, 
+					{<<"cs_total">>, ?v(<<"cs_total">>, O)},
+					{<<"cs_finish">>, ?v(<<"cs_finish">>, O)}]}, 
 			  case [{R} || {R} <- Acc,
 				       StyleNumber =:= ?v(<<"style_number">>, R),
 				       BrandId =:= ?v(<<"brand_id">>, R)] of 
 			      [] ->
 				  [{[{<<"style_number">>, StyleNumber},
 				     {<<"brand_id">>, BrandId},
+				     {<<"fdiscount">>, ?v(<<"fdiscount">>, O)},
+				     {<<"fprice">>, ?v(<<"fprice">>, O)},
 				     {<<"o_total">>, ?v(<<"total">>, O)},
+				     {<<"o_finish">>, ?v(<<"finish">>, O)},
 				     {<<"order">>, [OrderAttr]}]}] ++ Acc;
 			      [{S}] ->
 				  ExistOrder = ?v(<<"order">>, S),
@@ -903,14 +947,15 @@ action(Session, Req, {"get_w_sale_order_group_by_rsn"}, Payload) ->
 
 			  end
 		  end, [], OrderDetails), 
-	    
+	    ?DEBUG("SortOrders ~p", [SortOrders]),
+
 	    %% sort stock
 	    MStocks = 
 		lists:foldr(
 		  fun({O}, Acc0) ->
 			  {ok, Stocks} = ?w_inventory:purchaser_inventory(
 					    get_note_ex,
-					    {Merchant, ?session:get(utable, Session)},
+					    {Merchant, UTable},
 					    ?v(<<"shop_id">>, Order),
 					    [{<<"style_number">>, ?v(<<"style_number">>, O)},
 					     {<<"brand">>, ?v(<<"brand_id">>, O)}]), 
@@ -957,11 +1002,14 @@ action(Session, Req, {"get_w_sale_order_group_by_rsn"}, Payload) ->
 						   {<<"brand">>, ?v(<<"brand">>, S)},
 						   {<<"type">>, ?v(<<"type">>, S)},
 						   {<<"total">>, ?v(<<"total">>, S)},
-
+						   
+						   
+						   {<<"fdiscount">>, ?v(<<"fdiscount">>, O)},
+						   {<<"fprice">>, ?v(<<"fprice">>, O)}, 
 						   {<<"o_total">>, ?v(<<"o_total">>, O)},
-						   {<<"o_finish">>, ?v(<<"o_finish">>, O)},
-
+						   {<<"o_finish">>, ?v(<<"o_finish">>, O)}, 
 						   {<<"order">>, ?v(<<"order">>, O)},
+						   
 						   {<<"stock">>, [StockAttr]}]}] ++ Acc1;
 					    [{V}] ->
 						ExistStock = ?v(<<"stock">>, V),
@@ -974,7 +1022,7 @@ action(Session, Req, {"get_w_sale_order_group_by_rsn"}, Payload) ->
 				end, [], Stocks),
 			  SortStocks ++ Acc0 
 		  end, [], SortOrders),
-	    %% ?DEBUG("MStocks ~p", [MStocks]),
+	    ?DEBUG("MStocks ~p", [MStocks]),
 	    ?utils:respond(200,
 			   object,
 			   Req,
@@ -2829,6 +2877,33 @@ check_inventory(
 		    end;
 		false ->
 		    {error, Inv}
+	    end
+    end.
+
+check_stock(amount, []) -> 
+    {ok, none}; 
+check_stock(amount, [{struct, Inv}|T]) ->
+    StyleNumber = ?v(<<"style_number">>, Inv),
+    Brand       = ?v(<<"brand">>, Inv), 
+    Amounts     = ?v(<<"amount">>, Inv),
+    Count       = ?v(<<"sell_total">>, Inv), 
+    
+    case StyleNumber =:= undefined orelse Brand =:= undefined of
+	true -> {error, Inv};
+	false ->
+	    case Amounts of
+		undefined -> check_stock(amount, T);
+		_ ->
+		    DCount = lists:foldr(
+		       fun({struct, A}, Acc)->
+			       ?v(<<"sell_count">>, A) + Acc
+		       end, 0, Amounts), 
+		    case Count =:= DCount of
+			true ->
+			    check_stock(amount, T); 
+			false ->
+			    {error, Inv}
+		    end
 	    end
     end.
 

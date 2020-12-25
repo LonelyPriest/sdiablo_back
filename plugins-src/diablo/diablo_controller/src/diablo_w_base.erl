@@ -896,8 +896,9 @@ sys_config() ->
     %% [0]: common print num
     %% [1]: swiming print num
     %% [2]: print protocal 0:http 1:https default 0
-    %% [3]: print with A4
-    Values = [{"pum",             "打印份数",            "1101",  "0"},
+    %% [3]: remain
+    %% [4]: print with A4
+    Values = [{"pum",             "打印份数",            "11010",  "0"},
 	      %% 0: front;
 	      %% 1: backend
 	      {"ptype",           "打印方式",            "1",     "0"}, 

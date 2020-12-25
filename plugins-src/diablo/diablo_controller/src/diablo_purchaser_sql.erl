@@ -2001,7 +2001,7 @@ get_inventory(note_ex, Merchant, UTable, Shop, Conditions) ->
 	", a.size"
 	", a.total as amount"
 	", a.alarm_a"
-	
+
 	", b.shop as shop_id" 
 	", b.bcode"
 	", b.type as type_id"

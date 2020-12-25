@@ -90,7 +90,14 @@ rsn_detail(rsn, {Merchant, UTable}, Condition) ->
 
 order(new, {Merchant, UTable}, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {new_order, Merchant, UTable, Inventories, Props}).
+    gen_server:call(Name, {new_order, Merchant, UTable, Inventories, Props});
+order(update, {Merchant, UTable}, Inventories, {Props, OldProps}) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {update_order, Merchant, UTable, Inventories, Props, OldProps}).
+
+order(delete_by_rsn, {Merchant, UTable}, RSN) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {delete_order_by_rsn, Merchant, UTable, RSN});
 order(list, {Merchant, UTable}, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {list_order, Merchant, UTable, Condition});
@@ -1798,7 +1805,7 @@ handle_call({new_order, Merchant, UTable, Inventories, Props}, _From, State) ->
     Employe    = ?v(<<"employee">>, Props),
     Comment    = ?v(<<"comment">>, Props, []),
     
-    BasePay    = ?v(<<"base_pay">>, Props, 0),
+    ABSPay    = ?v(<<"abs_pay">>, Props, 0),
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
 
@@ -1813,7 +1820,7 @@ handle_call({new_order, Merchant, UTable, Inventories, Props}, _From, State) ->
 	", shop"
 	", merchant"
 
-	", base_pay"
+	", abs_pay"
 	", should_pay" 
 	", total"
 	", finish"
@@ -1831,7 +1838,7 @@ handle_call({new_order, Merchant, UTable, Inventories, Props}, _From, State) ->
 	++ ?to_s(Merchant) ++ ","
 
 
-	++ ?to_s(BasePay) ++ "," 
+	++ ?to_s(ABSPay) ++ "," 
 	++ ?to_s(ShouldPay) ++ "," 
 	++ ?to_s(Total) ++ ","
 	++ ?to_s(?ORDER_START) ++ ","
@@ -1861,6 +1868,109 @@ handle_call({new_order, Merchant, UTable, Inventories, Props}, _From, State) ->
 	    {reply, {error, Error}, State}
     end;
 
+handle_call({update_order, Merchant, UTable, Inventories, Props, OldProps}, _From, State) ->
+    ?DEBUG("update_order: merchant ~p~n, Inventories ~p~n, Props ~p OldProps ~p",
+	   [Merchant, Inventories, Props, OldProps]),
+    RSN        = ?v(<<"rsn">>, Props),
+    Retailer   = ?v(<<"retailer">>, Props),
+    Shop       = ?v(<<"shop">>, Props),
+    Employee   = ?v(<<"employee">>, Props),
+    ShouldPay  = ?v(<<"should_pay">>, Props, 0),
+    ABSPay     = ?v(<<"abs_pay">>, Props, 0),
+    Total      = ?v(<<"total">>, Props),
+    Comment    = ?v(<<"comment">>, Props),
+    Datetime   = ?v(<<"datetime">>, Props), 
+
+    OldRetailer  = ?v(<<"retailer_id">>, OldProps),
+    OldShop      = ?v(<<"shop_id">>, OldProps),
+    OldEmployee  = ?v(<<"employee_id">>, OldProps),
+    OldShouldPay = ?v(<<"should_pay">>, OldProps),
+    OldABSPay    = ?v(<<"abs_pay">>, OldProps), 
+    OldTotal     = ?v(<<"total">>, OldProps),
+    OldFinish    = ?v(<<"finish">>, OldProps),
+    OldOrderState = ?v(<<"state">>, OldProps),
+    OldComment   = ?v(<<"comment">>, OldProps),
+    OldDatetime  = ?v(<<"entry_date">>, OldProps), 
+
+    Sq1 = 
+	case Inventories of
+	    [] ->
+		case ?utils:v(retailer, integer, get_modified(Retailer, OldRetailer))
+		    ++ ?utils:v(shop, integer, get_modified(Shop, OldShop)) 
+		    ++ ?utils:v(entry_date, string, get_modified(Datetime, OldDatetime)) of
+		    [] -> [];
+		    UpdateAttr ->
+			["update"
+			 ++ ?table:t(sale_order_detail, Merchant, UTable)
+			 ++ " set " ++ ?utils:to_sqls(proplists, comma, UpdateAttr)
+			 ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+			 ++ " and merchant=" ++ ?to_s(Merchant),
+
+			 "update"
+			 ++ ?table:t(sale_order_note, Merchant, UTable)
+			 ++ " set " ++ ?utils:to_sqls(proplists, comma, UpdateAttr)
+			 ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+			 ++ " and merchant=" ++ ?to_s(Merchant)]
+		end;
+	    _ -> 
+		sql_order(
+		  update,
+		  RSN,
+		  Merchant,
+		  UTable,
+		  get_new(Shop, OldShop),
+		  get_new(Retailer, OldRetailer),
+		  get_new(Datetime, OldDatetime),
+		  Inventories)
+	end,
+
+    OrderState = set_order_state(OldFinish, Total),
+    Updates = ?utils:v(retailer, integer, get_modified(Retailer, OldRetailer))
+	++ ?utils:v(shop, integer, get_modified(Shop, OldShop)) 
+	++ ?utils:v(employ, string, get_modified(Employee, OldEmployee))
+	++ ?utils:v(should_pay, float, get_modified(ShouldPay, OldShouldPay))
+	++ ?utils:v(abs_pay, float, get_modified(ABSPay, OldABSPay))
+	++ ?utils:v(total, integer, get_modified(Total, OldTotal))
+	++ ?utils:v(state, integer, get_modified(OrderState, OldOrderState))
+	++ ?utils:v(comment, string, get_modified(Comment, OldComment))
+	++ ?utils:v(entry_date, string, get_modified(Datetime, OldDatetime)), 
+
+    Sql2 = case Updates of
+	       [] -> [];
+	       _ -> ["update" ++ ?table:t(sale_order, Merchant, UTable)
+		     ++ " set " ++ ?utils:to_sqls(proplists, comma, Updates) 
+		     ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"
+		     ++ " and merchant=" ++ ?to_s(Merchant)]
+	   end,
+
+    AllSqls = Sq1 ++ Sql2,
+    ?DEBUG("AllSqls ~p", [AllSqls]),
+    
+    Reply = 
+	case erlang:length(AllSqls) =:= 1 of
+	    true -> ?sql_utils:execute(write, AllSqls, RSN);
+	    false -> ?sql_utils:execute(transaction, AllSqls, RSN)
+	end,
+    {reply, Reply, State};
+
+
+handle_call({delete_order_by_rsn, Merchant, UTable, RSN}, _From, State) ->
+    ?DEBUG("delete_order_by_rsn: Merchant ~p, RSN ~p", [RSN]),
+    Sqls = ["delete from"
+	    ++ ?table:t(sale_order_note, Merchant, UTable)
+	    ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'", 
+
+	    "delete from"
+	    ++ ?table:t(sale_order_detail, Merchant, UTable)
+	    ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
+
+	    "delete from"
+	    ++ ?table:t(sale_order, Merchant, UTable)
+	    ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"],
+
+    Reply = ?sql_utils:execute(transaction, Sqls, RSN),
+    {reply, Reply, State};
+
 handle_call({total_orders, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("total_orders: Merchant ~p, Conditions ~p", [Merchant, Conditions]),
 
@@ -1887,7 +1997,7 @@ handle_call({filter_orders, Merchant, UTable, CurrentPage, ItemsPerPage, Fields}
     	", a.retailer as retailer_id"
 	", a.shop as shop_id"
 	
-	", a.base_pay"
+	", a.abs_pay"
 	", a.should_pay"
 	", a.total"
 	", a.finish"
@@ -2010,7 +2120,7 @@ handle_call({list_order, Merchant, UTable, Conditions}, _From, State) ->
 	", a.shop as shop_id"
 	
 	", a.should_pay"
-	", a.base_pay"
+	", a.abs_pay"
 	", a.total"
 	", a.finish"
 
@@ -2021,6 +2131,7 @@ handle_call({list_order, Merchant, UTable, Conditions}, _From, State) ->
 	", b.name as retailer"
 	", b.level as retailer_level"
 	", b.mobile"
+	", b.type as retailer_type"
 	
 	" from" ++ ?table:t(sale_order, Merchant, UTable) ++ " a"
 	++ " left join w_retailer b on a.retailer=b.id" 
@@ -2040,6 +2151,8 @@ handle_call({list_order_note, Merchant, UTable, Conditions}, _From, State) ->
 	", a.brand_id"
 	", a.total"
 	", a.finish"
+	", a.fdiscount"
+	", a.fprice"
 
 	", b.color as color_id"
 	", b.size"
@@ -2052,6 +2165,8 @@ handle_call({list_order_note, Merchant, UTable, Conditions}, _From, State) ->
 	", shop"
 	", style_number"
 	", brand as brand_id"
+	", fdiscount"
+	", fprice"
 	", total"
 	", finish"
 	", state"
@@ -2091,7 +2206,6 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-
 sql(update_wsale, RSN, Merchant, UTable, _Shop, NewDatetime, OldDatetime, []) ->
     case NewDatetime =:= OldDatetime of
 	true -> [];
@@ -3158,6 +3272,166 @@ order_process(stock_note, {Merchant, UTable}, Shop, OrderRSN, Datetime, Inv, [{s
 			  Sqls)
     end.
 
+
+sql_order(update, RSN, Merchant, UTable, Shop, Retailer, Datetime, Inventories) ->    
+    lists:foldr(
+      fun({struct, Inv}, Acc0)-> 
+	      Operation   = ?v(<<"operation">>, Inv), 
+	      case Operation of
+		  <<"d">> -> 
+		      order_update(delete,
+				   RSN,
+				   {Merchant, UTable},
+				   Inv) ++ Acc0; 
+		  <<"a">> ->
+		      Amounts = ?v(<<"amount">>, Inv),
+		      order(new,
+			    RSN,
+			    Datetime,
+			    {Merchant, UTable},
+			    Shop,
+			    Retailer,
+			    Inv,
+			    Amounts) ++ Acc0; 
+		  <<"u">> -> 
+		      order_update(inner,
+				   RSN,
+				   Datetime,
+				   {Merchant, UTable},
+				   Shop,
+				   Retailer,
+				   Inv) ++ Acc0
+	      end
+      end, [], Inventories).
+
+order_update(delete, RSN, {Merchant, UTable}, Inventory) -> 
+    StyleNumber = ?v(<<"style_number">>, Inventory),
+    Brand       = ?v(<<"brand">>, Inventory),
+    Amounts = ?v(<<"amount">>, Inventory),
+
+    ["delete from"
+     ++ ?table:t(sale_order_detail, Merchant, UTable)
+     ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
+     ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+     ++ " and brand=" ++ ?to_s(Brand)]
+	++ 
+        lists:foldr(
+	  fun({struct, Attr}, Acc1)->
+		  CId    = ?v(<<"cid">>, Attr),
+		  Size   = ?v(<<"size">>, Attr),
+		  ["delete from"
+		   ++ ?table:t(sale_order_note, Merchant, UTable)
+		   ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
+		   ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+		   ++ " and brand=" ++ ?to_s(Brand)
+		   ++ " and color=" ++ ?to_s(CId)
+		   ++ " and size=\'" ++ ?to_s(Size) ++ "\'" | Acc1]
+	  end, [], Amounts).
+
+order_update(inner, RSN, Datetime, {Merchant, UTable}, Shop, Retailer, Inventory) -> 
+    StyleNumber    = ?v(<<"style_number">>, Inventory),
+    Brand          = ?v(<<"brand">>, Inventory),
+    OrgPrice       = ?v(<<"org_price">>, Inventory),
+    TagPrice       = ?v(<<"tag_price">>, Inventory),
+    FPrice         = ?v(<<"fprice">>, Inventory),
+    FDiscount      = ?v(<<"fdiscount">>, Inventory),
+    Comment        = ?v(<<"comment">>, Inventory, []),
+    OrderState     = ?v(<<"order_state">>, Inventory),
+
+    ChangeAmounts  = ?v(<<"changed_amount">>, Inventory, []), 
+    Metric = fun()->
+		     lists:foldl(
+		       fun({struct, Attr}, Acc) ->
+			       Count = ?v(<<"sell_count">>, Attr),
+			       case ?v(<<"operation">>, Attr) of
+				   <<"d">> -> Acc - Count;
+				   <<"a">> -> Acc + Count;
+				   <<"u">> -> Acc + Count
+			       end
+		       end, 0, ChangeAmounts)
+	     end(), 
+    ?DEBUG("metric ~p", [Metric]),
+    
+    C2 =
+	fun(Color, Size) ->
+		?utils:to_sqls(
+		   proplists, [{<<"rsn">>, ?to_b(RSN)},
+			       {<<"style_number">>, StyleNumber},
+			       {<<"brand">>, Brand},
+			       {<<"color">>, Color},
+			       {<<"size">>, Size}])
+	end,
+
+
+    Sql0 = ["update"
+	    ++ ?table:t(sale_order_detail, Merchant, UTable)
+	    ++ " set total=total+" ++ ?to_s(Metric)
+	    ++ ", state=" ++ ?to_s(OrderState)
+	    ++ ", org_price=" ++ ?to_s(OrgPrice)
+	    ++ ", tag_price=" ++ ?to_s(TagPrice)
+	    ++ ", fdiscount=" ++ ?to_s(FDiscount)
+	    ++ ", fprice=" ++ ?to_s(FPrice)
+	    ++ ", shop=" ++ ?to_s(Shop)
+	    ++ ", retailer=" ++ ?to_s(Retailer)
+	    ++ ", comment=\'" ++ ?to_s(Comment) ++ "\'"
+	    ++ ", entry_date=\'" ++ ?to_s(Datetime) ++ "\'"
+	    ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
+	    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+	    ++ " and brand=" ++ ?to_s(Brand)],
+	    
+
+    ChangeFun =
+	fun({struct, Attr}, Acc1) ->
+		?DEBUG("Attr ~p", [Attr]),
+		Color = ?v(<<"cid">>, Attr),
+		Size  = ?v(<<"size">>, Attr),
+		Count = ?v(<<"sell_count">>, Attr),
+		
+		case ?v(<<"operation">>, Attr) of 
+		    <<"a">> -> 
+			["insert into"
+			 ++ ?table:t(sale_order_note, Merchant, UTable)
+			 ++ "(rsn"
+			 ", merchant"
+			 ", shop"
+			 
+			 ", style_number"
+			 ", brand"
+			 ", color"
+			 ", size"
+			 ", total"
+			 
+			 ", state"
+			 ", op_date"
+			 ", entry_date) values("
+			 ++ "\'" ++ ?to_s(RSN) ++ "\',"
+			 ++ ?to_s(Merchant) ++ ","
+			 ++ ?to_s(Shop) ++ ","
+			 
+			 ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
+			 ++ ?to_s(Brand) ++ ","
+			 ++ ?to_s(Color) ++ ","
+			 ++ "\'" ++ ?to_s(Size)  ++ "\',"
+			 ++ ?to_s(Count) ++ ","
+			 
+			 ++ ?to_s(?ORDER_START) ++ ","
+			 ++ "\'" ++ ?to_s(Datetime) ++ "\',"
+			 ++ "\'" ++ ?to_s(Datetime) ++ "\')" | Acc1]; 
+		    <<"d">> -> 
+			["delete from"
+			 ++ ?table:t(sale_order_note, Merchant, UTable)
+			 ++ " where " ++ C2(Color, Size) | Acc1];
+		    <<"u">> -> 
+			["update"
+			 ++ ?table:t(sale_order_note, Merchant, UTable)
+			 ++ " set total=total+" ++ ?to_s(Count)
+			 ++ ", state=" ++ ?to_s(?v(<<"order_state">>, Attr))
+			 ++ ", entry_date=\'" ++ ?to_s(Datetime) ++ "\'"
+			 ++ " where " ++ C2(Color, Size)|Acc1]
+		end
+	end,
+    Sql0 ++ lists:foldr(ChangeFun, [], ChangeAmounts).
+
 count_table(w_sale, {Merchant, UTable}, Conditions) -> 
     SortConditions = sort_condition(wsale, Merchant, Conditions),
 
@@ -3564,8 +3838,11 @@ pay_order(reject, ShouldPay, [Pay|T], Pays) ->
 				       false -> Pay end
 				   |Pays]).
 
-get_modified(NewValue, OldValue) when NewValue =/= OldValue -> NewValue;
+get_modified(NewValue, OldValue) when NewValue /= OldValue -> NewValue;
 get_modified(_NewValue, _OldValue) ->  undefined.
+
+get_new(NewValue, OldValue) when NewValue /= OldValue -> NewValue;
+get_new(_NewValue, OldValue) -> OldValue.
 
 card_pay([], _LimitWithdraw, _UnlimitWithdraw, Cards) ->
     Cards;
@@ -3614,6 +3891,10 @@ card_flow_sort([{H}|T], Acc) ->
     Draw = ?v(<<"balance">>, H), 
     card_flow_sort(T, [{Id, Card, Draw}|Acc]).
 
+set_order_state(Finish, _Order) when Finish =:= 0 -> ?ORDER_START;
+set_order_state(Finish, Order) when Finish =:= Order -> ?ORDER_COMPLETED_FINISHED;
+set_order_state(Finish, Order) when Finish < Order -> ?ORDER_PART_FINISHED.
+    
 rsn_order(use_id)    -> " order by b.id ";
 rsn_order(use_shop)  -> " order by a.shop ";
 rsn_order(use_brand) -> " order by b.brand ";

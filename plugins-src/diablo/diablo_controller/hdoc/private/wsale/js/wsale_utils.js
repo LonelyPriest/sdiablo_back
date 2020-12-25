@@ -297,7 +297,7 @@ var wsaleUtils = function(){
 	    return {common: wsaleUtils.to_integer(p.charAt(0)),
 		    swiming: wsaleUtils.to_integer(p.charAt(1)),
 		    protocal: wsaleUtils.to_integer(p.charAt(2)),
-		    print_a4: wsaleUtils.to_integer(p.charAt(3))};
+		    print_a4: wsaleUtils.to_integer(p.charAt(4))};
 	},
 
 	printer_bill: function(shop, base) {

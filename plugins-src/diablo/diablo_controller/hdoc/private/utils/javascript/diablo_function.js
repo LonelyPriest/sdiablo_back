@@ -436,6 +436,9 @@ var diablo_sex = ["女", "男", "童", "鞋", "配", "食品", "用品"];
 
 var diablo_sizegroup = ["si", "sii", "siii", "siv", "sv", "svi", "svii"];
 
+var diablo_order_start = 0;
+var diablo_order_part = 1;
+var diablo_order_finish = 2;
 var diablo_order_state = ["未开始", "部分完成", "已完成"];
 
 var diablo_shop = 0;
