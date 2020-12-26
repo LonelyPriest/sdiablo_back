@@ -176,7 +176,8 @@ function wsaleConfg(angular){
 	    when('/order/order_note', {
 		templateUrl: '/private/wsale/html/wsale_order_note.html',
 		controller: 'wsaleOrderNoteCtrl',
-		resolve: angular.extend({}, user, employee, brand, type, ctype, firm, base) 
+		resolve: angular.extend(
+		    {}, user, employee, brand, type, ctype, firm, s_group, color, base) 
 	    }).
 	    when('/order/update_order/:rsn?', {
 		templateUrl: '/private/wsale/html/update_wsale_order.html',
@@ -438,6 +439,11 @@ function wsaleConfg(angular){
 
 	this.delete_w_sale_order = function(order){
 	    return http.save({operation: "del_w_sale_order"}, {rsn:order.rsn}).$promise;
+	};
+
+	this.list_w_sale_order_note_detail = function(condition) {
+	    return http.save(
+		{operation: "list_w_sale_order_note_detail"}, condition).$promise;
 	};
 
 	/*

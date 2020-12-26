@@ -332,7 +332,7 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 		    %% sale order
 		    Sql6 = order_process(
 			     stock,
-			     {Merchant, 0},
+			     {Merchant, UTable},
 			     Shop,
 			     OrderRSN,
 			     DateTime,
@@ -2136,7 +2136,8 @@ handle_call({list_order, Merchant, UTable, Conditions}, _From, State) ->
 	" from" ++ ?table:t(sale_order, Merchant, UTable) ++ " a"
 	++ " left join w_retailer b on a.retailer=b.id" 
     	++ " where a.merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, NewConditions), 
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ " order by a.entry_date desc",
 
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
@@ -3151,7 +3152,7 @@ order_process(stock, {Merchant, UTable}, Shop, OrderRSN, Datetime, [], Total, Sq
     end;
 
 order_process(stock, {Merchant, UTable}, Shop, OrderRSN, Datetime, Invs, Total, Sqls) ->
-    ?DEBUG("order start sale with inv ~p", [Invs]),
+    ?DEBUG("order process sale with inv ~p", [Invs]),
     [{struct, S}|T] = Invs,
     StyleNumber = ?v(<<"style_number">>, S),
     Brand       = ?v(<<"brand">>, S),

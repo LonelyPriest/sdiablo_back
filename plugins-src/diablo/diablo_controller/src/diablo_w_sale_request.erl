@@ -734,8 +734,7 @@ action(Session, Req, {"del_w_sale_order"}, Payload) ->
 action(Session, Req, {"filter_w_sale_order"}, Payload) ->
     ?DEBUG("filter_w_sale_order with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
-    %% UTable = ?session:get(utable, Session),
-    UTable = ?NO,
+    UTable = ?session:get(utable, Session), 
 
     ?pagination:pagination(
        fun(Match, Conditions) ->
@@ -768,8 +767,7 @@ action(Session, Req, {"filter_w_sale_order_detail"}, Payload) ->
 
 action(Session, Req, {"get_w_sale_order"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
-    %% UTable = ?session:get(utable, Session),
-    UTable = ?NO, 
+    UTable = ?session:get(utable, Session),
     batch_responed(
       fun() ->
 	      ?w_sale:order(list, {Merchant, UTable}, [{<<"state">>, [0, 1]}|Payload])
@@ -1027,6 +1025,51 @@ action(Session, Req, {"get_w_sale_order_group_by_rsn"}, Payload) ->
 			   object,
 			   Req,
 			   {[{<<"ecode">>, 0}, {<<"data">>, MStocks}, {<<"order">>, Order}]}) 
+    end;
+
+action(Session, Req, {"list_w_sale_order_note_detail"}, Payload) ->
+    ?DEBUG("list_w_sale_order_note_detail: season ~p, Payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session), 
+    case ?w_sale:order(list_note, {Merchant, UTable}, Payload) of
+	{ok, []} ->
+	    ?utils:respond(200, Req, ?err(wsale_empty, Merchant));
+	{ok, OrderDetails} ->
+	    SortOrderDetails = 
+		lists:foldr(
+		  fun({O}, Acc) ->
+			  StyleNumber = ?v(<<"style_number">>, O),
+			  BrandId = ?v(<<"brand_id">>, O),
+			  OrderAttr = {[{<<"color_id">>, ?v(<<"color_id">>, O)},
+					{<<"size">>, ?v(<<"size">>, O)},
+					{<<"cs_total">>, ?v(<<"cs_total">>, O)},
+					{<<"cs_finish">>, ?v(<<"cs_finish">>, O)}]}, 
+			  case [{R} || {R} <- Acc,
+				       StyleNumber =:= ?v(<<"style_number">>, R),
+				       BrandId =:= ?v(<<"brand_id">>, R)] of 
+			      [] ->
+				  [{[{<<"style_number">>, StyleNumber},
+				     {<<"brand_id">>, BrandId},
+				     %% {<<"fdiscount">>, ?v(<<"fdiscount">>, O)},
+				     %% {<<"fprice">>, ?v(<<"fprice">>, O)},
+				     %% {<<"o_total">>, ?v(<<"total">>, O)},
+				     %% {<<"o_finish">>, ?v(<<"finish">>, O)},
+				     {<<"order">>, [OrderAttr]}]}] ++ Acc;
+			      [{S}] ->
+				  ExistOrder = ?v(<<"order">>, S),
+				  UpdateOrder = lists:keydelete(<<"order">>, 1, S),
+				  (Acc -- [{S}])
+				      ++ [{UpdateOrder ++ [{<<"order">>, [OrderAttr] ++ ExistOrder}]}]
+
+			  end
+		  end, [], OrderDetails), 
+	    ?DEBUG("SortOrders ~p", [SortOrderDetails]), 
+	    ?utils:respond(200,
+			   object,
+			   Req,
+			   {[{<<"ecode">>, 0}, {<<"data">>, SortOrderDetails}]}) ;
+	Error ->
+	    ?utils:respond(200, Req, Error)
     end;
 
 %% =============================================================================
