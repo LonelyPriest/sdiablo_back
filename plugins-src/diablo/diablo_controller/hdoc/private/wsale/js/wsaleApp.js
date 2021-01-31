@@ -556,6 +556,7 @@ function wsaleNewProvide(
     $scope.setting = {q_backend:true, check_sale:true, negative_sale:false};
     $scope.face = window.face;
 
+    var response_title = "销售开单";
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.right = authen.authenSaleRight();
     
@@ -735,6 +736,8 @@ function wsaleNewProvide(
 	$scope.setting.fixed_mode = wsaleUtils.to_integer(sale_mode.charAt(28));
 	$scope.setting.trans_count = wsaleUtils.to_integer(sale_mode.charAt(29));
 	$scope.setting.pay_scan_use = wsaleUtils.to_integer(sale_mode.charAt(32));
+	$scope.setting.allowed_save = wsaleUtils.to_integer(sale_mode.charAt(33));
+	$scope.setting.member_discount_with_ticket = wsaleUtils.yes_default(sale_mode.charAt(33));
 
 	angular.extend($scope.setting, wsaleUtils.gift_sale(shopId, base));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
@@ -1157,8 +1160,7 @@ function wsaleNewProvide(
 	    $scope.select.retailer.id,
 	    $scope.select.shop.id
 	).then(function(result){
-    	    console.log(result);
-	    
+    	    console.log(result); 
 	    var callback = function(params) {
 		console.log(params);
 		if (wsaleUtils.to_integer(params.self_batch) > 0) {
@@ -1185,8 +1187,7 @@ function wsaleNewProvide(
 		    for (var i=0, l=params.stickets.length; i<l; i++) {
 			if (angular.isDefined(params.stickets[i].select) && params.stickets[i].select) {
 			    
-			    $scope.select.ticket_custom = diablo_score_ticket;
-
+			    $scope.select.ticket_custom = diablo_score_ticket; 
 			    select_ticket = params.stickets[i];
 			    $scope.select.ticket_sid    = select_ticket.sid; 
 			    $scope.select.ticket_batchs.push(select_ticket.batch);
@@ -1206,7 +1207,11 @@ function wsaleNewProvide(
 				$scope.select.ticket_balance += select_ticket.balance;
 				// break;
 			    }
-			}   
+			}
+
+			if (!$scope.setting.member_discount_with_ticket) {
+			    $scope.re_calculate_with_member_discount(undefined);
+			}
 		    }
 
 		    // console.log(select_ticket);
@@ -1955,6 +1960,7 @@ function wsaleNewProvide(
 		$scope.wsaleStorage.set_key(draft.sn);
 		// $scope.select.employee = diablo_get_object(draft.employee.id, $scope.employees);
 		var r = diablo_get_object(draft.retailer.id, retailers);
+		$scope.select.sysVip = !wsaleUtils.isVip(r, $scope.setting.no_vip, $scope.sysRetailers);
 		r.name  = r.name + "/" + r.mobile;
 		r.birth = r.birth.substr(5,8);
 		$scope.select.retailer = r;
@@ -2046,7 +2052,7 @@ function wsaleNewProvide(
     var fail_response = function(code, callback){
 	diabloUtilsService.response_with_callback(
 	    false,
-	    "销售开单",
+	    response_title,
 	    "开单失败：" + wsaleService.error[code],
 	    undefined,
 	    callback);
@@ -2141,7 +2147,7 @@ function wsaleNewProvide(
 	if (angular.isUndefined($scope.select.retailer)
 	    || diablo_is_empty($scope.select.retailer)){
 	    diabloUtilsService.response(
-		false, "销售开单", "开单失败：" + wsaleService.error[2192]);
+		false, response_title, "开单失败：" + wsaleService.error[2192]);
 	    return;
 	};
 	
@@ -2221,7 +2227,7 @@ function wsaleNewProvide(
 
 	// invalid barcode
 	if (!barcode.cuted || !barcode.correct) {
-	    dialog.set_error("销售开单", 2196);
+	    dialog.set_error(response_title, 2196);
 	    return;
 	}
 	
@@ -2231,13 +2237,13 @@ function wsaleNewProvide(
 	    console.log(result);
 	    if (result.ecode === 0) {
 		if (diablo_is_empty(result.stock)) {
-		    dialog.set_error("销售开单", 2195);
+		    dialog.set_error(response_title, 2195);
 		} else {
 		    result.stock.full_bcode = barcode.correct;
 		    $scope.on_select_good(result.stock);
 		}
 	    } else {
-		dialog.set_error("销售开单", result.ecode);
+		dialog.set_error(response_title, result.ecode);
 	    }
 	});
 	
@@ -2249,14 +2255,16 @@ function wsaleNewProvide(
     $scope.disable_save = function(){
 	// save one time only
 	if ($scope.has_saved || $scope.draft || $scope.inventories.length === 0)
-	    return true; 
-	if ($scope.select.should_pay >=0 && $scope.select.charge > 0)
 	    return true;
+	// if ($scope.select.should_pay >=0 && $scope.select.charge > 0)
+	//     return true;
 
-	if ($scope.select.should_pay < 0 && $scope.select.charge > 0)
-	    return true; 
-	
-	return false;
+	// if ($scope.select.should_pay < 0 && $scope.select.charge > 0)
+	//     return true; 
+
+	return $scope.setting.allowed_save ? false : $scope.select.charge > 0;
+	// if (!$scope.setting.allowed_save && $scope.select.charge > 0) return true; 
+	// return false;
     };
 
     $scope.print_backend = function(result, im_print){
@@ -2300,16 +2308,16 @@ function wsaleNewProvide(
 
 	if (im_print === diablo_yes){
 	    if (result.pcode !== 0 || result.sms_code !== 0)
-		show_dialog("销售开单", "开单成功！！" + error(result));
+		show_dialog(response_title, "开单成功！！" + error(result));
 	} else{
 	    var ok_print = function(){
 		wsaleService.print_w_sale(result.rsn).then(function(presult){
 		    if (result.pcode !== 0 || result.sms_code !== 0)
-			show_dialog("销售开单", "开单成功" + error(presult)); 
+			show_dialog(response_title, "开单成功" + error(presult)); 
 		})
 	    }; 
 	    dialog.request(
-		"销售开单", "开单成功，是否打印销售单？", ok_print, undefined, $scope);
+		response_title, "开单成功，是否打印销售单？", ok_print, undefined, $scope);
 	}
 	
     };
@@ -2330,7 +2338,7 @@ function wsaleNewProvide(
 	    if (result.sms_code !== 0) {
 		var ERROR = require("diablo-error");
 		dialog.response(false,
-				"销售开单",
+				response_title,
 				"开单成功！！发送短消息失败：" + ERROR[result.sms_code]); 
 	    }
 	};
@@ -2341,7 +2349,7 @@ function wsaleNewProvide(
 		var ERROR = require("diablo-error"); 
 		dialog.response_with_callback(
 		    false,
-		    "销售开单", "打印失败！！" + ERROR[9801],
+		    response_title, "打印失败！！" + ERROR[9801],
 		    undefined,
 		    function() {window.location.reload()}); 
 	    } else {
@@ -2469,7 +2477,7 @@ function wsaleNewProvide(
 	    }
 	} else {
 	    var request = dialog.request(
-		"销售开单", "开单成功，是否打印销售单？", undefined, undefined, undefined);
+		response_title, "开单成功，是否打印销售单？", undefined, undefined, undefined);
 	    request.result.then(function(close){
 		console.log(close);
 		sms_notify();
@@ -2593,9 +2601,15 @@ function wsaleNewProvide(
 		|| diablo_is_empty($scope.select.employee)){
 		diabloUtilsService.response(
 		    false,
-		    "销售开单",
+		    response_title,
 		    "开单失败：" + wsaleService.error[2192]);
 	    $scope.has_saved = false; 
+	    return;
+	};
+
+	if ($scope.select.charge > 0 && $scope.setting.allowed_save && $scope.select.sysVip) {
+	    diabloUtilsService.set_error(response_title, 2691);
+	    $scope.has_saved = false;
 	    return;
 	};
 
@@ -2604,7 +2618,7 @@ function wsaleNewProvide(
 		if (diablo_abs($scope.select.verificate) > $scope.setting.maling_rang) {
 		    diabloUtilsService.response(
 			false,
-			"销售开单",
+			response_title,
 			"开单失败：" + wsaleService.error[2197]);
 		    $scope.has_saved = false; 
 		    return;
@@ -2615,7 +2629,7 @@ function wsaleNewProvide(
 		{
 		    diabloUtilsService.response(
 			false,
-			"销售开单",
+			response_title,
 			"开单失败：" + wsaleService.error[2197]);
 		    $scope.has_saved = false; 
 		    return;
@@ -2627,14 +2641,14 @@ function wsaleNewProvide(
 	    || $scope.select.wxin > diablo_max_sale_money
 	    || $scope.select.aliPay > diablo_max_sale_money
 	    || $scope.select.card > diablo_max_sale_money) {
-	    diabloUtilsService.set_error("销售开单", 2197);
+	    diabloUtilsService.set_error(response_title, 2197);
 	    $scope.has_saved = false;
 	    return;
 	}
 
 	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    if ($scope.inventories[i].free_update) {
-		diabloUtilsService.set_error("销售开单", 2198);
+		diabloUtilsService.set_error(response_title, 2198);
 		$scope.has_saved = false;
 		return; 
 	    } 
@@ -2838,7 +2852,7 @@ function wsaleNewProvide(
 		    if (result.sms_code !== 0) {
 			var ERROR = require("diablo-error");
 			dialog.response(false,
-					"销售开单",
+					response_title,
 					"开单成功！！发送短消息失败：" + ERROR[result.sms_code]); 
 		    }
 		    success_callback();
@@ -2854,7 +2868,7 @@ function wsaleNewProvide(
 	    } else {
 		dialog.response_with_callback(
 	    	    false,
-		    "销售开单",
+		    response_title,
 		    "开单失败："
 			+ wsaleService.error[result.ecode]
 			+ wsaleUtils.extra_error(result), 
@@ -3015,8 +3029,61 @@ function wsaleNewProvide(
 	return undefined;
     }; 
     
-    $scope.re_calculate = function(){
-	// console.log("re_calculate");
+    // $scope.re_calculate = function(){
+    // 	// console.log("re_calculate");
+    // 	$scope.select.total        = 0;
+    // 	$scope.select.oil          = 0;
+    // 	$scope.select.noTicketBalance = 0;
+    // 	$scope.select.abs_total    = 0;
+    // 	$scope.select.should_pay   = 0;
+    // 	$scope.select.can_draw     = 0;
+    // 	$scope.select.base_pay     = 0;
+    // 	$scope.select.abs_pay      = 0;
+    // 	$scope.select.score        = 0;
+
+    // 	// console.log($scope.inventoyies);
+    // 	var calc = wsaleCalc.calculate(
+    // 	    // $scope.select.o_retailer,
+    // 	    // $scope.select.retailer,
+    // 	    wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
+    // 	    $scope.setting.vip_mode,
+    // 	    wsaleUtils.get_retailer_discount($scope.select.retailer.level, $scope.levels),
+    // 	    // wsaleUtils.get_retailer_level($scope.select.retailer.level, $scope.levels),
+    // 	    $scope.inventories,
+    // 	    $scope.show_promotions,
+    // 	    diablo_sale,
+    // 	    $scope.select.verificate,
+    // 	    $scope.setting.round,
+    // 	    $scope.setting.score_discount);
+	
+    // 	// console.log(calc);
+    // 	// console.log($scope.show_promotions);
+    // 	$scope.select.total      = calc.total;
+    // 	$scope.select.oil        = calc.oil;
+    // 	$scope.select.noTicketBalance = calc.noTicketBalance;
+    // 	$scope.select.abs_total  = calc.abs_total;
+    // 	$scope.select.should_pay = calc.should_pay;
+    // 	$scope.select.can_draw   = calc.can_draw;
+    // 	$scope.select.base_pay   = calc.base_pay;
+    // 	$scope.select.abs_pay    = calc.abs_pay;
+    // 	$scope.select.score      = calc.score; 
+    // 	$scope.select.pscores    = calc.pscores;
+    // 	$scope.select.charge     = $scope.select.should_pay - $scope.select.has_pay;
+	
+    // 	// if ($scope.setting.show_wprice && wsaleUtils.to_integer($scope.select.wprice) !==0) {
+    // 	//     // $scope.select.wprice = $scope.select.should_pay;
+    // 	//     // $scope.select.verificate = $scope.select.base_pay - $scope.select.should_pay;
+    // 	// }
+	
+    // 	$scope.reset_score();
+    // };
+
+    $scope.re_calculate = function() {
+	var vipDiscount = wsaleUtils.get_retailer_discount($scope.select.retailer.level, $scope.levels);
+	$scope.re_calculate_with_member_discount(vipDiscount);
+    }
+
+    $scope.re_calculate_with_member_discount = function(vipDiscount) {
 	$scope.select.total        = 0;
 	$scope.select.oil          = 0;
 	$scope.select.noTicketBalance = 0;
@@ -3033,8 +3100,8 @@ function wsaleNewProvide(
 	    // $scope.select.retailer,
 	    wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
 	    $scope.setting.vip_mode,
-	    wsaleUtils.get_retailer_discount($scope.select.retailer.level, $scope.levels),
-	    // wsaleUtils.get_retailer_level($scope.select.retailer.level, $scope.levels),
+	    vipDiscount,
+	    // wsaleUtils.get_retailer_discount($scope.select.retailer.level, $scope.levels),
 	    $scope.inventories,
 	    $scope.show_promotions,
 	    diablo_sale,
@@ -3062,7 +3129,7 @@ function wsaleNewProvide(
 	// }
 	
 	$scope.reset_score();
-    };
+    }
 
     var valid_sell = function(amount){
 	var sell = diablo_set_integer(amount.sell_count);
@@ -3199,7 +3266,7 @@ function wsaleNewProvide(
     $scope.add_free_inventory = function(inv){
 	// console.log(inv); 
 	if (angular.isUndefined($scope.select.retailer) || diablo_is_empty($scope.select.retailer)){
-	    diabloUtilsService.response(false, "销售开单", "开单失败：" + wsaleService.error[2192]);
+	    diabloUtilsService.response(false, response_title, "开单失败：" + wsaleService.error[2192]);
 	    return; 
 	};
 
@@ -3221,11 +3288,11 @@ function wsaleNewProvide(
 	if ($scope.setting.check_sale && free_stock_not_enought(inv)) {
 	    var ERROR = require("diablo-error");
 	    if ($scope.setting.negative_sale) {
-		diabloUtilsService.request("销售开单", ERROR[2180], callback, true, undefined); 
+		diabloUtilsService.request(response_title, ERROR[2180], callback, true, undefined); 
 	    } else {
 		diabloUtilsService.response_with_callback(
 		    false,
-		    "销售开单",
+		    response_title,
 		    ERROR[2021],
 		    undefined,
 		    $scope.focus_by_element);
@@ -3257,7 +3324,7 @@ function wsaleNewProvide(
 	// console.log(inv); 
 	if (angular.isUndefined($scope.select.retailer) || diablo_is_empty($scope.select.retailer)){
 	    diabloUtilsService.response(
-	    	false, "销售开单", "开单失败：" + wsaleService.error[2192]);
+	    	false, response_title, "开单失败：" + wsaleService.error[2192]);
 	    return;
 	    // $scope.reset_retailer();
 	};
@@ -3294,7 +3361,7 @@ function wsaleNewProvide(
 	    // data[1] is the last sale of the shop
 	    if (data.length === 0 ){
 		diabloUtilsService.response(
-		    false, "销售开单", "开单失败：" + wsaleService.error[2194]);
+		    false, response_title, "开单失败：" + wsaleService.error[2194]);
 		return; 
 	    };
 	    
@@ -3325,7 +3392,7 @@ function wsaleNewProvide(
 			var ERROR = require("diablo-error");
 			diabloUtilsService.response_with_callback(
 			    false,
-			    "销售开单",
+			    response_title,
 			    ERROR[2021],
 			    undefined,
 			    $scope.focus_by_element);
@@ -3600,12 +3667,12 @@ function wsaleNewProvide(
 		&& $scope.setting.fixed_mode === diablo_fixed_reduction
 		&& !$scope.right.master) {
 		if (inv.fprice !== result.fprice && inv.tag_price - result.fprice > inv.draw) {
-		    dialog.set_error("销售开单", 2718);
+		    dialog.set_error(response_title, 2718);
 		    return;
 		}
 		else if (inv.fdiscount !== result.fdiscount
 			 && inv.tag_price - diablo_price(inv.tag_price, result.fdiscount) > inv.draw) {
-		    dialog.set_error("销售开单", 2718);
+		    dialog.set_error(response_title, 2718);
 		    return;
 		} 
 	    }
@@ -3668,7 +3735,7 @@ function wsaleNewProvide(
 		inv.free_update = true;
 		inv.fprice = inv.o_fprice;
 		inv.fdiscount = inv.o_fdiscount;
-		dialog.set_error("销售开单", 2718); 
+		dialog.set_error(response_title, 2718); 
 		return;
 	    }
 	    else if (inv.fdiscount !== inv.o_fdiscount
@@ -3676,7 +3743,7 @@ function wsaleNewProvide(
 		inv.free_update = true;
 		inv.fprice = inv.o_fprice;
 		inv.fdiscount = inv.o_fdiscount;
-		dialog.set_error("销售开单", 2718);
+		dialog.set_error(response_title, 2718);
 		return;
 	    }
 	}
@@ -4273,8 +4340,10 @@ function wsaleNewDetailProvide(
 		    d.shop     = diablo_get_object(d.shop_id, $scope.shops);
 		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
 		    // d.retailer = diablo_get_object(d.retailer_id, filterRetailer);
-		    d.has_pay  = d.should_pay;
-		    d.should_pay = wsaleUtils.to_decimal(d.should_pay + d.verificate);
+		    // d.has_pay  = d.should_pay;
+		    // d.should_pay = wsaleUtils.to_decimal(d.should_pay + d.verificate);
+		    d.has_pay = wsaleUtils.to_decimal(
+			d.cash + d.card + d.wxin + d.aliPay + d.withdraw + d.ticket);
 		    // charge
 		    d.left_balance = wsaleUtils.to_decimal(d.balance - d.withdraw);
 		    d.check  = wsaleUtils.to_integer(d.state.charAt(0)),

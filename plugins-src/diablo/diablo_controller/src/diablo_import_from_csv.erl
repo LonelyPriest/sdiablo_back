@@ -106,7 +106,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
     {RName, Phone, Shop, Score, Consume, Balance, Birth, Date} = H,
     ?DEBUG("H ~p", [H]),
     NewShop = case Shop of
-		  <<>> -> 325;
+		  <<>> -> 14;
 		  _ -> Shop
 	      end,
     NewScore = case Score of
@@ -211,8 +211,10 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 				_ ->?to_s(Date)
 			    end,
 		    
-		    Sql = ["update w_retailer set entry_date=\'" ++ ?to_s(Entry) ++ "\'" 
-		    	       ++ " where id=" ++ ?to_s(?v(<<"id">>, _R))
+		    Sql = ["update w_retailer set entry_date=\'" ++ ?to_s(Entry) ++ "\'"
+			   ", score=score+" ++ ?to_s(NewScore)
+			   ++", consume=consume+" ++ ?to_s(NewConsume)
+			   ++ " where id=" ++ ?to_s(?v(<<"id">>, _R))
 		    	   ++ " and merchant=" ++ ?to_s(Merchant)],
 
 		    insert_into_member(Merchant, Datetime, Time, T, [H|Sort], Sql ++ Acc)

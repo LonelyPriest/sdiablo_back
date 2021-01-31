@@ -816,6 +816,9 @@ alter table w_card_sale_detail add column oil DECIMAL(10,2) not null default 0 a
 --2020-12-25
 alter table w_sale_order change column base_pay abs_pay DECIMAL(10,2) not null default 0;
 
+--2020-12-29
+-- alter table w_sale add column charge DECIMAL(10,2) not null default 0 after should_pay;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 

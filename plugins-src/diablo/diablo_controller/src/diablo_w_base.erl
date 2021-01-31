@@ -985,9 +985,11 @@ sys_config() ->
 	      %% [30]: remain
 	      %% [31]: remain
 	      %% [32]: which pay_scan to use 0:wwt, 1:yc, default 0
+	      %% [33]: can save sale when then money is not enought 0: not allowed, 1:allowed
+	      %% [34]: use member discount when take ticket. 1: use
 	      {"p_balance",
 	       "销售模式",
-	       "0000"++"0000"++"0000"++"0001"++"0000"++"0000"++"0010"++"0030" ++ "0" , "0"},
+	       "0000"++"0000"++"0000"++"0001"++"0000"++"0000"++"0010"++"0030" ++ "001" , "0"},
 
 	      %% [0]: auto generate ticket at 04:00
 	      %% [1]: use ticket with no check 0-> check 1-> no check

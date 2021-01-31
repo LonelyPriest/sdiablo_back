@@ -2651,11 +2651,11 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
     Datetime         = ?v(<<"datetime">>, Base),
 
     BaseSettings = ?w_report_request:get_setting(Merchant, ShopId),
-    %% ?DEBUG("Shop ~p, BaseSettings ~p", [ShopId, BaseSettings]),
-    SMS = ?utils:nth(1,?w_report_request:get_config(<<"consume_sms">>, BaseSettings)), 
-    ?DEBUG("sms notify ~p", [SMS]), 
+    SMS = ?utils:nth(1, ?w_report_request:get_config(<<"consume_sms">>, BaseSettings)), 
+    %% ?DEBUG("sms notify ~p", [SMS]), 
     CheckSale = ?utils:nth(1, ?w_report_request:get_config(<<"check_sale">>, BaseSettings)),
-    ?DEBUG("check sale ~p", [CheckSale]),
+    AllowedSave = ?utils:nth(34, ?w_report_request:get_config(<<"p_balance">>, BaseSettings)), 
+    %% ?DEBUG("check sale ~p", [CheckSale]),
     %% half an hour
     case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 1800 of
 	true ->
@@ -2669,7 +2669,11 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
 	    case check_inventory(
 		   {oncheck, Merchant, ShopId, UTable, CheckSale}, Round, 0, ShouldPay, Invs) of
 		{ok, _} -> 
-		    case ?w_sale:sale(new, {Merchant, UTable}, lists:reverse(Invs), Base) of 
+		    case ?w_sale:sale(
+			    new,
+			    {Merchant, UTable},
+			    lists:reverse(Invs),
+			    [{<<"allow_save">>, AllowedSave}|Base]) of 
 			{ok, {RSN, Phone, _ShouldPay, Balance, Score}} ->
 			    {SMSCode, _} =
 				try
@@ -2677,8 +2681,7 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
 				    %% {ok, Retailer} = ?w_user_profile:get(
 				    %% 			retailer, Merchant, RetailerId), 
 				    %% SysVips  = sys_vip_of_shop(Merchant, ShopId),
-				    %% ?DEBUG("SysVips ~p, Retailer ~p", [SysVips, Retailer]),
-				    
+				    %% ?DEBUG("SysVips ~p, Retailer ~p", [SysVips, Retailer]), 
 				    case Vip andalso RetailerType =/= 3 andalso SMS =:= 1 of
 					true ->
 					    %% {ShopName, ShopSign} =

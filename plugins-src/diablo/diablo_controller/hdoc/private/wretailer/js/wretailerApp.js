@@ -169,7 +169,7 @@ function wretailerConfig(angular) {
 	    when('/level', {
 		templateUrl: '/private/wretailer/html/retailer_level.html',
 		controller: 'wretailerLevelCtrl',
-		resolve: angular.extend({}, user)
+		resolve: angular.extend({}, user, base)
 	    }).
 	    // consume
 	    when('/consume', {

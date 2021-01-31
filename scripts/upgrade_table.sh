@@ -96,13 +96,22 @@ PASSWORD=$2
 # done
 
 ## 2020-07-02
-for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 72 73 74 90 101 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120
-do
-    echo w_sale_${t}
-    mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
-alter table w_sale_${t} modify column pay_sn VARCHAR(16) not null default '-1';
-EOF
-done
+# for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 72 73 74 90 101 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120
+# do
+#     echo w_sale_${t}
+#     mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
+# alter table w_sale_${t} modify column pay_sn VARCHAR(16) not null default '-1';
+# EOF
+# done
+
+## 2020-12-29
+# for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 72 73 74 90 101 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125
+# do
+#     echo w_sale_${t}
+#     mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
+# alter table w_sale_${t} add column charge DECIMAL(10,2) not null default 0 after should_pay;
+# EOF
+# done
 
 
 

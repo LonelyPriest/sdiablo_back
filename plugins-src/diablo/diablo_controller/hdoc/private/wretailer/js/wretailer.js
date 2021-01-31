@@ -10,7 +10,7 @@ function wretailerNewCtrlProvide(
 		      name:         diabloPattern.chinese_name,
 		      id_card:      diabloPattern.id_card,
 		      card:         diabloPattern.card};
-    $scope.shops = user.sortShops;
+    $scope.shops = user.sortShops.filter(function(s) {return s.deleted===0});
     
     $scope.right = {master: rightAuthen.authen_master(user.type)};    
     if ($scope.right.master) {
@@ -2229,9 +2229,18 @@ function wretailerThresholdCardGoodCtrlProvide(
 };
 
 function wretailerLevelCtrlProvide(
-    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, user){
-    $scope.levels = diablo_retailer_levels;
+    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, user, base){
+    // $scope.levels = diablo_retailer_levels;
     $scope.shops  = [{id: -1, name:"== 默认所有店铺配置相同 =="}].concat(user.sortShops.filter(function(s) {return s.deleted===0}));
+    
+    var sale_mode = retailerUtils.sale_mode($scope.shops[1].id, base);
+    $scope.setting = {
+	hide_pwd:retailerUtils.to_integer(sale_mode.charAt(9)),
+	shop_mode: retailerUtils.shop_mode($scope.shops[0].id, base)
+    };
+    
+    $scope.face = window.face;
+    $scope.levels = $scope.face($scope.setting.shop_mode).retailer_levels;
     
     var dialog = diabloUtilsService; 
     var lpattern = {name     :diabloPattern.chinese_name,
