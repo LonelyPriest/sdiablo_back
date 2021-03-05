@@ -128,7 +128,7 @@ function wsaleRejectCtrlProvide(
 		    $scope.setting.vip_mode = wsaleUtils.vip_mode(shopId, settings);
 		    
 		    var sale_mode = wsaleUtils.sale_mode(shopId, settings);
-		    // $scope.setting.allowed_save = wsaleUtils.to_integer(sale_mode.charAt(33));
+		    $scope.setting.allowed_save = wsaleUtils.to_integer(sale_mode.charAt(33));
 		    // $scope.setting.print_perform = wsaleUtils.to_integer(sale_mode.charAt(3));
 		    
 		    $scope.setting.hide_pwd      = wsaleUtils.to_integer(sale_mode.charAt(9)); 

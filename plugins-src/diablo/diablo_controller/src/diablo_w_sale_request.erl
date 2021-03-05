@@ -1085,6 +1085,7 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
     Invs = ?v(<<"inventory">>, Payload),
     {struct, Base}   = ?v(<<"base">>, Payload), 
     Datetime         = ?v(<<"datetime">>, Base),
+    SaleRsn          = ?v(<<"sale_rsn">>, Base, []),
     
     RejectTotal = calc_count(reject, Invs, 0),
     case RejectTotal =/= ?v(<<"total">>, Base) of
@@ -1102,14 +1103,16 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
 		false ->
 		    TicketCustom = ?v(<<"tcustom">>, Base, ?INVALID_OR_EMPTY),
 		    Props = Base ++ [{<<"user">>, UserId}],
+		    %% {ok, OldProps} = ?w_sale:sale(get_new, {Merchant, UTable}, SaleRsn),
 		    case TicketCustom of
 			?INVALID_OR_EMPTY ->
 			    start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props);
 			_ ->
 			   case ?v(<<"tbatch">>, Base, []) of
 			       [] -> 
-				   SaleRsn = ?v(<<"sale_rsn">>, Base, []),
-				   case ?w_retailer:get_ticket(by_sale, Merchant, SaleRsn, TicketCustom) of
+				   %% SaleRsn = ?v(<<"sale_rsn">>, Base, []),
+				   case ?w_retailer:get_ticket(
+					   by_sale, Merchant, SaleRsn, TicketCustom) of
 				       {ok, []} -> 
 					   start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props);
 				       {ok, [{OneTicket}]} ->
@@ -1136,8 +1139,7 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
 							 Req,
 							 {Merchant, UTable},
 							 Invs,
-							 NewProps
-							 ++ [{<<"tbatch">>, [Batch]}])
+							 NewProps ++ [{<<"tbatch">>, [Batch]}])
 					   end;
 					   %% Batch = ?v(<<"batch">>, OneTicket), 
 					   %% case ?v(<<"balance">>, OneTicket) /= ?v(<<"ticket">>, Base, 0) of
@@ -1165,7 +1167,8 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
 					      ?err(more_ticket_consume, Batchs))
 				   end;
 			       _ ->
-				   start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props)
+				   start(reject_w_sale,
+					 Req, {Merchant, UTable}, Invs, Props)
 			   end
 				
 		    end 
@@ -2779,40 +2782,46 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
     end.
 
 start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props) ->
-    case ?w_sale:sale(reject, {Merchant, UTable}, lists:reverse(Invs), Props) of 
-	{{ok, RSN}, Shop, RetailerId, RetailerType, BackWithdraw} -> 
-	    %% case BackWithdraw =/= 0 of
-	    %% 	true ->
-	    %% 	    %% query agign to obtain the correct infomation
-	    %% 	    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, RetailerId),
-	    %% 	    {SMSCode, _} = send_sms(Merchant, 2, Shop, Retailer, BackWithdraw),
-	    %% 	    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
-	    %% 			   [{<<"rsn">>, ?to_b(RSN)},
-	    %% 			    {<<"sms_code">>, SMSCode}]); 
-	    %% 	false ->
-	    %% 	    case RetailerType =:= ?SYSTEM_RETAILER of
-	    %% 		true -> ?w_user_profile:update(sysretailer, Merchant);
-	    %% 		false -> ok
-	    %% 	    end,
-	    %% 	    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
-	    %% 			   [{<<"rsn">>, ?to_b(RSN)}])
-	    %% end;
-	    case BackWithdraw == 0
-		orelse RetailerType =:= ?SYSTEM_RETAILER
-		orelse RetailerType =:= ?NO_SMS_RETAILER of
-		true ->
-		    case RetailerType =:= ?SYSTEM_RETAILER of
-			true -> ?w_user_profile:update(sysretailer, Merchant);
-			false -> ok
-		    end,
-		    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
-				   [{<<"rsn">>, ?to_b(RSN)}]);
-		false ->
-		    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, RetailerId),
-		    {SMSCode, _} = send_sms(Merchant, 2, Shop, Retailer, BackWithdraw),
-		    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
-				   [{<<"rsn">>, ?to_b(RSN)},
-				    {<<"sms_code">>, SMSCode}])
+    SaleRsn = ?v(<<"sale_rsn">>, Props, []),
+    case ?w_sale:sale(get_new, {Merchant, UTable}, SaleRsn) of
+	{ok, OldProps} -> 
+	    case ?w_sale:sale(reject, {Merchant, UTable}, lists:reverse(Invs), {Props, OldProps}) of 
+		{{ok, RSN}, Shop, RetailerId, RetailerType, BackWithdraw} -> 
+		    %% case BackWithdraw =/= 0 of
+		    %% 	true ->
+		    %% 	    %% query agign to obtain the correct infomation
+		    %% 	    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, RetailerId),
+		    %% 	    {SMSCode, _} = send_sms(Merchant, 2, Shop, Retailer, BackWithdraw),
+		    %% 	    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+		    %% 			   [{<<"rsn">>, ?to_b(RSN)},
+		    %% 			    {<<"sms_code">>, SMSCode}]); 
+		    %% 	false ->
+		    %% 	    case RetailerType =:= ?SYSTEM_RETAILER of
+		    %% 		true -> ?w_user_profile:update(sysretailer, Merchant);
+		    %% 		false -> ok
+		    %% 	    end,
+		    %% 	    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+		    %% 			   [{<<"rsn">>, ?to_b(RSN)}])
+		    %% end;
+		    case BackWithdraw == 0
+			orelse RetailerType =:= ?SYSTEM_RETAILER
+			orelse RetailerType =:= ?NO_SMS_RETAILER of
+			true ->
+			    case RetailerType =:= ?SYSTEM_RETAILER of
+				true -> ?w_user_profile:update(sysretailer, Merchant);
+				false -> ok
+			    end,
+			    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+					   [{<<"rsn">>, ?to_b(RSN)}]);
+			false ->
+			    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, RetailerId),
+			    {SMSCode, _} = send_sms(Merchant, 2, Shop, Retailer, BackWithdraw),
+			    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+					   [{<<"rsn">>, ?to_b(RSN)},
+					    {<<"sms_code">>, SMSCode}])
+		    end;
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
 	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)

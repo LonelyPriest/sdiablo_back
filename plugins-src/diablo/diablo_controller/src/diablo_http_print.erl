@@ -513,6 +513,7 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, STotal, RTotal) -
     Cash         = ?v(<<"cash">>, Attrs, 0),
     Card         = ?v(<<"card">>, Attrs, 0),
     Wxin         = ?v(<<"wxin">>, Attrs, 0),
+    AliPay       = ?v(<<"aliPay">>, Attrs, 0),
     Withdraw     = ?v(<<"withdraw">>, Attrs, 0),
     Ticket       = ?v(<<"ticket">>, Attrs, 0), 
     ShouldPay    = clean_zero(?v(<<"should_pay">>, Attrs, 0)),
@@ -528,8 +529,8 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, STotal, RTotal) -
     AccScore      = Score + RealLastScore - TicketScore,
 
 
-    [NewTicket, NewWithdraw, NewWxin, NewCard, NewCash] = NewPays =
-	?w_sale:pay_order(ShouldPay, [Ticket, Withdraw, Wxin, Card, Cash], []),
+    [NewTicket, NewWithdraw, NewWxin, _NewAliPay, NewCard, NewCash] = NewPays =
+	?w_sale:pay_order(ShouldPay, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], []),
     
     ?DEBUG("newPays ~p", [NewPays]), 
 

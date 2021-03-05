@@ -154,7 +154,7 @@ function stockConfg(angular){
 	    when('/inventory_detail/inventory_flow/:snumber?/:brand?', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_flow.html',
 		controller: 'purchaserInventoryFlowCtrl' ,
-		resolve: angular.extend({}, user, brand, firm, base)
+		resolve: angular.extend({}, user, brand, firm, shop, base)
 	    }).
 	    when('/inventory_new_history/:snumber?/:brand?/:rsn?', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_new_history.html',

@@ -290,7 +290,7 @@
 			    table-hover table-condensed table-advanced">
 		<thead>
 		  <tr>
-		    <th class="text-center">选择</th>
+		    <th x-ng-if="!setting.allowed_save" class="text-center">选择</th>
 		    <th class="text-center">序号</th>
 		    <th class="text-center">货号</th>
 		    <th class="text-center">品名</th>
@@ -309,7 +309,7 @@
 		</thead>
 		<tbody>
 		  <tr class="text-center" x-ng-if="!inv.$new" x-ng-repeat="inv in inventories">
-		    <td>
+		    <td x-ng-if="!setting.allowed_save">
 		      <div class="checkbox checkbox-danger checkbox-circle">
 			<input id={{inv.order_id}}
 			       type="checkbox"

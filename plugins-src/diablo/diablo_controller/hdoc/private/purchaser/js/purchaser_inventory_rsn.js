@@ -733,9 +733,10 @@ function stockHistoryCtrlProvide(
 
 
 function purchaserInventoryFlowCtrlProvide(
-    $scope, $routeParams, dateFilter, purchaserService, user, filterBrand, filterFirm, base){
+    $scope, $routeParams, dateFilter, purchaserService, user, filterBrand, filterFirm, filterShop, base){
     console.log($routeParams);
-    var shops = user.sortShops;
+    // var shops = user.sortShops;
+    var shops = filterShop;
     var shopIds = user.shopIds;
     var style_number = $routeParams.snumber;
     var brand_id = parseInt($routeParams.brand);

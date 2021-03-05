@@ -43,9 +43,9 @@ sale(update, {Merchant, UTable}, Inventories, {Props, OldProps}) ->
 sale(history_retailer, {Merchant, UTable}, Retailer, Goods) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {history_retailer, Merchant, UTable, Retailer, Goods});
-sale(reject, {Merchant, UTable}, Inventories, Props) ->
+sale(reject, {Merchant, UTable}, Inventories, {Props, OldProps}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {reject_sale, Merchant, UTable, Inventories, Props});
+    gen_server:call(Name, {reject_sale, Merchant, UTable, Inventories, Props, OldProps});
 sale(check, {Merchant, UTable}, RSN, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {check_new, Merchant, UTable, RSN, Mode});
@@ -234,7 +234,7 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
     
     Vip          = ?v(<<"vip">>, Props, false),
     AllowedSave  = ?v(<<"allow_save">>, Props, 0),
-    %% HasPay = Ticket + Withdraw + Wxin + AliPay + Card + Cash,
+    HasPay = Ticket + Withdraw + Wxin + AliPay + Card + Cash, 
     
     Sql0 = "select id, name, mobile, balance, score from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
@@ -249,21 +249,9 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 	    case Withdraw > 0 andalso CurrentBalance < Withdraw of
 		true ->
 		    {reply, {error, ?err(wsale_not_enought_balance, ?v(<<"id">>, Account))}, State};
-		false ->
-		    {CalcCharge, [NewTicket, NewWithdraw, NewWxin, NewAliPay, NewCard, NewCash]} =
-			case ShouldPay >= 0 of
-			    true ->
-				pay_order(ShouldPay, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], []);
-			    false ->
-				pay_order(
-				  reject, ShouldPay, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], [])
-			end, 
-		    ?DEBUG("NewCash ~p, NewCard ~p, NewWxin ~p, withdraw ~p, ticket ~p",
-			   [NewCash,  NewCard, NewWxin, NewWithdraw, NewTicket]),
-		    
-		    SaleSn = lists:concat(
-			       ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-",
-				?inventory_sn:sn(w_sale_new_sn, Merchant)]),
+		false -> 
+		    SaleSn = lists:concat(["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-",
+					   ?inventory_sn:sn(w_sale_new_sn, Merchant)]),
 		    RealyShop = realy_shop(Merchant, Shop),
 		    
 		    Sql1 = 
@@ -275,7 +263,26 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 					[],
 					DateTime,
 					{Merchant, UTable}, RealyShop, Inv, Amounts) ++ Acc0
-			  end, [], Inventories), 
+			  end, [], Inventories),
+
+		    [NewTicket, NewWithdraw, NewWxin, NewAliPay, NewCard, NewCash] = 
+			case AllowedSave =:= ?NO of
+			    true ->
+				case ShouldPay >= 0 of
+				    true ->
+					pay_order(ShouldPay,
+						  [Ticket, Withdraw, Wxin, AliPay, Card, Cash], []);
+				    false ->
+					pay_order(reject, ShouldPay,
+						  [Ticket, Withdraw, Wxin, AliPay, Card, Cash], [])
+				end;
+			    false ->
+				pay_order(surplus, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], [])
+			end,
+		    
+		    ?DEBUG("NewCash ~p, NewCard ~p, NewWxin ~p, withdraw ~p, ticket ~p",
+			   [NewCash,  NewCard, NewWxin, NewWithdraw, NewTicket]),
+		    
 
 		    Sql2 = "insert into" ++ ?table:t(sale_new, Merchant, UTable)
 			++ "(rsn"
@@ -362,9 +369,7 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 		    
 		    Sql3 = case AllowedSave =:= ?NO of
 		    	       true ->
-		    		   ["update w_retailer set consume=consume+"
-		    		    %% ++ ?to_s(ShouldPay - Verificate)
-		    		    ++ ?to_s(ShouldPay)
+		    		   ["update w_retailer set consume=consume+" ++ ?to_s(ShouldPay)
 		    		    ++ case NewWithdraw =< 0 of
 		    			   true  -> [];
 		    			   false -> ", balance=balance-" ++ ?to_s(NewWithdraw)
@@ -377,11 +382,10 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 		    		    ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))];
 		    	       false ->
 		    		   %% save with not enought money
-		    		   case Vip andalso CalcCharge > 0 of
+		    		   case Vip of
 		    		       true ->
-		    			   ["update w_retailer set consume=consume+"
-		    			    ++ ?to_s(ShouldPay - CalcCharge)
-		    			    ++ ", balance=balance-" ++ ?to_s(CalcCharge)
+		    			   ["update w_retailer set consume=consume+" ++ ?to_s(ShouldPay)
+		    			    ++ ", balance=balance+" ++ ?to_s(HasPay - ShouldPay)
 		    			    ++ case Score == 0 andalso TicketScore =< 0 of
 		    				   true  -> [];
 		    				   false -> ", score=score+" ++ ?to_s(Score - TicketScore)
@@ -535,23 +539,36 @@ handle_call({update_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
     OldTotal     = ?v(<<"total">>, OldProps),
     OldOil       = ?v(<<"oil">>, OldProps),
     SellType     = ?v(<<"type">>, OldProps),
-    OldCharge    = OldShouldPay - OldCash - OldCard - OldWxin - OldAliPay - OldWithdraw - OldTicket,
 
     MShouldPay   = ShouldPay - OldShouldPay,
     MScore       = Score - OldScore,
-    RealyShop    = realy_shop(Merchant, Shop), 
+    RealyShop    = realy_shop(Merchant, Shop),
+
+    HasPay = Ticket + Withdraw + Wxin + AliPay + Card + Cash,
+    CalcCharge = ShouldPay - HasPay,
     
-    {CalcCharge, [NewTicket, NewWithdraw, NewWxin, NewAliPay, NewCard, NewCash]} = _NewPays =
-	case SellType of
-	    0 ->
-		case ShouldPay >= 0 of
-		    true ->
-			pay_order(ShouldPay, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], []);
-		    false ->
-			pay_order(reject, ShouldPay, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], [])
+    OldHasPay = OldTicket + OldWithdraw + OldWxin + OldAliPay + OldCard + OldCash,
+    OldCalcCharge = OldShouldPay - OldHasPay,
+    
+    
+    [NewTicket, NewWithdraw, NewWxin, NewAliPay, NewCard, NewCash] = _NewPays =
+	case AllowedSave =:= ?NO of
+	    true ->
+		case SellType of
+		    0 ->
+			case ShouldPay >= 0 of
+			    true ->
+				pay_order(ShouldPay,
+					  [Ticket, Withdraw, Wxin, AliPay, Card, Cash], []);
+			    false ->
+				pay_order(reject,
+					  ShouldPay, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], [])
+			end;
+		    1 -> pay_order(reject, ShouldPay, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], [])
 		end;
-	    1 -> pay_order(reject, ShouldPay, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], [])
-	end,
+	    false ->
+		pay_order(surplus, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], [])
+	end, 
     ?DEBUG("new pays ~p", [_NewPays]),
 
     NewDatetime = case Datetime =:= OldDatetime of
@@ -606,18 +623,19 @@ handle_call({update_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
 	    AllSql = Sql1 ++ Sql2 ++
 		case ?utils:v_0(consume, float, MShouldPay)
 		    ++ ?utils:v_0(score, integer, MScore)
-		    ++ case AllowedSave =:= ?YES of
+		    ++ case AllowedSave =:= ?NO of 
 			   true ->
-			       case Vip andalso CalcCharge > 0 of
-				   true ->
-				       ?utils:v_0(balance, float, OldCharge - CalcCharge);
-				   false -> []
-			       end;
-			   false ->
 			       case OldWithdraw - NewWithdraw /= 0 of
 				   true -> ?utils:v_0(balance, float, OldWithdraw - NewWithdraw);
 				   false -> []
+			       end; 
+			   false ->
+			       case Vip and OldCalcCharge - CalcCharge /= 0 of
+				   true ->
+				       ?utils:v_0(balance, float, OldCalcCharge - CalcCharge);
+				   false -> []
 			       end
+			       
 		       end
 		of
 		    [] -> [];
@@ -628,18 +646,18 @@ handle_call({update_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
 			 ++ " where id=" ++ ?to_s(Retailer)
 			 ++ " and merchant=" ++ ?to_s(Merchant)]
 		end
-		++ case OldCharge - CalcCharge /= 0 of
-		       true ->
-			   "update"
-			       ++ ?table:t(sale_new, Merchant, UTable)
-			       ++ " set balance=balance+" ++ ?to_s(OldCharge - CalcCharge)
-			       ++ " where merchant=" ++ ?to_s(Merchant)
-			       ++ " and retailer=" ++ ?to_s(Retailer)
-			       ++ " and id>" ++ ?to_s(RSNId);
-		       false ->
-			   []
-		   end
-		++ case OldWithdraw - NewWithdraw /= 0 of
+		++ case AllowedSave =:= ?YES andalso Vip andalso OldCalcCharge - CalcCharge /= 0 of
+		    true ->
+			["update"
+			 ++ ?table:t(sale_new, Merchant, UTable)
+			 ++ " set balance=balance+" ++ ?to_s(OldCalcCharge - CalcCharge)
+			 ++ " where merchant=" ++ ?to_s(Merchant)
+			 ++ " and retailer=" ++ ?to_s(Retailer)
+			 ++ " and id>" ++ ?to_s(RSNId)];
+		    false ->
+			[]
+		end
+		++ case AllowedSave =:= ?NO andalso Vip andalso OldWithdraw - NewWithdraw /= 0 of
 		       true ->
 			   Sql01 = "update"
 			       ++ ?table:t(sale_new, Merchant, UTable)
@@ -694,7 +712,8 @@ handle_call({update_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
 			   [Sql01] ++ Sql02; 
 		       false ->
 			   []
-		   end, 
+		   end,
+	    ?DEBUG("AllSql ~p", [AllSql]),
 	    Reply = ?sql_utils:execute(
 		       transaction, AllSql,
 		       {RSN, MShouldPay, MScore, {OldRetailer, OldWithdraw}, {Retailer, NewWithdraw}}),
@@ -710,8 +729,7 @@ handle_call({update_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
 		++ " and id<" ++ ?to_s(RSNId)
 		++ " order by id desc limit 1",
 	    
-	    {ok, RetailerInfo} = ?w_retailer:retailer(get, Merchant, Retailer),
-	    
+	    {ok, RetailerInfo} = ?w_retailer:retailer(get, Merchant, Retailer), 
 	    {NewLastBalance, NewLastScore} = 
 		case ?sql_utils:execute(s_read, Sql0) of
 		    {ok, []} ->
@@ -745,8 +763,15 @@ handle_call({update_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
 		       end
 		   end,
 	    
-	    BackBalanceOfOldRetailer = OldWithdraw,
-	    BalanceOfNewRetailer =  NewWithdraw,
+	    BackBalanceOfOldRetailer = case AllowedSave =:= ?NO of
+					   true -> OldWithdraw;
+					   false -> OldCalcCharge
+				       end,
+	    
+	    BalanceOfNewRetailer =  case AllowedSave =:= ?NO of
+					true -> NewWithdraw;
+					false -> CalcCharge
+				    end,
 
 	    AllSql = Sql1 ++ [Sql2] ++ 
 		["update w_retailer set balance=balance+" ++ ?to_s(BackBalanceOfOldRetailer) 
@@ -1143,8 +1168,9 @@ handle_call({filter_news, Merchant, UTable, CurrentPage, ItemsPerPage, Fields}, 
 %% =============================================================================
 %% reject
 %% =============================================================================
-handle_call({reject_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
-    ?DEBUG("reject_sale with merchant ~p~n~p, props ~p", [Merchant, Inventories, Props]), 
+handle_call({reject_sale, Merchant, UTable, Inventories, Props, OldProps}, _From, State) ->
+    ?DEBUG("reject_sale with merchant ~p~n~p, props ~p, OldProps ~p",
+	   [Merchant, Inventories, Props, OldProps]), 
     UserId = ?v(<<"user">>, Props, -1),
     SaleRsn    = ?v(<<"sale_rsn">>, Props),
     Retailer   = ?v(<<"retailer_id">>, Props),
@@ -1180,6 +1206,7 @@ handle_call({reject_sale, Merchant, UTable, Inventories, Props}, _From, State) -
 		       ?NO  -> 1
 		   end, 
     AllowedSave  = ?v(<<"allow_save">>, Props, 0),
+    HasPay = Ticket + Withdraw + Wxin + AliPay + Card + Cash,
     
     Sql0 = "select id, name, balance, score, type from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
@@ -1229,12 +1256,20 @@ handle_call({reject_sale, Merchant, UTable, Inventories, Props}, _From, State) -
 	    CurrentBalance = retailer(balance, Account),
 	    CurrentScore = retailer(score, Account),
 
-	    {CalcCharge, [NewTicket, NewWithdraw, NewWxin, NewAliPay, NewCard, NewCash]} = NewPays =
-		case ShouldPay >= 0 of
+	    
+	    [NewTicket, NewWithdraw, NewWxin, NewAliPay, NewCard, NewCash] = NewPays =
+		case AllowedSave =:= ?NO of
 		    true ->
-			pay_order(ShouldPay, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], []);
+			case ShouldPay >= 0 of
+			    true ->
+				pay_order(ShouldPay,
+					  [Ticket, Withdraw, Wxin, AliPay, Card, Cash], []);
+			    false ->
+				pay_order(reject,
+					  ShouldPay, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], [])
+			end;
 		    false ->
-			pay_order(reject, ShouldPay, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], [])
+			pay_order(surplus, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], [])
 		end,
 	    ?DEBUG("new pays ~p", [NewPays]),
 	    
@@ -1315,11 +1350,8 @@ handle_call({reject_sale, Merchant, UTable, Inventories, Props}, _From, State) -
 				   false -> []
 			       end;
 			   false ->
-			       case CalcCharge /= 0 of
-				   true -> ", balance=balance+" ++ ?to_s(CalcCharge);
-				   false -> []
-			       end
-		       end
+			       ", balance=balance+" ++ ?to_s(ShouldPay - HasPay)
+		       end 
 		    ++ case TicketScore - Score /= 0 of
 			   true -> ", score=score+" ++ ?to_s(TicketScore - Score);
 			   false -> []
@@ -3878,14 +3910,20 @@ sale_new(rsn_groups, MatchMode, {Merchant, UTable}, Conditions, PageFun) ->
     	++ PageFun().
 
 
+pay_order(surplus, [], Pays) ->
+    Pays;
+pay_order(surplus, [Pay|T], Pays) ->
+    pay_order(surplus, T, [Pay|Pays]);
+
 pay_order(ShouldPay, [], Pays) when ShouldPay > 0 ->
-    %%  [H|T] = Pays,
-    %% lists:reverse([H + ShouldPay|T]);
-    {ShouldPay, lists:reverse(Pays)};
+    %% {ShouldPay, lists:reverse(Pays)}; 
+    [H|T] = Pays,
+    lists:reverse([H + ShouldPay|T]);
 pay_order(ShouldPay, T, Pays) when ShouldPay =< 0 ->
     NewPays = lists:foldr(fun(_, Acc) -> [0|Acc] end, Pays, T),
     %% ?DEBUG("new pays ~p", [NewPays]),
-    {ShouldPay, lists:reverse(NewPays)};
+    %% {ShouldPay, lists:reverse(NewPays)};
+    lists:reverse(NewPays);
 pay_order(ShouldPay, [Pay|T], Pays) ->
     pay_order(ShouldPay - Pay, T, [case Pay /= 0 andalso ShouldPay - Pay < 0 of
 					 true -> ShouldPay;
@@ -3893,19 +3931,22 @@ pay_order(ShouldPay, [Pay|T], Pays) ->
 				     |Pays]).
 
 pay_order(reject, ShouldPay, [], Pays) when ShouldPay < 0 ->
-    %% [H|T] = Pays,
-    %% lists:reverse([H + ShouldPay|T]);
-    {ShouldPay, lists:reverse(Pays)};
+    %% {ShouldPay, lists:reverse(Pays)}; 
+    [H|T] = Pays,
+    %% {ShouldPay, lists:reverse([H + ShouldPay|T])};
+    lists:reverse([H + ShouldPay|T]);
 
 pay_order(reject, ShouldPay, T, Pays) when ShouldPay >= 0 ->
     NewPays = lists:foldr(fun(_, Acc) -> [0|Acc] end, Pays, T),
     %% ?DEBUG("new pays ~p", [NewPays]),
-    {ShouldPay, lists:reverse(NewPays)};
+    %% {ShouldPay, lists:reverse(NewPays)};
+    lists:reverse(NewPays);
 pay_order(reject, ShouldPay, [Pay|T], Pays) ->
     pay_order(reject, ShouldPay - Pay, T, [case Pay /= 0 andalso ShouldPay - Pay >= 0 of
 				       true -> ShouldPay;
 				       false -> Pay end
 				   |Pays]).
+
 
 get_modified(NewValue, OldValue) when NewValue /= OldValue -> NewValue;
 get_modified(_NewValue, _OldValue) ->  undefined.
