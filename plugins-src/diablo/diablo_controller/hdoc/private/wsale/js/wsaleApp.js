@@ -737,7 +737,8 @@ function wsaleNewProvide(
 	$scope.setting.trans_count = wsaleUtils.to_integer(sale_mode.charAt(29));
 	$scope.setting.pay_scan_use = wsaleUtils.to_integer(sale_mode.charAt(32));
 	$scope.setting.allowed_save = wsaleUtils.to_integer(sale_mode.charAt(33));
-	$scope.setting.member_discount_with_ticket = wsaleUtils.yes_default(sale_mode.charAt(33));
+	$scope.setting.member_discount_with_ticket = wsaleUtils.yes_default(sale_mode.charAt(34));
+	$scope.setting.active_score = wsaleUtils.to_integer(sale_mode.charAt(35));
 
 	angular.extend($scope.setting, wsaleUtils.gift_sale(shopId, base));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
@@ -2926,6 +2927,21 @@ function wsaleNewProvide(
 	    $scope.select.score = 0;
 	}
     };
+
+    $scope.cancel_score = function(inv) {
+	if (inv.sid !== diablo_invalid_index) {
+	    var pscores = wsaleUtils.sort_score(inv.score, inv.promotion, inv.calc, []);
+	    var score  = wsaleUtils.calc_with_score(pscores, 0);
+	    if (!inv.active_score) {
+		$scope.select.score -= score;
+		inv.active_score = diablo_yes 
+	    } else {
+		$scope.select.score += score;
+		inv.active_score = diablo_no 
+	    }
+	} 
+	// console.log($scope.select.score);
+    };
     
     $scope.$watch("select.cash", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
@@ -4236,6 +4252,7 @@ function wsaleNewDetailProvide(
     
     $scope.setting.print_a4 = wsaleUtils.to_integer(
 	wsaleUtils.print_num(user.loginShop, base).print_a4);
+    $scope.setting.hide_oil = wsaleUtils.hide_oil(user.loginShop, base);
     // if (needCLodop()) loadCLodop(print_mode.protocal);
     
     /*
@@ -4283,6 +4300,7 @@ function wsaleNewDetailProvide(
 	    $scope.total_amounts     = stastic.total_amounts;
 	    $scope.total_bpay        = stastic.total_bpay;
 	    $scope.total_spay        = stastic.total_spay;
+	    $scope.total_oil         = stastic.total_oil;
 	    $scope.total_veri        = stastic.total_veri;
 	    $scope.total_cash        = stastic.total_cash;
 	    $scope.total_card        = stastic.total_card;
@@ -4321,6 +4339,7 @@ function wsaleNewDetailProvide(
 		    $scope.total_amounts     = result.t_amount;
 		    $scope.total_bpay        = result.t_bpay;
 		    $scope.total_spay        = result.t_spay;
+		    $scope.total_oil         = result.t_oil;
 		    $scope.total_veri        = result.t_veri;
 		    $scope.total_cash        = result.t_cash;
 		    $scope.total_card        = result.t_card;
@@ -4397,6 +4416,7 @@ function wsaleNewDetailProvide(
 	     total_amounts:     $scope.total_amounts,
 	     total_bpay:        $scope.total_bpay,
 	     total_spay:        $scope.total_spay,
+	     total_oil:         $scope.total_oil,
 	     total_veri:        $scope.total_veri,
 	     total_cash:        $scope.total_cash,
 	     total_card:        $scope.total_card,

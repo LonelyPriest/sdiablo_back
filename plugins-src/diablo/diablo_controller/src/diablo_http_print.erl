@@ -527,11 +527,9 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, STotal, RTotal) -
 
     RealLastScore = ?v(<<"last_score">>, Attrs), 
     AccScore      = Score + RealLastScore - TicketScore,
-
-
-    [NewTicket, NewWithdraw, NewWxin, _NewAliPay, NewCard, NewCash] = NewPays =
-	?w_sale:pay_order(ShouldPay, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], []),
     
+    [NewTicket, NewWithdraw, NewWxin, _NewAliPay, NewCard, NewCash] = NewPays =
+	?w_sale:pay_order(ShouldPay, [Ticket, Withdraw, Wxin, AliPay, Card, Cash], []), 
     ?DEBUG("newPays ~p", [NewPays]), 
 
     case RTotal =/= 0 of

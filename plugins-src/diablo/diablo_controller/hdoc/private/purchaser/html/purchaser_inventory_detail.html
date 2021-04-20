@@ -17,11 +17,12 @@
 	    <i class="glyphicon glyphicon-pencil"></i></button>
 
 	  <div x-ng-if="stock_right.update_batch" class="btn-group">
-	    <button class="btn yellow">批改<i class="glyphicon glyphicon-edit"></i></button>
-	    <button class="btn red"
+	    <!-- <button class="btn yellow">批改<i class="glyphicon glyphicon-edit"></i></button> -->
+	    <button class="btn yellow"
 		    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-	      <span class="caret"></span>
+	      <!-- <span class="caret"></span> -->
 	      <span class="sr-only">Toggle Dropdown</span>
+	      批改<i class="glyphicon glyphicon-edit"></i>
 	    </button>
 
 	    <ul class="dropdown-menu">
@@ -257,12 +258,13 @@
 			  </button>
 			  
 			  <div x-ng-if="setting.use_barcode" class="btn-group hidden-xs">
-			    <button type="button" class="btn diablo-button green">
-			      条码<i class="glyphicon glyphicon-barcode"></i></button>
-			    <button type="button" class="btn diablo-button red" 
+			    <!-- <button type="button" class="btn diablo-button green"> -->
+			    <!--   条码<i class="glyphicon glyphicon-barcode"></i></button> -->
+			    <button type="button" class="btn diablo-button green" 
 				    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			      <span class="caret"></span>
+			      <!-- <span class="caret"></span> -->
 			      <span class="sr-only">Toggle Dropdown</span>
+			      条码<i class="glyphicon glyphicon-barcode"></i>
 			    </button>
 			    <ul class="dropdown-menu">
 			      <li>
@@ -278,12 +280,13 @@
 			  </div>
 
 			  <div class="btn-group">
-			    <button type="button" class="btn diablo-button yellow">
-			      修改<i class="glyphicon glyphicon-edit"></i></button>
-			    <button type="button" class="btn diablo-button red" 
+			    <!-- <button type="button" class="btn diablo-button yellow"> -->
+			    <!--   修改<i class="glyphicon glyphicon-edit"></i></button> -->
+			    <button class="btn diablo-button yellow" 
 				    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			      <span class="caret"></span>
+			      <!-- <span class="caret"></span> -->
 			      <span class="sr-only">Toggle Dropdown</span>
+			      修改<i class="glyphicon glyphicon-edit"></i>
 			    </button>
 			    <ul class="dropdown-menu">
 			      <li x-ng-if="stock_right.update_batch">

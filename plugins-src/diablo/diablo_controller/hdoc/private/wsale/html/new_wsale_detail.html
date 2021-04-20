@@ -100,9 +100,9 @@
 		    <th x-ng-if="show.base" class="info">累计结余</th>
 		    <th>店员</th> 
 		    <th>数量</th> 
-		    
 		    <th class="info">应收</th>
 		    <th class="info">实收</th>
+		    <th x-ng-if="!setting.hide_oil">提成</th>
 		    <th x-ng-click="toggle_balance()" class="danger">
 		      <span x-ng-if="show.balance">
 		    	<i class="glyphicon glyphicon-backward fg-red"></i>
@@ -112,14 +112,15 @@
 		    	积分
 		    	<i class="glyphicon glyphicon-forward fg-red"></i>
 		      </span>
-		    </th>
+		    </th> 
 		    <th x-ng-if="show.balance">现金</th>
 		    <th x-ng-if="show.balance">刷卡</th>
 		    <th x-ng-if="show.balance">微信</th>
 		    <th x-ng-if="show.balance">支付宝</th>
 		    <th x-ng-if="show.balance">提现</th>
 		    <th x-ng-if="show.balance">电子卷</th> 
-		    <th x-ng-if="show.balance">核销</th> 
+		    <th x-ng-if="show.balance">核销</th>
+
 		    <!-- <th x-ng-if="show.balance">充值</th> -->
 		    <!-- <th x-ng-if="show.balance">赠送</th>  -->
 		    <th>备注</th> 
@@ -153,8 +154,9 @@
 		    <td class="{{css(r.check, r.type)}}" x-ng-switch on="r.type"> 
 		      <span class="fg-red" x-ng-switch-when=1>{{r.has_pay}}</span>
 		      <span x-ng-switch-default>{{r.has_pay}}</span>
-		    </td> 
-
+		    </td>
+		    
+		    <td class="{{css(r.check, r.type)}}">{{r.oil}}</td>
 		    <td class="{{css(r.check, r.type)}}">{{r.score}}</td>
 		    
 		    <td class="{{css(r.check, r.type)}}" x-ng-if="show.balance">{{r.cash}}</td>
@@ -240,7 +242,7 @@
 		    <td x-ng-if="shop_right.show_stastic">{{total_bpay}}</td>
 		    <td x-ng-if="!shop_right.show_stastic"></td>
 		    <td>{{total_spay}}</td>
-		    <td></td>
+		    <td x-ng-if="!setting.hide_oil">{{total_oil}}</td>
 		    <td x-ng-if="show.balance">{{total_cash}}</td>
 		    <td x-ng-if="show.balance">{{total_card}}</td>
 		    <td x-ng-if="show.balance">{{total_wxin}}</td>

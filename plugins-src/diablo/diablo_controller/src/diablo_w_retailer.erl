@@ -69,11 +69,8 @@ retailer(get, Merchant, RetailerId) ->
     gen_server:call(Name, {get_retailer, Merchant, RetailerId});
 retailer(get_batch, Merchant, RetailerIds) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_retailer_batch, Merchant, RetailerIds}); 
-retailer(last_recharge, Merchant, RetailerId) ->
-    Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {last_recharge, Merchant, RetailerId}).
-    
+    gen_server:call(Name, {get_retailer_batch, Merchant, RetailerIds}).
+
 retailer(update, Merchant, RetailerId, {Attrs, OldAttrs}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}});
@@ -82,7 +79,10 @@ retailer(update_score, Merchant, RetailerId, Score) ->
     gen_server:call(Name, {update_score, Merchant, RetailerId, Score});
 retailer(reset_password, Merchant, RetailerId, Password) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {reset_password, Merchant, RetailerId, Password}).
+    gen_server:call(Name, {reset_password, Merchant, RetailerId, Password});
+retailer(last_recharge, Merchant, RetailerId, Shops) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {last_recharge, Merchant, RetailerId, Shops}).
 
 retailer(check_password, Merchant, RetailerId, Password, CheckPwd) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -1835,18 +1835,19 @@ handle_call({get_recharge, Merchant, RechargeId}, _From, State) ->
     Reply =  ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({last_recharge, Merchant, RetailerId}, _From, State) ->
-    Sql = "select a.id"
-	", a.rsn"
-	", a.cid as charge_id"
-	", a.shop as shop_id"
-	", a.cbalance"
-	", a.ctime"
-	", a.sbalance"
-	", a.retailer as retailer_id" 
-	" from w_charge_detail a"
-	" where a.merchant=" ++ ?to_s(Merchant)
-	++ " and a.retailer=" ++ ?to_s(RetailerId)
+handle_call({last_recharge, Merchant, RetailerId, Shops}, _From, State) ->
+    Sql = "select id"
+	", rsn"
+	", cid as charge_id"
+	", shop as shop_id"
+	", cbalance"
+	", ctime"
+	", sbalance"
+	", retailer as retailer_id" 
+	" from w_charge_detail"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and retailer=" ++ ?to_s(RetailerId)
+	++ ?sql_utils:condition(proplists, [{<<"shop">>, Shops}])
 	++ " order by a.id desc limit 1",
 
     Reply =  ?sql_utils:execute(s_read, Sql),

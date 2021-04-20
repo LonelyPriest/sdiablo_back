@@ -945,7 +945,7 @@ sys_config() ->
 	      %% [16]: none score with promotion 0:yes, 1:no
 	      %% [17-18]: 80-> vir_price * 0.8 = tag_price, 00 -> none
 	      %% [19]: print label with dialog 0: no dialog, 1: dialog
-	      %% [20]: hide fixed draw or reduction, refer to hide_mode[30]
+	      %% [20]: hide fixed draw or reduction, refer to sale_mode[28]
 	      %% [21]: hide commision
 	      {"h_stock",         "入库字段隐藏",
 	       "0001"++"1011"++"1111"++"0111"++"0000"++"11", "0"},

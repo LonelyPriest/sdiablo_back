@@ -247,6 +247,11 @@
 				class="btn diablo-input-button blue"
 				x-ng-click="reject_inventory(inv)">退货
 			  <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+
+			<button x-ng-if="setting.active_score"
+				class="btn diablo-input-button purple"
+				x-ng-click="cancel_score(inv)">积分
+			  <i class="glyphicon glyphicon-trash"></i></button>
 			
 			<button class="btn diablo-input-button green"
 				x-ng-if="(setting.gift_sale && inv.gift) || setting.gift_direct"

@@ -357,7 +357,7 @@ action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
     case 
 	case ?w_retailer:bank_card(get, Merchant, Id, SameRegionShops) of
 	    {ok, []} ->
-		case ?w_retailer:retailer(last_recharge, Merchant, Id) of
+		case ?w_retailer:retailer(last_recharge, Merchant, Id, SameRegionShops) of
 		    {ok, []} ->
 			{error, ?err(charge_none, Id)};
 		    {ok, LastCharge} ->

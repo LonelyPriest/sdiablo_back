@@ -378,6 +378,11 @@ var wsaleUtils = function(){
 	    return wsaleUtils.yes_default(hide.charAt(20));
 	},
 
+	hide_oil:function(shop, base) {
+	    var hide = diablo_base_setting("h_stock", shop, base, function(s) {return s}, diablo_stock_in_hide_mode);
+	    return wsaleUtils.yes_default(hide.charAt(21));
+	},
+
 	get_print_setting:function(sale_mode) {
 	    return {
 		print_discount: wsaleUtils.yes_default(sale_mode.charAt(15)),

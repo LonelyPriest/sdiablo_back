@@ -90,13 +90,13 @@ function wsaleRsnDetailCtrlProvide (
     // var shopId = $scope.shopIds.length === 1 ? $scope.shopIds[0]: -1;
     
     // base setting 
-    $scope.setting.se_pagination = wsaleUtils.sequence_pagination(diablo_default_shop, base); 
+    $scope.setting.se_pagination = wsaleUtils.sequence_pagination(user.loginShop, base); 
     $scope.setting.show_sale_day = user.sdays;
     
-    var sale_mode = wsaleUtils.sale_mode(diablo_default_shop, base);
+    var sale_mode = wsaleUtils.sale_mode(user.loginShop, base);
     $scope.setting.show_note     = wsaleUtils.to_integer(sale_mode.charAt(1));
-    $scope.setting.solo_retailer = wsaleUtils.solo_retailer(
-	$scope.shopIds.length === 1 ? $scope.shopIds[0] : diablo_default_shop, base); 
+    $scope.setting.solo_retailer = wsaleUtils.solo_retailer(user.loginShop, base);
+    $scope.setting.hide_oil = wsaleUtils.hide_oil(user.loginShop, base);
     
     var storage = localStorageService.get(diablo_key_wsale_trans_detail);
     console.log(storage);
@@ -170,7 +170,8 @@ function wsaleRsnDetailCtrlProvide (
 	localStorageService.set(
 	    "wsale-note-stastic", {total_items:       $scope.total_items,
 				   total_tblance:     $scope.total_tblance,
-				   total_amounts:     $scope.total_amounts, 
+				   total_amounts:     $scope.total_amounts,
+				   total_oil:         $scope.total_oil,
 				   total_balance:     $scope.total_balance,
 				   total_obalance:    $scope.total_obalance,
 				   t:now});
@@ -220,6 +221,7 @@ function wsaleRsnDetailCtrlProvide (
 	    console.log(stastic);
 	    $scope.total_items       = stastic.total_items;
 	    $scope.total_amounts     = stastic.total_amounts;
+	    $scope.total_oil         = stastic.total_oil,
 	    $scope.total_tblance     = stastic.total_tblance;
 	    $scope.total_balance     = stastic.total_balance;
 	    $scope.total_obalance    = stastic.total_obalance;
@@ -245,6 +247,7 @@ function wsaleRsnDetailCtrlProvide (
 		if (page === 1){
 		    $scope.total_items = result.total;
 		    $scope.total_amounts = result.total === 0 ? 0 : result.t_amount;
+		    $scope.total_oil     = result.total === 0 ? 0 : result.t_oil;
 		    $scope.total_tblance = result.total === 0 ? 0 : result.t_tbalance;
 		    $scope.total_balance = result.total === 0 ? 0 : result.t_balance;
 		    $scope.total_obalance = result.total === 0 ? 0 : result.t_obalance;
