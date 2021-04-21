@@ -2721,7 +2721,7 @@ function wsaleNewProvide(
 		    sell_total  : sell_total,
 
 		    promotion   : add.pid,
-		    score       : inv.active_score ? diablo_invalid : add.sid,
+		    score       : add.active_score ? diablo_invalid : add.sid,
 		    commision   : add.mid,
 
 		    org_price   : add.org_price,
