@@ -22,7 +22,7 @@ action(Session, Req) ->
 			 [
 			  {navbar, ?menu:navbars(?MODULE, Session)},
 			  {basebar, ?menu:w_basebar(Session)},
-			  {sidebar, sidebar(Session)}
+			  {sidebar, sidebar(Session)} 
 			  %% {ngapp, "purchaserApp"},
 			  %% {ngcontroller, "purchaserCtrl"}
 			 ]),
@@ -1999,7 +1999,7 @@ sidebar(Session) ->
 			"glyphicon glyphicon-download"},
 		       Shops)
 		  ++ authen_shop_action(
-		       {?filter_stock_order_note, 
+		       {?filter_stock_order_detail, 
 			"order_note",
 			"定单明细",
 			"glyphicon glyphicon-map-marker"},
@@ -2195,9 +2195,9 @@ csv_head(trans_note, Do, Code, ShowOrgPrice) ->
 csv_head(stock, Do, Code, ShowOrgPrice) ->
     H = case ShowOrgPrice of
 	    true ->
-		"序号,款号,品牌,类别,性别,厂商,季节,年度,吊牌价,折扣,进价,进折扣,数量,店铺,上架日期";
+		"序号,条码,款号,品牌,类别,性别,厂商,季节,年度,吊牌价,折扣,进价,进折扣,数量,店铺,上架日期";
 	    false ->
-		"序号,款号,品牌,类别,性别,厂商,季节,年度,吊牌价,折扣,数量,店铺,上架日期"
+		"序号,条码,款号,品牌,类别,性别,厂商,季节,年度,吊牌价,折扣,数量,店铺,上架日期"
 	end,
 
     C = 
@@ -2214,9 +2214,9 @@ csv_head(stock, Do, Code, ShowOrgPrice) ->
 csv_head(stock_sort_by_color, Do, Code, ShowOrgPrice) ->
     H = case ShowOrgPrice of
 	    true ->
-		"序号,款号,品牌,类别,性别,厂商,季节,年度,吊牌价,折扣,进价,进折扣,小计,数量,颜色,尺码,店铺,上架日期";
+		"序号,条码,款号,品牌,类别,性别,厂商,季节,年度,吊牌价,折扣,进价,进折扣,小计,数量,颜色,尺码,店铺,上架日期";
 	    false ->
-		"序号,款号,品牌,类别,性别,厂商,季节,年度,吊牌价,折扣,小计,数量,颜色,尺码,店铺,上架日期"
+		"序号,条码,款号,品牌,类别,性别,厂商,季节,年度,吊牌价,折扣,小计,数量,颜色,尺码,店铺,上架日期"
 	end,
     %% UTF8 = unicode:characters_to_list(H, utf8),
     C = 
@@ -2373,6 +2373,7 @@ do_write(trans_note, Do, Count, [H|T], Code, ShowOrgPrice) ->
 do_write(stock, _Do, _Count, [], _Code, _ShowOrgPrice)->
     ok;
 do_write(stock, Do, Count, [H|T], Code, ShowOrgPrice) ->
+    Barcode     = ?v(<<"bcode">>, H, []),
     StyleNumber = ?v(<<"style_number">>, H),
     Brand       = ?v(<<"brand">>, H), 
     Type        = ?v(<<"type">>, H),
@@ -2395,6 +2396,7 @@ do_write(stock, Do, Count, [H|T], Code, ShowOrgPrice) ->
 
     L = "\r\n"
 	++ ?to_s(Count) ++ ?d
+	++ "\'" ++ string:strip(?to_s(Barcode)) ++ "\'" ++ ?d
 	++ "\'" ++ string:strip(?to_s(StyleNumber)) ++ "\'" ++ ?d
 	++ ?to_s(Brand) ++ ?d
 	++ ?to_s(Type) ++ ?d 
@@ -2429,6 +2431,8 @@ do_write(stock, Do, Count, [H|T], Code, ShowOrgPrice) ->
 do_write(stock_sort_by_color, _Do, _Count, [], _SortStocks, _Colors, _Code, _ShowOrgPrice)->
     ok;
 do_write(stock_sort_by_color, Do, Count, [H|T], SortStocks, Colors, Code, ShowOrgPrice) ->
+    ?DEBUG("H ~p", [H]),
+    Barcode     = ?v(<<"bcode">>, H),
     StyleNumber = ?v(<<"style_number">>, H),
     Brand       = ?v(<<"brand">>, H),
     BrandId     = ?to_b(?v(<<"brand_id">>, H)),
@@ -2479,6 +2483,7 @@ do_write(stock_sort_by_color, Do, Count, [H|T], SortStocks, Colors, Code, ShowOr
 
 	    L = "\r\n"
 		++ ?to_s(Count) ++ ?d
+		++ "\'" ++ string:strip(?to_s(Barcode)) ++ "\'" ++ ?d
 		++ "\'" ++ string:strip(?to_s(StyleNumber)) ++ "\'" ++ ?d
 		++ ?to_s(Brand) ++ ?d
 		++ ?to_s(Type) ++ ?d 
@@ -2506,6 +2511,7 @@ do_write(stock_sort_by_color, Do, Count, [H|T], SortStocks, Colors, Code, ShowOr
 		lists:foldr(
 		  fun({ColorId, TotalOfColor, SizeDescs}, Acc) ->
 			  L1 = "\r\n"
+			      ++ ?d
 			      ++ ?d
 			      ++ ?d
 			      ++ ?d

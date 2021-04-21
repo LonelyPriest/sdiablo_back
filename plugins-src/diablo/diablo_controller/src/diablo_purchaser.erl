@@ -3684,6 +3684,7 @@ handle_call({stock_note_export, Merchant, UTable, Conditions, _Mode}, _From, Sta
     Sql = case C1 of
 	      [] ->
 		  "select a.id"
+		      ", a.bcode"
 		      ", a.style_number"
 		      ", a.brand as brand_id"
 		      
@@ -3704,6 +3705,7 @@ handle_call({stock_note_export, Merchant, UTable, Conditions, _Mode}, _From, Sta
 		      ++ ExtraCondtion;
 	      _ ->
 		  "select a.id"
+		      ", a.bcode"
 		      ", a.style_number"
 		      ", a.brand as brand_id"
 		      

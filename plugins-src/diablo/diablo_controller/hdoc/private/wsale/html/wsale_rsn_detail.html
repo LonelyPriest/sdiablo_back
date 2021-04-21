@@ -271,7 +271,7 @@
 			<td colspan={{calc_colspan()}}></td>
 			<td>{{total_tblance}}</td>
 			<td colspan=2></td>
-			<td>{{total_oil}}</td>
+			<td x-ng-if="!setting.hide_oil">{{total_oil}}</td>
 			<td>{{total_amounts}}</td>
 			<td>{{total_balance}}</td>
 			<td x-ng-if="right.show_orgprice">{{total_obalance}}</td>

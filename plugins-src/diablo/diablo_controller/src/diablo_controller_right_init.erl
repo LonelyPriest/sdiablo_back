@@ -334,7 +334,7 @@ init([]) ->
 	  <<"销售记录导出">>,  <<"export_w_sale_new">>,    ?right_w_sale},
 
 	 {?new_daily_cost,    <<"新增日常费用">>, <<"new_daily_cost">>,       ?right_w_sale},
-	 {?delete_daily_cost, <<"删除日常费用">>, <<"delete_dailycost">>,     ?right_w_sale},
+	 {?delete_daily_cost, <<"删除日常费用">>, <<"delete_daily_cost">>,     ?right_w_sale},
 	 {?update_daily_cost, <<"修改日常费用">>, <<"update_daily_cost">>,    ?right_w_sale},
 	 {?list_daily_cost,   <<"查询日常费用">>, <<"list_daily_cost">>,      ?right_w_sale},
 

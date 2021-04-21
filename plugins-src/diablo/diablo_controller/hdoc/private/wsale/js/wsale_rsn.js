@@ -742,11 +742,11 @@ function dailyCostCtrlProvide (
     };
 
     $scope.refresh = function() {
-	$scope.do_search($scope.default_page)
+	$scope.do_search($scope.default_page);
     };
 
     $scope.page_changed = function() {
-	$scope.do_search($scope.current_page)
+	$scope.do_search($scope.current_page);
     };
 
     $scope.match_cost_class = function(viewValue) {
@@ -843,6 +843,23 @@ function dailyCostCtrlProvide (
 	    }
 	);
     };
+
+    $scope.delete_daily_cost = function(c) {
+	var callback = function() {
+	    wsaleService.delete_daily_cost(c).then(function(result) {
+		console.log(result);
+		if (0 === result.ecode) {
+		    $scope.page_changed($scope.current_page);
+		} else {
+		    dialog.set_error("删除日常费用记录", result.ecode);
+		}
+	    });
+	};
+	
+	dialog.request(
+	    "日常费用记录删除", "日常费用记录删除后，无法恢复，确认要删除吗？",
+	    callback, undefined, undefined);
+    }
 };
 
 function payScanCtrlProvide (

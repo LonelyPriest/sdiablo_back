@@ -74,7 +74,9 @@ cost_class(filter, Merchant, CurrentPage, ItemsPerPage) ->
 cost(new, Merchant, Cost) ->
     gen_server:call(?MODULE, {new_daily_cost, Merchant, Cost});
 cost(update, Merchant, Cost) ->
-    gen_server:call(?MODULE, {update_daily_cost, Merchant, Cost}).
+    gen_server:call(?MODULE, {update_daily_cost, Merchant, Cost});
+cost(delete, Merchant, CostId) ->
+    gen_server:call(?MODULE, {delete_daily_cost, Merchant, CostId}).
 
 cost(total, 'and', Merchant, Conditions) ->
     gen_server:call(?MODULE, {total_daily_cost, Merchant, Conditions}).
@@ -676,6 +678,15 @@ handle_call({update_daily_cost, Merchant, Cost}, _From, State) ->
 	++ " where id=" ++ ?to_s(CostId)
 	++ " and merchant=" ++ ?to_s(Merchant),
     
+    Reply = ?sql_utils:execute(write, Sql, CostId),
+    {reply, Reply, State};
+
+handle_call({delete_daily_cost, Merchant, CostId}, _From, State) ->
+    ?DEBUG("delete_daily_cost: Merchant ~p, Cost ~p", [Merchant, CostId]), 
+    Sql = "delete from daily_cost"
+	++ " where id=" ++ ?to_s(CostId)
+	++ " and merchant=" ++ ?to_s(Merchant),
+
     Reply = ?sql_utils:execute(write, Sql, CostId),
     {reply, Reply, State};
 

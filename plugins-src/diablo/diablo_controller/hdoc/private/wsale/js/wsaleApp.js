@@ -465,6 +465,9 @@ function wsaleConfg(angular){
 		 page:   currentPage,
 		 count:  itemsPerpage}).$promise;
 	};
+	this.delete_daily_cost = function(cost) {
+	    return http.save({operation: "delete_daily_cost"}, {cid: cost.id}).$promise;
+	};
 
 	/*
 	 * print
@@ -2718,7 +2721,7 @@ function wsaleNewProvide(
 		    sell_total  : sell_total,
 
 		    promotion   : add.pid,
-		    score       : add.sid,
+		    score       : inv.active_score ? diablo_invalid : add.sid,
 		    commision   : add.mid,
 
 		    org_price   : add.org_price,
