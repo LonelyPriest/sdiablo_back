@@ -17,7 +17,8 @@ init_sms() ->
 	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 4, \'尊敬的{$var}会员，花开一季，岁月一轮，祝您生日快乐，本店特意为您准备了礼品，感谢您的一路陪伴。{$var}祝！\')">>,
 	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 5, \'会员提醒：欢迎光临{$var}，本次{$var}成功，剩余次数{$var}，有效期截止日{$var}，感谢您的惠顾！！\')">>,
 	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 6, \'尊敬的客户{$var}，短信充值成功，您已充值{$var}元，目前剩余短消息{$var}条，感谢您的使用！！\')">>,
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 7, \'尊敬的钱掌柜客户{$var}，您名下店铺{$var}会员{$var}消费异常，近一月内消费达{$var}次，请及时核对本次交易！！！！\')">>
+	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 7, \'尊敬的钱掌柜客户{$var}，您名下店铺{$var}会员{$var}消费异常，近一月内消费达{$var}次，请及时核对本次交易！！！！\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(2, 0, \'{$var}提醒您：本次消费{$var}元，本次积分{$var}，累计积分{$var}，特价不积分。5千积分兑换50元现金券，请及时兑换！\')">>
 	  ],
     ?sql_utils:execute(transaction, Sqls, ok).
     

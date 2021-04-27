@@ -1848,7 +1848,7 @@ handle_call({last_recharge, Merchant, RetailerId, Shops}, _From, State) ->
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and retailer=" ++ ?to_s(RetailerId)
 	++ ?sql_utils:condition(proplists, [{<<"shop">>, Shops}])
-	++ " order by a.id desc limit 1",
+	++ " order by id desc limit 1",
 
     Reply =  ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};

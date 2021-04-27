@@ -2373,7 +2373,7 @@ do_write(trans_note, Do, Count, [H|T], Code, ShowOrgPrice) ->
 do_write(stock, _Do, _Count, [], _Code, _ShowOrgPrice)->
     ok;
 do_write(stock, Do, Count, [H|T], Code, ShowOrgPrice) ->
-    Barcode     = ?v(<<"bcode">>, H, []),
+    Barcode     = ?v(<<"bcode">>, H),
     StyleNumber = ?v(<<"style_number">>, H),
     Brand       = ?v(<<"brand">>, H), 
     Type        = ?v(<<"type">>, H),
