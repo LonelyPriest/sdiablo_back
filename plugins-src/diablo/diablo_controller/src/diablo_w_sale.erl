@@ -335,7 +335,7 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 			++ ?to_s(Total) ++ ","
 			++ ?to_s(Oil) ++ ","
 			++ ?to_s(CurrentScore) ++ ","
-			++ ?to_s(Score) ++ "," 
+			++ ?to_s(Score - TicketScore) ++ "," 
 			++ "\'" ++ ?to_s(Comment) ++ "\'," 
 			++ ?to_s(type(new)) ++ ","
 			++ "\'" ++ ?to_s(PayOrder) ++ "\'," 
@@ -478,6 +478,7 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 		    		      ?v(<<"mobile">>, Account),
 		    		      ShouldPay,
 		    		      CurrentBalance - NewWithdraw,
+				      Score - TicketScore,
 		    		      ?v(<<"score">>, Account) + Score - TicketScore} 
 		    		    }, State};
 		    	Error ->
@@ -1207,6 +1208,7 @@ handle_call({reject_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
 		   end, 
     AllowedSave  = ?v(<<"allow_save">>, Props, 0),
     HasPay = Ticket + Withdraw + Wxin + AliPay + Card + Cash,
+    MScore = Score - TicketScore,
     
     Sql0 = "select id, name, balance, score, type from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
@@ -1327,7 +1329,7 @@ handle_call({reject_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
 		    ++ ?to_s(-Total) ++ ","
 		    ++ ?to_s(-Oil) ++ ","
 		    ++ ?to_s(CurrentScore) ++ ","
-		    ++ ?to_s(-Score) ++ ","
+		    ++ ?to_s(-MScore) ++ ","
 		    ++ "\'" ++ ?to_s(Comment) ++ "\'," 
 		    ++ ?to_s(type(reject)) ++ ","
 		    ++ "\'" ++ ?to_s(Datetime) ++ "\')",
@@ -1462,7 +1464,7 @@ handle_call({reject_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
 		    %% 	true  -> ?w_user_profile:update(retailer, Merchant);
 		    %% 	false -> ok
 		    %% end,
-		    {reply, {OK, Shop, Retailer, ?v(<<"type">>, Account), NewWithdraw}, State}
+		    {reply, {OK, Shop, Retailer, ?v(<<"type">>, Account), -MScore, NewWithdraw}, State}
 	    end; 
 	Error ->
 	    {reply, Error, State}

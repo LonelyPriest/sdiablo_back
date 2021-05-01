@@ -676,6 +676,7 @@ function wgoodDetailCtrlProvide(
     filterColor,
     filterSizeSpec,
     filterStdExecutive, filterCategory, filterFabric, filterTemplate, base, user){
+    console.log(user);
     console.log(filterSizeSpec);
     // $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
     $scope.shops = user.sortShops;

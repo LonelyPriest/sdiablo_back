@@ -94,9 +94,9 @@
 		      </td>
 		    <td x-ng-bind="p.entry_date"></td>
 		    <td>
-		      <button x-ng-if="h.state===9 || h.state===2 || h.state===3"
+		      <button x-ng-if="p.state===9 || p.state===2 || p.state===3"
 			      class="btn diablo-button btn-danger"
-		    	      x-ng-click="check_pay_scan(h)">
+		    	      x-ng-click="check_pay_scan(p)">
 			核实<i class="glyphicon glyphicon-check"></i>
 		      </button>
 		    </td> 

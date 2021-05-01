@@ -722,7 +722,7 @@ action(Session, Req, {"new_recharge"}, Payload) ->
 				?utils:respond(200, Req, ?succ(new_recharge, SN), [{<<"sms_code">>, 0}]);
 			    1 ->
 				{SMSCode, _} =
-				    ?notify:sms_notify(Merchant, {ShopId, Mobile, 0, CBalance, Balance, Score}),
+				    ?notify:sms_notify(Merchant, {ShopId, Mobile, 0, CBalance, Balance, 0, Score}),
 				?utils:respond(200,
 					       Req,
 					       ?succ(new_recharge, SN),

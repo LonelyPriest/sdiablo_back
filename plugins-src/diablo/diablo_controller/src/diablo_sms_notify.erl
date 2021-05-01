@@ -11,22 +11,24 @@
 
 init_sms() ->
     Sqls= [
-	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 0, \'会员提醒：欢迎光临{$var}，本次{$var}成功，消费金额{$var}，当前余额{$var}，累计积分{$var}，感谢您的惠顾！！\')">>
-	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 3, \'尊敬的VIP：欢迎光临{$var}，现赠与总价值{$var}元的优惠券{$var}张，{$var}天激活后可使用，请保管好该信息并及时消费。\')">>,
-	   %% <<"insert into zz_sms_template(merchant, type, content) values(15, 3, \'尊敬的VIP，现赠予总价值{$var}元的优惠券{$var}张，{$var}天后激活可在钻石女人、艾莱依、E主题、波司登、千仞岗使用！\')">>
-	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 4, \'尊敬的{$var}会员，花开一季，岁月一轮，祝您生日快乐，本店特意为您准备了礼品，感谢您的一路陪伴。{$var}祝！\')">>,
-	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 5, \'会员提醒：欢迎光临{$var}，本次{$var}成功，剩余次数{$var}，有效期截止日{$var}，感谢您的惠顾！！\')">>,
-	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 6, \'尊敬的客户{$var}，短信充值成功，您已充值{$var}元，目前剩余短消息{$var}条，感谢您的使用！！\')">>,
-	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 7, \'尊敬的钱掌柜客户{$var}，您名下店铺{$var}会员{$var}消费异常，近一月内消费达{$var}次，请及时核对本次交易！！！！\')">>,
-	   <<"insert into zz_sms_template(merchant, type, content) values(2, 0, \'{$var}提醒您：本次消费{$var}元，本次积分{$var}，累计积分{$var}，特价不积分。5千积分兑换50元现金券，请及时兑换！\')">>
-	  ],
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 0, \'会员提醒：欢迎光临{$var}，本次{$var}成功，消费金额{$var}，当前余额{$var}，累计积分{$var}，感谢您的惠顾！！\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 3, \'尊敬的VIP：欢迎光临{$var}，现赠与总价值{$var}元的优惠券{$var}张，{$var}天激活后可使用，请保管好该信息并及时消费。\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(15, 3, \'尊敬的VIP，现赠予总价值{$var}元的优惠券{$var}张，{$var}天后激活可在钻石女人、艾莱依、E主题、波司登、千仞岗使用！\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 4, \'尊敬的{$var}会员，花开一季，岁月一轮，祝您生日快乐，本店特意为您准备了礼品，感谢您的一路陪伴。{$var}祝！\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 5, \'会员提醒：欢迎光临{$var}，本次{$var}成功，剩余次数{$var}，有效期截止日{$var}，感谢您的惠顾！！\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 6, \'尊敬的客户{$var}，短信充值成功，您已充值{$var}元，目前剩余短消息{$var}条，感谢您的使用！！\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 7, \'尊敬的钱掌柜客户{$var}，您名下店铺{$var}会员{$var}消费异常，近一月内消费达{$var}次，请及时核对本次交易！！！！\')">>,
+	   
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 1, \'会员提醒：欢迎光临{$var}，本次{$var}成功，消费金额{$var}，当前余额{$var}，累计积分{$var}，感谢您的惠顾！！\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 2, \'会员提醒：欢迎光临{$var}，本次{$var}成功，消费金额{$var}，当前余额{$var}，累计积分{$var}，感谢您的惠顾！！\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(2, 1, \'{$var}提醒您：本次消费{$var}元，本次积分{$var}，累计积分{$var}，特价不积分。5千积分兑换50元现金券，请及时兑换！\')" >>],
     ?sql_utils:execute(transaction, Sqls, ok).
     
 
-sms_notify(Merchant, {ShopId, Phone, Action, Money, RetailerBalance, Score}) ->
+sms_notify(Merchant, {ShopId, Phone, Action, Money, RetailerBalance, Score0, Score}) ->
     ?DEBUG("sms_notify: merchants ~p, shop ~p, phone ~p, action ~p, money ~p"
-	   ", rbalance ~p score ~p",
-	   [Merchant, ShopId, Phone, Action, Money, RetailerBalance, Score]),
+	   ", rbalance ~p score0 ~p, score ~p",
+	   [Merchant, ShopId, Phone, Action, Money, RetailerBalance, Score0, Score]),
     try
 	case ?w_user_profile:get(merchant, Merchant) of
 	    {ok, []} -> ?err(sms_rate_not_found, Merchant);
@@ -55,7 +57,7 @@ sms_notify(Merchant, {ShopId, Phone, Action, Money, RetailerBalance, Score}) ->
 				    sms_once(zz,
 					     Merchant,
 					     Sign,
-					     {ShopName, Phone, Action, Money, RetailerBalance, Score})
+					     {ShopName, Phone, Action, Money, RetailerBalance, Score0, Score})
 			    end,
 
 			case Result of 
@@ -176,19 +178,16 @@ sms_once(aliqin, Merchant, {Shop, Phone, Action, Money, Balance, Score}) ->
 	    end
     end.
 
-sms_once(zz, Merchant, Sign, {Shop, Phone, Action, Money, Balance, Score}) ->
-    ?DEBUG("merchant ~p, Sign ~ts, shop ~p, phone ~p, action ~p, money  ~p, balance ~p, score ~p",
-	  [Merchant, Sign, Shop, Phone, Action, Money, Balance, Score]),
+sms_once(zz, Merchant, Sign, {Shop, Phone, Action, Money, Balance, Score0, Score}) ->
+    ?DEBUG("merchant ~p, Sign ~ts, shop ~p, phone ~p, action ~p, money  ~p, balance ~p, score0 ~p, score ~p",
+	  [Merchant, Sign, Shop, Phone, Action, Money, Balance, Score0, Score]),
     NewBalance = ?f_print:clean_zero(Balance),
     case ?w_user_profile:get(sms_template, Merchant) of
 	{ok, []} -> {error, {sms_template_not_found, Merchant}};
 	{ok, Templates} ->
 	    %% ?DEBUG("templates ~p", [Templates]),
 	    %% filter
-	    [Template] = get_sms_template(zz, Action, Merchant, Templates),
-	    ?DEBUG("template ~p", [Template]),
-	    %% Account = "N3001234",
-	    %% Password = "dLZJfzK5Mc7a9d",
+	    [Template] = get_sms_template(zz, Action, Merchant, Templates), 
 	    Content = ?v(<<"content">>, Template),
 	    Text = case Sign == <<>> orelse Sign == [] of
 			  true ->
@@ -198,14 +197,30 @@ sms_once(zz, Merchant, Sign, {Shop, Phone, Action, Money, Balance, Score}) ->
 			   << <<"【">>/binary, Sign/binary, <<"】">>/binary, Content/binary>>
 		      end,
 	    ?DEBUG("text ~ts", [Text]),
- 			      
-	    Params = string:strip(?to_s(Phone))
-		++ "," ++ ?to_s(Shop)
+
+	    DefaultParams = "," ++ ?to_s(Shop) 
 		++ "," ++ ?to_s(action(Action))
 		++ "," ++ ?to_s(Money)
 		++ "," ++ ?to_s(NewBalance)
 		++ "," ++ ?to_s(Score),
+	    
+	    Params = string:strip(?to_s(Phone))
+		++ case Merchant of
+		       2 ->
+			   case Action of
+			       1 ->
+				   "," ++ ?to_s(Shop)
+				       ++ "," ++ ?to_s(Money)
+				       ++ "," ++ ?to_s(Score0)
+				       ++ "," ++ ?to_s(Score);
+			       _ ->
+				   DefaultParams
+			   end;
+		       _ ->
+			   DefaultParams
+		   end,
 	    ?DEBUG("params ~ts", [?to_b(Params)]),
+	    
 	    SMSParams = ?to_s(ejson:encode({[{<<"account">>, ?zz_sms_account},
 					     {<<"password">>,?zz_sms_password},
 					     {<<"msg">>, Text},
@@ -711,12 +726,12 @@ get_sms_template(zz, Action, Merchant) ->
     end.
 
 get_sms_template(zz, Action, Merchant, Templates) ->
-    ?DEBUG("Action ~p, Merchant ~p, Templates ~p", [Action, Merchant, Templates]),
+    ?DEBUG("Action ~p, Merchant ~p", [Action, Merchant]),
     case [ T || {T} <- Templates,
 	       case Action of
 		   ?NORMAL_CHARGE -> ?v(<<"type">>, T) =:= 0; %% charge
-		   ?NORMAL_SALE -> ?v(<<"type">>, T) =:= 0;  %% sale
-		   ?NORMAL_REJECT_SALE -> ?v(<<"type">>, T) =:= 0;  %% reject sale
+		   ?NORMAL_SALE -> ?v(<<"type">>, T) =:= 1;  %% sale
+		   ?NORMAL_REJECT_SALE -> ?v(<<"type">>, T) =:= 2;  %% reject sale
 		   ?NORMAL_TICKET -> ?v(<<"type">>, T) =:= 3;   %% ticket
 		   ?BIRTH_NOTIFY -> ?v(<<"type">>, T) =:= 4; %% birth
 		   ?THEORETIC_CARD_SALE -> ?v(<<"type">>, T) =:= 5; %% card sale

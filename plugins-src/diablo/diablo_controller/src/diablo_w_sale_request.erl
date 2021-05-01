@@ -486,13 +486,13 @@ action(Session, Req, {"update_w_sale"}, Payload) ->
     case ?w_sale:sale(get_new, {Merchant, UTable}, RSN) of
 	{ok, OldBase} -> 
 	    case ?w_sale:sale(update, {Merchant, UTable}, lists:reverse(Invs), {Base, OldBase}) of
-		{ok, {RSN, BackBalance, _BackScore, {OldRetailerId, Withdraw}, {NewRetailerId, NewWithdraw}}} -> 
+		{ok, {RSN, BackBalance, BackScore, {OldRetailerId, Withdraw}, {NewRetailerId, NewWithdraw}}} -> 
 		    case OldRetailerId =:= NewRetailerId andalso Withdraw /= NewWithdraw of
 			true ->
 			    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, OldRetailerId), 
 			    ShopId = ?v(<<"shop_id">>, OldBase),
 			    {SMSCode, _} =
-				send_sms(Merchant, 2, ShopId, Retailer, BackBalance),
+				send_sms(Merchant, 2, ShopId, Retailer, BackScore, BackBalance),
 			    ?utils:respond(
 			       200, Req, ?succ(update_w_sale, RSN),
 			       [{<<"rsn">>, ?to_b(RSN)}, {<<"sms_code">>, SMSCode}]);
@@ -2687,7 +2687,7 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
 			    {Merchant, UTable},
 			    lists:reverse(Invs),
 			    [{<<"allow_save">>, AllowedSave}|Base]) of 
-			{ok, {RSN, Phone, _ShouldPay, Balance, Score}} ->
+			{ok, {RSN, Phone, _ShouldPay, Balance, Score0, Score}} ->
 			    {SMSCode, _} =
 				try
 				    %% BaseSettings = ?w_report_request:get_setting(Merchant, ShopId), 
@@ -2706,7 +2706,7 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
 					    %% 	end,
 					    ?notify:sms_notify(
 					       Merchant,
-					       {ShopId, Phone, 1, ShouldPay, Balance, Score});
+					       {ShopId, Phone, 1, ShouldPay, Balance, Score0, Score});
 					false ->
 					    %% ?w_user_profile:update(sysretailer, Merchant),
 					    {0, none} 
@@ -2796,7 +2796,7 @@ start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props) ->
     case ?w_sale:sale(get_new, {Merchant, UTable}, SaleRsn) of
 	{ok, OldProps} -> 
 	    case ?w_sale:sale(reject, {Merchant, UTable}, lists:reverse(Invs), {Props, OldProps}) of 
-		{{ok, RSN}, Shop, RetailerId, RetailerType, BackWithdraw} -> 
+		{{ok, RSN}, Shop, RetailerId, RetailerType, BackScore, BackWithdraw} -> 
 		    %% case BackWithdraw =/= 0 of
 		    %% 	true ->
 		    %% 	    %% query agign to obtain the correct infomation
@@ -2825,7 +2825,7 @@ start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props) ->
 					   [{<<"rsn">>, ?to_b(RSN)}]);
 			false ->
 			    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, RetailerId),
-			    {SMSCode, _} = send_sms(Merchant, 2, Shop, Retailer, BackWithdraw),
+			    {SMSCode, _} = send_sms(Merchant, 2, Shop, Retailer, BackScore, BackWithdraw),
 			    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
 					   [{<<"rsn">>, ?to_b(RSN)},
 					    {<<"sms_code">>, SMSCode}])
@@ -3082,7 +3082,7 @@ sys_vip_of_shop(Merchant, Shop) ->
     ?DEBUG("SimpleSysVips ~p", [SimpleSysVips]),
     SimpleSysVips.
 
-send_sms(Merchant, Action, ShopId, Retailer, ShouldPay) ->
+send_sms(Merchant, Action, ShopId, Retailer, Score0, ShouldPay) ->
     try 
 	%% {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
 	%% {ShopName, ShopSign} = case ?w_user_profile:get(shop, Merchant, ShopId) of
@@ -3111,7 +3111,7 @@ send_sms(Merchant, Action, ShopId, Retailer, ShouldPay) ->
 	    true -> 
 		?notify:sms_notify(
 		   Merchant,
-		   {ShopId, Phone, Action, abs(ShouldPay), Balance, Score});
+		   {ShopId, Phone, Action, abs(ShouldPay), Balance, Score0, Score});
 	    false -> {0, none} 
 	end
     catch
