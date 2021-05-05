@@ -3854,6 +3854,7 @@ sale_new(rsn_groups, MatchMode, {Merchant, UTable}, Conditions, PageFun) ->
 	", a.type as sell_type"
 
 	", c.name as retailer"
+	", c.mobile as phone"
 	", d.name as account"
 	
 

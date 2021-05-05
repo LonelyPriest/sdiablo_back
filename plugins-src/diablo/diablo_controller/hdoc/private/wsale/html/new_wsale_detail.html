@@ -9,30 +9,47 @@
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
 	    <button x-ng-if="shop_right.new_w_sale"
-		    class="btn green purple-stripe hidden-xxs"
+		    class="btn green purple-stripe hidden-sm hidden-xs hidden-xxs"
 		    x-ng-click="goto_page('#/new_wsale')">开单
 	      <i class="glyphicon glyphicon-plus"></i></button>
 	    
 	    <button x-ng-if="shop_right.reject_w_sale"
-		    class="btn red purple-stripe hidden-xxs"
+		    class="btn red purple-stripe hidden-sm hidden-xs hidden-xxs"
 		    x-ng-click="goto_page('#/reject_wsale')">退货
 	      <i class="glyphicon glyphicon-minus"></i></button>
 
-	    <button class="btn yellow purple-stripe"
+	    <button class="btn blue purple-stripe"
 	       x-ng-click="goto_page('#/wsale_rsn_detail')">明细
 	      <i class="glyphicon glyphicon-map-marker"></i></button>
 
-	    <button class="btn green-meadow purple-stripe"
+	    <button class="btn green-meadow purple-stripe hidden-sm hidden-xs hidden-xxs"
 	       x-ng-click="goto_page('#/list_pay_scan')">支付
 	      <i class="glyphicon glyphicon-map-marker"></i></button>
 
-	    <button x-ng-if="shop_right.export_w_sale_new" class="btn blue purple-stripe hidden-xxs"
+	    <button x-ng-if="shop_right.export_w_sale_new"
+		    class="btn blue purple-stripe hidden-sm hidden-xs hidden-xxs"
 		    x-ng-click="export_to()">导出
 	      <i class="glyphicon glyphicon-export"></i></button>
 	    
 	    <button x-ng-if="shop_right.list_w_sale" class="btn yellow-crusta reload purple-stripe"
 		    x-ng-click="do_search(default_page)">刷新
-	      <i class="icon icon-spinner fg-white"></i></button> 
+	      <i class="icon icon-spinner fg-white"></i></button>
+
+	    <button class="btn red hidden-md hidden-lg"
+		    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	      <span class="sr-only">Toggle Dropdown</span>
+	      <i class="glyphicon glyphicon-menu-hamburger"></i>
+	    </button>
+
+	    <ul class="dropdown-menu pull-right">
+	      <li>
+		<a href="javascript:;" x-ng-click="update_batch(0)">开单</a>
+		<a href="javascript:;" x-ng-click="update_batch(0)">退货</a> 
+		<a href="javascript:;" x-ng-click="update_batch(0)">业绩统计</a> 
+		<a href="javascript:;" x-ng-click="update_batch(1)">支付明细</a> 
+	      </li> 
+	    </ul>
+	      
 	  </div>
 	</div>
       </div>

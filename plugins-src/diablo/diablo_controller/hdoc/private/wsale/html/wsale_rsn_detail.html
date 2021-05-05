@@ -145,8 +145,8 @@
 			</td>
 			
 			<td x-ng-if="!hidden.base">
-			  <div x-ng-if="inv.negative" class="bg-red">{{inv.retailer}}</div>
-			  <div x-ng-if="!inv.negative">{{inv.retailer}}</div>
+			  <div x-ng-if="inv.negative" class="bg-red">{{inv.retailer}}/{{inv.phone}}</div>
+			  <div x-ng-if="!inv.negative">{{inv.retailer}}/{{inv.phone}}</div>
 			</td>
 			<td x-ng-if="!hidden.base">{{inv.promotion.name}}</td>
 			<td x-ng-if="!hidden.base">{{inv.score.name}}</td>

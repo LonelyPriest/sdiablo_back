@@ -33,9 +33,9 @@
 
       <!--BEGIN table container-->
       <div class="portlet-body">
-	<div class="table-toolbar"> 
+	<div class="table-toolbar hidden-xs hidden-sm"> 
 	  <div class="row diablo-form-group">
-	    <div class="col-xs-3 col-md-3">
+	    <div class="col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="icon icon-rss fg-red"></i>厂商</span>
@@ -54,7 +54,7 @@
 	      </div>
 	    </div>
 
-	    <div class="col-xs-3 col-md-3">
+	    <div class="col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">店铺</span>
 	  	<select class="form-control" type="text" 
@@ -65,11 +65,11 @@
 	      </div>
 	    </div>
 
-	    <div class="col-xs-3 col-md-3">
+	    <div class="col-md-3">
 	      <time-search time="select.date" oread="true"></time-search> 
 	    </div>
 
-	    <div class="col-xs-3 col-md-3">
+	    <div class="col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
 	  	  <i class="icon-user fg-red"></i>
@@ -83,7 +83,7 @@
 	  </div> <!--END from-group-->
 
 	  <div x-ng-if="stock_right.show_orgprice" class="row diablo-form-group">
-	    <div class="col-xs-3 col-md-3"> 
+	    <div class="col-md-3"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>欠款</span>
@@ -94,7 +94,7 @@
 	      </div>
 	    </div>
 	    
-	    <div class="col-xs-3 col-sm-3 col-md-3"> 
+	    <div class="col-md-3"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-map-marker fg-red"></i>
@@ -105,7 +105,7 @@
 	      </div>
 	    </div>
 	    
-	    <div class="col-xs-3 col-md-3"> 
+	    <div class="col-md-3"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>应付</span>
@@ -116,7 +116,7 @@
 	      </div>
 	    </div> 
 	    
-	    <div class="col-xs-3 col-md-3"> 
+	    <div class="col-md-3"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-comment fg-red"></i>
@@ -134,7 +134,7 @@
 	  <div x-ng-if="stock_right.show_orgprice && !base_settings.hide_bill"
 	       class="row diablo-form-group"> 
 	    
-	    <div class="col-xs-3 col-md-3">
+	    <div class="col-md-3">
 	      <div class="input-group">
 	    	<span class="input-group-addon">
 	    	  <i class="glyphicon glyphicon-yen fg-red"></i>现金</span>
@@ -153,7 +153,7 @@
 	      </div>
 	    </div>
 	    
-	    <div class="col-xs-3 col-md-3">
+	    <div class="col-md-3">
 	      <div class="input-group"> 
 	    	<span class="input-group-addon">
 	    	  <i class="glyphicon glyphicon-credit-card fg-red"></i>刷卡</span>
@@ -172,7 +172,7 @@
 	      </div>
 	    </div>
 
-	    <div class="col-xs-3 col-md-3">
+	    <div class="col-md-3">
 	      <div class="input-group">
 	    	<span class="input-group-addon">
 	    	  <i class="glyphicon glyphicon-piggy-bank fg-red"></i>汇款</span> 
@@ -191,7 +191,7 @@
 	      </div>
 	    </div> 
 
-	    <div class="col-xs-3 col-sm-9 col-md-3">
+	    <div class="col-md-3">
 	      <div class="input-group">
 	  	<span class="input-group-addon">
 	  	  <i class="glyphicon glyphicon-ban-circle fg-red"></i>核销</span>

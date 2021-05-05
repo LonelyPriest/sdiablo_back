@@ -381,21 +381,21 @@
 		<thead>
 		  <tr> 
 		    <th class="text-center">序号</th>
-		    <th class="text-center">货号/品名/品类</th>
+		    <th class="text-center col-xs-1 col-sm-1 col-md-2">货号/品名/品类</th>
 		    <!-- <th class="text-center">品名</th> -->
 		    <!-- <th class="text-center">类别</th>  -->
-		    <th class="text-center">季节</th>
+		    <th class="text-center hidden-xs">季节</th>
 
 		    <th x-ng-if="!setting.hide_vprice" class="text-center">虚拟价</th>
-		    <th class="text-center">吊牌价</th>
+		    <th class="text-center col-sm-1 col-md-1">吊牌价</th>
 		    <th class="text-center">折扣</th>
 		    
 		    <th class="text-center">数量</th> 
-		    <th x-ng-if="stock_right.show_orgprice" class="text-center">进价</th>
-		    <th x-ng-if="stock_right.show_orgprice" class="text-center">折扣率</th>
+		    <th x-ng-if="stock_right.show_orgprice" class="text-center col-xs-2 col-sm-1">进价</th>
+		    <th x-ng-if="stock_right.show_orgprice" class="text-center col-xs-2 col-sm-1">折扣率</th>
 		    
 		    <th x-ng-if="stock_right.show_orgprice" class="text-center">合计</th>
-		    <th class="text-center">溢出</th>
+		    <th class="text-center hidden-xs">溢出</th>
 		    <th class="text-center">操作</th> 
 		  </tr>
 		</thead>
@@ -403,7 +403,7 @@
 		  <tr class="text-center" ng-repeat="inv in inventories"> 
 		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.order_id}}</td>
 		    
-		    <td class="{{focus_css(inv.order_id, !inv.$new)}}" class="col-md-2 text-left vert-align">
+		    <td class="{{focus_css(inv.order_id, !inv.$new)}}" class="text-left vert-align">
 		      <span x-ng-if="!inv.$new">{{inv.name}}</span>
 		      
 		      <form x-ng-if="inv.$new" name="inv.form.good">
@@ -427,16 +427,16 @@
 		    <!-- <td class="{{focus_css(inv.order_id, true)}}">{{inv.brand.name}}</td> -->
 		    <!-- <td class="{{focus_css(inv.order_id, true)}}">{{inv.type.name}}</td> -->
 		    <!-- <td class="vert-align">{{sexs[inv.sex]}}</td> -->
-		    <td class="{{focus_css(inv.order_id, true)}}">{{seasons[inv.season]}}</td>
+		    <td class="{{focus_css(inv.order_id, true)}} hidden-xs">{{seasons[inv.season]}}</td>
 
-		    <td x-ng-if="!setting.hide_vprice" class="{{focus_css(inv.order_id, inv.$new)}} col-md-1 vert-align">
+		    <td x-ng-if="!setting.hide_vprice" class="{{focus_css(inv.order_id, inv.$new)}} col-xs-2 vert-align">
 		      <span x-ng-if="inv.$new">{{inv.vir_price}}</span>
 		      <form x-ng-if="!inv.$new" name="inv.form.virprice">
 			<div ng-class="{'has-error':inv.form.virprice.$invalid
 				       && !inv.form.virprice.$pristine}">
 			  <input class="form-control"
 				 type="number" step="0.01"
-				 placeholder="吊牌价"
+				 placeholder="虚拟价"
 				 x-ng-readonly="!stock_right.update_tprice"
 				 required
 				 disable-key
@@ -448,7 +448,7 @@
 		      </form> 
 		    </td>
 		    
-		    <td class="{{focus_css(inv.order_id, inv.$new)}} col-md-1 vert-align">
+		    <td class="{{focus_css(inv.order_id, inv.$new)}} vert-align">
 		      <span x-ng-if="inv.$new">{{inv.tag_price}}</span>
 		      <form x-ng-if="!inv.$new" name="inv.form.tagprice">
 			<div ng-class="{'has-error':inv.form.tagprice.$invalid
@@ -469,7 +469,7 @@
 		      </form> 
 		    </td>
 		    
-		    <td class="{{focus_css(inv.order_id, inv.$new)}} col-md-1 vert-align">
+		    <td class="{{focus_css(inv.order_id, inv.$new)}} col-xs-1 vert-align">
 		      <span x-ng-if="inv.$new">{{inv.discount}}</span>
 		      <form x-ng-if="!inv.$new" name="inv.form.discount">
 		    	<div ng-class="{'has-error':inv.form.discount.$invalid && !inv.form.discount.$pristine}">
@@ -505,7 +505,7 @@
 		      </form>
 		    </td>
 
-		    <td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
+		    <td x-ng-if="stock_right.show_orgprice" class="vert-align">
 		      <span x-ng-if="inv.$new">{{inv.org_price}}</span>
 		      <form x-ng-if="!inv.$new" name="inv.form.orgprice">
 			<div ng-class="{'has-error':inv.form.orgprice.$invalid
@@ -559,7 +559,7 @@
 		      </span> 
 		    </td>
 
-		    <td class="col-md-1 vert-align"> 
+		    <td class="col-sm-1 col-md-1 vert-align hidden-xs"> 
 		      <form name="inv.form.over">
 			<div ng-class="{'has-error':inv.form.over.$invalid
 				       && !inv.form.over.$pristine}">
@@ -602,7 +602,7 @@
 		      </div>
 
 		      <div ng-if="inv.$edit">
-			<a class="btn diablo-input-button btn-primary"
+			<a class="btn diablo-input-button btn-primary hidden-xs hidden-sm"
 			   x-ng-if="!inv.update_directory"
 			   x-ng-disabled="inv.free_color_size"
 			   x-ng-click="inventory_detail(inv)">详情
@@ -615,7 +615,7 @@
 			   x-ng-if="!inv.update_directory"
 			   x-ng-click="delete_inventory(inv)">删除
 			  <i class="glyphicon glyphicon-erase"></i></a>
-			<a class="btn diablo-input-button green"
+			<a class="btn diablo-input-button green hidden-xs hidden-sm"
 			   x-ng-if="setting.use_barcode && !inv.update_directory"
 			   x-ng-click="p_barcode(inv)">条码
 			  <i class="glyphicon glyphicon-barcode"></i></a>
