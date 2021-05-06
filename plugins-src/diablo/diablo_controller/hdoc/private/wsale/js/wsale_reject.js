@@ -811,6 +811,10 @@ function wsaleEmployeeEvaluationCtrlProvide(
 	$scope.do_search(page)
     };
 
+    $scope.back = function() {
+	diablo_goto_page("#/new_wsale_detail");
+    };
+
     $scope.refresh();
 };
 

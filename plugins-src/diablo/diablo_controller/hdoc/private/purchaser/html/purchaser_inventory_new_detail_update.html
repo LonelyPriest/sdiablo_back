@@ -387,16 +387,16 @@
 		    <th class="text-center hidden-xs">季节</th>
 
 		    <th x-ng-if="!setting.hide_vprice" class="text-center">虚拟价</th>
-		    <th class="text-center col-sm-1 col-md-1">吊牌价</th>
+		    <th class="text-center col-xs-1 col-sm-1 col-md-1">吊牌价</th>
 		    <th class="text-center">折扣</th>
 		    
 		    <th class="text-center">数量</th> 
-		    <th x-ng-if="stock_right.show_orgprice" class="text-center col-xs-2 col-sm-1">进价</th>
-		    <th x-ng-if="stock_right.show_orgprice" class="text-center col-xs-2 col-sm-1">折扣率</th>
+		    <th x-ng-if="stock_right.show_orgprice" class="text-center col-sm-1 hidden-xs">进价</th>
+		    <th x-ng-if="stock_right.show_orgprice" class="text-center col-sm-1 hidden-xs">折扣率</th>
 		    
-		    <th x-ng-if="stock_right.show_orgprice" class="text-center">合计</th>
+		    <th x-ng-if="stock_right.show_orgprice" class="text-center hidden-xs">合计</th>
 		    <th class="text-center hidden-xs">溢出</th>
-		    <th class="text-center">操作</th> 
+		    <th class="text-center col-xs-1 col-sm-1">操作</th> 
 		  </tr>
 		</thead>
 		<tbody>
@@ -448,7 +448,7 @@
 		      </form> 
 		    </td>
 		    
-		    <td class="{{focus_css(inv.order_id, inv.$new)}} vert-align">
+		    <td class="{{focus_css(inv.order_id, inv.$new)}} vert-align col-xs-1 col-sm-1 col-md-1">
 		      <span x-ng-if="inv.$new">{{inv.tag_price}}</span>
 		      <form x-ng-if="!inv.$new" name="inv.form.tagprice">
 			<div ng-class="{'has-error':inv.form.tagprice.$invalid
@@ -505,7 +505,7 @@
 		      </form>
 		    </td>
 
-		    <td x-ng-if="stock_right.show_orgprice" class="vert-align">
+		    <td x-ng-if="stock_right.show_orgprice" class="vert-align col-sm-1 hidden-xs">
 		      <span x-ng-if="inv.$new">{{inv.org_price}}</span>
 		      <form x-ng-if="!inv.$new" name="inv.form.orgprice">
 			<div ng-class="{'has-error':inv.form.orgprice.$invalid
@@ -528,7 +528,7 @@
 		      </form> 
 		    </td>
 		    
-		    <td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
+		    <td x-ng-if="stock_right.show_orgprice" class="col-sm-1 vert-align hidden-xs">
 		      <span x-ng-if="inv.$new">{{inv.ediscount}}</span>
 		      <form x-ng-if="!inv.$new" name="inv.form.ediscount">
 		    	<div ng-class="{'has-error':inv.form.ediscount.$invalid}">
@@ -550,7 +550,7 @@
 		    </td> 
 		    
 		    <td x-ng-if="stock_right.show_orgprice"
-			class="{{focus_css(inv.order_id, !inv.$new)}}">
+			class="{{focus_css(inv.order_id, !inv.$new)}} hidden-xs">
 		      <span x-ng-if="inv.$new"></span>
 		      <span x-ng-if="!inv.$new">
 			<span x-ng-if="(inv.org_price || inv.org_price==0) && inv.total">
@@ -577,7 +577,7 @@
 		      </form>
 		    </td> 
 		    
-		    <td class="text-left vert-align">
+		    <td class="text-left vert-align col-xs-1 col-sm-1">
 		      <div x-ng-if="inv.$new">
 			<a class="btn diablo-input-button btn-success"
 			   x-ng-if="inv.free_color_size"
