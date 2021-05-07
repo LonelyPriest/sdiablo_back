@@ -32,8 +32,7 @@
       <!--BEGIN table container-->
       <div class="portlet-body">
 	<!--BEGIN table-toolbar-->
-	<div class="table-toolbar">
-	  
+	<div class="table-toolbar hidden-xs"> 
 	  <div class="row diablo-form-group">
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group"> 
@@ -290,6 +289,106 @@
 	  </div> <!--END row-->
 	  
 	</div> <!--END table-toolbar-->
+
+	<div class="table-toolbar hidden-sm hidden-md"> 
+	  <div class="row diablo-form-group">
+	    <div class="col-xs-6">
+	      <div class="input-group"> 
+		<span class="input-group-addon">
+		  <i class="icon icon-rss fg-red"></i>厂商</span>
+	  	<input x-ng-if="stock_right.show_stock_firm_info" class="form-control"
+		       type="text"
+		       x-ng-edit 
+	  	       x-ng-model="select.firm" 
+	  	       placeholder="请选择厂商"
+	  	       typeahead-editable="false"
+		       typeahead-on-select="change_firm()"
+	  	       uib-typeahead="f as f.name for f in get_prompt_firm($viewValue)"/>
+		
+		<input x-ng-if="!stock_right.show_stock_firm_info"
+		       class="form-control"
+		       type="text"
+		       readonly
+		       value="******"/>
+	      </div>
+	    </div> 
+
+	    <div class="col-xs-6">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-flag fg-red"></i>店铺
+		</span>
+		<input class="form-control" type="text"
+		       readonly
+	  	       x-ng-model="select.shop.name"/> 
+	      </div>
+	    </div>
+	  </div>
+
+	  <div class="row diablo-form-group">
+	    <div class="col-xs-6">
+	      <div class="input-group">
+		<input type="text" class="form-control"
+		       placeholder="年/月/日"
+		       uib-datepicker-popup="yyyy/MM/dd"
+		       is-open="isOpened"
+		       close-text="关闭"
+		       clear-text="清除"
+		       current-text="今天"
+		       show-weeks="false"
+		       x-ng-readonly="true"
+		       x-ng-model="select.datetime"/>
+	  	<span class="input-group-btn">
+		  <button type="button"
+			  x-ng-disabled="!stock_right.update_w_stock"
+			  class="btn btn-default"
+			  x-ng-click="open_calendar($event)">
+		    <i class="glyphicon glyphicon-calendar"></i></button>
+		</span>
+	      </div>
+	    </div>
+
+	    <div class="col-xs-6">
+	      <div class="input-group">
+		<span class="input-group-addon">
+	  	  <i class="icon-user fg-red"></i>
+	  	</span>
+	  	<select class="form-control" type="text"
+	  		x-ng-model="select.employee"
+	  		x-ng-options="e as e.name for e in
+	  			      employees|filter:$viewValue|limitTo:8">
+		</select> 
+	      </div>
+	    </div> 
+	  </div> <!--END from-group-->
+
+	  <!--BEGIN row-->
+	  <div class="row diablo-form-group">
+	    <div class="col-xs-6"> 
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-map-marker fg-red"></i>
+		  总数
+		</span>
+	  	<input class="form-control" type="text" readonly
+	  	       x-ng-model="select.total"/>
+	      </div>
+	    </div>
+	    
+	    <div class="col-xs-6"> 
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-comment fg-red"></i>备注
+		</span>
+	  	<input class="form-control"
+		       type="text"
+		       placeholder="备注"
+		       ng-edit
+	  	       x-ng-model="select.comment"/>
+	      </div>
+	    </div> 
+	  </div> <!--END row--> 
+	</div>
 	
 	<!--BEGN portlet body--> 
 	<div class="portlet-body">
@@ -386,24 +485,28 @@
 		    <!-- <th class="text-center">类别</th>  -->
 		    <th class="text-center hidden-xs">季节</th>
 
-		    <th x-ng-if="!setting.hide_vprice" class="text-center">虚拟价</th>
-		    <th class="text-center col-xs-1 col-sm-1 col-md-1">吊牌价</th>
-		    <th class="text-center">折扣</th>
+		    <th x-ng-if="!setting.hide_vprice"
+			class="text-center col-xs-2 col-sm-1 col-md-1">虚拟价</th>
+		    <th class="text-center col-xs-2 col-sm-1 col-md-1">吊牌价</th>
+		    <th class="text-center col-xs-2 col-sm-1 col-md-1">折扣</th>
 		    
 		    <th class="text-center">数量</th> 
-		    <th x-ng-if="stock_right.show_orgprice" class="text-center col-sm-1 hidden-xs">进价</th>
-		    <th x-ng-if="stock_right.show_orgprice" class="text-center col-sm-1 hidden-xs">折扣率</th>
+		    <th x-ng-if="stock_right.show_orgprice"
+			class="text-center col-sm-1 col-md-1 hidden-xs">进价</th>
+		    <th x-ng-if="stock_right.show_orgprice"
+			class="text-center col-sm-1 col-md-1 hidden-xs">折扣率</th>
 		    
 		    <th x-ng-if="stock_right.show_orgprice" class="text-center hidden-xs">合计</th>
 		    <th class="text-center hidden-xs">溢出</th>
-		    <th class="text-center col-xs-1 col-sm-1">操作</th> 
+		    <th class="text-center">操作</th> 
 		  </tr>
 		</thead>
 		<tbody>
 		  <tr class="text-center" ng-repeat="inv in inventories"> 
 		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.order_id}}</td>
 		    
-		    <td class="{{focus_css(inv.order_id, !inv.$new)}}" class="text-left vert-align">
+		    <td class="{{focus_css(inv.order_id, !inv.$new)}}"
+			class="text-left vert-align col-xs-1 col-sm-1 col-md-2">
 		      <span x-ng-if="!inv.$new">{{inv.name}}</span>
 		      
 		      <form x-ng-if="inv.$new" name="inv.form.good">
@@ -448,7 +551,7 @@
 		      </form> 
 		    </td>
 		    
-		    <td class="{{focus_css(inv.order_id, inv.$new)}} vert-align col-xs-1 col-sm-1 col-md-1">
+		    <td class="{{focus_css(inv.order_id, inv.$new)}} vert-align">
 		      <span x-ng-if="inv.$new">{{inv.tag_price}}</span>
 		      <form x-ng-if="!inv.$new" name="inv.form.tagprice">
 			<div ng-class="{'has-error':inv.form.tagprice.$invalid
@@ -577,7 +680,7 @@
 		      </form>
 		    </td> 
 		    
-		    <td class="text-left vert-align col-xs-1 col-sm-1">
+		    <td class="text-left vert-align">
 		      <div x-ng-if="inv.$new">
 			<a class="btn diablo-input-button btn-success"
 			   x-ng-if="inv.free_color_size"

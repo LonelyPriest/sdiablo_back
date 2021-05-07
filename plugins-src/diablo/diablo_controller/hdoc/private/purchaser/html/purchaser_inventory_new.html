@@ -98,7 +98,7 @@
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-map-marker fg-red"></i>
-		  总数
+		  数量
 		</span>
 	  	<input class="form-control" type="text" readonly
 	  	       x-ng-model="select.total"/>
@@ -299,6 +299,50 @@
 	  </div>	    
 	  
 	</div> <!--END table-toolbar-->
+
+	<div class="table-toolbar hidden-md"> 
+	  <div class="row diablo-form-group"> 
+	    <div class="col-xs-6">
+	      <div class="input-group">
+		<span class="input-group-addon">店铺</span>
+	  	<select class="form-control" type="text" 
+	  		x-ng-model="select.shop"
+			x-ng-change="change_shop()"
+			x-ng-options="s as s.name for s in shops">
+		</select>
+	      </div>
+	    </div>
+
+	    <div class="col-xs-6">
+	      <time-search time="select.date" oread="true"></time-search> 
+	    </div>
+	  </div>
+	  
+	  <div class="row diablo-form-group">
+	    <div class="col-xs-6">
+	      <div class="input-group">
+		<span class="input-group-addon">
+	  	  <i class="icon-user fg-red"></i>
+	  	</span>
+	  	<select class="form-control" type="text"
+	  		x-ng-model="select.employee"
+	  		x-ng-options="e as e.name for e in employees|filter:$viewValue|limitTo:8">
+		</select> 
+	      </div>
+	    </div>
+	    
+	    <div class="col-md-3"> 
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-map-marker fg-red"></i>
+		  数量
+		</span>
+	  	<input class="form-control" type="text" readonly
+	  	       x-ng-model="select.total"/>
+	      </div>
+	    </div> 
+	  </div> 
+	</div>
 	
 	<!--BEGN portlet body--> 
 	<div class="portlet-body">
