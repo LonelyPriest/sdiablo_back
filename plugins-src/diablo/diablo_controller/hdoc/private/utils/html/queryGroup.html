@@ -150,6 +150,14 @@
 	    </form>
 	  </span>
 
+	  <span x-ng-switch-when="ticket_employee">
+	    <input type="text" class="form-control" placeholder="请输入经手人"
+		   x-ng-model="f.value"
+		   typeahead-editable="false"
+		   uib-typeahead="s as s.name for s in
+				  prompt.employee|filter:$viewValue|limitTo:8"/>
+	  </span>
+
 	  <span x-ng-switch-when="pay_state">
 	    <select type="text" class="form-control"
 		    x-ng-model="f.value"

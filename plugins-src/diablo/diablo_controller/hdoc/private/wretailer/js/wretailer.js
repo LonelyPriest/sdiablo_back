@@ -1351,6 +1351,7 @@ function wretailerCustomTicketDetailCtrlProvide(
 	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
     });
     diabloFilter.add_field("ticket_state", retailerUtils.ticket_state());
+    diabloFilter.add_field("ticket_employee", filterEmployee);
     diabloFilter.add_field("ticket_pshop", filterShop);
     diabloFilter.add_field("ticket_cshop", filterShop);
     diabloFilter.add_field("ticket_plan",  filterTicketPlan);

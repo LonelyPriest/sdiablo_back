@@ -4094,6 +4094,8 @@ ticket_condition(custome, [{<<"ticket_plan">>, Value}|T], Acc) ->
     ticket_condition(custome, T, [{<<"plan">>, Value}|Acc]);
 ticket_condition(custome, [{<<"ticket_batch">>, Value}|T], Acc) ->
     ticket_condition(custome, T, [{<<"batch">>, Value}|Acc]);
+ticket_condition(custome, [{<<"ticket_employee">>, Value}|T], Acc) ->
+    ticket_condition(custome, T, [{<<"employee">>, Value}|Acc]);
 ticket_condition(custome, [H|T], Acc) ->
     ticket_condition(custome, T, [H|Acc]).
 

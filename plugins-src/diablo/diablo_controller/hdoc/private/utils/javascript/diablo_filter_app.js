@@ -290,7 +290,7 @@ function filterProvider(){
 		    _prompt.stock = promptValues;
 		} else if(name === 'employee'){
 		    _filter.fields.push({name:"employ", chinese:"店员"});
-		    _prompt.employee = promptValues;
+		    _prompt.employee = promptValues; 
 		}else if(name === 'retailer'){
 		    _filter.fields.push({name:"retailer", chinese:"客户"});
 		    _prompt.retailer = promptValues;
@@ -387,6 +387,9 @@ function filterProvider(){
 		} else if (name === 'ticket_cshop') {
 		    _filter.fields.push({name:"ticket_cshop", chinese:"消费店铺"});
 		    _prompt.ticket_cshop = promptValues;
+		} else if (name === 'ticket_employee'){
+		    _filter.fields.push({name:"ticket_employee", chinese:"经手人"});
+		    _prompt.employee = promptValues;
 		} else if (name === 'score') {
 		    _filter.fields.push({name:"score", chinese:"积分方案"});
 		    _prompt.score = promptValues;

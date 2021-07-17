@@ -4,7 +4,6 @@
 -include("diablo_controller.hrl").
 
 -behaviour(gen_request).
-
 -export([action/2, action/3, action/4]).
 
 -define(d, ?utils:seperator(csv)).
@@ -558,18 +557,20 @@ action(Session, Req, {"new_threshold_card_sale", Id}, Payload) ->
 	{ok, RSN, LeftSwiming, Expire} ->
 	    try
 		BaseSettings = ?w_report_request:get_setting(Merchant, ?DEFAULT_BASE_SETTING),
+		?DEBUG("BaseSettings ~p", [BaseSettings]),
 		Notifies = 
 		    case ?w_report_request:get_config(<<"recharge_sms">>, BaseSettings) of
 			[] -> ?to_s(?SMS_NOTIFY);
-			_Value when size(_Value) =/= 2 -> ?to_s(?SMS_NOTIFY);
+			%% _Value when size(_Value) =/= 2 -> ?to_s(?SMS_NOTIFY);
 			_Value  -> ?to_s(_Value)
 		    end,
 		?DEBUG("notify ~p", [Notifies]),
-		SMS = try
-			  lists:nth(2, Notifies) - 48
-		      catch _:_ ->
-			      ?NO
-		      end,
+		%% SMS = try
+		%% 	  lists:nth(2, Notifies) - 48
+		%%       catch _:_ ->
+		%% 	      ?NO
+		%%       end,
+		SMS = ?utils:nth(2, Notifies),
 
 		?DEBUG("sms ~p", [SMS]), 
 		case ?to_i(SMS) of
