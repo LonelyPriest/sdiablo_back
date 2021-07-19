@@ -300,7 +300,28 @@
 	  
 	</div> <!--END table-toolbar-->
 
-	<div class="table-toolbar hidden-md hidden-lg"> 
+	<div class="table-toolbar hidden-md hidden-lg">
+	  <div class="row diablo-form-group">
+	    <div class="col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="icon icon-rss fg-red"></i>厂商</span>
+	  	<input x-ng-if="stock_right.show_stock_firm_info" class="form-control" type="text"
+		       x-ng-edit
+	  	       x-ng-model="select.firm" 
+	  	       placeholder="请选择厂商，默认为空"
+	  	       typeahead-editable="false"
+	  	       uib-typeahead="f as f.name for f in get_prompt_firm($viewValue)"/>
+		
+		<input x-ng-if="!stock_right.show_stock_firm_info"
+		       class="form-control"
+		       type="text"
+		       readonly
+		       value="******"/>
+	      </div>
+	    </div>
+	  </div>
+	    
 	  <div class="row diablo-form-group"> 
 	    <div class="col-xs-6">
 	      <div class="input-group">
