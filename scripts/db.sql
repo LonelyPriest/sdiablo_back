@@ -1164,6 +1164,7 @@ create table w_inventory_fix_detail_amount(
     shop           INTEGER default -1,
     style_number   VARCHAR(64) not null,
     brand          INTEGER default -1,
+    type           INTEGER default -1, -- reference to inv_type
     color          INTEGER default -1,
     size           VARCHAR(8) default 0, -- S/26, M/27....
 

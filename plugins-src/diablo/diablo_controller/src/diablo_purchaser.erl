@@ -3746,19 +3746,41 @@ handle_call({shift_note_color_size_export, Merchant, UTable, Conditions}, _From,
 handle_call({stock_detail_get_by_shop, Merchant, UTable, Shop, Firm, ExtraCondtion}, _From, State) ->
     Sql = case Firm =:= ?INVALID_OR_EMPTY andalso ExtraCondtion =:= [] of
 	      true ->
-		  "select style_number, brand, color, size, total, merchant, shop"
-		  %% " from w_inventory_amount"
+		  "select a.style_number, a.brand, a.type, a.merchant, a.shop"
+		      ", b.color, b.size, b.total"
+		      " from "
+
+		      "(select style_number, brand, type, merchant, shop, firm"
+		  %% " from w_inventory"
+		      " from" ++ ?table:t(stock, Merchant, UTable)
+		      ++ " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and shop=" ++ ?to_s(Shop) 
+		      ++ ?sql_utils:condition(proplists, ExtraCondtion)
+		      ++ ") a"
+
+		      " inner join "
+		      "(select style_number, brand, merchant, shop, color, size, total"
+		  %%  from w_inventory_amount"
 		      " from" ++ ?table:t(stock_note, Merchant, UTable)
 		      ++ " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and shop=" ++ ?to_s(Shop)
-		      ++ " and total!=0"
-		      ++ " order by id desc";
+		      ++ " and total!=0) b"
+
+		      " on a.merchant=b.merchant and a.shop=b.shop"
+		      " and a.style_number=b.style_number and a.brand=b.brand"; 
+		  %% "select style_number, brand, color, size, total, merchant, shop"
+		  %% %% " from w_inventory_amount"
+		  %%     " from" ++ ?table:t(stock_note, Merchant, UTable)
+		  %%     ++ " where merchant=" ++ ?to_s(Merchant)
+		  %%     ++ " and shop=" ++ ?to_s(Shop)
+		  %%     ++ " and total!=0"
+		  %%     ++ " order by id desc";
 	      false ->
 		  "select a.style_number, a.brand, a.merchant, a.shop"
 		      ", b.color, b.size, b.total"
 		      " from "
 		      
-		      "(select style_number, brand, merchant, shop, firm"
+		      "(select style_number, brand, type, merchant, shop, firm"
 		  %% " from w_inventory"
 		      " from" ++ ?table:t(stock, Merchant, UTable)
 		      ++ " where merchant=" ++ ?to_s(Merchant)
@@ -3960,19 +3982,21 @@ sql(wfix, RSN, Datetime, Merchant, UTable, Shop, {StocksNotInDB, StocksNotInShop
 	     fun({Stock}, Acc) ->
 		     StyleNumber = ?v(<<"style_number">>, Stock),
 		     Brand = ?v(<<"brand">>, Stock),
+		     Type  = ?v(<<"type">>, Stock),
 		     Color = ?v(<<"color">>, Stock),
 		     Size  = ?v(<<"size">>, Stock),
 		     Fix   = ?v(<<"fix">>, Stock),
 		     [%% "insert into w_inventory_fix_detail_amount(rsn"
 		      "insert into" ++ ?table:t(stock_fix_note, Merchant, UTable)
 		      ++ "(rsn"
-		      ", merchant, shop, style_number"
-		      ", brand, color, size, db_total, shop_total, entry_date) values("
+		      ", merchant, shop, style_number, brand"
+		      ", type, color, size, db_total, shop_total, entry_date) values("
 		      ++ "\'" ++ ?to_s(RSN) ++ "\',"
 		      ++ ?to_s(Merchant) ++ ","
 		      ++ ?to_s(Shop) ++ ","
 		      ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
 		      ++ ?to_s(Brand) ++ ","
+		      ++ ?to_s(Type) ++ ","
 		      ++ ?to_s(Color) ++ ","
 		      ++ "\'" ++ ?to_s(Size) ++ "\',"
 		      ++ "0,"
@@ -3984,19 +4008,21 @@ sql(wfix, RSN, Datetime, Merchant, UTable, Shop, {StocksNotInDB, StocksNotInShop
 	     fun({Stock}, Acc) ->
 		     StyleNumber = ?v(<<"style_number">>, Stock),
 		     Brand = ?v(<<"brand">>, Stock),
+		     Type  = ?v(<<"type">>, Stock),
 		     Color = ?v(<<"color">>, Stock),
 		     Size  = ?v(<<"size">>, Stock),
 		     Total = ?v(<<"total">>, Stock),
 		     [%% "insert into w_inventory_fix_detail_amount"
 		      "insert into" ++ ?table:t(stock_fix_note, Merchant, UTable)
 		      ++ "(rsn"
-		      ", merchant, shop, style_number"
-		      ", brand, color, size, db_total, shop_total, entry_date) values("
+		      ", merchant, shop, style_number, brand"
+		      ", type, color, size, db_total, shop_total, entry_date) values("
 		      ++ "\'" ++ ?to_s(RSN) ++ "\',"
 		      ++ ?to_s(Merchant) ++ ","
 		      ++ ?to_s(Shop) ++ ","
 		      ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
 		      ++ ?to_s(Brand) ++ ","
+		      ++ ?to_s(Type) ++ ","
 		      ++ ?to_s(Color) ++ ","
 		      ++ "\'" ++ ?to_s(Size) ++ "\',"
 		      ++ ?to_s(Total) ++ ","
@@ -4008,6 +4034,7 @@ sql(wfix, RSN, Datetime, Merchant, UTable, Shop, {StocksNotInDB, StocksNotInShop
 	     fun({Stock}, Acc) ->
 		     StyleNumber = ?v(<<"style_number">>, Stock),
 		     Brand    = ?v(<<"brand">>, Stock),
+		     Type     = ?v(<<"type">>, Stock),
 		     Color    = ?v(<<"color">>, Stock),
 		     Size     = ?v(<<"size">>, Stock),
 		     FixTotal = ?v(<<"fix">>, Stock),
@@ -4015,13 +4042,14 @@ sql(wfix, RSN, Datetime, Merchant, UTable, Shop, {StocksNotInDB, StocksNotInShop
 		     [%% "insert into w_inventory_fix_detail_amount"
 		      "insert into" ++ ?table:t(stock_fix_note, Merchant, UTable)
 		      ++ "(rsn"
-		      ", merchant, shop, style_number"
-		      ", brand, color, size, db_total, shop_total, entry_date) values("
+		      ", merchant, shop, style_number, brand"
+		      ", type, color, size, db_total, shop_total, entry_date) values("
 		      ++ "\'" ++ ?to_s(RSN) ++ "\',"
 		      ++ ?to_s(Merchant) ++ ","
 		      ++ ?to_s(Shop) ++ ","
 		      ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
 		      ++ ?to_s(Brand) ++ ","
+		      ++ ?to_s(Type) ++ ","
 		      ++ ?to_s(Color) ++ ","
 		      ++ "\'" ++ ?to_s(Size) ++ "\',"
 		      ++ ?to_s(DBTotal) ++ ","

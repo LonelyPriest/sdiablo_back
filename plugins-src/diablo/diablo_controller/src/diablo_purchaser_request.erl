@@ -1580,7 +1580,7 @@ action(Session, Req, {"export_w_inventory_fix_note"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     UTable = ?session:get(utable, Session),
     
-    UserId      = ?session:get(id, Session),
+    UserId = ?session:get(id, Session),
     RSN = ?v(<<"rsn">>, Payload), 
     %% fix
     %% {ok, Detail} = ?w_inventory:purchaser_inventory(get_fix, Merchant, RSN), 
@@ -2654,7 +2654,7 @@ do_write(shift_note_color, Do, Count, [DH|DT], DictNotes,
     end.
 
 csv_head(fix_note, Do) ->
-    H = "序号,款号,品牌,颜色,尺码,盘点数量,电脑数量,盈余",
+    H = "序号,款号,品牌,类型,颜色,尺码,盘点数量,电脑数量,盈余",
     Do(?utils:to_gbk(from_latin1, H)).
 do_write(fix_note, _Do, _Count, []) ->
     ok;
@@ -2662,6 +2662,7 @@ do_write(fix_note, Do, Count, [H|T]) ->
     %% Rsn       = ?v(<<"rsn">>, H),
     StyleNumber = ?v(<<"style_number">>, H),
     Brand       = ?v(<<"brand">>, H),
+    Type        = ?v(<<"type">>, H),
     Color       = ?v(<<"color">>, H),
     Size        = ?v(<<"size">>, H),
     ShopTotal   = ?v(<<"shop_total">>, H),
@@ -2671,6 +2672,7 @@ do_write(fix_note, Do, Count, [H|T]) ->
 	++ ?to_s(Count) ++ ?d
 	++ "'" ++ ?to_s(StyleNumber) ++ "'" ++ ?d
 	++ ?to_s(Brand) ++ ?d
+	++ ?to_s(Type) ++ ?d
 	++ ?to_s(Color) ++ ?d
 	++ ?to_s(Size) ++ ?d
 	++ ?to_s(ShopTotal) ++ ?d

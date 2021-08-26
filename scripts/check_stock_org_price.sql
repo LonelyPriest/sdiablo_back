@@ -233,6 +233,11 @@ update w_child_card w inner join(\
 select a.id, insert(a.csn1, 3, 2, '') as csn2 from (select id, insert(csn, 1,2, '') as csn1 from w_child_card where csn!='-1') a\
 ) b on w.id=b.id set w.csn=b.csn2;
 
+-- syn field type in w_inventory_fix_detail_amount
+update w_inventory_fix_detail_amount a inner join(select style_number, brand, type, merchant, shop from w_inventory where merchant=31 and shop=134) b \
+on a.merchant=b.merchant and a.style_number=b.style_number and a.brand=b.brand and a.shop=b.shop \
+set a.type=b.type where a.rsn='M-31-S-134-x-9' and a.merchant=31 and a.shop=134;
+
 -- clear date
 -- delete from w_inventory_good where merchant=93;
 

@@ -1551,8 +1551,37 @@ inventory(fix_rsn_groups, fix, {Merchant, UTable}, Conditions, PageFun) ->
 	       _ -> []
 	   end,
     ?DEBUG("C1 ~p", [C1]),
+    "select n.id"
+	", n.rsn"
+	", n.shop_id"
+	", n.style_number"
+	", n.brand_id"
+	", n.color_id"
+	", n.size"
+	", n.shop_total"
+	", n.db_total"
+	", n.merchant"
+	", n.entry_date"
+	", n.free"
+	", n.type as type_id"
+	", n.sex"
+	", n.season"
+	", n.firm"
+	", n.year"
+	", n.shift_date"
+	", n.tag_price"
+	", n.discount"
+	", n.org_price"
+	", n.ediscount"
+	", n.path"
+	", n.s_group"
+	
+	", b.name as color"
+	", c.name as brand"
+	", e.name as type"
 
-    "select a.id"
+	" from("
+	"select a.id"
 	", a.rsn"
 	", a.shop_id"
 	", a.style_number"
@@ -1564,8 +1593,8 @@ inventory(fix_rsn_groups, fix, {Merchant, UTable}, Conditions, PageFun) ->
 	", a.merchant"
 	", a.entry_date"
 
-	", b.name as color"
-	", c.name as brand"
+    %% ", b.name as color"
+    %% ", c.name as brand"
 
 	", d.free"
 	", d.type"
@@ -1573,14 +1602,14 @@ inventory(fix_rsn_groups, fix, {Merchant, UTable}, Conditions, PageFun) ->
 	", d.season"
 	", d.firm"
 	", d.year"
-	", d.entry_date"
+	", d.entry_date as shift_date"
 	", d.tag_price"
 	", d.discount"
 	", d.org_price"
 	", d.ediscount"
 	", d.path"
 	", d.s_group"
-	
+
 	" from ("
 	"select id"
 	", rsn"
@@ -1593,16 +1622,22 @@ inventory(fix_rsn_groups, fix, {Merchant, UTable}, Conditions, PageFun) ->
 	", db_total"
 	", merchant"
 	", entry_date"
-	
+
 	" from" ++ ?table:t(stock_fix_note, Merchant, UTable) 
-	
+
 	++ " where merchant=" ++ ?to_s(Merchant)
 	++ C1 ++ PageFun() ++ ") a"
 
-	" left join colors b on a.color_id=b.id"
-	" left join brands c on a.brand_id=c.id"
-	" left join" ++ ?table:t(stock, Merchant, UTable) ++ " d"
-	" on a.merchant=d.merchant and a.shop_id=d.shop and a.style_number=d.style_number and a.brand_id=d.brand";
+	%% " left join colors b on a.color_id=b.id"
+	%% " left join brands c on a.brand_id=c.id"
+	" left join " ++ ?table:t(stock, Merchant, UTable) ++ " d"
+	" on a.merchant=d.merchant"
+	" and a.shop_id=d.shop"
+	" and a.style_number=d.style_number"
+	" and a.brand_id=d.brand) n"
+	" left join colors b on n.color_id=b.id"
+	" left join brands c on n.brand_id=c.id"
+	" left join inv_types e on n.type=e.id";
 
 inventory(transfer_detail, transfer, {Merchant, UTable}, Conditions, PageFun) ->
     {StartTime, EndTime, NewConditions} =

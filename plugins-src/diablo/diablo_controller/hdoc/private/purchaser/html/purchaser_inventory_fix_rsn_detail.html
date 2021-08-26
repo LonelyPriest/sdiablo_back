@@ -79,7 +79,8 @@
 		    <th>单号</th>
 		    
 		    <th>款号</th>
-		    <th>品牌</th> 
+		    <th>品牌</th>
+		    <th>类型</th> 
 		    <!-- <th>吊牌价</th> -->
 		    
 		    <th>颜色</th>
@@ -98,6 +99,7 @@
 
 		    <td>{{inv.style_number}}</td>
 		    <td>{{inv.brand.name}}</td>
+		    <td>{{inv.type}}</td>
 		    
 		    <td>
 		      <span x-ng-if="inv.color_id===0">-</span>

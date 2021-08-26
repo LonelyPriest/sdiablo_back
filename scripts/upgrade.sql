@@ -819,6 +819,9 @@ alter table w_sale_order change column base_pay abs_pay DECIMAL(10,2) not null d
 --2020-12-29
 -- alter table w_sale add column charge DECIMAL(10,2) not null default 0 after should_pay;
 
+--2021-08-26
+alter table w_inventory_fix_detail_amount add column type INTEGER not null default -1 after brand;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 
