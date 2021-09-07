@@ -469,25 +469,34 @@ handle_call({stock_real, Merchant, UTable, Conditions}, _From, State)->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({last_stock_of_shop, Merchant, ShopIds, CurrentDay}, _From, State) ->
-
+handle_call({last_stock_of_shop, Merchant, ShopIds, CurrentDay}, _From, State) -> 
+    Yestoday = ?utils:date_before(?utils:to_date(date, CurrentDay), 1),
+    ?DEBUG("Yestoday ~p", [Yestoday]),
     Sql = "select a.id"
 	", a.day"
 	", a.merchant"
 	", a.shop as shop_id"
 	", stock as total"
-    	" from w_daily_report a "
-    	"inner join (select max(day) as day, merchant, shop from w_daily_report"
-    	" where merchant=" ++ ?to_s(Merchant)
-    	++ " and "++ ?utils:to_sqls(proplists, {<<"shop">>, ShopIds})
-    	++ " and day<\'"  ++ ?to_s(CurrentDay) ++ "\'"
-    	++ " group by merchant, shop) b on "
-	"a.merchant=b.merchant and a.shop=b.shop and a.day=b.day", 
+	", stockc as totalc"
+    	" from w_daily_report a " 
+    	%% "inner join (select max(day) as day, merchant, shop from w_daily_report"
+    	%% " where merchant=" ++ ?to_s(Merchant)
+    	%% ++ " and "++ ?utils:to_sqls(proplists, {<<"shop">>, ShopIds})
+    	%% ++ " and day<\'"  ++ ?to_s(CurrentDay) ++ "\'"
+    	%% ++ " group by merchant, shop) b on "
+	%% "a.merchant=b.merchant and a.shop=b.shop and a.day=b.day",
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and " ++ ?utils:to_sqls(proplists, {<<"shop">>, ShopIds})
+	++ " and day=\'"  ++ ?utils:format_date(Yestoday) ++ "\'",
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
 handle_call({current_stock_of_shop, Merchant, ShopIds, CurrentDay}, _From, State) ->
-    Sql = "select id, merchant, shop as shop_id, stock as total"
+    Sql = "select id"
+	", merchant"
+	", shop as shop_id"
+	", stock as total"
+	", stockc as totalc"
 	" from w_daily_report "
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and "++ ?utils:to_sqls(proplists, {<<"shop">>, ShopIds})

@@ -239,28 +239,29 @@ on a.merchant=b.merchant and a.style_number=b.style_number and a.brand=b.brand a
 set a.type=b.type where a.rsn='M-31-S-134-x-9' and a.merchant=31 and a.shop=134;
 
 -- clear date
--- delete from w_inventory_good where merchant=93;
+-- delete from w_inventory_good where merchant=86;
 
 -- goods
--- delete from w_inventory_good where merchant=63;
+delete from w_inventory_good where merchant=86;
 
-delete from w_inventory_new_detail_amount_117 where merchant=117;
-delete from w_inventory_new_detail_117 where merchant=117;
-delete from w_inventory_new_117 where merchant=117;
+-- delete from w_inventory_new_detail_amount_117 where merchant=117;
+delete from w_inventory_new_detail_amount where merchant=86;
+delete from w_inventory_new_detail where merchant=86;
+delete from w_inventory_new where merchant=86;
 
 -- clear stock
-delete from w_inventory_amount_117 where merchant=117;
-delete from w_inventory_117 where merchant=117;
+delete from w_inventory_amount where merchant=86;
+delete from w_inventory where merchant=86;
 
 -- clear sale
-delete from w_sale_detail_amount_117 where merchant=117;
-delete from w_sale_detail_117 where merchant=117;
-delete from w_sale_117 where merchant=117;
+delete from w_sale_detail_amount where merchant=86;
+delete from w_sale_detail where merchant=86;
+delete from w_sale where merchant=86;
 
 -- clear batch sale
-delete from batch_sale where merchant=117;
-delete from batch_sale_detail where merchant=117;
-delete from batch_sale_detail_amount where merchant=117;
+delete from batch_sale where merchant=86;
+delete from batch_sale_detail where merchant=86;
+delete from batch_sale_detail_amount where merchant=86;
 -- delete from batchsaler where merchant=27 and type!=2;
 
 
@@ -271,19 +272,20 @@ delete from w_inventory_transfer where merchant=117;
 
 
 -- report
-delete from w_daily_report where merchant=117;
-delete from w_change_shift where merchant=117;
+delete from w_daily_report where merchant=86;
+delete from w_change_shift where merchant=86;
 
 -- charge
 -- delete from w_charge_detail where merchant=27;
 
 -- brands
-delete from brands where merchant=27;
-delete from inv_types where merchant=27;
+delete from brands where merchant=86;
+delete from inv_types where merchant=86;
 
 -- types
-delete from inv_types where merchant=27;
+-- delete from inv_types where merchant=27;
 
 -- bill
-delete from w_bill_detail where merchant=27
+delete from w_bill_detail where merchant=86;
 
+update suppliers set balance=0 where merchant=86;
