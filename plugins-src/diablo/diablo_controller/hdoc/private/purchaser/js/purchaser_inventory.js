@@ -1388,7 +1388,7 @@ function purchaserInventoryNewCtrlProvide (
      * good new
      */ 
     $scope.pattern = {style_number: diabloPattern.style_number,
-		      brand: diabloPattern.ch_en_num,
+		      brand: diabloPattern.brand,
 		      type:  diabloPattern.good_type,
 		      expire: diabloPattern.expire_date,
 		      percent: diabloPattern.percent,
@@ -2019,8 +2019,8 @@ function purchaserInventoryNewCtrlProvide (
 	    }
 	}();
 	
-	console.log(good);
 	var image  = function() {
+	    console.log($scope.good.image);
 	    if (angular.isDefined($scope.good.image) && $scope.good.image){
 		return $scope.good.image.dataUrl.replace(/^data:image\/(png|jpg);base64,/, "")
 	    }
@@ -2659,7 +2659,7 @@ function purchaserInventoryDetailCtrlProvide(
 	if (angular.isDefined(inv.sizes) && angular.isDefined(inv.colors) && angular.isDefined(inv.amounts)){
 	    var payload = {sizes:      inv.sizes,
 			   colors:     inv.colors,
-			   path:       inv.path ? inv.path + "?" + Match.random() : undefined,
+			   path:       inv.path ? inv.path + "?" + Math.random() : undefined,
 			   stock_alarm: $scope.setting.stock_alarm,
 			   get_amount: get_amount 
 			  };

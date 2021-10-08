@@ -1114,8 +1114,8 @@ function filterProvider(){
 		// })
 	    },
 
-	    add_purchaser_good: function(good){
-		return add_purchaser_good(good);
+	    add_purchaser_good: function(good, image){
+		return add_purchaser_good(good, image);
 	    },
 
 	    get_good_by_barcode: function(barcode) {

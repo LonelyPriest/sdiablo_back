@@ -3,7 +3,7 @@
 -include("../../../../include/knife.hrl").
 -include("diablo_controller.hrl").
 
--export([sms_notify/2, sign/1, zz_sms/1, sms/3, sms/4, init_sms/0, sms_once/4, check_sms_rate/1]).
+-export([sms_notify/2, sign/1, zz_sms/1, zz_sms/3, sms/3, sms/4, init_sms/0, sms_once/4, check_sms_rate/1]).
 -export([check_merchant_balance/2]).
 
 -define(zz_sms_account, <<"N3001234">>).
@@ -711,6 +711,46 @@ zz_sms(send) ->
 	    {error, {http_failed, Reason}}
     end.
 
+zz_sms(retailer_sms_send, Merchant, Shops) ->
+    Account = "N3001234",
+    Password = "dLZJfzK5Mc7a9d",
+    Msg = "【独品服饰】尊敬的{$var}会员：易俗河独品女装搬迁至凤凰路肯德基旁，9月10日至12日盛大开业，特为您准备了精美礼品一份！期待您的到来！",
+
+    Sql = "select id, name, mobile from w_retailer"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and " ++ ?utils:to_sqls(proplists, {<<"shop">>, Shops})
+	++ " and type!=2",
+    case ?sql_utils:execute(read, Sql) of
+	{ok, []} -> ok;
+	{ok, _Retailers} ->
+	    lists:foreach(
+	      fun({R}) ->
+		      Phone = ?v(<<"mobile">>, R),
+		      Name = ?v(<<"name">>, R),
+		      Params = ?to_s(Phone) ++ "," ++ ?to_s(Name),
+		      SMSParams = ?to_s(ejson:encode({[{<<"account">>, ?to_b(Account)},
+						       {<<"password">>, ?to_b(Password)},
+						       {<<"msg">>, ?to_b(Msg)},
+						       {<<"params">>, ?to_b(Params)}]})),
+		      ?DEBUG("Phone ~p, Name ~p, Params ~p", [Phone, Name, Params]),
+		      UTF8Body = unicode:characters_to_list(SMSParams, utf8),
+		      case httpc:request(
+			     post, {"https://smssh1.253.com/msg/variable/json",
+				    [], "application/json;charset=utf-8", UTF8Body}, [], []) of
+			  {ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
+			      ?DEBUG("Head ~p", [_Head]),
+			      ?DEBUG("Reply ~ts", [Reply]),
+			      {struct, Result} = mochijson2:decode(Reply),
+			      ?DEBUG("sms result ~p", [Result]),
+			      Code  = ?v(<<"code">>, Result),
+			      ErrorMsg   = ?v(<<"errorMsg">>, Result),
+			      ?DEBUG("code ~p, msg ~ts", [Code, ErrorMsg]);
+			  {error, Reason} ->
+			      {error, {http_failed, Reason}}
+		      end
+	      end, [{[{<<"name">>, <<"卜仙慧">>}, {<<"mobile">>, <<"18692269329">>}]}]);
+	Error -> Error
+    end.
 
 get_sms_template(zz, Action, Merchant) ->
     case ?w_user_profile:get(sms_template, Merchant) of
