@@ -984,6 +984,7 @@ function wretailerChargeDetailCtrlProvide(
     $scope.current_page = $scope.default_page;
     $scope.total_items = 0;
     $scope.shops = user.sortShops;
+    $scope.shopIds = user.shopIds;
     
     $scope.filters = []; 
     diabloFilter.reset_field();
@@ -1009,6 +1010,10 @@ function wretailerChargeDetailCtrlProvide(
     $scope.do_search = function(page){
 	console.log($scope.filters);
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    if (angular.isUndefined(search.shop) || !search.shop || search.shop.length === 0){
+		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
+	    }
+	    
 	    wretailerService.filter_charge_detail(
 		$scope.match, search, page, $scope.items_perpage
 	    ).then(function(result){
