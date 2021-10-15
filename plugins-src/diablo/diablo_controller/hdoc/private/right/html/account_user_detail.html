@@ -47,6 +47,7 @@
                     <th>登录开始时间</th>
                     <th>登录结束时间</th>
 		    <th>查看销售天数</th>
+		    <th>帐号折扣</th>
                     <th>权限说明</th>
                     <th>创建时间</th>
                     <th>操作</th>
@@ -102,6 +103,14 @@
                         <span x-ng-switch-when=0>当天</span>
 			<span x-ng-switch-when=-1>无限制</span>
                         <span x-ng-switch-default>{{account.sdays}}</span>
+                      </div>
+                    </td>
+
+		    <td class="{{css(account.type)}}">
+                      <div x-ng-if="account.type===1">无限制</div>
+                      <div x-ng-if="account.type!==1" x-ng-switch on="account.discount">
+			<span x-ng-switch-when=0>无限制</span>
+                        <span x-ng-switch-default>{{account.discount}}</span>
                       </div>
                     </td>
 		    
@@ -288,6 +297,16 @@
 		   typeahead-editable="false"
 		   uib-typeahead="role as role.name for role in
 			      roles|filter:$viewValue|limitTo:8"/>
+	  </div>
+	</div>
+
+	<div x-ng-if="account.type===2", class="form-group">
+	  <label class="col-md-3 control-label">帐号折扣</label>
+	  <div class="col-md-6">
+	    <input class="form-control"
+		   type="number" step="1"
+		   placeholder="该帐号折扣权限"
+		   data-ng-model="account.discount"/>
 	  </div>
 	</div>
 

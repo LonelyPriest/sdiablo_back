@@ -6,6 +6,7 @@
 -behaviour(gen_request).
 
 -export([action/2, action/3, action/4]).
+
 -export([get_shops/2, login_user/2]).
 
 action(Session, Req) ->
@@ -74,6 +75,7 @@ action(Session, Req, {"get_login_user_info"}) ->
     LoginEmployee = ?session:get(login_employee, Session),
     LoginShop     = ?session:get(login_shop, Session),
     SDays         = ?session:get(sdays, Session),
+    Discount      = ?session:get(discount, Session),
     Name          = ?session:get(name, Session),
     {ok, Catlogs} = ?w_user_profile:get(user_right, Merchant, Session),
     {ok, Shops}   = ?w_user_profile:get(user_shop, Merchant, Session),
@@ -88,6 +90,7 @@ action(Session, Req, {"get_login_user_info"}) ->
 		     {<<"login_shop">>, LoginShop},
 		     {<<"login_name">>, Name},
 		     {<<"sdays">>, SDays},
+		     {<<"discount">>, Discount},
 		     {<<"type">>, ?session:get(type, Session)}]});
     
 action(Session, Req, {"list_login_user_right"}) ->
@@ -220,7 +223,7 @@ action(Session, Req, {"list_inventory_children"}) ->
 				?del_stock_order,
 				?update_stock_order,
 				?filter_stock_order,
-				?filter_stock_order_note
+				?filter_stock_order_detail
 			       ]}, 
     
     {ok, Children} = ?right_init:get_children(children_only, [{<<"id">>, RightId}]),
@@ -249,7 +252,7 @@ action(Session, Req, {"list_sales_children"}) ->
 			 ?del_w_sale_order,
 			 ?update_w_sale_order,
 			 ?filter_w_sale_order,
-			 ?filter_w_sale_order_note]},
+			 ?filter_w_sale_order_detail]},
     
     {ok, Children} =
 	?right_init:get_children(children_only, [{<<"id">>, RightId}]),

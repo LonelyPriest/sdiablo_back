@@ -85,6 +85,8 @@ var diablo_withdraw = 1;
 
 var diablo_print_none = 2;
 
+var diablo_nolimit_discount = 0;
+
 
 /*
  * shop mode

@@ -74,6 +74,7 @@ handle_call({login, User, Passwd}, _From, State) ->
                         ", a.stime"
 			", a.etime"
 			", a.sdays"
+			", a.discount"
 			
 			", b.type as mtype"
 			", b.unique_table as utable"

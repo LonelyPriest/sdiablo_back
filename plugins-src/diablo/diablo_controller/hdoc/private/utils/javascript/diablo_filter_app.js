@@ -893,7 +893,8 @@ function filterProvider(){
 		    return list_purchaser_type().then(function(types){
 			// console.log(types);
 			var _types =  types.map(function(t){
-			    return {id: t.id, 
+			    return {id: t.id,
+				    deleted: t.deleted,
 				    bcode: t.bcode,
 				    cid: t.cid,
 				    name:t.name,

@@ -287,6 +287,7 @@ create table users
     stime          INTEGER default 0,
     etime          INTEGER default 0,
     sdays          INTEGER default 0,
+    discount       INTEGER default 0,
     
     max_create     INTEGER default -1, -- max users can be created of the user
     create_date    DATETIME,

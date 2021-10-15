@@ -86,6 +86,7 @@ handle_call({new, User}, _From, State) ->
     Shop         = ?v(<<"shop_id">>, User),
     MerchantType = ?v(<<"mtype">>, User),
     SDays        = ?v(<<"sdays">>, User),
+    Discount     = ?v(<<"discount">>, User),
     Tablet       = ?v(<<"tablet">>, User, 0),
     UTable       = ?v(<<"utable">>, User, 0),
 
@@ -116,6 +117,7 @@ handle_call({new, User}, _From, State) ->
 			  shop_id     = ?to_i(Shop),
 			  mtype       = ?to_i(MerchantType),
 			  sdays       = ?to_i(SDays),
+			  discount    = ?to_i(Discount), 
 			  tablet      = ?to_i(Tablet),
 			  utable      = ?to_i(UTable),
 			  login_time  = ?utils:current_time(timestamp)}}),
@@ -314,5 +316,8 @@ get(tablet, Session) ->
 get(utable, Session) ->
     Session#session.utable;
 get(sdays, Session) ->
-    Session#session.sdays.
+    Session#session.sdays;
+get(discount, Session) ->
+    Session#session.discount.
+
 

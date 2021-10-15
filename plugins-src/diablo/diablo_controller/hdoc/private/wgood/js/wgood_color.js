@@ -361,6 +361,23 @@ function wgoodTypeDetailCtrlProvide(
 	    }
 	});
     };
+
+    $scope.delete_type = function(t) {
+	console.log(t);
+	wgoodService.delete_good_type(t.id).then(function(result) {
+	    if (result.ecode === 0){
+		dialog.response_with_callback(
+		    true,
+		    "删除品类",
+		    "删除成功！！",
+		    undefined,
+		    function() {diabloFilter.reset_type()});
+	    } else {
+		dialog.response(
+		    true, "删除品类", "删除失败！！" + wgoodService.error[result.ecode]);
+	    }
+	});
+    };
 };
 
 define(["wgoodApp"], function(app){

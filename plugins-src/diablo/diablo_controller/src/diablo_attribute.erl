@@ -69,6 +69,8 @@ brand(list, Merchant) ->
 
 type(new, Merchant, Attrs)->
     gen_server:call(?MODULE, {new_type, Merchant, Attrs});
+type(delete, Merchant, TypeId) ->
+    gen_server:call(?MODULE, {delete_type, Merchant, TypeId});
 type(get, Merchant, Condition) ->
     gen_server:call(?MODULE, {get_type, Merchant, Condition});
 type(update, Merchant, Attrs) ->
@@ -559,6 +561,15 @@ handle_call({update_type, Merchant, Attrs}, _From, State) ->
 	    {reply, Error1, State}
     end;
 
+handle_call({delete_type, Merchant, TypeId}, _From, State) ->
+    ?DEBUG("delete_type: merchant ~p, TypeId ~p", [Merchant, TypeId]),
+    Sql = "update inv_types set deleted=" ++ ?to_s(?YES) 
+	++ " where "
+	++ " merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, [{<<"id">>, TypeId}]),
+    Reply = ?sql_utils:execute(write, Sql, TypeId),
+    {reply, Reply, State};
+
 
 handle_call({get_type, Merchant, Condition}, _From, State) ->
     ?DEBUG("get_type: merchant ~p, Condition ~p", [Merchant, Condition]),
@@ -574,9 +585,14 @@ handle_call({get_type, Merchant, Condition}, _From, State) ->
 handle_call({list_type, Merchant, LikePrompt, Ascii}, _From, State) ->
     ?DEBUG("list_type with merchant ~p, LikePrompt ~p, ascii ~p",
 	   [Merchant, LikePrompt, Ascii]),
-    Sql = "select id, bcode, name, py, ctype as cid from inv_types"
+    Sql = "select id"
+	", bcode"
+	", name"
+	", py"
+	", deleted"
+	", ctype as cid from inv_types"
 	++ " where "
-	++ " merchant = " ++ ?to_string(Merchant)
+	++ " merchant=" ++ ?to_s(Merchant)
 	++ case LikePrompt of
 	       [] -> [];
 	       _ ->
@@ -585,7 +601,7 @@ handle_call({list_type, Merchant, LikePrompt, Ascii}, _From, State) ->
 		       ?NO -> " and name like \'%" ++ ?to_s(LikePrompt) ++ "%\'"
 		   end
 	   end
-	++ " and deleted = " ++ ?to_string(?NO)
+    %% ++ " and deleted = " ++ ?to_s(?NO)
 	++ " order by id desc",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};

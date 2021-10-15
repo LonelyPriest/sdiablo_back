@@ -502,6 +502,7 @@ function wsaleNewProvide(
     user, filterPromotion, filterCommision, filterCharge, filterScore,
     filterSysRetailer, filterEmployee,
     filterSizeGroup, filterType, filterColor, filterLevel, filterTicketPlan, base){
+    // console.log(user);
     // console.log(base);
     // console.log(filterLevel);
     $scope.promotions = filterPromotion;
@@ -3416,15 +3417,21 @@ function wsaleNewProvide(
 			    undefined,
 			    $scope.focus_by_element);
 		    } else {
-			inv.$edit = true;
-			inv.$new = false;
-			$scope.disable_refresh = false;
-			$scope.inventories.unshift(inv);
-			
-			inv.order_id = $scope.inventories.length;
-			// $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new})); 
-			$scope.re_calculate();
-			$scope.focus_good_or_barcode();
+			if (!$scope.right.master
+			    && user.discount !== diablo_nolimit_discount
+			    && inv.fdiscount < user.discount) {
+			    dialog.set_error(response_title, 2719);
+			} else {
+			    inv.$edit = true;
+			    inv.$new = false;
+			    $scope.disable_refresh = false;
+			    $scope.inventories.unshift(inv);
+			    
+			    inv.order_id = $scope.inventories.length;
+			    // $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new})); 
+			    $scope.re_calculate();
+			    $scope.focus_good_or_barcode();
+			} 
 		    } 
 		};
 
@@ -3695,6 +3702,14 @@ function wsaleNewProvide(
 		    return;
 		} 
 	    }
+
+	    if (!$scope.right.master
+		&& result.fdiscount !== inv.fdiscount
+		&& user.discount !== diablo_nolimit_discount
+		&& result.fdiscount < user.discount) {
+		dialog.set_error(response_title, 2719);
+		return;
+	    }
 	    
 	    if (inv.fprice !== result.fprice || inv.fdiscount !== result.fdiscount) inv.$update = true;
 	    
@@ -3766,10 +3781,19 @@ function wsaleNewProvide(
 		return;
 	    }
 	}
+
+	if (!$scope.right.master
+	    && inv.fdiscount !== inv.o_fdiscount
+	    && user.discount !== diablo_nolimit_discount
+	    && inv.fdiscount < user.discount) {
+	    dialog.set_error(response_title, 2719);
+	    return;
+	}
 		
 	// save
 	// $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
-	if (inv.fprice !== inv.o_fprice || inv.fdiscount !== inv.o_fdiscount) inv.$update = true;
+	if (inv.fprice !== inv.o_fprice || inv.fdiscount !== inv.o_fdiscount)
+	    inv.$update = true;
 
 	$scope.re_calculate();
 	

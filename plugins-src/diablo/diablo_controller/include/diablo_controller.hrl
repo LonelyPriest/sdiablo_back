@@ -757,6 +757,7 @@
 	  shop_id     = -1         :: integer(),
 	  mtype       = -1         :: integer(),
 	  sdays       = 0          :: integer(),
+	  discount    = 0          :: integer(),
 	  tablet      = 0          :: integer(),
 	  utable      = 0          :: integer(),
 	  login_time  = undefined  :: string()   

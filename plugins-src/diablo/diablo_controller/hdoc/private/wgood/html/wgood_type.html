@@ -46,6 +46,7 @@
 		  <th>拼音</th>
 		  <th>大类</th>
 		  <th>条码编码</th>
+		  <th>状态</th>
 	    	  <th>操作</th>
 		</tr>
 	      </thead>
@@ -58,13 +59,17 @@
 		    <div x-ng-if="t.cid===-1" class="text-center">-</div>
 		    <div x-ng-if="t.cid!==-1">{{t.ctype.name}}</div>
 		  </td>
-		  <td>{{t.bcode}}</td> 
+		  <td>{{t.bcode}}</td>
+		  <td x-ng-switch on="t.deleted">
+		    <span x-ng-switch-when=0>使用中</span>
+		    <span x-ng-switch-when=1 class="fg-red">已删除</span>
+		  </td> 
 		  <td class="col-md-2">
 		    <span> 
 		      <button type="button" class="btn btn-warning diablo-button"
 		    	      ng-click="update_type(t)">编辑
 			<i class="glyphicon glyphicon-edit"></i></button>
-		      <button class="btn btn-danger diablo-button"
+		      <button x-ng-if="!t.deleted" class="btn btn-danger diablo-button"
 		    	      x-ng-click="delete_type(t)">删除
 			<i class="glyphicon glyphicon-erase"></i></button>
 		    </span>

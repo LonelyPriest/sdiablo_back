@@ -163,8 +163,8 @@ handle_cast({stastic_per_shop, TriggerTime}, #state{merchant=Merchants, task_of_
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
 		  end, [], Merchants),
-	    %% end, [], [103]),
-	    ?DEBUG("new tasks ~p with merchants ~p", [NewTasks, Merchants]),
+	    %% end, [], [101]),
+	    %% ?DEBUG("new tasks ~p with merchants ~p", [NewTasks, Merchants]),
 	    %% {noreply, #state{merchant=Merchants, task_of_per_shop=NewTasks}};
 	    {noreply, State#state{task_of_per_shop=NewTasks}};
 	_ -> {noreply, State}
@@ -764,6 +764,7 @@ task(check_level, _Datetime, Merchant) when is_number(Merchant) ->
     {Merchant, Sqls};
 	
 task(stastic_per_shop, Datetime, Merchants) when is_list(Merchants)->
+    ?DEBUG("stastic_per_shop Datetime ~p, Merchants ~p", [Datetime, Merchants]),
     {YestodayStart, YestodayEnd} = yestoday(Datetime),
     FormatDatetime = format_datetime(Datetime),
 
@@ -803,7 +804,8 @@ gen_report(stastic_per_shop, _Datetime, [], Acc) ->
 gen_report(stastic_per_shop, {StartTime, EndTime, GenDatetime} , [M|Merchants], Acc) ->
     {ok, Shops} = ?w_user_profile:get(shop, M),
     %% ?DEBUG("merchant ~p with shops ~p",
-    %% 	   [M, lists:foldr(fun({Shop}, Acc1)-> [?v(<<"id">>, Shop)|Acc1] end, [], Shops)]),
+    %% 	   [M, lists:foldr(fun({Shop}, Acc1)-> [?v(<<"id">>, Shop)|Acc1] end, [], Shops)]), 
+    %% Shops = [{[{<<"id">>, 280}]}],
     {M, Sqls} = gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, []),
     gen_report(stastic_per_shop, {StartTime, EndTime, GenDatetime} , Merchants, [{M, Sqls}|Acc]).
 
@@ -999,7 +1001,8 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [{S}|Shops], Sqls) ->
 				++ ?utils:v(t_stock_out_cost, float, StockTransferOutCost)
 
 				++ ?utils:v(stock_fix, integer, StockFixTotal)
-				++ ?utils:v(stock_fix_cost, float, StockFixCost),
+				++ ?utils:v(stock_fix_cost, float, StockFixCost)
+				++ ?utils:v(entry_date, string, GenDatetime),
 
 			    Sql = "update w_daily_report set "
 				++ ?utils:to_sqls(proplists, comma, Updates)

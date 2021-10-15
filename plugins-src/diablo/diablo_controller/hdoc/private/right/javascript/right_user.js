@@ -692,6 +692,7 @@ function accountUserDetailCtrlProvide(
 		    stime:       account.stime,
 		    etime:       account.etime,
 		    sdays:       account.sdays,
+		    discount:     account.discount,
 		    role_name:   account.role_name,
 		    create_date: account.create_date
                 }
@@ -798,7 +799,8 @@ function accountUserDetailCtrlProvide(
 			&& new_account.shop_id === account.shop_id
                         && new_account.stime  === account.stime
                         && new_account.etime === account.etime
-			&& new_account.sdays === account.sdays){
+			&& new_account.sdays === account.sdays
+			&& new_account.discount === account.discount ){
                         diabloUtilsService.response(
 			    false, "用户帐户修改",
 			    "用户帐户修改失败：" + rightService.error[1599]);
@@ -820,6 +822,7 @@ function accountUserDetailCtrlProvide(
 		    stime: rightService.get_modified(new_account.stime, account.stime),
 		    etime: rightService.get_modified(new_account.etime, account.etime),
 		    sdays: rightService.get_modified(new_account.sdays, account.sdays),
+		    discount: rightService.get_modified(new_account.discount, account.discount)
 		};
 
 		update.role_id = function(){

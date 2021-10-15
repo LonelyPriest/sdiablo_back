@@ -505,6 +505,7 @@ handle_call({update_account, Attrs}, _From, State) ->
     StartTime     = ?v(<<"stime">>, Attrs),
     EndTime       = ?v(<<"etime">>, Attrs),
     SDays         = ?v(<<"sdays">>, Attrs),
+    Discount      = ?v(<<"discount">>, Attrs),
     
     Sql1 = case ?v(<<"role">>, Attrs) of
 	       undefined -> [];
@@ -520,7 +521,8 @@ handle_call({update_account, Attrs}, _From, State) ->
         ++ ?utils:v(retailer, integer, LoginRetailer)
         ++ ?utils:v(stime, integer, StartTime)
         ++ ?utils:v(etime, integer, EndTime)
-	++ ?utils:v(sdays, integer, SDays),
+	++ ?utils:v(sdays, integer, SDays)
+	++ ?utils:v(discount, integer, Discount),
 
     Sql2 =
         case Updates of
@@ -677,11 +679,19 @@ code_change(_OldVsn, State, _Extra) ->
 %%%=================================================================== 
 account(Conditions) ->
     CorrectConditions = ?utils:correct_condition(<<"a.">>, Conditions),
-    Sql1 = "select a.id, a.name, a.type, a.merchant"
+    Sql1 = "select a.id"
+	", a.name"
+	", a.type"
+	", a.merchant"
 	", a.retailer as retailer_id"
 	", a.employee as employee_id"
 	", a.shop as shop_id"
-	", a.stime, a.etime, a.sdays, a.max_create, a.create_date"
+	", a.stime"
+	", a.etime"
+	", a.sdays"
+	", a.discount"
+	", a.max_create"
+	", a.create_date"
 	
 	", tc.user_id, tc.role_id, tc.role_name"
 	

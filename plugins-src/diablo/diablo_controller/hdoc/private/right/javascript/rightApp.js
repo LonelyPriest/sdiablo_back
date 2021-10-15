@@ -372,6 +372,7 @@ function rightConfig(angular){
 		 stime:    account.stime,
 		 etime:    account.etime,
 		 sdays:    account.sdays,
+		 discount: account.discount,
 		 type:     this.roleType.user})
 	};
 

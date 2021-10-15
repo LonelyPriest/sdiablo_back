@@ -112,6 +112,12 @@ function wgoodConfig(){
 		{tid:type.tid, name: type.name, cid: type.cid, bcode: type.bcode}).$promise;
 	};
 
+	this.delete_good_type = function(typeId) {
+	    return http.save(
+		{operation: "delete_w_type"}, {tid:typeId}).$promise;
+	};
+	
+
 	this.syn_type_pinyin = function(types) {
 	    return http.save({operation: "syn_type_pinyin"},
 			     {type:types}).$promise;

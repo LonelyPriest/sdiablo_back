@@ -12,6 +12,7 @@ userApp.factory("userService", function($resource, $q){
     var _loginEmployee = undefined;
     var _loginShop = -1;
     var _sdays = 0;
+    var _discount = 0;
     var _loginName = undefined;
     var _cookie = undefined;
     
@@ -26,6 +27,7 @@ userApp.factory("userService", function($resource, $q){
 	    loginShop: _loginShop,
 	    loginName: _loginName,
 	    sdays: _sdays,
+	    discount: _discount,
 	    cookie: _cookie,
 
 	    // shops exclude the shop that bind to the repository,
@@ -200,6 +202,7 @@ userApp.factory("userService", function($resource, $q){
 		_loginShop     = result.login_shop;
 		_loginName     = result.login_name;
 		_sdays         = result.sdays;
+		_discount      = result.discount;
 		_cookie        = cookie;
 		var            cache = sort();
 

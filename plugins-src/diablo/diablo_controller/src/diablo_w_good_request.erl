@@ -686,6 +686,18 @@ action(Session, Req, {"update_w_type"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"delete_w_type"}, Payload) ->
+    ?DEBUG("del_w_type: session ~p, paylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    TypeId = ?v(<<"tid">>, Payload, 0),
+    case ?attr:type(delete, Merchant, TypeId) of 
+	{ok, TypeId} ->
+	    ?w_user_profile:update(type, Merchant),
+	    ?utils:respond(200, Req, ?succ(update_color, Merchant));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"syn_type_pinyin"}, Payload) ->
     ?DEBUG("syn_type_pinyin: session ~p, paylaod ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
