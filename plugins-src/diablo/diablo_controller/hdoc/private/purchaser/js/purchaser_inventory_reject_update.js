@@ -3,7 +3,7 @@
 function purchaserInventoryRejectUpdateCtrlProvide(
     $scope, $q, $routeParams, dateFilter, diabloPattern, diabloUtilsService,
     diabloPromise, diabloFilter, diabloPagination, purchaserService,
-    user, filterBrand, filterFirm, filterType, filterEmployee,
+    user, filterBrand, filterFirm, filterEmployee,
     filterSizeGroup, filterColor, base){
     // console.log(user);
 
@@ -11,7 +11,7 @@ function purchaserInventoryRejectUpdateCtrlProvide(
     // $scope.shops     = user.sortShops;
     $scope.shops           = user.sortBadRepoes.concat(user.sortShops);
     $scope.brands          = filterBrand;
-    $scope.types           = filterType;
+    // $scope.types           = filterType;
     $scope.firms           = filterFirm;
     // $scope.employees       = filterEmployee;
     $scope.ubase           = base;
@@ -314,7 +314,10 @@ function purchaserInventoryRejectUpdateCtrlProvide(
 		
 		add.style_number    = invs[i].style_number;
 		add.brand           = $scope.get_object(invs[i].brand_id, $scope.brands);
-		add.type            = $scope.get_object(invs[i].type_id, $scope.types);
+		// add.type            = $scope.get_object(invs[i].type_id, $scope.types);
+		add.type_id         = invs[i].type_id;
+		add.type            = invs[i].type;
+		add.name = add.style_number + "/" + add.brand.name + "/" + add.type;
 		add.firm_id         = invs[i].firm_id;
 		add.sex             = invs[i].sex;
 		add.free            = invs[i].free;
@@ -416,9 +419,12 @@ function purchaserInventoryRejectUpdateCtrlProvide(
 	// add at first allways 
 	var add = $scope.inventories[0];
 	add.id           = item.id;
+	add.name         = item.name;
 	add.style_number = item.style_number; 
 	add.brand        = $scope.get_object(item.brand_id, $scope.brands); 
-	add.type         = $scope.get_object(item.type_id, $scope.types);
+	// add.type         = $scope.get_object(item.type_id, $scope.types);
+	add.type         = item.type;
+	add.type_id      = item.type_id;
 	add.firm_id      = item.firm_id;
 	add.s_group      = item.s_group;
 	add.free         = item.free; 
@@ -615,7 +621,7 @@ function purchaserInventoryRejectUpdateCtrlProvide(
 		style_number   : add.style_number,
 		brand          : add.brand.id,
 		firm           : stockUtils.invalid_firm($scope.select.firm),
-		type           : add.type.id,
+		type           : add.type_id,
 		sex            : add.sex,
 		season         : add.season,
 		changed_amount : add.changed_amounts,

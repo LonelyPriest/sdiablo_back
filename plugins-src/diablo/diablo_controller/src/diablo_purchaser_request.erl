@@ -1787,7 +1787,8 @@ print_inventory_new(sort_by_color, {K1, K2, K3} = K, [H|T], DictNote, Acc) ->
     BrandId     = ?to_b(?v(K2, H)),
     ShopId      = ?to_b(?v(K3, H)),
     
-    TypeId      = ?v(<<"type_id">>, H), 
+    TypeId      = ?v(<<"type_id">>, H),
+    TypeName    = ?v(<<"type_name">>, H),
     Season      = ?v(<<"season">>, H),
     %% Year        = ?v(<<"year">>, H), 
     %% OrgPrice    = ?v(<<"org_price">>, H),
@@ -1822,6 +1823,7 @@ print_inventory_new(sort_by_color, {K1, K2, K3} = K, [H|T], DictNote, Acc) ->
 	    N = {[{<<"style_number">>, StyleNumber},
 		  {<<"brand_id">>, ?to_i(BrandId)},
 		  {<<"type_id">>, TypeId},
+		  {<<"type_name">>, TypeName},
 		  {<<"season">>, Season},
 		  {<<"total">>, Total},
 		  {<<"entry_date">>, Date},

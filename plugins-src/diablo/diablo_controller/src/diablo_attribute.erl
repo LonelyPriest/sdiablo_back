@@ -75,6 +75,8 @@ type(get, Merchant, Condition) ->
     gen_server:call(?MODULE, {get_type, Merchant, Condition});
 type(update, Merchant, Attrs) ->
     gen_server:call(?MODULE, {update_type, Merchant, Attrs}).
+type(like_match, Merchant, LikePrompt, Ascii) ->
+    gen_server:call(?MODULE, {type_like_match, Merchant, LikePrompt, Ascii});
 type(list, Merchant, LikePrompt, Ascii) ->
     gen_server:call(?MODULE, {list_type, Merchant, LikePrompt, Ascii}).
 type(list, Merchant) ->
@@ -603,6 +605,27 @@ handle_call({list_type, Merchant, LikePrompt, Ascii}, _From, State) ->
 	   end
     %% ++ " and deleted = " ++ ?to_s(?NO)
 	++ " order by id desc",
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({type_like_match, Merchant, LikePrompt, Ascii}, _From, State) ->
+    ?DEBUG("match_type with merchant ~p, LikePrompt ~p, ascii ~p", [Merchant, LikePrompt, Ascii]),
+    Sql = "select id"
+	", name"
+	", py"
+	", ctype as cid from inv_types"
+	" where"
+	" merchant=" ++ ?to_s(Merchant)
+	++ case LikePrompt of
+	       [] -> [];
+	       _ ->
+		   case Ascii of
+		       ?YES -> " and py like \'%" ++ ?to_s(LikePrompt) ++ "%\'";
+		       ?NO -> " and name like \'%" ++ ?to_s(LikePrompt) ++ "%\'"
+		   end
+	   end
+	++ " and deleted=" ++ ?to_s(?NO)
+	++ " order by id desc limit 20",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

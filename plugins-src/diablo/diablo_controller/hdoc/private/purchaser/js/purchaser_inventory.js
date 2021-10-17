@@ -3,14 +3,14 @@
 function purchaserInventoryNewCtrlProvide (
     $scope, $timeout, dateFilter, diabloPattern, diabloUtilsService,
     diabloFilter, purchaserService, shortCutGoodService,
-    localStorageService, user, filterBrand, filterType,
+    localStorageService, user, filterBrand,
     filterSizeGroup, filterFirm, filterEmployee, filterColor, filterColorType,
     filterStdExecutive, filterCategory, filterFabric, base){
     
     // console.log(ERROR); 
     // console.log(user); 
     $scope.brands      = filterBrand;
-    $scope.types       = filterType;
+    // $scope.types       = filterType;
     $scope.size_groups = angular.copy(filterSizeGroup);
     diablo_order($scope.size_groups);
     $scope.firms       = filterFirm;
@@ -355,6 +355,12 @@ function purchaserInventoryNewCtrlProvide (
 	    return diabloFilter.match_wgood_with_firm(viewValue, diablo_invalid_firm); 
 	}
 	
+    };
+
+    $scope.match_prompt_type = function(viewValue){
+	return diabloFilter.match_prompt_type(
+	    viewValue,
+	    diablo_is_ascii_string(viewValue)); 
     };
 
     $scope.q_prompt = $scope.q_typeahead($scope.select.shop.id, base); 
@@ -2057,13 +2063,13 @@ function purchaserInventoryNewCtrlProvide (
 		    // console.log($scope.brands);
 
 		    // type
-		    if (!in_prompts($scope.types, good.type)){
-			$scope.types.push({
-			    id   :state.type,
-			    name :good.type,
-			    py   :good.type_py});
-			diabloFilter.reset_type();
-		    };
+		    // if (!in_prompts($scope.types, good.type)){
+		    // 	$scope.types.push({
+		    // 	    id   :state.type,
+		    // 	    name :good.type,
+		    // 	    py   :good.type_py});
+		    // 	diabloFilter.reset_type();
+		    // };
 
 		    // cons.log($scope.types); 
 		    var sg = s_groups.length === 0 ? "0":s_groups.toString();
@@ -2263,7 +2269,7 @@ function purchaserInventoryDetailCtrlProvide(
     $scope, $routeParams, $q, dateFilter, diabloPattern, diabloFilter,
     diabloUtilsService, diabloPromise, purchaserService,
     localStorageService, filterPromotion, filterCommision, filterScore,
-    filterBrand, filterFirm, filterType, filterCType, filterSizeGroup, filterColor,
+    filterBrand, filterFirm, filterCType, filterSizeGroup, filterColor,
     filterSizeSpec, filterStdExecutive, filterCategory, filterFabric, filterTemplate,
     filterRegion, base, user) {
     $scope.promotions = filterPromotion.concat([{id:diablo_invalid_index, name:"重置促销方案"}]);
@@ -2329,6 +2335,12 @@ function purchaserInventoryDetailCtrlProvide(
 	return diabloFilter.match_w_inventory(viewValue, $scope.shopIds);
     };
 
+    $scope.match_prompt_type = function(viewValue){
+	return diabloFilter.match_prompt_type(
+	    viewValue,
+	    diablo_is_ascii_string(viewValue)); 
+    };
+
     $scope.css =  function(minalarm_amount){
 	return minalarm_amount < 0 ? "bg-magenta" : "";
     };
@@ -2344,7 +2356,7 @@ function purchaserInventoryDetailCtrlProvide(
     diabloFilter.add_field("style_number", $scope.match_style_number);
     diabloFilter.add_field("brand",  filterBrand);
     diabloFilter.add_field("ctype",  filterCType);
-    diabloFilter.add_field("type",   filterType);
+    diabloFilter.add_field("type",   $scope.match_prompt_type);
     diabloFilter.add_field("season", diablo_season2objects);
     diabloFilter.add_field("sex",    diablo_sex2object);
     diabloFilter.add_field("score",  $scope.scores);
@@ -2542,7 +2554,7 @@ function purchaserInventoryDetailCtrlProvide(
 		    $scope.inventories = result.data;
 		    angular.forEach(result.data, function(d){
 			d.brand = diablo_get_object(d.brand_id, filterBrand);
-			d.type  = diablo_get_object(d.type_id, filterType);
+			// d.type  = diablo_get_object(d.type_id, filterType);
 			d.firm  = diablo_get_object(d.firm_id, filterFirm);
 			d.promotion = diablo_get_object(d.pid, filterPromotion);
 			d.commision = diablo_get_object(d.mid, filterCommision);

@@ -10,7 +10,6 @@
 
 -include("../../../../include/knife.hrl").
 -include("diablo_controller.hrl").
-
 -behaviour(gen_server).
 
 %% API
@@ -166,8 +165,8 @@ update(department, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_department, Merchant});
 update(print, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_print, Merchant});
-update(type, Merchant) ->
-    gen_server:cast(?SERVER(Merchant), {update_type, Merchant});
+%% update(type, Merchant) ->
+%%     gen_server:cast(?SERVER(Merchant), {update_type, Merchant});
 update(brand, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_brand, Merchant});
 update(print_format, Merchant) ->
@@ -228,7 +227,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 	%% base stting
 	{ok, Setting}      = ?w_base:setting(list, Merchant),
 	{ok, SizeGroups}   = ?attr:size_group(list, Merchant),
-	{ok, Types}        = ?attr:type(list, Merchant),
+	%% {ok, Types}        = ?attr:type(list, Merchant),
 	{ok, Prints}       = ?w_print:printer(list_conn, Merchant),
 	{ok, PFormats}     = ?w_print:format(list, Merchant),
 	
@@ -267,7 +266,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 				  %% bank        = ?to_tl(Cards),
 				  setting     = ?to_tl(Setting),
 				  size_groups = SizeGroups,
-				  itype       = Types,
+				  %% itype       = Types,
 				  firm        = Firms,
 				  employee    = Employees,
 				  sysretailer = SysRetailers,
@@ -1217,8 +1216,9 @@ handle_cast({Update, Merchant}, State) ->
 			{ok, Prints} = ?w_print:printer(list_conn, Merchant),
 			Profile#wuser_profile{print=Prints};
 		    update_type ->
-			{ok, Types}        = ?attr:type(list, Merchant),
-			Profile#wuser_profile{itype=Types};
+			[];
+			%% {ok, Types}        = ?attr:type(list, Merchant),
+			%% Profile#wuser_profile{itype=Types};
 		    update_brand ->
 			{ok, Brands}        = ?attr:brand(list, Merchant),
 			Profile#wuser_profile{brand=Brands};
@@ -1373,11 +1373,11 @@ ms(Merchant, pformat) ->
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
      }];
-ms(Merchant, itype) ->
-    [{{'$1', #wuser_profile{merchant='$1', itype='$2', _='_'}},
-      [{'==', '$1', ?to_i(Merchant)}],
-      ['$2']
-     }];
+%% ms(Merchant, itype) ->
+%%     [{{'$1', #wuser_profile{merchant='$1', itype='$2', _='_'}},
+%%       [{'==', '$1', ?to_i(Merchant)}],
+%%       ['$2']
+%%      }];
 ms(Merchant, sysretailer) ->
     [{{'$1', #wuser_profile{merchant='$1', sysretailer='$2', _='_'}},
       [{'==', '$1', ?to_i(Merchant)}],

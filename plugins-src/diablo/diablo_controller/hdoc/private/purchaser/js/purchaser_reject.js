@@ -44,7 +44,7 @@ function purchaserInventoryRejectCtrlProvide(
 	
 	$scope.setting.auto_barcode = stockUtils.auto_barcode(diablo_default_shop, base); 
 	// $scope.setting.type_sale = stockUtils.type_sale(shop_id, base);
-	console.log($scope.setting);
+	// console.log($scope.setting);
 	
     } 
 
@@ -62,14 +62,14 @@ function purchaserInventoryRejectCtrlProvide(
     $scope.focus = {barcode: false, style_number:false, reject: false};
     
     $scope.auto_focus = function(attr){
-	console.log($scope.focus, attr);
+	// console.log($scope.focus, attr);
 	if (!$scope.focus[attr]){
 	    $scope.focus[attr] = true;
 	}
 	for (var o in $scope.focus){
 	    if (o !== attr) $scope.focus[o] = false;
 	}
-	console.log($scope.focus, attr);
+	// console.log($scope.focus, attr);
     };
 
     $scope.focus_good_or_barcode = function() {

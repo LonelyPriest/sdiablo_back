@@ -802,7 +802,7 @@
 			       x-ng-pattern="pattern.type"
 			       x-ng-enter=""
 			       typeahead-editable="base_settings.editable_type"
-			       uib-typeahead="t.name for t in types|filter:$viewValue|limitTo:20"/>
+			       uib-typeahead="t as t.name for t in match_prompt_type($viewValue)"/>
 		      </div> 
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		    </div>

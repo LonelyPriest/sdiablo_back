@@ -380,7 +380,7 @@ function purchaserInventoryPriceCtrlProvide(
 
 function stockNewDetailPrintCtrlProvide(
     $scope, $routeParams, diabloUtilsService, purchaserService,
-    filterBrand, filterFirm, filterType, filterColor, filterEmployee, user, base){
+    filterBrand, filterFirm, filterColor, filterEmployee, user, base){
     // console.log($routeParams);
     // $scope.rsn = $routeParams.rsn;
 
@@ -399,7 +399,7 @@ function stockNewDetailPrintCtrlProvide(
     // console.log($scope.rbill_comment);
     
     purchaserService.print_w_inventory_new($routeParams.rsn).then(function(result) {
-    	// console.log(result);
+    	console.log(result);
 	if (result.ecode === 0) {
 	    $scope.detail = result.detail;
 	    $scope.detail.shop = diablo_get_object($scope.detail.shop_id, $scope.shops);
@@ -413,7 +413,7 @@ function stockNewDetailPrintCtrlProvide(
 	    var order_id = 1;
 	    angular.forEach(result.note, function(n) {
 		n.brand = diablo_get_object(n.brand_id, filterBrand);
-		n.type  = diablo_get_object(n.type_id, filterType);
+		// n.type  = diablo_get_object(n.type_id, filterType);
 		n.order_id = order_id; 
 		$scope.notes.push(n);
 		$scope.total += n.total;

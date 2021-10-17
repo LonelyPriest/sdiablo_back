@@ -305,9 +305,8 @@
 		<thead>
 		  <tr>
 		    <th class="text-center">序号</th>
-		    <th class="text-center">货号</th>
-		    <th class="text-center">品名</th>
-		    <th class="text-center">类别</th>
+		    <!-- <th class="text-center">货号</th> -->
+		    <th class="text-center">货号/品名/类别</th>
 		    <!-- <th class="text-center">性别</th> -->
 		    <!-- <th class="text-center">厂商</th> -->
 		    <th class="text-center">季节</th>
@@ -321,7 +320,7 @@
 		    <th class="text-center">数量</th>
 		    <th x-ng-if="stock_right.show_orgprice" class="text-center">合计</th>
 		    <!-- <th class="text-center">折扣率</th> -->
-		    <th class="text-center">操作</th>
+		    <th class="text-center col-xs-1 col-sm-2 col-md-2">操作</th>
 		  </tr>
 		</thead>
 		<tbody>
@@ -329,7 +328,8 @@
 		    
 		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.order_id}}</td>
 		    <td class="{{focus_css(inv.order_id, !inv.new)}} col-md-2 text-left">
-		      <span ng-if="!inv.$new">{{inv.style_number}}</span>
+		      <!-- <span ng-if="!inv.$new">{{inv.style_number}}</span> -->
+		      <span x-ng-if="!inv.$new">{{inv.name}}</span>
 		      <form name="inv.form.good" ng-if="inv.$new">
 			<div ng-class="{'has-error':inv.form.good.$invalid
 				       && !inv.form.good.$pristine}">
@@ -362,8 +362,7 @@
 		      </form>
 		    </td>
 		    
-		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.brand.name}}</td>
-		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.type.name}}</td>
+		    <!-- <td class="{{focus_css(inv.order_id, true)}}">{{inv.brand.name}}/{{inv.type}}</td> -->
 		    <!-- <td class="vert-align">{{sexs[inv.sex]}}</td> -->
 		    <td class="{{focus_css(inv.order_id, true)}}">{{seasons[inv.season]}}</td>
 		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.tag_price}}</td>
@@ -512,8 +511,8 @@
 		  </tr>
 
 		  <tr x-ng-if="select.total!==0" class="text-center">
-		    <td x-ng-if="stock_right.show_orgprice" colspan=9></td>
-		    <td x-ng-if="!stock_right.show_orgprice" colspan=7></td>
+		    <td x-ng-if="stock_right.show_orgprice" colspan=7></td>
+		    <td x-ng-if="!stock_right.show_orgprice" colspan=5></td>
 		    <td class="vert-align">{{select.total}}</td>
 		    <td x-ng-if="stock_right.show_orgprice"
 			class="vert-align">{{select.should_pay}}</td>

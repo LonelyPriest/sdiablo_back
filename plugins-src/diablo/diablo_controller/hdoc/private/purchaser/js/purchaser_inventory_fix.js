@@ -101,11 +101,12 @@ function purchaserInventoryFixCtrlProvide(
     };
 
     $scope.on_select_good = function(item, model, label){
+	console.log(item);
 	// $scope.reset_focus();
 	// var add = {};
 	
 	// add.id           = item.id;
-	$scope.fix.s_barcode    = item.full_bcode;
+	// $scope.fix.s_barcode    = item.full_bcode;
 	
 	$scope.fix.bcode        = item.bcode; 
 	// $scope.fix.full_bcode   = item.full_bcode; 
@@ -132,7 +133,13 @@ function purchaserInventoryFixCtrlProvide(
 	$scope.fix.entry        = item.entry_date;
 
 	// console.log($scope.focus);
-	$scope.fix.full_name    = item.style_number + "/" + item.brand; 
+	$scope.fix.full_name    = item.style_number + "/" + item.brand + "/" + item.type;
+	if ($scope.fix.full_bcode !== diablo_empty_db_barcode
+	    && $scope.fix.full_bcode !== diablo_empty_barcode
+	    && angular.isDefined(diablo_set_string($scope.fix.full_bcode))) {
+	    $scope.fix.full_name = $scope.fix.full_bcode + "/" + $scope.fix.full_name;
+	}
+	
 	// console.log(add);
 	if (!$scope.fix.scanner) {
 	    $scope.auto_focus("fix");
@@ -219,7 +226,7 @@ function purchaserInventoryFixCtrlProvide(
     
     $scope.save_inventory = function(){
 	$scope.has_saved = true
-	// console.log($scope.inventories); 
+	console.log($scope.inventories); 
 	var added = []; 
 	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
@@ -257,7 +264,7 @@ function purchaserInventoryFixCtrlProvide(
 	console.log(added);
 	console.log(base);
 	if (added.length === 0) {
-	    dialog.response(false, "库存盘点", "盘点失败", purchaserService.error[2084]);
+	    dialog.response(false, "库存盘点", "盘点失败" + purchaserService.error[2084]);
 	    return;
 	}
 

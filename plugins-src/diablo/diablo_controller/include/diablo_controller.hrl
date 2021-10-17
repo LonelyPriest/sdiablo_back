@@ -793,7 +793,7 @@
 	  %% bank        = [] :: list(), %% all bank of merchant
 	  setting     = [] :: list(),
 	  size_groups = [] :: list(),
-	  itype       = [] :: list(), %% type of inventory
+	  %% itype       = [] :: list(), %% type of inventory
 	  brand       = [] :: list(), %% brand of inventory
 	  employee    = [] :: list(), %% all employee of merchant
 	  sysretailer = [] :: list(), %% all retailer

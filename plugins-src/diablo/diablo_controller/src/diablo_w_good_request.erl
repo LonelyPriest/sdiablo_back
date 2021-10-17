@@ -259,8 +259,7 @@ action(Session, Req, {"match_w_good_style_number"}, Payload) ->
       end, Req);
 
 action(Session, Req, {"match_w_good"}, Payload) ->
-    ?DEBUG("match_w_good with session ~p, Payload ~p",
-	   [Session, Payload]),
+    ?DEBUG("match_w_good with session ~p, Payload ~p", [Session, Payload]),
     Merchant     = ?session:get(merchant, Session),
     UTable       = ?session:get(utable, Session),
     PromptNumber = ?v(<<"prompt_value">>, Payload),
@@ -282,6 +281,15 @@ action(Session, Req, {"match_all_w_good"}, Payload) ->
     batch_responed(
       fun() -> ?w_inventory:match(
 		  all_style_number_with_firm, {Merchant, UTable}, StartTime, Firm)
+      end, Req);
+
+action(Session, Req, {"match_w_type"}, Payload) ->
+    ?DEBUG("match_w_type with session ~p, Payload ~p", [Session, Payload]),
+    Merchant     = ?session:get(merchant, Session),
+    Prompt       = ?v(<<"prompt">>, Payload),
+    Ascii        = ?v(<<"ascii">>, Payload, ?YES),
+    batch_responed(
+      fun() -> ?attr:type(like_match, Merchant, Prompt, Ascii)
       end, Req);
 
 action(Session, Req, {"new_w_good"}, Payload) ->

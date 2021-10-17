@@ -648,7 +648,7 @@ var stockUtils = function(){
 	    stock.specs = [];
 	    if (angular.isObject(stock.type) && stock.type.cid !== diablo_invalid_index) {
 		angular.forEach(specs, function(s) {
-		    if (s.cid === stock.type.cid) {
+		    if (s.cid === stock.ctype_id) {
 			stock.specs.push(s);
 		    }
 		}) 
@@ -1329,9 +1329,8 @@ stockPrintU.prototype.prepare = function(
 };
 
 stockPrintU.prototype.printBarcode2 = function() {
-    console.log(this); 
-    this.init();
-    
+    // console.log(this); 
+    this.init(); 
     // var iwpx = this.wpx - this.left;
     var iwpx = Math.floor(this.template.width * 96 / 2.54) - this.left;
     // if (stockUtils.to_integer(this.template.offset_width) > 0) {
@@ -1424,7 +1423,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // type
     if (this.template.type) {
-	top = this.print_type(diablo_trim(this.stock.type.name), top, this.left, iwpx, pSecond, pThird, startSecond, startThird); 
+	top = this.print_type(diablo_trim(this.stock.type), top, this.left, iwpx, pSecond, pThird, startSecond, startThird); 
 	top += this.template.hpx_each;
     }
 

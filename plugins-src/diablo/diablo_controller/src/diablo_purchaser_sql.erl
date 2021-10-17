@@ -537,6 +537,7 @@ good_match(style_number_with_firm, Merchant, UTable, StyleNumber, Firm) ->
 	
 	", b.name as brand"
 	", c.name as type"
+	", c.ctype as ctype_id"
 
 	", d.id as extra_id"
 	", d.level"
@@ -754,6 +755,9 @@ inventory({group_detail, MatchMode}, {Merchant, UTable}, Conditions, PageFun) ->
 	", c.fabric as fabric_json"
 	", c.feather as feather_json"
 	
+	", d.name as type"
+	", d.ctype as ctype_id"
+	
 	++ case StockWarning of
 	       1 -> ", d.minalarm_a";
 	       0 -> []
@@ -766,6 +770,7 @@ inventory({group_detail, MatchMode}, {Merchant, UTable}, Conditions, PageFun) ->
 	++ " left join shops b on a.shop=b.id"
 	" left join" ++ ?table:t(good_extra, Merchant, UTable) ++ " c"
 	" on a.merchant=c.merchant and a.style_number=c.style_number and a.brand=c.brand"
+	" left join inv_types d on a.type=d.id"
 
 	++ case StockWarning of
 	       1 ->
@@ -1287,9 +1292,11 @@ inventory(get_new_amount, {Merchant, UTable}, Conditions) ->
 	", a.alarm_day"
 	", a.entry_date"
 
-	", b.color as color_id, b.size, b.total as amount"
-	" from "
+	", b.color as color_id, b.size, b.total as amount" 
+	", c.name as type"
+	", c.ctype as ctype_id"
 	
+	" from " 
 	"(select id"
 	", rsn"
 	", style_number"
@@ -1326,7 +1333,11 @@ inventory(get_new_amount, {Merchant, UTable}, Conditions) ->
 	" from" ++ ?table:t(stock_new_note, Merchant, UTable)
 	++ " where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") b"
 	" on a.rsn=b.rsn" 
-	" and a.style_number=b.style_number and a.brand_id=b.brand order by id";
+	" and a.style_number=b.style_number and a.brand_id=b.brand"
+	
+	" left join"
+	" inv_types c on a.type_id=c.id"
+	" order by a.id";
 
 inventory(new_rsn_detail, {Merchant, UTable}, Conditions) ->
     {_StartTime, _EndTime, NewConditions} =
@@ -1412,7 +1423,35 @@ inventory(new_rsn_groups, new, {Merchant, UTable}, Conditions, PageFun) ->
 
     CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
 
-    "select b.id"
+    "select c.id"
+	", c.rsn"
+	", c.style_number"
+	", c.brand_id"
+	", c.type_id"
+	", c.sex_id"
+	", c.season"
+	", c.amount"
+	", c.over"
+	", c.firm_id"
+	", c.org_price"
+	", c.ediscount"
+	", c.tag_price"
+	", c.discount"
+	", c.s_group"
+	", c.free"
+	", c.year"
+	", c.path"
+	", c.entry_date"
+
+	", c.shop_id"
+	", c.employee_id"
+	", c.type"
+	", c.state"
+
+	", d.name as type_name"
+	
+	" from(" 
+	"select b.id"
 	", b.rsn"
 	", b.style_number"
 	", b.brand as brand_id"
@@ -1449,8 +1488,9 @@ inventory(new_rsn_groups, new, {Merchant, UTable}, Conditions, PageFun) ->
 	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
 	       [] -> [];
 	       TimeSql -> " and " ++ TimeSql
-	   end 
-	++ PageFun(); 
+	   end
+	++ PageFun() ++ ") c"
+	" left join inv_types d on c.type_id=d.id"; 
 
 inventory(new_detail, new, {Merchant, UTable}, Conditions, PageFun) ->
     SortConditions = sort_condition(w_inventory_new, Merchant, Conditions),

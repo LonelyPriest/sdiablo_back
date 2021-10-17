@@ -185,8 +185,8 @@
 		<thead>
 		  <tr>
 		    <th class="text-center">序号</th>
-		    <th x-ng-if="setting.barcode_mode" class="text-center">条码</th> 
-		    <th class="text-center">货号</th>
+		    <!-- <th x-ng-if="setting.barcode_mode" class="text-center">条码</th>  -->
+		    <th class="text-center">条码/货号/品牌/类别</th>
 		    <!-- <th class="text-center">品名</th> -->
 		    <!-- <th class="text-center">类别</th> -->
 		    <th class="text-center">季节</th>
@@ -201,25 +201,11 @@
 		  <!-- <tr class="text-center" ng-repeat="inv in inventories"> -->
 		  <tr class="text-center" ng-repeat="inv in page_items">  
 		    <td>{{inv.order_id}}</td>
-		    <td x-ng-if="setting.barcode_mode" class="text-left vert-align">
-		      <span>{{inv.full_bcode}}</span>
-	  	      <!-- <span ng-if="!inv.$new">{{inv.full_bcode}}</span> -->
-	  	      <!-- <form name="inv.form.bcode" ng-if="inv.$new"> -->
-	  	      <!-- 	<div ng-class="{'has-error':inv.form.bcode.$invalid -->
-	  	      <!-- 		       && !inv.form.bcode.$pristine}"> -->
-	  	      <!-- 	  <input class="form-control text-left" -->
-	  	      <!-- 		 type="text" -->
-	  	      <!-- 		 required -->
-	  	      <!-- 		 x-ng-model="inv.full_bcode" -->
-	  	      <!-- 		 focus-auto="focus.barcode" -->
-	  	      <!-- 		 placeholder="条码" -->
-	  	      <!-- 		 barcode-scanner -->
-	  	      <!-- 		 scanner="barcode_scanner"/> -->
-	  	      <!-- 	</div> -->
-	  	      <!-- </form> -->
-	  	    </td>
+		    <!-- <td x-ng-if="setting.barcode_mode" class="text-left vert-align"> -->
+		    <!--   <span>{{inv.full_bcode}}</span>  -->
+	  	    <!-- </td> -->
 		    
-		    <td class="text-left vert-align">
+		    <td class="text-center vert-align">
 		      <span>{{inv.full_name}}</span>
 		      <!-- <span ng-if="!inv.$new">{{inv.full_name}}</span> -->
 		      <!-- <form name="inv.form.good" ng-if="inv.$new"> -->

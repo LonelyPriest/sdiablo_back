@@ -133,7 +133,7 @@
 	  		x-ng-model="select.extra_pay_type"
 	  		x-ng-options="ex as ex.name for ex in
 				      extra_pay_types|filter:$viewValue">
-		</select> 
+		</select>
 	      </div>
 	    </div>
 	    
@@ -234,10 +234,10 @@
 		    <th class="text-center">序号</th>
 		    <!-- <th x-ng-if="setting.scan_mode" class="text-center">条码</th> -->
 		    <th class="text-center">
-		      <span x-ng-if="setting.scan_mode">条码/</span><span>货号</span>
+		      <span x-ng-if="setting.scan_mode">条码/</span>
+		      <span>货号/品名/类别</span>
 		    </th> 
-		    <th class="text-center">品名</th>
-		    <th class="text-center">类别</th> 
+		    <!-- <th class="text-center">品名/类别</th> -->
 		    <th class="text-center">季节</th>
 		    <th class="text-center">库存</th>
 		    <th class="text-center">吊牌价</th> 
@@ -273,7 +273,7 @@
 		      <div><span x-ng-if="setting.scan_mode && inv.full_bcode">
 			  {{inv.full_bcode}}<span class="fg-red">/</span>
 			</span>
-			<span>{{inv.style_number}}</span>
+			<span>{{inv.style_number}}/{{inv.brand}}/{{inv.type}}</span>
 		      </div>
 		      <!-- <form x-ng-if="inv.$new" name="inv.form.good"> -->
 		      <!-- 	<div ng-class="{'has-error':inv.form.good.$invalid && !inv.form.good.$pristine}"> -->
@@ -290,8 +290,7 @@
 		      <!-- </form> -->
 		    </td>
 		    <!-- <td>{{inv.style_number}}</td> -->
-		    <td class="vert-align">{{inv.brand}}</td>
-		    <td class="vert-align">{{inv.type}}</td>
+		    <!-- <td class="vert-align">{{inv.brand}}/{{inv.type}}</td> -->
 		    <!-- <td class="vert-align">{{sexs[inv.sex]}}</td> -->
 		    <!-- <td>{{inv.firm}}</td> -->
 		    <td class="vert-align">{{seasons[inv.season]}}</td>
@@ -437,8 +436,8 @@
 		  </tr>
 
 		  <tr x-ng-if="select.total!==0" class="text-center">
-		    <td x-ng-if="stock_right.show_orgprice" colspan="9"></td>
-		    <td x-ng-if="!stock_right.show_orgprice" colspan="7"></td>
+		    <td x-ng-if="stock_right.show_orgprice" colspan="7"></td>
+		    <td x-ng-if="!stock_right.show_orgprice" colspan="5"></td>
 		    <td class="vert-align">{{select.total}}</td>
 		    <td x-ng-if="stock_right.show_orgprice" class="vert-align">
 		      {{select.should_pay}}

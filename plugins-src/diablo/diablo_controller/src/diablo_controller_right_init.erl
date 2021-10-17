@@ -1159,6 +1159,7 @@ pass_action(wholesaler) ->
      <<"get_wsale_rsn">>,
      <<"match_wsale_rsn">>,
      <<"match_cost_class">>,
+     <<"match_w_type">>,
      <<"w_pay_scan">>,
      <<"filter_w_pay_scan">>,
      <<"check_w_pay_scan">>,

@@ -103,14 +103,14 @@ function stockConfg(angular){
 		templateUrl: '/private/purchaser/html/purchaser_inventory_new.html',
 		controller: 'purchaserInventoryNewCtrl',
 		resolve: angular.extend(
-		    {}, user, brand, type, s_group, firm, employee, color, color_type,
+		    {}, user, brand, s_group, firm, employee, color, color_type,
 		    std_executive, safety_category, fabric, base)
 	    }).
 	    when('/update_new_detail/:rsn?/:ppage?/:from?', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail_update.html',
 		controller: 'purchaserInventoryNewUpdateCtrl',
 		resolve: angular.extend(
-		    {}, user, brand, firm, type, employee, s_group, color,
+		    {}, user, brand, firm, employee, s_group, color,
 		    std_executive, safety_category, fabric, size_spec, ptemplate, base)
 	    }).
 	    // reject
@@ -124,14 +124,14 @@ function stockConfg(angular){
 		templateUrl: '/private/purchaser/html/purchaser_inventory_reject_update.html',
 		controller: 'purchaserInventoryRejectUpdateCtrl',
 		resolve: angular.extend(
-		    {}, user, brand, firm, type, employee, s_group, color, base)
+		    {}, user, brand, firm, employee, s_group, color, base)
 	    }).
 	    // detail
 	    when('/inventory_rsn_detail/:rsn?/:ppage?/:from?', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_new_rsn_detail.html',
 		controller: 'purchaserInventoryNewRsnDetailCtrl',
 		resolve: angular.extend(
-		    {}, user, brand, firm, type, employee, s_group, color, ptemplate, region, base)
+		    {}, user, brand, firm, employee, s_group, color, ptemplate, region, base)
 	    }).
 	    when('/inventory_new_detail/:page?', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail.html',
@@ -143,7 +143,7 @@ function stockConfg(angular){
 		controller: 'purchaserInventoryDetailCtrl' ,
 		resolve: angular.extend(
 		    {}, promotion, commision, score,
-		    brand, firm, type, ctype, s_group, color,
+		    brand, firm, ctype, s_group, color,
 		    size_spec, std_executive, safety_category, fabric, ptemplate , region, base, user)
 	    }).
 	    when('/inventory_history', {
@@ -186,7 +186,7 @@ function stockConfg(angular){
 	    when('/print_inventory_new/:rsn', {
 		templateUrl: '/private/purchaser/html/stock_new_detail_print.html',
 		controller: 'stockNewDetailPrintCtrl' ,
-		resolve: angular.extend({}, brand, firm, type, color, employee, user, base)
+		resolve: angular.extend({}, brand, firm, color, employee, user, base)
 	    }).
 	    when('/print_inventory_transfer/:rsn', {
 		templateUrl: '/private/purchaser/html/stock_transfer_print.html',

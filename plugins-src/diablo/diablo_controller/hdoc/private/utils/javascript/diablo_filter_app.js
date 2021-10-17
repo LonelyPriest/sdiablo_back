@@ -502,7 +502,7 @@ function filterProvider(){
 		    {operation:'match_w_inventory'},
 		    {prompt:viewValue, shop:shop, firm:firm, type:1})
 		    .$promise.then(function(invs){
-			console.log(invs);
+			// console.log(invs);
 			return invs.map(function(inv){
 			    var name = inv.style_number + "/"
 				+ inv.brand + "/"
@@ -651,6 +651,17 @@ function filterProvider(){
 		).$promise.then(function(costs_class) {
 		    return costs_class.map(function(c) {
 			return {id:c.id, name:c.name};
+		    });
+		})
+	    },
+
+	    match_prompt_type: function(viewValue, ascii) {
+		return _goodHttp.query_by_post(
+		    {operation: 'match_w_type'},
+		    {prompt: viewValue, ascii:ascii}
+		).$promise.then(function(types) {
+		    return types.map(function(t) {
+			return {id:t.id, name:t.name};
 		    });
 		})
 	    },

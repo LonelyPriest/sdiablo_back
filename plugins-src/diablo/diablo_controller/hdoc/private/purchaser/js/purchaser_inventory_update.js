@@ -3,13 +3,13 @@
 function purchaserInventoryNewUpdateCtrlProvide (
     $scope, $q, $routeParams, diabloPromise, dateFilter, diabloPattern,
     diabloUtilsService, diabloFilter, diabloPagination, purchaserService,
-    user, filterBrand, filterFirm, filterType, filterEmployee,
+    user, filterBrand, filterFirm, filterEmployee,
     filterSizeGroup, filterColor, filterStdExecutive, filterCategory, filterFabric, filterSizeSpec,
     filterTemplate, base){
     $scope.shops       = user.sortShops;
     $scope.brands      = filterBrand;
     $scope.firms       = filterFirm;
-    $scope.types       = filterType;
+    // $scope.types       = filterType;
     // $scope.employees   = filterEmployee;
     $scope.size_groups = filterSizeGroup;
     $scope.ubase       = base;
@@ -332,8 +332,9 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		add.style_number    = invs[i].style_number;
 		add.brand_id        = invs[i].brand_id;
 		add.brand = $scope.get_object(invs[i].brand_id, $scope.brands);
-		add.type = $scope.get_object(invs[i].type_id, $scope.types);
-		add.name = add.style_number + "/" + add.brand.name + "/" + add.type.name;
+		// add.type = $scope.get_object(invs[i].type_id, $scope.types);
+		add.type            = invs[i].type;
+		add.name = add.style_number + "/" + add.brand.name + "/" + invs[i].type;
 		add.sex             = invs[i].sex,
 		add.free            = invs[i].free,
 		add.season          = invs[i].season;
@@ -485,7 +486,10 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	add.name         = item.name;
 	add.style_number = item.style_number;
 	add.brand        = $scope.get_object(item.brand_id, $scope.brands);
-	add.type         = $scope.get_object(item.type_id, $scope.types);
+	// add.type         = $scope.get_object(item.type_id, $scope.types);
+	add.type         = item.type;
+	add.type_id      = item.type_id;
+	add.ctype_id     = item.ctype_id;
 	add.sex          = item.sex;
 	add.year         = item.year;
 	add.season       = item.season;
@@ -701,7 +705,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		style_number   : add.style_number,
 		brand          : add.brand.id,
 		firm           : stockUtils.invalid_firm($scope.select.firm),
-		type           : add.type.id,
+		type           : add.type_id,
 		sex            : add.sex,
 		year           : add.year, 
 		season         : add.season,

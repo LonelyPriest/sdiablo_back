@@ -216,7 +216,7 @@ function purchaserInventoryFixRsnDetailCtrlProvide(
 function purchaserInventoryNewRsnDetailCtrlProvide (
     $scope, $routeParams, $location, dateFilter, diabloUtilsService, diabloFilter,
     purchaserService, localStorageService,
-    user, filterBrand, filterFirm, filterType,
+    user, filterBrand, filterFirm,
     filterEmployee, filterSizeGroup, filterColor, filterTemplate, filterRegion, base){
     // console.log(user.right);
     // var permitShops      = user.shopIds;
@@ -273,14 +273,20 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     $scope.match_style_number = function(viewValue){
 	if (angular.isUndefined(diablo_set_string(viewValue)) || viewValue.length < diablo_filter_length) return;
 	return diabloFilter.match_w_inventory(viewValue, user.shopIds)
-    }; 
+    };
+
+    $scope.match_type = function(viewValue) {
+	return diabloFilter.match_prompt_type(
+	    viewValue,
+	    diablo_is_ascii_string(viewValue));
+    };
     
     // initial
     // $scope.filters = [];    
     diabloFilter.reset_field();
     diabloFilter.add_field("style_number", $scope.match_style_number);
     diabloFilter.add_field("brand", filterBrand);
-    diabloFilter.add_field("type",  filterType);
+    diabloFilter.add_field("type",  $scope.match_type);
     diabloFilter.add_field("firm",  filterFirm);
     diabloFilter.add_field("year",  diablo_full_year);
     diabloFilter.add_field("season",  diablo_season2objects);
@@ -429,7 +435,7 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 			inv.employee = diablo_get_object(inv.employee_id, filterEmployee);
 			inv.firm     = diablo_get_object(inv.firm_id, filterFirm);
 			inv.brand    = diablo_get_object(inv.brand_id, filterBrand);
-			inv.itype    = diablo_get_object(inv.type_id, filterType);
+			// inv.itype    = inv.type_name;
 			inv.sex      = diablo_get_object(inv.sex_id, diablo_sex2object);
 			inv.dseason  = diablo_get_object(inv.season, diablo_season2objects);
 			inv.expire_date = diablo_none;
@@ -908,6 +914,12 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
 	return diabloFilter.match_w_inventory(viewValue, user.shopIds)
     };
 
+    $scope.match_type = function(viewValue) {
+	return diabloFilter.match_prompt_type(
+	    viewValue,
+	    diablo_is_ascii_string(viewValue));
+    }
+
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory/inventory_transfer_from_detail");
     };
@@ -948,7 +960,7 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
     diabloFilter.add_field("rsn", []);
     diabloFilter.add_field("style_number", $scope.match_style_number);
     diabloFilter.add_field("brand", filterBrand);
-    diabloFilter.add_field("type", filterType);
+    diabloFilter.add_field("type", $scope.match_type);
     diabloFilter.add_field("fshop", $scope.shops);
     diabloFilter.add_field("tshop", $scope.shops);
     // diabloFilter.add_field("tshop", $scope.shops);
@@ -1026,7 +1038,7 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
 		    
 		    d.firm = diablo_get_object(d.firm_id, filterFirm);
 		    d.brand = diablo_get_object(d.brand_id, filterBrand);
-		    d.type = diablo_get_object(d.type_id, filterType);
+		    // d.type = diablo_get_object(d.type_id, filterType);
 
 		    d.calc = stockUtils.to_decimal(d.org_price * d.amount);
 		    d.xcalc = stockUtils.to_decimal(d.xprice * d.amount);
