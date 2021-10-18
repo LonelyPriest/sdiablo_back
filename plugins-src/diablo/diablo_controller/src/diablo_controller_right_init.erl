@@ -1056,6 +1056,7 @@ pass_action(wholesaler) ->
      <<"get_w_good">>,
      <<"get_used_w_good">>,
      <<"filter_w_good">>,
+     <<"filter_w_type">>,
      <<"match_w_good">>,
      <<"match_all_w_good">>,
      <<"match_w_good_style_number">>,

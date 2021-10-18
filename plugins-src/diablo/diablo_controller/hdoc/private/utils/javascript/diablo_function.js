@@ -65,6 +65,7 @@ var diablo_print = 2;
 
 var diablo_delete = 0;
 var diablo_abandon = 1;
+var diablo_recover = 2;
 
 var diablo_stock_new = 0;
 var diablo_stock_reject = 1;
@@ -1373,8 +1374,7 @@ var diabloHelp = function(){
 
 	pay_scan:function(payCode, shop, filterPromise, dialog, failTitle, callback) {
 	    
-	}
-
+	} 
 	//
     };
 }();

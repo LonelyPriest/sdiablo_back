@@ -3,7 +3,7 @@ function wsaleOrderNewCtrlProvide(
     diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter,
     diabloPattern, wsaleService,
     user, filterPromotion, filterScore, filterSysRetailer, filterEmployee,
-    filterSizeGroup, filterType, filterColor, filterLevel, base){
+    filterSizeGroup, filterColor, filterLevel, base){
     $scope.promotions = filterPromotion;
     $scope.scores     = filterScore;
     $scope.pattern    = {
@@ -1351,14 +1351,19 @@ function wsaleOrderDetailCtrlProvide(
 	console.log(o);
 	diablo_goto_page("#/order/update_order/" + o.rsn);
     };
+
+    $scope.order_note = function(o) {
+	diablo_goto_page("#/order/order_note/" + o.rsn);
+    };
     
 };
 
 function wsaleOrderNoteCtrlProvide(
     $scope, $routeParams, $location, dateFilter, diabloUtilsService,
     localStorageService, diabloFilter, wsaleService,
-    user, filterEmployee, filterBrand, filterType, filterCType, filterFirm,
+    user, filterEmployee, filterBrand, filterCType, filterFirm,
     filterSizeGroup, filterColor, base){
+    $scope.link_rsn = $routeParams.rsn; 
     $scope.shops     = user.sortShops.filter(function(s) {return s.deleted===0});
     $scope.shopIds   = user.shopIds;
     $scope.orders   = [];
@@ -1399,10 +1404,14 @@ function wsaleOrderNoteCtrlProvide(
 	    diablo_no);
     };
 
+    $scope.match_prompt_type = function(viewValue){
+	return diabloFilter.match_prompt_type(viewValue, diablo_is_ascii_string(viewValue)); 
+    };
+
     diabloFilter.reset_field();
     diabloFilter.add_field("style_number", $scope.match_style_number); 
     diabloFilter.add_field("brand",    filterBrand);
-    diabloFilter.add_field("type",     filterType); 
+    diabloFilter.add_field("type",     $scope.match_prompt_type); 
     // diabloFilter.add_field("ctype",    filterCType);
     // diabloFilter.add_field("sex",      diablo_sex2object);
     diabloFilter.add_field("season",   diablo_season2objects);
@@ -1444,7 +1453,12 @@ function wsaleOrderNoteCtrlProvide(
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    if (angular.isUndefined(search.shop) || !search.shop || search.shop.length === 0){
 		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
-	    } 
+	    }
+
+	    if (angular.isDefined(diablo_set_string($scope.link_rsn))) {
+		search.rsn = $scope.link_rsn;
+	    }
+	    // console.log(search);
 	    
 	    wsaleService.filter_w_sale_order_detail(
 		$scope.match, search, page, $scope.items_perpage
@@ -1461,7 +1475,7 @@ function wsaleOrderNoteCtrlProvide(
 		    d.shop     = diablo_get_object(d.shop_id, $scope.shops);
 		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
 		    d.brand    = diablo_get_object(d.brand_id, filterBrand);
-		    d.type     = diablo_get_object(d.type_id, filterType);
+		    // d.type     = diablo_get_object(d.type_id, filterType);
 		}); 
 
 		$scope.orders = result.data; 
@@ -1469,6 +1483,7 @@ function wsaleOrderNoteCtrlProvide(
 	    })
 	})
     };
+
 
     $scope.save_stastic = function(){
 	localStorageService.remove("wsale-order-note-stastic");
@@ -1482,6 +1497,11 @@ function wsaleOrderNoteCtrlProvide(
     $scope.refresh = function() {
 	$scope.do_search($scope.default_page);
     };
+
+    // console.log($scope.link_rsn);
+    if (angular.isDefined(diablo_set_string($scope.link_rsn))) {
+	$scope.refresh();
+    }
     
     $scope.page_changed = function(){
 	$scope.do_search($scope.current_page);

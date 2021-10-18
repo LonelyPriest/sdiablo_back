@@ -105,7 +105,7 @@
 		    <td x-ng-if="stock_right.show_stock_firm_info">{{inv.firm.name}}</td>
 		    <td>{{inv.style_number}}</td>
 		    <td>{{inv.brand.name}}</td>
-		    <td>{{inv.type.name}}</td>
+		    <td>{{inv.type_name}}</td>
 		    <td>{{inv.amount}}</td>
 		    <td x-ng-if="setting.show_tagprice">{{inv.tag_price}}</td>
 		    
@@ -150,7 +150,8 @@
 		    </td>
 		  </tr>
 		  <tr x-ng-if="total_items!==0">
-		    <td colspan=8></td>
+		    <td x-ng-if="stock_right.show_stock_firm_info" colspan=8></td>
+		    <td x-ng-if="!stock_right.show_stock_firm_info" colspan=7></td>
 		    <td>{{total_amounts}}</td>
 		    <td x-ng-if="setting.show_tagprice"></td> 
 		    <td x-ng-if="(stock_right.show_orgprice && (setting.xsale || !master))

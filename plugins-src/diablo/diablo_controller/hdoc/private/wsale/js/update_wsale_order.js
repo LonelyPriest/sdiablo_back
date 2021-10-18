@@ -3,7 +3,7 @@ function wsaleOrderUpdateCtrlProvide(
     diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter,
     diabloPattern, wsaleService,
     user, filterPromotion, filterScore, filterSysRetailer, filterEmployee,
-    filterSizeGroup, filterType, filterColor, filterLevel, base){
+    filterSizeGroup, filterColor, filterLevel, base){
     // console.log($routeParams);
     $scope.rsn = $routeParams.rsn; 
     $scope.shops     = user.sortShops.filter(function(s) {return s.deleted===0});

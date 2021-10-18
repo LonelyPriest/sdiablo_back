@@ -1907,7 +1907,7 @@ export(shift_note,
 	    {ok, Colors} = ?w_user_profile:get(color, Merchant),
 	    {ok, Shops}  = ?w_user_profile:get(shop, Merchant),
 	    {ok, Brands} = ?w_user_profile:get(brand, Merchant),
-	    {ok, Types}  = ?w_user_profile:get(type, Merchant),
+	    %% {ok, Types}  = ?w_user_profile:get(type, Merchant),
 	    {ok, Firms}  = ?w_user_profile:get(firm, Merchant),
 	    
 	    case file:open(File, [append, raw]) of
@@ -1932,7 +1932,7 @@ export(shift_note,
 			  1,
 			  SortTranses,
 			  DictNotes,
-			  {Colors, Shops, Brands, Types, Firms},
+			  {Colors, Shops, Brands, Firms},
 			  ExportCode,
 			  ShowOrgPrice),
 			ok = file:datasync(Fd),
@@ -1986,27 +1986,28 @@ sidebar(Session) ->
 		    _ -> []
 		end, 
 	    %% InvPrice = [{"inventory_price", "库存调价", "glyphicon glyphicon-sort"}], 
-	    Order =
-                [{{"order", "采购定单", "glyphicon glyphicon-ok-sign"},
-                  authen_shop_action(
-                    {?new_stock_order, 
-                     "new_order",
-                     "新增定单",
-                     "glyphicon glyphicon-shopping-cart"},
-                    Shops)
-		  ++ authen_shop_action(
-		       {?filter_stock_order, 
-			"order_detail",
-			"定单记录",
-			"glyphicon glyphicon-download"},
-		       Shops)
-		  ++ authen_shop_action(
-		       {?filter_stock_order_detail, 
-			"order_note",
-			"定单明细",
-			"glyphicon glyphicon-map-marker"},
-		       Shops)
-                 }],
+	    %% Order =
+            %%     [{{"order", "采购定单", "glyphicon glyphicon-ok-sign"},
+            %%       authen_shop_action(
+            %%         {?new_stock_order, 
+            %%          "new_order",
+            %%          "新增定单",
+            %%          "glyphicon glyphicon-shopping-cart"},
+            %%         Shops)
+	    %% 	  ++ authen_shop_action(
+	    %% 	       {?filter_stock_order, 
+	    %% 		"order_detail",
+	    %% 		"定单记录",
+	    %% 		"glyphicon glyphicon-download"},
+	    %% 	       Shops)
+	    %% 	  ++ authen_shop_action(
+	    %% 	       {?filter_stock_order_detail, 
+	    %% 		"order_note",
+	    %% 		"定单明细",
+	    %% 		"glyphicon glyphicon-map-marker"},
+	    %% 	       Shops)
+            %%      }],
+	    Order = [],
 	    
 	    Transfer =
                 [
@@ -2553,14 +2554,14 @@ do_write(stock_sort_by_color, Do, Count, [H|T], SortStocks, Colors, Code, ShowOr
 do_write(shift_note_color, _Do, _Count, [], _DictNotes, _Attrs, _Code, _ShowOrgPrice) ->
     ok;
 do_write(shift_note_color, Do, Count, [DH|DT], DictNotes,
-	 {Colors, Shops, Brands, Types, Firms}, Code, ShowOrgPrice) ->    
+	 {Colors, Shops, Brands, Firms}, Code, ShowOrgPrice) ->    
     {Key, [{H}]} = DH,
     FShop       = get_name(by_id, ?v(<<"fshop_id">>, H), Shops),
     TShop       = get_name(by_id, ?v(<<"tshop_id">>, H), Shops),
     
     StyleNumber = ?v(<<"style_number">>, H),
     Brand       = get_name(by_id, ?v(<<"brand_id">>, H), Brands),
-    Type        = get_name(by_id, ?v(<<"type_id">>, H), Types),
+    Type        = ?v(<<"type_name">>, H),
     Season      = ?v(<<"season">>, H),
     Firm        = get_name(by_id, ?v(<<"firm_id">>, H), Firms),
     OrgPrice    = ?v(<<"org_price">>, H),
@@ -2640,7 +2641,7 @@ do_write(shift_note_color, Do, Count, [DH|DT], DictNotes,
 		     Count + 1,
 		     DT,
 		     DictNotes,
-		     {Colors, Shops, Brands, Types, Firms},
+		     {Colors, Shops, Brands, Firms},
 		     Code,
 		     ShowOrgPrice);
 
@@ -2650,7 +2651,7 @@ do_write(shift_note_color, Do, Count, [DH|DT], DictNotes,
 		     Count + 1,
 		     DT,
 		     DictNotes,
-		     {Colors, Shops, Brands, Types, Firms},
+		     {Colors, Shops, Brands, Firms},
 		     Code,
 		     ShowOrgPrice)
     end.

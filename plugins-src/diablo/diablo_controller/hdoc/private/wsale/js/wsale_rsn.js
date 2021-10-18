@@ -3,7 +3,7 @@ function wsaleRsnDetailCtrlProvide (
     wsaleService, localStorageService,
     user, filterPromotion, filterScore, filterSysRetailer, filterBrand,
     filterEmployee, filterFirm, filterSizeGroup,
-    filterType, filterColor, filterCType, base){
+    filterColor, filterCType, base){
     // console.log($routeParams);
     // console.log(filterEmployee);
     $scope.shops    = user.sortShops.filter(function(s) {return s.deleted===0});
@@ -132,13 +132,17 @@ function wsaleRsnDetailCtrlProvide (
 	    viewValue,
 	    wsaleUtils.format_time_from_second($scope.time, dateFilter));
     };
+
+    $scope.match_prompt_type = function(viewValue){
+	return diabloFilter.match_prompt_type(viewValue, diablo_is_ascii_string(viewValue)); 
+    };
     
     // console.log($scope.setting);
     // filter
     diabloFilter.reset_field();
     diabloFilter.add_field("style_number", $scope.match_style_number); 
     diabloFilter.add_field("brand",    filterBrand);
-    diabloFilter.add_field("type",     filterType); 
+    diabloFilter.add_field("type",     $scope.match_prompt_type); 
     diabloFilter.add_field("ctype",    filterCType);
     diabloFilter.add_field("sex",      diablo_sex2object);
     diabloFilter.add_field("season",   diablo_season2objects);
@@ -263,7 +267,7 @@ function wsaleRsnDetailCtrlProvide (
 		    d.shop     = diablo_get_object(d.shop_id, $scope.shops);
 		    // d.retailer = diablo_get_object(d.retailer_id, filterRetailer);
 		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
-		    d.type      = diablo_get_object(d.type_id, filterType);
+		    // d.type      = diablo_get_object(d.type_id, filterType);
 		    d.oseason    = diablo_get_object(d.season, diablo_season2objects);
 		    d.promotion = diablo_get_object(d.pid, filterPromotion);
 		    d.score     = diablo_get_object(d.sid, filterScore);
@@ -1040,7 +1044,7 @@ function wsaleUploadCtrlProvide (
 
 function wsalePrintNoteCtrlProvide(
     $scope, $routeParams, diabloUtilsService, wsaleService,
-    filterBrand, filterFirm, filterType, filterColor, user, base){
+    filterBrand, filterFirm, filterColor, user, base){
     // console.log($routeParams);
     // $scope.rsn = $routeParams.rsn; 
     $scope.shops = user.sortShops;
@@ -1114,7 +1118,7 @@ function wsalePrintNoteCtrlProvide(
 
 function wsalePrintA4CtrlProvide(
     $scope, $routeParams, diabloUtilsService, wsaleService,
-    filterBrand, filterEmployee, filterType, filterColor, user, base){
+    filterBrand, filterEmployee, filterColor, user, base){
     // console.log($routeParams);
     $scope.rsn = $routeParams.rsn; 
     $scope.shops = user.sortShops;
@@ -1141,7 +1145,7 @@ function wsalePrintA4CtrlProvide(
 	    angular.forEach($scope.details, function(d) {
 		d.order_id = ++ order_id;
 		d.brand = diablo_get_object(d.brand_id, filterBrand);
-		d.type = diablo_get_object(d.type_id, filterType);
+		// d.type = diablo_get_object(d.type_id, filterType);
 		d.calc = wsaleUtils.to_decimal(d.rprice * d.total);
 	    });
 	    // $scope.total = 0;

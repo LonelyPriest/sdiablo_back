@@ -59,6 +59,7 @@ action(Session, Req, {"get_w_print_content", RSN}) ->
 			      [{[{<<"style_number">>, StyleNumber},
 				 {<<"brand_id">>, BrandId},
 				 {<<"type_id">>, ?v(<<"type_id">>, D)},
+				 {<<"type">>, ?v(<<"type">>, D)},
 				 {<<"total">>, ?v(<<"total">>, D)},
 				 {<<"tag_price">>, ?v(<<"tag_price">>, D)},
 				 {<<"rprice">>, ?v(<<"rprice">>, D)},

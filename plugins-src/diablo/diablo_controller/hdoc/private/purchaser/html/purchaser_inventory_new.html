@@ -797,13 +797,16 @@
 			       name="type"
 			       required
 			       ng-edit 
-			       placeholder="豹纹马甲等"
+			       placeholder="上衣/马甲等"
 			       x-ng-model="good.type"
 			       x-ng-pattern="pattern.type"
 			       x-ng-enter=""
 			       typeahead-editable="base_settings.editable_type"
-			       uib-typeahead="t as t.name for t in match_prompt_type($viewValue)"/>
-		      </div> 
+			       uib-typeahead="t.name for t in match_prompt_type($viewValue)"/>
+		      </div>
+		      <span x-ng-show="loading">
+			<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+		      </span>
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		    </div>
 		    <div ng-show="form.gForm.type.$invalid && !form.gForm.type.$pristine">
@@ -920,7 +923,7 @@
 			     disable-key
 			     ng-edit 
 			     placeholder="两位整数，无折扣请输入100"
-			     x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$|0$/"
+			     x-ng-pattern="pattern.discount"
 			     x-ng-enter=""
 			     x-ng-model="good.discount"/>
 		      <span class="input-group-addon bg-white fg-red">*</span> 

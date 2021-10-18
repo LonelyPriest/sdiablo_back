@@ -105,7 +105,7 @@
 		    <td x-ng-if="stock_right.show_stock_firm_info">{{inv.firm.name}}</td>
 		    <td>{{inv.style_number}}</td>
 		    <td>{{inv.brand.name}}</td>
-		    <td>{{inv.type.name}}</td>
+		    <td>{{inv.type_name}}</td>
 		    <td>{{inv.amount}}</td>
 		    <td x-ng-if="setting.show_tagprice">{{inv.tag_price}}</td>
 		    
@@ -138,15 +138,21 @@
 		      <div x-ng-if="!inv.check_date">无操作</div>
 		    </td>
 		    <td>
-		      <a class="btn diablo-button btn-primary"
+		      <button class="btn diablo-button btn-primary"
 			 x-ng-disabled="inv.free === 0"
 		    	 x-ng-click="rsn_detail(inv)">
-			明细<i class="glyphicon glyphicon-map-marker"></i></a>
+			明细<i class="glyphicon glyphicon-map-marker"></i></button>
+		      
+		      <button x-ng-if="setting.use_barcode"
+			      class="btn diablo-button purple"
+			      x-ng-click="p_barcode(inv)">条码
+			<i class="glyphicon glyphicon-barcode"></i></button>
 		    </td>
 		  </tr>
 
 		  <tr x-ng-if="total_items!==0">
-		    <td colspan=8></td>
+		    <td x-ng-if="stock_right.show_stock_firm_info" colspan=8></td>
+		    <td x-ng-if="!stock_right.show_stock_firm_info" colspan=7></td>
 		    <td>{{total_amounts}}</td>
 		    
 		    <td x-ng-if="setting.show_tagprice"></td>
@@ -235,5 +241,59 @@
   <div class="modal-footer">
     <button class="btn btn-primary" x-ng-click="ok()">确认</button>
     <!-- <button class="btn btn-warning" x-ng-click="cancel()">取消</button> -->
+  </div>  
+</script>
+
+
+<script type="text/ng-template" id="select-template.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button> 
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">
+	<span>请选择打印模板</span>
+      </span>
+    </h4>
+  </div>
+
+  <div class="modal-body"> 
+    <div class="table-responsive">
+      <table class="table table-bordered
+		    table-striped table-condensed table-advanced">
+	<thead>
+	  <tr>
+	    <th></th>
+	    <th>名称</th>
+	    <th>纸宽</th>
+	    <th>纸高</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr x-ng-repeat="t in params.templates">
+	    <td class="text-center">
+	      <div class="checkbox checkbox-danger checkbox-circle">
+		<input id={{t.id}}
+		       type="checkbox"
+		       x-ng-model="t.select"
+		       x-ng-change="params.check_only(t, params.templates)"/>
+		<label for={{t.id}}></label>
+	      </div>
+	    </td> 
+	    <td class="vert-align">{{t.name}}</td>
+	    <td class="vert-align">{{t.width}}</td>
+	    <td class="vert-align">{{t.height}}</td> 
+	  </tr>
+	</tbody>
+      </table>
+    </div> 
+    
+  </div>
+  
+  <div class="modal-footer">
+    <button class="btn btn-primary" 
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  
 </script>

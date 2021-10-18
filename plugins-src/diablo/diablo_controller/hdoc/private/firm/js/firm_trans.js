@@ -370,7 +370,7 @@ function firmTransRsnDetailCtrlProvide(
     $scope, $routeParams, dateFilter, diabloUtilsService, diabloFilter,
     firmService,
     filterBrand, filterFirm, filterEmployee, filterSizeGroup,
-    filterType, filterColor, user, base){
+    filterColor, user, base){
     // console.log($routeParams); 
     // console.log(filterEmployee);
     $scope.shopIds   = user.shopIds; 
@@ -397,6 +397,10 @@ function firmTransRsnDetailCtrlProvide(
 	return diabloFilter.match_w_inventory(viewValue, user.shopIds);
     };
 
+    $scope.match_prompt_type = function(viewValue){
+	return diabloFilter.match_prompt_type(viewValue, diablo_is_ascii_string(viewValue)); 
+    };
+
     $scope.goto_page = diablo_goto_page;
 
     // console.log($routeParams);
@@ -416,7 +420,7 @@ function firmTransRsnDetailCtrlProvide(
     
     diabloFilter.add_field("style_number", $scope.match_style_number);
     diabloFilter.add_field("brand",        filterBrand);
-    diabloFilter.add_field("type",         filterType);
+    diabloFilter.add_field("type",         $scope.match_prompt_type);
     diabloFilter.add_field("shop",         user.sortShops);
     // diabloFilter.add_field("employee",     filterEmployee);
     
@@ -476,7 +480,7 @@ function firmTransRsnDetailCtrlProvide(
 			inv.employee = diablo_get_object(inv.employee_id, filterEmployee);
 			inv.firm     = diablo_get_object(inv.firm_id, filterFirm);
 			inv.brand    = diablo_get_object(inv.brand_id, filterBrand);
-			inv.itype    = diablo_get_object(inv.type_id, filterType);
+			// inv.itype    = diablo_get_object(inv.type_id, filterType);
 		    });
 		    
 		    diablo_order_page(page, $scope.items_perpage, $scope.inventories);

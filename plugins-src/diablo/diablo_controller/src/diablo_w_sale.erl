@@ -1077,22 +1077,56 @@ handle_call({rsn_detail, Merchant, UTable, Conditions}, _From, State) ->
 handle_call({trans_detail, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("trans_detail with merchant ~p, Conditions ~p", [Merchant, Conditions]),
     Sql =
-	" select a.id"
+	%% " select a.id"
+	%% ", a.rsn"
+	%% ", a.style_number"
+	%% ", a.brand_id"
+	%% ", a.type_id"
+	%% ", a.sex"
+	%% ", a.s_group"
+	%% ", a.free"
+	%% ", a.season"
+	%% ", a.firm_id"
+	%% ", a.year"
+	%% ", a.in_datetime"
+	%% ", a.total"
+	%% ", a.pid"
+	%% ", a.sid"
+	%% ", a.mid"
+	%% ", a.org_price"
+	%% ", a.tag_price"
+	%% ", a.discount"
+	%% ", a.fdiscount"
+	%% ", a.rdiscount"
+	%% ", a.fprice"
+	%% ", a.rprice"
+	%% ", a.oil" 
+	%% ", a.path"
+	%% ", a.comment"
+	%% ", a.has_rejected"
+	
+	%% ", b.color as color_id"
+	%% ", b.size"
+	%% ", b.total as amount"
+	
+	%% " from "
+	
+	"select a.id"
 	", a.rsn"
 	", a.style_number"
-	", a.brand_id"
-	", a.type_id"
+	", a.brand as brand_id"
+	", a.type as type_id"
 	", a.sex"
 	", a.s_group"
 	", a.free"
 	", a.season"
-	", a.firm_id"
+	", a.firm as firm_id"
 	", a.year"
 	", a.in_datetime"
 	", a.total"
-	", a.pid"
-	", a.sid"
-	", a.mid"
+	", a.promotion as pid"
+	", a.score as sid"
+	", a.commision as mid"
 	", a.org_price"
 	", a.tag_price"
 	", a.discount"
@@ -1100,52 +1134,28 @@ handle_call({trans_detail, Merchant, UTable, Conditions}, _From, State) ->
 	", a.rdiscount"
 	", a.fprice"
 	", a.rprice"
-	", a.oil" 
+	", a.oil"
 	", a.path"
 	", a.comment"
-	", a.has_rejected"
-	
+	", a.reject as has_rejected"
+
 	", b.color as color_id"
 	", b.size"
 	", b.total as amount"
-	
-	" from "
-	
-	"(select id"
-	", rsn"
-	", style_number"
-	", brand as brand_id"
-	", type as type_id"
-	", sex"
-	", s_group"
-	", free"
-	", season"
-	", firm as firm_id"
-	", year"
-	", in_datetime"
-	", total"
-	", promotion as pid"
-	", score as sid"
-	", commision as mid"
-	", org_price"
-	", tag_price"
-	", discount"
-	", fdiscount"
-	", rdiscount"
-	", fprice"
-	", rprice"
-	", oil"
-	", path"
-	", comment"
-	", reject as has_rejected"
-    %% " from w_sale_detail"
-	" from" ++ ?table:t(sale_detail, Merchant, UTable)
-	++ " where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") a"
 
-	" inner join" ++ ?table:t(sale_note, Merchant, UTable) ++ " b on a.rsn=b.rsn"
+	", c.name as type"
+	
+	" from" ++ ?table:t(sale_detail, Merchant, UTable) ++ " a"
+	
+	" inner join" ++ ?table:t(sale_note, Merchant, UTable) ++ " b"
+	" on a.rsn=b.rsn"
+	" and a.merchant=b.merchant"
 	" and a.style_number=b.style_number"
-	" and a.brand_id=b.brand",    
+	" and a.brand=b.brand"
 
+	" left join inv_types c on a.merchant=b.merchant and a.type=c.id"
+	
+	++ " where " ++ ?utils:to_sqls(proplists, ?utils:correct_condition(<<"a.">>, Conditions)), 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -2155,7 +2165,51 @@ handle_call({filter_order_detail, Merchant, UTable, CurrentPage, ItemsPerPage, C
     {_, _, CutDCondtions} = ?sql_utils:cut(fields_no_prifix, DConditions),
     CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
     
-    Sql = 
+    Sql =
+	"select n.id"
+	", n.rsn"
+	", n.merchant"
+	", n.shop_id"
+
+	", n.style_number"
+	", n.brand_id"
+
+	", n.type_id"
+	", n.sex"
+	", n.s_group"
+	", n.free"
+
+	", n.season"
+	", n.firm_id"
+	", n.year"
+	", n.in_datetime"
+
+	", n.total"
+	", n.finish"
+
+	", n.tag_price"
+	", n.discount"
+
+	", n.fdiscount"
+	", n.fprice"
+
+	", n.path"
+	", n.comment"
+
+	", n.state"
+	", n.entry_date"
+
+	", n.account_id"
+	", n.retailer_id"
+	", n.employee_id"
+
+	", n.retailer"
+	", n.account"
+
+	", m.name as type"
+
+	" from ("
+	
 	"select b.id"
 	", b.rsn"
 	", b.merchant"
@@ -2208,7 +2262,10 @@ handle_call({filter_order_detail, Merchant, UTable, CurrentPage, ItemsPerPage, C
 	++ ?sql_utils:condition(proplists, CorrectCutDConditions)
 	++ ?sql_utils:condition(proplists, CutSConditions)
 	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime)
-	++ ?sql_utils:condition(page_desc, {use_datetime, 0}, CurrentPage, ItemsPerPage),
+	++ ?sql_utils:condition(page_desc, {use_datetime, 0}, CurrentPage, ItemsPerPage) ++ ") n"
+
+	" left join inv_types m on n.type_id=m.id",
+    
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -3820,7 +3877,49 @@ sale_new(rsn_groups, MatchMode, {Merchant, UTable}, Conditions, PageFun) ->
 
     CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
 
-    "select b.id"
+    "select n.id"
+	", n.rsn"
+	", n.style_number"
+	", n.brand_id"
+	", n.type_id"
+	", n.sex"
+	", n.season"
+	", n.firm_id"
+	", n.year"
+	", n.s_group"
+	", n.free"
+	", n.total"
+	", n.oil"
+    %% ", n.negative"
+	", n.reject"
+	", n.pid"
+	", n.sid"
+	", n.org_price"
+	", n.ediscount"
+	", n.tag_price"
+	", n.fdiscount"
+	", n.rdiscount"
+	", n.fprice"
+	", n.rprice"
+	", n.in_datetime"
+	", n.path"
+	", n.comment"
+	", n.entry_date"
+
+	", n.account_id"
+	", n.shop_id"
+	", n.retailer_id"
+	", n.employee_id"
+	", n.sell_type"
+
+	", n.retailer"
+	", n.phone"
+	", n.account"
+
+	", m.name as type"
+	
+	" from (" 
+	"select b.id"
 	", b.rsn"
 	", b.style_number"
 	", b.brand as brand_id"
@@ -3858,14 +3957,13 @@ sale_new(rsn_groups, MatchMode, {Merchant, UTable}, Conditions, PageFun) ->
 	", c.name as retailer"
 	", c.mobile as phone"
 	", d.name as account"
-	
 
     %% " from w_sale_detail b, w_sale a"
 	" from" ++ ?table:t(sale_detail, Merchant, UTable) ++ " b,"
 	++ ?table:t(sale_new, Merchant, UTable) ++ " a"
 	" left join w_retailer c on c.id=a.retailer"
 	" left join users d on d.id=a.account"
-
+	
     	" where "
     %% ++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
 	++ "b.merchant=" ++ ?to_s(Merchant)
@@ -3890,20 +3988,7 @@ sale_new(rsn_groups, MatchMode, {Merchant, UTable}, Conditions, PageFun) ->
 	       undefined -> [];
 	       _ ->
 		   " and b.total>" ++ ?to_s(MSell)
-	   end
-	%% ++ case MatchMode of
-	%%        ?AND ->
-	%% 	   ?sql_utils:condition(proplists, CorrectCutDConditions);
-	%%        ?LIKE ->
-	%% 	   case ?v(<<"b.style_number">>, CorrectCutDConditions, []) of
-	%% 	       [] ->
-	%% 		   ?sql_utils:condition(proplists, CorrectCutDConditions);
-	%% 	       StyleNumber ->
-	%% 		   " and b.style_number like '" ++ ?to_s(StyleNumber) ++ "%'"
-	%% 		       ++ ?sql_utils:condition(
-	%% 			     proplists, lists:keydelete(<<"b.style_number">>, 1, CorrectCutDConditions))
-	%% 	   end
-	%%    end
+	   end 
 	++ " and b.rsn=a.rsn"
 	
 	++ " and a.merchant=" ++ ?to_s(Merchant)
@@ -3912,7 +3997,9 @@ sale_new(rsn_groups, MatchMode, {Merchant, UTable}, Conditions, PageFun) ->
 	       [] -> [];
 	       TimeSql -> " and " ++ TimeSql
 	   end
-    	++ PageFun().
+    	++ PageFun() ++ ") n"
+
+	" left join inv_types m on n.type_id=m.id".
 
 
 pay_order(surplus, [], Pays) ->

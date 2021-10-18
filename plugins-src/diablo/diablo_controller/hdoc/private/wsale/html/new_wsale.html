@@ -96,8 +96,10 @@
 		<tr>
 		  <th x-ng-if="setting.negative_sale" class="text-center">选择</th>
 		  <th class="text-center">序号</th>
-		  <th x-ng-if="setting.barcode_mode" class="text-center">条码</th>
-		  <th class="text-center">货号/品类</th>
+		  <th class="text-center">
+		    <span x-ng-if="setting.barcode_mode">条码/货号/品类</span>
+		    <span x-ng-if="!setting.barcode_mode">货号/品类</span>
+		  </th>
 		  <th class="text-center">库存</th> 
 		  <th class="text-center">吊牌价</th>
 		  <th class="text-center">折扣</th> 
@@ -129,13 +131,19 @@
 		  </td> 
 		  
 		  <td class="text-center vert-align">{{inv.order_id}}</td> 
-		  <td x-ng-if="setting.barcode_mode" class="text-left vert-align">
-	  	    <div>{{inv.bcode}}</div> 
+		  <td class="text-left vert-align col-md-2">
+		    <div class={{color_negative_sale(inv.negative)}}>
+		    <span x-ng-if="setting.barcode_mode">
+		      {{inv.bcode}}/{{inv.full_name}}
+		    </span>
+		    <span x-ng-if="!setting.barcode_mode">
+		      {{inv.full_name}}
+		    </span>
 	  	  </td>
 		  
-		  <td class="col-md-2 text-left vert-align">
-		    <span class={{color_negative_sale(inv.negative)}}>{{inv.full_name}}</span>
-		  </td> 
+		  <!-- <td class="col-md-2 text-left vert-align"> -->
+		  <!--   <span class={{color_negative_sale(inv.negative)}}>{{inv.full_name}}</span> -->
+		  <!-- </td>  -->
 		  
 		  <td class="vert-align">
 		    <span class={{color_negative_sale(inv.negative)}}>{{inv.total}}</span>
@@ -281,8 +289,7 @@
 
 		<tr x-ng-if="inventories.length>0" class="text-center">
 		  <td x-ng-if="setting.negative_sale"></td>
-		  <td></td>
-		  <td x-ng-if="setting.barcode_mode"></td>
+		  <td></td> 
 		  <td></td>
 		  <td></td>
 		  <td>{{select.abs_pay}}</td>

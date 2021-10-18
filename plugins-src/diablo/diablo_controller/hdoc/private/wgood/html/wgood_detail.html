@@ -15,12 +15,12 @@
 	      <i class="glyphicon glyphicon-plus"></i></a>
 	    
 	    <a type="button"
-		    class="btn btn-success purple-stripe"
-	  	    x-ng-click="add_good()">新增
+	       class="btn btn-success purple-stripe"
+	       x-ng-click="add_good()">新增
 	      <i class="glyphicon glyphicon-plus"></i></a>
 
 	    <a type="button" class="btn blue reload purple-stripe"
-		    x-ng-click="do_search(default_page)">刷新
+	       x-ng-click="do_search(default_page)">刷新
 	      <i class="icon icon-spinner fg-white"></i></a> 
 	  </div>
 	</div>
@@ -111,7 +111,7 @@
 		    <td x-ng-if="setting.use_barcode">{{g.bcode}}</td>
 		    <td>{{g.style_number}}</td>
 		    <td>{{g.brand}}</td>
-		    <td>{{g.type.name}}</td>
+		    <td>{{g.type}}</td>
 		    <!-- <td>{{g.sex}}</td>-->
 		    <!-- <td>{{g.season}}</td> -->
 		    <td>{{g.year}}</td>
@@ -167,22 +167,22 @@
 			<i class="glyphicon glyphicon-erase"></i></button>
 		      
 		      <div x-ng-if="setting.use_barcode" class="btn-group hidden-xs">
-			    <button type="button" class="btn diablo-button green">
-			      条码<i class="glyphicon glyphicon-barcode"></i></button>
-			    <button type="button" class="btn diablo-button red" 
-				    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			      <span class="caret"></span>
-			      <span class="sr-only">Toggle Dropdown</span>
-			    </button>
-			    <ul class="dropdown-menu">
-			      <li>
-				<a href="javascript:;" x-ng-click="print_barcode(g)">条码打印</a>
-			      </li>
-			      <li>
-				<a href="javascript:;" x-ng-click="reset_barcode(g)">条码重置</a>
-			      </li> 
-			    </ul>
-			  </div>
+			<button type="button" class="btn diablo-button green">
+			  条码<i class="glyphicon glyphicon-barcode"></i></button>
+			<button type="button" class="btn diablo-button red" 
+				data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			  <span class="caret"></span>
+			  <span class="sr-only">Toggle Dropdown</span>
+			</button>
+			<ul class="dropdown-menu">
+			  <li>
+			    <a href="javascript:;" x-ng-click="print_barcode(g)">条码打印</a>
+			  </li>
+			  <li>
+			    <a href="javascript:;" x-ng-click="reset_barcode(g)">条码重置</a>
+			  </li> 
+			</ul>
+		      </div>
 		      
 		    </td>
 		  </tr>
@@ -203,22 +203,22 @@
 	    </span>
 	    
 	    <uib-pagination
-		 class="pagination-lg table-pagination pull-right"
-		 total-items="total_items"
-		 items-per-page="items_perpage"
-		 num-pages="num_pages"
-		 max-size="max_page_size"
-		 boundary-links="true"
-		 previous-text="&lsaquo;" next-text="&rsaquo;"
-		 first-text="&laquo;" last-text="&raquo;"
-		 x-ng-model="current_page"
-		 x-ng-init="current_page=default_page"
-		 x-ng-change="page_changed(current_page)">
+	       class="pagination-lg table-pagination pull-right"
+	       total-items="total_items"
+	       items-per-page="items_perpage"
+	       num-pages="num_pages"
+	       max-size="max_page_size"
+	       boundary-links="true"
+	       previous-text="&lsaquo;" next-text="&rsaquo;"
+	       first-text="&laquo;" last-text="&raquo;"
+	       x-ng-model="current_page"
+	       x-ng-init="current_page=default_page"
+	       x-ng-change="page_changed(current_page)">
 	    </uib-pagination>
 	    
 	  </div>
 	</div>
-		  
+	
       </div> <!--END table container-->
       
     </div>

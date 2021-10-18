@@ -63,6 +63,7 @@ var wsaleUtils = function(){
 
 		add.brand_id = s.brand_id; 
 		add.type_id  = s.type_id;
+		add.type    = s.type;
 		add.sex     = s.sex;
 		add.season  = s.season;
 		add.firm_id = s.firm_id;
@@ -138,7 +139,7 @@ var wsaleUtils = function(){
 		order_id:  inv.order_id,
 		name:      inv.style_number
 		    + "-" + (inv.brand.name ? inv.brand.name : inv.brand)
-		    + "-" + (inv.type.name  ? inv.type.name: inv.type)
+		    + "-" + inv.type
 		    + "-" + (wsaleUtils.to_integer(inv.bargin_price) === 3 ? "特价" : "正价"),
 		
 		promotion: inv.promotion,
@@ -188,7 +189,7 @@ var wsaleUtils = function(){
 	    brands,
 	    retailers,
 	    employees,
-	    types,
+	    // types,
 	    colors,
 	    size_groups,
 	    promotions,
@@ -208,7 +209,7 @@ var wsaleUtils = function(){
 		});
 		
 		d.brand        = diablo_get_object(d.brand_id, brands);
-		d.type         = diablo_get_object(d.type_id, types); 
+		// d.type         = diablo_get_object(d.type_id, types);
 		d.promotion    = diablo_get_object(d.pid, promotions);
 		d.commision    = diablo_get_object(d.mid, commisions);
 		d.score        = diablo_get_object(d.sid, scores); 

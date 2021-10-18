@@ -603,8 +603,8 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     if ($scope.setting.use_barcode && needCLodop())
 	loadCLodop($scope.setting.print_access.protocal);
     
-    var dialog_barcode_title = "条码打印";
-    var dialog_barcode_title_failed = "条码打印失败：";
+    // var dialog_barcode_title = "条码打印";
+    // var dialog_barcode_title_failed = "条码打印失败：";
     
     // $scope.p_barcode = function(inv) {
     // 	console.log(inv);
@@ -896,7 +896,7 @@ function purchaserInventoryFlowCtrlProvide(
 function purchaserInventoryTransferFromRsnDetailCtrlProvide(
     $scope, $routeParams, $location, dateFilter, localStorageService,
     diabloPattern, diabloUtilsService, diabloFilter, purchaserService, 
-    user, filterShop, filterBrand, filterType, filterFirm,
+    user, filterShop, filterBrand, filterFirm,
     filterSizeGroup, filterColor,
     filterStdExecutive, filterCategory, filterFabric, filterSizeSpec, filterTemplate, base){
     
@@ -915,9 +915,8 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
     };
 
     $scope.match_type = function(viewValue) {
-	return diabloFilter.match_prompt_type(
-	    viewValue,
-	    diablo_is_ascii_string(viewValue));
+	console.log(viewValue);
+	return diabloFilter.match_prompt_type(viewValue, diablo_is_ascii_string(viewValue));
     }
 
     $scope.go_back = function(){
@@ -1246,10 +1245,10 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
 
 function purchaserInventoryTransferToRsnDetailCtrlProvide(
     $scope, $routeParams, $location, dateFilter, localStorageService,
-    diabloPattern, diabloUtilsService, diabloFilter,
-    purchaserService, 
-    user, filterShop, filterBrand, filterType, filterFirm,
-    filterSizeGroup, filterColor, base){
+    diabloPattern, diabloUtilsService, diabloFilter, purchaserService, 
+    user, filterShop, filterBrand, filterFirm,
+    filterSizeGroup, filterColor,
+    filterStdExecutive, filterCategory, filterFabric, filterSizeSpec, filterTemplate, base){
     
     // var permitShops =  user.shopIds;
     // $scope.shops = user.sortAvailabeShops;
@@ -1263,6 +1262,10 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
 	return diabloFilter.match_w_inventory(viewValue, user.shopIds)
     };
 
+    $scope.match_type = function(viewValue) {
+	return diabloFilter.match_prompt_type(viewValue, diablo_is_ascii_string(viewValue));
+    }
+
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory/inventory_transfer_to_detail");
     };
@@ -1274,15 +1277,20 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
     var tMode = stockUtils.scan_mode(diablo_default_shop, base);
     $scope.setting = {
 	show_tagprice: stockUtils.to_integer(tMode.charAt(5)),
-	xsale: stockUtils.to_integer(tMode.charAt(6))
+	xsale: stockUtils.to_integer(tMode.charAt(6)),
+	use_barcode: stockUtils.use_barcode(diablo_default_shop, base),
+	auto_barcode :stockUtils.auto_barcode(diablo_default_shop, base),
+	print_access: stockUtils.print_num(user.loginShop, base)
     };
+
+    $scope.printU = new stockPrintU($scope.setting.auto_barcode, diablo_default_setting);
+    $scope.printU.setPrinter(diablo_default_setting); 
 
     $scope.master = diablo_no;
     if ($scope.setting.xsale)
-	$scope.master = user.sortRepoes.length === 0 ? diablo_no : diablo_yes;
-
-    $scope.total_items = 0;
+	$scope.master = user.sortRepoes.length === 0 ? diablo_no : diablo_yes; 
     
+    $scope.total_items = 0; 
     // initial
     $scope.filters = [];
     
@@ -1290,7 +1298,7 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
     diabloFilter.add_field("rsn", []);
     diabloFilter.add_field("style_number", $scope.match_style_number);
     diabloFilter.add_field("brand", filterBrand);
-    diabloFilter.add_field("type", filterType);
+    diabloFilter.add_field("type", $scope.match_type);
     // diabloFilter.add_field("fshop", $scope.shops);
     diabloFilter.add_field("fshop", $scope.shops);
     diabloFilter.add_field("tshop", $scope.shops);
@@ -1371,8 +1379,7 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
 		    
 		    d.firm = diablo_get_object(d.firm_id, filterFirm);
 		    d.brand = diablo_get_object(d.brand_id, filterBrand);
-		    d.type = diablo_get_object(d.type_id, filterType);
-
+		    
 		    d.calc = stockUtils.to_decimal(d.org_price * d.amount);
 		    d.xcalc = stockUtils.to_decimal(d.xprice * d.amount);
 		});
@@ -1449,7 +1456,109 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
 			  path:       inv.path,
 			  get_amount: get_amount});
 		}); 
-    }   
+    }; 
+    
+    var start_print_barcode = function(barcode, stock, template) {
+	console.log(barcode);
+	$scope.printU.set_template(template);
+	
+	if (template.firm && diablo_invalid_firm === stock.firm_id) {
+	    dialog.response(
+		false,
+		dialog_barcode_title,
+		dialog_barcode_title_failed + purchaserService.error[2086]);
+	    return;
+	}
+	
+	var firm = stock.firm_id === diablo_invalid_firm ? undefined : stock.firm.name; 
+	var barcodes = []; 
+	if (diablo_free_color_size === stock.free) {
+	    for (var i=0; i<stock.amount; i++) {
+		barcodes.push(barcode); 
+	    }
+	    $scope.printU.free_prepare(
+		stock.fshop.name,
+		stock,
+		stock.brand.name,
+		barcodes,
+		firm,
+		stock.firm_id);
+	} else {
+	    purchaserService.w_invnetory_transfer_rsn_detail(
+		{rsn: stock.rsn, style_number: stock.style_number}
+	    ).then(function(result){
+		var order_sizes = diabloHelp.usort_size_group(stock.s_group, filterSizeGroup);
+		var sort    = diabloHelp.sort_stock(result.data, order_sizes, filterColor); 
+		stock.amounts = sort.sort; 
+		barcodes = [];
+		angular.forEach(stock.amounts, function(a) {
+		    for (var i=0; i<a.count; i++) {
+			var o = stockUtils.gen_barcode_content(
+			    barcode,
+			    a.cid,
+			    a.size,
+			    filterColor); 
+			if (angular.isDefined(o) && angular.isObject(o)) {
+			    barcodes.push(o);
+			}
+		    } 
+		});
+
+		console.log(barcodes);
+		$scope.printU.prepare(
+		    stock.shop,
+		    stock,
+		    stock.brand.name,
+		    barcodes,
+		    firm,
+		    stock.firm_id); 
+	    });
+	} 
+    };
+    
+    $scope.p_barcode = function(inv) {
+	var start_barcode = function(template, shop){
+	    purchaserService.gen_barcode(
+		inv.style_number, inv.brand_id, inv.fshop_id
+	    ).then(function(result){
+		console.log(result);
+		if (result.ecode === 0) {
+		    inv = stockUtils.impl_ext_stock(
+			inv,
+			result,
+			filterStdExecutive,
+			filterCategory,
+			filterSizeSpec,
+			filterFabric); 
+		    start_print_barcode(result.barcode, inv, template);
+		} else {
+		    dialog.response(
+			false,
+			dialog_barcode_title,
+			dialog_barcode_title_failed + purchaserService.error[result.ecode]);
+		}
+	    });
+	}; 
+
+	$scope.templates = stockUtils.get_print_templates(inv.fshop_id, filterTemplate); 
+	if ($scope.templates.length === 1) {
+	    start_barcode($scope.templates[0]);
+	} else {
+	    var callback2 = function(params) {
+		console.log(params); 
+		var t = params.templates.filter(function(t) {return t.select})[0];
+		start_barcode(t);
+	    };
+	    
+	    dialog.edit_with_modal(
+		"select-template.html",
+		undefined,
+		callback2,
+		undefined,
+		{templates: $scope.templates,
+		 check_only: stockUtils.check_select_only});
+	}
+    };
 };
 
 define (["purchaserApp"], function(app){

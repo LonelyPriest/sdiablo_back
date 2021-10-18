@@ -200,8 +200,8 @@
 			</td>
 			<td>
 			  <div x-ng-if="inv.total>0">
-			    <span x-ng-if="inv.negative" class="bg-red">{{inv.type.name}}</span>
-			    <span x-ng-if="!inv.negative">{{inv.type.name}}</span>
+			    <span x-ng-if="inv.negative" class="bg-red">{{inv.type}}</span>
+			    <span x-ng-if="!inv.negative">{{inv.type}}</span>
 			  </div>
 			  <div x-ng-if="inv.total<=0" class="fg-red">
 			    <span x-ng-if="inv.negative" class="bg-red">{{inv.type.name}}</span>

@@ -1396,6 +1396,7 @@ function purchaserInventoryNewCtrlProvide (
     $scope.pattern = {style_number: diabloPattern.style_number,
 		      brand: diabloPattern.brand,
 		      type:  diabloPattern.good_type,
+		      discount: diabloPattern.discount,
 		      expire: diabloPattern.expire_date,
 		      percent: diabloPattern.percent,
 		      barcode: diabloPattern.number};

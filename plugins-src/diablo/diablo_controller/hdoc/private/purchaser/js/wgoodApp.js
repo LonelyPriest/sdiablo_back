@@ -112,11 +112,19 @@ function wgoodConfig(){
 		{tid:type.tid, name: type.name, cid: type.cid, bcode: type.bcode}).$promise;
 	};
 
-	this.delete_good_type = function(typeId) {
+	this.delete_good_type = function(typeId, mode) {
 	    return http.save(
-		{operation: "delete_w_type"}, {tid:typeId}).$promise;
+		{operation: "delete_w_type"}, {tid:typeId, mode:mode}).$promise;
 	};
-	
+
+	this.filter_good_type = function(match, fields, currentPage, itemsPerpage){
+	    return http.save(
+		{operation: "filter_w_type"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
+	};
 
 	this.syn_type_pinyin = function(types) {
 	    return http.save({operation: "syn_type_pinyin"},

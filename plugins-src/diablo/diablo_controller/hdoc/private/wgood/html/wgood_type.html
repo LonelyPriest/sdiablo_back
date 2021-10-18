@@ -31,6 +31,14 @@
       <div class="portlet-body util-btn-margin-bottom-5">
 	<!--BEGIN table-toolbar-->
 	<div class="table-toolbar">
+	  <div class="row"> 
+	    <div class="col-md-12 col-sm-12 col-xs-12">
+              <query-pattern ng-model="match"
+                             filters="filters"
+                             filter="filter">
+	      </query-pattern>
+            </div>
+	  </div>
 	</div> <!--END table-toolbar-->
 	
 	<!--BEGN portlet body--> 
@@ -51,7 +59,7 @@
 		</tr>
 	      </thead>
 	      <tbody>
-		<tr ng-repeat="t in goodTypes">
+		<tr ng-repeat="t in good_types">
 		  <td>{{t.order_id}}</td>
 		  <td>{{t.name}}</td>
 		  <td>{{t.py}}</td>
@@ -61,7 +69,7 @@
 		  </td>
 		  <td>{{t.bcode}}</td>
 		  <td x-ng-switch on="t.deleted">
-		    <span x-ng-switch-when=0>使用中</span>
+		    <span x-ng-switch-when=0 class="fg-green">使用中</span>
 		    <span x-ng-switch-when=1 class="fg-red">已删除</span>
 		  </td> 
 		  <td class="col-md-2">
@@ -72,6 +80,9 @@
 		      <button x-ng-if="!t.deleted" class="btn btn-danger diablo-button"
 		    	      x-ng-click="delete_type(t)">删除
 			<i class="glyphicon glyphicon-erase"></i></button>
+		      <button x-ng-if="t.deleted" class="btn btn-success diablo-button"
+		    	      x-ng-click="recover_type(t)">恢复
+			<i class="glyphicon glyphicon-saved"></i></button>
 		    </span>
 		  </td>
 		</tr> 
@@ -79,6 +90,26 @@
 	    </table> <!--END table-->
 	  </div> <!--END table-responsive-->
 	</div> <!--END portlet body-->
+	<div x-ng-show="total_items>items_perpage" class="row">
+	  <div class="col-md-12, col-sm-12, col-xs-12">
+	    <span>显示第 {{current_page}} / {{num_pages}} 项结果，
+	      共 {{total_items}} 项
+	    </span> 
+	    <uib-pagination
+	       class="pagination-lg table-pagination pull-right"
+	       total-items="total_items"
+	       items-per-page="items_perpage"
+	       num-pages="num_pages"
+	       max-size="max_page_size"
+	       boundary-links="true"
+	       previous-text="&lsaquo;" next-text="&rsaquo;"
+	       first-text="&laquo;" last-text="&raquo;"
+	       x-ng-model="current_page"
+	       x-ng-init="current_page=default_page"
+	       x-ng-change="page_changed(current_page)">
+	    </uib-pagination> 
+	  </div>
+	</div>
       </div> <!--END table container-->      
     </div> <!--END box purle-->
   </div><!--END col-md-12-->

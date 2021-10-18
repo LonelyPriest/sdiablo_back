@@ -187,35 +187,70 @@ function wgoodColorDetailCtrlProvide(
 
 function wgoodTypeDetailCtrlProvide(
     $scope, diabloUtilsService, diabloFilter, diabloPattern,
-    wgoodService, filterType, filterCType, base){
-    $scope.goodTypes = angular.copy(filterType);
-    console.log($scope.goodTypes);
+    wgoodService, filterCType, base){
+    // $scope.goodTypes = angular.copy(filterType);
+    // console.log($scope.goodTypes);
     $scope.ctypes = [{id:-1, name:"===请选择大类==="}].concat(filterCType);
 
-    angular.forEach($scope.goodTypes, function(t) {
-	t.ctype = diablo_get_object(t.cid, $scope.ctypes);
-    });
+    // angular.forEach($scope.goodTypes, function(t) {
+    // 	t.ctype = diablo_get_object(t.cid, $scope.ctypes);
+    // });
     
-    diablo_order($scope.goodTypes);
+    // diablo_order($scope.goodTypes);
     
     $scope.auto_barcode = stockUtils.auto_barcode(diablo_default_shop, base);
     $scope.pattern = {
 	type:diabloPattern.ch_name_address,
 	barcode: diabloPattern.number_3
     };
+
+    $scope.match_prompt_type = function(viewValue) {
+	return diabloFilter.match_prompt_type(viewValue, diablo_is_ascii_string(viewValue));
+    };
     
     var dialog = diabloUtilsService;
 
-    $scope.refresh = function() {
-	wgoodService.list_purchaser_type().then(function(types) {
-	    $scope.goodType = types.map(function(t) {
-		return {id: t.id,
-			bcode: t.bcode,
-			cid: t.cid,
-			name:t.name,
-			py:t.py};
+    $scope.page_changed = function(){
+    	$scope.do_search($scope.current_page);
+    }
+
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = 15;
+    $scope.default_page = 1;
+    $scope.default_page = 1;
+    $scope.total_items  = 0;
+    $scope.current_page = $scope.default_page;
+
+    $scope.filters = [];
+    diabloFilter.reset_field();
+    diabloFilter.add_field("type", $scope.match_prompt_type);
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt();
+
+    $scope.do_search = function(page){
+	diabloFilter.do_filter($scope.filters, undefined, function(search){
+	    wgoodService.filter_good_type(
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result){
+		console.log(result);
+		if (page === 1){
+		    $scope.total_items = result.total;
+		}
+
+		angular.forEach(result.data, function(t) {
+		    t.ctype = diablo_get_object(t.cid, $scope.ctypes);
+		});
+		
+		$scope.good_types = result.data;
+		diablo_order_page(page, $scope.items_perpage, $scope.good_types);
 	    })
 	});
+
+	$scope.current_page=page;
+    };
+
+    $scope.refresh = function() {
+	$scope.do_search($scope.current_page);
     };
     
     $scope.new_type = function(){
@@ -343,7 +378,7 @@ function wgoodTypeDetailCtrlProvide(
 
     $scope.syn_pinyin = function() {
 	var ts = [];
-	angular.forEach($scope.goodTypes, function(t) {
+	angular.forEach($scope.good_types, function(t) {
 	    ts.push({id:t.id, py:diablo_pinyin(t.name)});
 	});
 
@@ -354,7 +389,7 @@ function wgoodTypeDetailCtrlProvide(
 		    "同步品类拼音",
 		    "同步成功！！",
 		    undefined,
-		    function() {diabloFilter.reset_type()});
+		    function() {$scope.do_search($scope.current_page)});
 	    } else {
 		dialog.response(
 		    true, "同步品类拼音", "同步失败！！" + wgoodService.error[result.ecode]);
@@ -364,17 +399,34 @@ function wgoodTypeDetailCtrlProvide(
 
     $scope.delete_type = function(t) {
 	console.log(t);
-	wgoodService.delete_good_type(t.id).then(function(result) {
+	wgoodService.delete_good_type(t.id, diablo_delete).then(function(result) {
 	    if (result.ecode === 0){
 		dialog.response_with_callback(
 		    true,
 		    "删除品类",
 		    "删除成功！！",
 		    undefined,
-		    function() {diabloFilter.reset_type()});
+		    function() {t.deleted = diablo_yes});
 	    } else {
 		dialog.response(
 		    true, "删除品类", "删除失败！！" + wgoodService.error[result.ecode]);
+	    }
+	});
+    };
+
+    $scope.recover_type = function(t) {
+	console.log(t);
+	wgoodService.delete_good_type(t.id, diablo_recover).then(function(result) {
+	    if (result.ecode === 0){
+		dialog.response_with_callback(
+		    true,
+		    "恢复品类",
+		    "恢复成功！！",
+		    undefined,
+		    function() {t.deleted = diablo_no});
+	    } else {
+		dialog.response(
+		    true, "恢复品类", "恢复失败！！" + wgoodService.error[result.ecode]);
 	    }
 	});
     };

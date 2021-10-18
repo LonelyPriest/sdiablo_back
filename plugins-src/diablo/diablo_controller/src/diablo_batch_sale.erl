@@ -415,10 +415,13 @@ handle_call({get_sale_new_transe, Merchant, Conditions} , _From, State) ->
 	
 	", a.path"
 	", a.comment"
+	", a.merchant"
 
 	", b.color as color_id"
 	", b.size"
 	", b.total as amount"
+
+	", c.name as type"
 
 	" from "
 
@@ -448,12 +451,17 @@ handle_call({get_sale_new_transe, Merchant, Conditions} , _From, State) ->
 	
 	", path"
 	", comment"
+	", merchant"
 	" from batch_sale_detail"
 	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") a"
 
-	" inner join batch_sale_detail_amount b on a.rsn=b.rsn"
+	" inner join batch_sale_detail_amount b"
+	" on a.rsn=b.rsn"
+	" and a.merchant=b.merchant"
 	" and a.style_number=b.style_number"
-	" and a.brand_id=b.brand",    
+	" and a.brand_id=b.brand"
+
+	" left join inv_types c on a.type_id=c.id",
 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};

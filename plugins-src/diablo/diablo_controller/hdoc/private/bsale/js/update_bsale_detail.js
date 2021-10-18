@@ -4,7 +4,7 @@ function updateBSaleDetailCtrlProvide(
     $scope, $routeParams, $q, dateFilter, 
     diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter,
     diabloPattern, bsaleService,
-    filterEmployee, filterSizeGroup, filterBrand, filterType, filterColor,
+    filterEmployee, filterSizeGroup, filterBrand, filterColor,
     filterRegion, filterDepartment, user, base){
     console.log(user);
     $scope.employees     = filterEmployee;
@@ -14,7 +14,7 @@ function updateBSaleDetailCtrlProvide(
     $scope.size_groups   = filterSizeGroup;
     $scope.brands        = filterBrand;
     $scope.colors        = filterColor;
-    $scope.types         = filterType;
+    // $scope.types         = filterType;
     $scope.base_settings = base;
     
     $scope.sexs        = diablo_sex;
@@ -119,7 +119,7 @@ function updateBSaleDetailCtrlProvide(
 		    $scope.brands,
 		    bsalers,
 		    filterEmployee,
-		    $scope.types,
+		    // $scope.types,
 		    $scope.colors,
 		    $scope.size_groups,
 		    filterRegion);
@@ -214,6 +214,7 @@ function updateBSaleDetailCtrlProvide(
     };
 
     $scope.copy_select = function(add, src){
+	console.log(src);
 	// add.id           = src.id;
 	add.bcode        = src.bcode;
 	add.full_bcode   = src.full_bcode;
@@ -224,7 +225,7 @@ function updateBSaleDetailCtrlProvide(
 	add.brand        = $scope.get_object(src.brand_id, $scope.brands);
 	
 	add.type_id      = src.type_id;
-	add.type         = $scope.get_object(src.type_id, $scope.types);
+	add.type         = src.type;
 	add.firm_id      = src.firm_id;
 	
 	add.sex          = src.sex;
@@ -243,7 +244,7 @@ function updateBSaleDetailCtrlProvide(
 	add.free         = src.free;
 	add.entry        = src.entry_date;
 
-	add.full_name    = add.style_number + "/" + add.brand.name + "/" + add.type.name;
+	add.full_name    = add.style_number + "/" + add.brand.name + "/" + add.type;
 	
 	console.log(add);
 	return add;
@@ -474,8 +475,7 @@ function updateBSaleDetailCtrlProvide(
 		style_number   : add.style_number,
 		brand          : add.brand.id,
 		brand_name     : add.brand.name,
-		type           : add.type.id,
-		// type_name   : add.type,
+		type           : add.type_id,
 		firm           : add.firm_id,
 		sex            : add.sex,
 		season         : add.season,

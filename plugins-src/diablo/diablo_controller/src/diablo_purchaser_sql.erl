@@ -1209,11 +1209,14 @@ inventory(list, {Merchant, UTable}, Conditions) ->
 	", a.state"
     %% ", a.gift"
 	", a.shop_id"
+	", a.merchant"
 
 	", b.color as color_id"
 	", b.size"
 	", b.total as amount"
-	", b.alarm_a" 
+	", b.alarm_a"
+	
+	", c.name as type"
 	
 	%% ", c.name as color" 
 	" from ("
@@ -1230,6 +1233,7 @@ inventory(list, {Merchant, UTable}, Conditions) ->
 	", a.state"
     %% ", a.gift"
 	", a.shop as shop_id"
+	", a.merchant"
     %% " from w_inventory a"
 	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
 	" where " ++ ?sql_utils:condition(proplists_suffix, NewConditions)
@@ -1238,11 +1242,15 @@ inventory(list, {Merchant, UTable}, Conditions) ->
 	++") a "
 
     %% " left join w_inventory_amount b on"
-	" left join" ++ ?table:t(stock_note, Merchant, UTable) ++ " b on"
-	" a.style_number=b.style_number"
+	" inner join" ++ ?table:t(stock_note, Merchant, UTable) ++ " b"
+	" on a.style_number=b.style_number"
 	" and a.brand_id=b.brand"
 	" and a.shop_id=b.shop"
-	" and b.merchant=" ++ ?to_s(Merchant);
+	" and b.merchant=" ++ ?to_s(Merchant)
+
+	++ " left join inv_types c"
+	" on a.type_id=c.id"
+	" and c.merchant=" ++ ?to_s(Merchant);
 
 inventory(list_info, {Merchant, UTable}, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, Conditions), 
@@ -1722,6 +1730,32 @@ inventory(transfer_rsn_groups, transfer, {Merchant, UTable}, Conditions, PageFun
           {<<"firm">>, Firm}],
     C21 = ?utils:correct_condition(<<"b.">>, C2),
 
+    "select c.id"
+	", c.rsn"
+	", c.style_number"
+        ", c.brand_id"
+        ", c.type_id"
+        ", c.sex"
+	", c.season"
+        ", c.firm_id"
+	", c.s_group"
+        ", c.free"
+	", c.year"
+	", c.amount"
+	", c.vir_price"
+	", c.tag_price"
+	", c.org_price" 
+	", c.path"
+	", c.entry_date"
+
+        ", c.employee_id"
+        ", c.fshop_id"
+        ", c.tshop_id"
+        ", c.state"
+        ", c.check_date"
+	", d.name as type_name"
+
+	" from("
         "select b.id"
 	", b.rsn"
 	", b.style_number"
@@ -1760,7 +1794,8 @@ inventory(transfer_rsn_groups, transfer, {Merchant, UTable}, Conditions, PageFun
 	       [] -> [];
 	       TimeSql -> " and " ++ TimeSql
 	   end 
-        ++ PageFun();
+        ++ PageFun() ++ ") c"
+	" left join inv_types d on c.type_id=d.id";
 
 inventory({group_detail_with_pagination, MatchMode, Mode, Sort},
 	  {Merchant, UTable},

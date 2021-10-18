@@ -2,7 +2,7 @@ function wsaleUpdateRejectCtrlProvide(
     $scope, $q, $routeParams, dateFilter, diabloUtilsService, diabloPromise,
     diabloFilter, diabloPattern, wsaleService,
     user, filterPromotion, filterCommision, filterScore, filterSysRetailer, filterEmployee,
-    filterSizeGroup, filterBrand, filterColor, filterType, filterLevel, base){
+    filterSizeGroup, filterBrand, filterColor, filterLevel, base){
     // console.log(base);
     // console.log(user);
     // console.log(filterScore);
@@ -17,7 +17,7 @@ function wsaleUpdateRejectCtrlProvide(
     $scope.size_groups     = filterSizeGroup;
     $scope.brands          = filterBrand;
     $scope.colors          = filterColor;
-    $scope.types           = filterType;
+    // $scope.types           = filterType;
     $scope.levels          = filterLevel;
     $scope.base_settings   = base;
     
@@ -78,7 +78,7 @@ function wsaleUpdateRejectCtrlProvide(
 		    $scope.brands,
 		    retailers,
 		    $scope.employees,
-		    $scope.types,
+		    // $scope.types,
 		    $scope.colors,
 		    $scope.size_groups,
 		    $scope.promotions,
@@ -147,7 +147,8 @@ function wsaleUpdateRejectCtrlProvide(
 	add.brand_id     = src.brand_id;
 	add.brand        = $scope.get_object(src.brand_id, $scope.brands);
 	add.type_id      = src.type_id;
-	add.type         = $scope.get_object(src.type_id, $scope.types); 
+	// add.type         = $scope.get_object(src.type_id, $scope.types);
+	add.type         = src.type;
 	add.firm_id      = src.firm_id;
 	add.sex          = src.sex;
 	add.season       = src.season;

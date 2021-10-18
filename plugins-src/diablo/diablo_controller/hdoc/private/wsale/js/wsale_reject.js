@@ -2,7 +2,7 @@ function wsaleRejectCtrlProvide(
     $scope, $q, dateFilter, diabloUtilsService, diabloPromise,
     diabloPattern, diabloFilter, diabloNormalFilter, wsaleService,
     user, filterPromotion, filterCommision, filterScore, filterSysRetailer, filterBrand,
-    filterType, filterEmployee, filterSizeGroup, filterColor, filterLevel, base){
+    filterEmployee, filterSizeGroup, filterColor, filterLevel, base){
     // console.log($scope);
     // console.log(user); 
     $scope.shops         = user.sortBadRepoes.concat(user.sortShops);
@@ -13,7 +13,7 @@ function wsaleRejectCtrlProvide(
     $scope.scores        = filterScore;
     $scope.sysRetailers  = filterSysRetailer; 
     $scope.brands        = filterBrand;
-    $scope.types         = filterType;
+    // $scope.types         = filterType;
     // $scope.retailers     = filterRetailer;
     $scope.employees     = [];
     $scope.size_groups   = filterSizeGroup;
@@ -99,7 +99,7 @@ function wsaleRejectCtrlProvide(
 			$scope.brands,
 			retailers,
 			filterEmployee,
-			$scope.types,
+			// $scope.types,
 			$scope.colors,
 			$scope.size_groups,
 			$scope.promotions,

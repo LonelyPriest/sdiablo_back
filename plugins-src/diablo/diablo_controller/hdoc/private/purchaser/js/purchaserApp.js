@@ -43,8 +43,8 @@ function stockConfg(angular){
 	var firm = {"filterFirm": function(diabloFilter){
     	    return diabloFilter.get_firm()}};
 	
-	var type = {"filterType": function(diabloFilter){
-	    return diabloFilter.get_type()}};
+	// var type = {"filterType": function(diabloFilter){
+	//     return diabloFilter.get_type()}};
 
 	var employee = {"filterEmployee": function(diabloFilter){
 	    return diabloFilter.get_employee()}};
@@ -191,12 +191,12 @@ function stockConfg(angular){
 	    when('/print_inventory_transfer/:rsn', {
 		templateUrl: '/private/purchaser/html/stock_transfer_print.html',
 		controller: 'stockTransferPrintCtrl' ,
-		resolve: angular.extend({}, brand, shop, type, color, employee, user, base)
+		resolve: angular.extend({}, brand, shop, color, employee, user, base)
 	    }).
 	    when('/print_inventory_new_note/:note', {
 		templateUrl: '/private/purchaser/html/stock_new_note_print.html',
 		controller: 'stockNewNotePrintCtrl' ,
-		resolve: angular.extend({}, brand, firm, type, user, base)
+		resolve: angular.extend({}, brand, firm, user, base)
 	    }).
 	    when('/print_inventory_fix_note/:note', {
 		templateUrl: '/private/purchaser/html/stock_fix_note_print.html',
@@ -217,7 +217,7 @@ function stockConfg(angular){
 	    when('/good/type', {
 		templateUrl: '/private/wgood/html/wgood_type.html',
 		controller: 'wgoodTypeDetailCtrl',
-		resolve: angular.extend({}, type, ctype, base)
+		resolve: angular.extend({}, ctype, base)
 	    }).
 	    when('/good/wgood_new', {
 		templateUrl: '/private/wgood/html/wgood_new.html',
@@ -227,7 +227,6 @@ function stockConfg(angular){
 		    promotion,
 		    firm,
 		    brand,
-		    type,
 		    s_group, std_executive, safety_category, fabric, ptemplate, user, base)
 	    }).
 	    when('/good/wgood_update/:id?/:shop?/:from?', {
@@ -238,7 +237,6 @@ function stockConfg(angular){
 		    promotion,
 		    brand,
 		    firm,
-		    type,
 		    color,
 		    s_group,
 		    std_executive, safety_category, fabric, ptemplate, base, user)
@@ -251,7 +249,6 @@ function stockConfg(angular){
 		    promotion,
 		    brand,
 		    firm,
-		    type,
 		    color,
 		    size_spec,
 		    std_executive, safety_category, fabric, ptemplate, base, user) 
@@ -292,13 +289,15 @@ function stockConfg(angular){
             when('/inventory/inventory_rsn_detail/transfer_to/:rsn?', {
 	        templateUrl: '/private/purchaser/html/purchaser_inventory_transfer_to_rsn_detail.html',
 		controller: 'purchaserInventoryTransferToRsnDetailCtrl',
-		resolve: angular.extend({}, user, shop, brand, type, firm, s_group, color, base)
+		resolve: angular.extend(
+		    {}, user, shop, brand, firm, s_group, color,
+		    std_executive, safety_category, fabric, size_spec, ptemplate, base)
 	    }).
 	    when('/inventory/inventory_rsn_detail/transfer_from/:rsn?', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_transfer_from_rsn_detail.html',
 	        controller: 'purchaserInventoryTransferFromRsnDetailCtrl',
 		resolve: angular.extend(
-		    {}, user, shop, brand, type, firm, s_group, color,
+		    {}, user, shop, brand, firm, s_group, color,
 		    std_executive, safety_category, fabric, size_spec, ptemplate, base)
             }).
 	    // order
@@ -306,7 +305,7 @@ function stockConfg(angular){
 	    	templateUrl: '/private/purchaser/html/purchaser_inventory_order.html',
 	    	controller: 'purchaserOrderNewCtrl',
 	    	resolve: angular.extend(
-	    	    {}, user, brand, type, s_group, firm, employee, color, color_type,
+	    	    {}, user, brand, s_group, firm, employee, color, color_type,
 	    	    std_executive, safety_category, fabric, base)
 	    }).
 	    when('/order_detail', {

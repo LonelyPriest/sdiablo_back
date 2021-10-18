@@ -24,6 +24,7 @@
 -export([size_group/2, size_group/3]).
 -export([brand/2, brand/3]).
 -export([type/2, type/3, type/4, invalid_size/1, invalid_size/2]).
+-export([filter/4, filter/6]).
 -export([syn/3]).
 
 -define(SERVER, ?MODULE).
@@ -68,19 +69,25 @@ brand(list, Merchant) ->
     gen_server:call(?MODULE, {list_brand, Merchant}).
 
 type(new, Merchant, Attrs)->
-    gen_server:call(?MODULE, {new_type, Merchant, Attrs});
-type(delete, Merchant, TypeId) ->
-    gen_server:call(?MODULE, {delete_type, Merchant, TypeId});
+    gen_server:call(?MODULE, {new_type, Merchant, Attrs}); 
 type(get, Merchant, Condition) ->
     gen_server:call(?MODULE, {get_type, Merchant, Condition});
 type(update, Merchant, Attrs) ->
     gen_server:call(?MODULE, {update_type, Merchant, Attrs}).
 type(like_match, Merchant, LikePrompt, Ascii) ->
-    gen_server:call(?MODULE, {type_like_match, Merchant, LikePrompt, Ascii});
+    gen_server:call(?MODULE, {type_like_match, Merchant, LikePrompt, Ascii}); 
 type(list, Merchant, LikePrompt, Ascii) ->
-    gen_server:call(?MODULE, {list_type, Merchant, LikePrompt, Ascii}).
+    gen_server:call(?MODULE, {list_type, Merchant, LikePrompt, Ascii});
+type(delete, Merchant, TypeId, Mode) ->
+    gen_server:call(?MODULE, {delete_type, Merchant, TypeId, Mode}).
 type(list, Merchant) ->
     type(list, Merchant, [], ?YES).
+
+%% filter
+filter(total_types, 'and', Merchant, Fields) ->
+    gen_server:call(?MODULE, {total_types, Merchant, Fields}).
+filter(types, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+    gen_server:call(?MODULE, {filter_types, Merchant, CurrentPage, ItemsPerPage, Fields}).
 
 syn(type_py, Merchant, Types) ->
     gen_server:call(?MODULE, {syn_type_py, Merchant, Types}).
@@ -486,7 +493,7 @@ handle_call({new_type, Merchant, Attrs}, _From, State) ->
 		    ++ ?to_s(Merchant) ++ ");",
 		case ?sql_utils:execute(insert, Sql1) of
 		    {ok, _} = R ->
-			?w_user_profile:update(type, Merchant),
+			%% ?w_user_profile:update(type, Merchant),
 			R;
 		    R -> R
 		end 
@@ -563,9 +570,13 @@ handle_call({update_type, Merchant, Attrs}, _From, State) ->
 	    {reply, Error1, State}
     end;
 
-handle_call({delete_type, Merchant, TypeId}, _From, State) ->
+handle_call({delete_type, Merchant, TypeId, Mode}, _From, State) ->
     ?DEBUG("delete_type: merchant ~p, TypeId ~p", [Merchant, TypeId]),
-    Sql = "update inv_types set deleted=" ++ ?to_s(?YES) 
+    Sql = "update inv_types set deleted="
+	++ case Mode of
+	       ?DELETE -> ?to_s(?YES);
+	       ?RECOVER -> ?to_s(?NO)
+	   end
 	++ " where "
 	++ " merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, [{<<"id">>, TypeId}]),
@@ -683,6 +694,28 @@ handle_call({bcode_update, Table, Merchant}, _From, State) ->
 	Error ->
 	    {reply, Error, State}
     end;
+
+%% filter
+handle_call({total_types, Merchant, Fields}, _From, State) ->
+    Sql = ?sql_utils:count_table(inv_types, Merchant, Fields),
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State}; 
+
+handle_call({filter_types, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
+    ?DEBUG("filter_good_type: currentPage ~p, ItemsPerpage ~p, Merchant ~p~n"
+	   "fields ~p", [CurrentPage, ItemsPerPage, Merchant, Fields]), 
+    Sql = "select id"
+	", name"
+	", bcode"
+	", ctype as ctype_id"
+	", py"
+	", deleted"
+	" from inv_types"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, Fields)
+	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
 
 handle_call(_Request, _From, State) ->
     {reply, ok, State}.

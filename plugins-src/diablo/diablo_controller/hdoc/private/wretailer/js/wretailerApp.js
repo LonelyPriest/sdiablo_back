@@ -44,8 +44,8 @@ function wretailerConfig(angular) {
 	var firm = {"filterFirm": function(diabloFilter){
 	    return diabloFilter.get_firm()}};
 
-	var type = {"filterType": function(diabloFilter){
-	    return diabloFilter.get_type()}};
+	// var type = {"filterType": function(diabloFilter){
+	//     return diabloFilter.get_type()}};
 	
 	var s_group = {"filterSizeGroup": function(diabloFilter){
 	    return diabloFilter.get_size_group()}};
@@ -106,8 +106,7 @@ function wretailerConfig(angular) {
 	    when('/wretailer_trans_rsn/:retailer?/:rsn?/:ppage?', {
 		templateUrl: '/private/wretailer/html/wretailer_trans_rsn_detail.html',
 		controller: 'wretailerTransRsnDetailCtrl',
-		resolve: angular.extend({}, brand, firm, employee, s_group, type,
-					promotion, score, color, user, base)
+		resolve: angular.extend({}, brand, firm, employee, s_group, promotion, score, color, user, base)
 	    }).
 	    // recharge and score
 	    when('/promotion/recharge_new/:action?', {

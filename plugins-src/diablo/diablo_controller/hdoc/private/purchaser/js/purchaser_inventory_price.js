@@ -474,8 +474,7 @@ function stockNewDetailPrintCtrlProvide(
 
 
 function stockNewNotePrintCtrlProvide(
-    $scope, $routeParams, diabloUtilsService, purchaserService,
-    filterBrand, filterFirm, filterType, user, base){
+    $scope, $routeParams, diabloUtilsService, purchaserService, filterBrand, filterFirm, user, base){
     // console.log($routeParams); 
     $scope.shops = user.sortShops;
     $scope.search = angular.fromJson($routeParams.note);
@@ -700,7 +699,7 @@ function stockNewNotePrintCtrlProvide(
 
 function stockTransferPrintCtrlProvide(
     $scope, $routeParams, diabloUtilsService, purchaserService,
-    filterBrand, filterShop, filterType, filterColor, filterEmployee, user, base){
+    filterBrand, filterShop, filterColor, filterEmployee, user, base){
     // console.log($routeParams);
     // $scope.rsn = $routeParams.rsn;
 
@@ -731,7 +730,7 @@ function stockTransferPrintCtrlProvide(
 	    var order_id = 1;
 	    angular.forEach(result.note, function(n) {
 		n.brand = diablo_get_object(n.brand_id, filterBrand);
-		n.type  = diablo_get_object(n.type_id, filterType);
+		// n.type  = diablo_get_object(n.type_id, filterType);
 		n.order_id = order_id; 
 		$scope.notes.push(n);
 		$scope.total += n.total;

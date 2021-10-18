@@ -38,6 +38,7 @@
 
 -define(DELETE, 0).
 -define(ABANDON, 1).
+-define(RECOVER, 2).
 
 %% wsale
 -define(NEW_SALE, 0).

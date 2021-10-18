@@ -5,7 +5,7 @@ function wsaleUpdateDetailCtrlProvide(
     diabloPromise, diabloFilter, diabloPattern,
     wsaleService,
     user, filterPromotion, filterCommision, filterScore, filterSysRetailer, filterEmployee,
-    filterSizeGroup, filterBrand, filterColor, filterType, filterLevel, base){
+    filterSizeGroup, filterBrand, filterColor, filterLevel, base){
     console.log(user); 
     $scope.pattern     = {money: diabloPattern.decimal_2};
     
@@ -20,7 +20,7 @@ function wsaleUpdateDetailCtrlProvide(
     $scope.size_groups   = filterSizeGroup;
     $scope.brands        = filterBrand;
     $scope.colors        = filterColor;
-    $scope.types         = filterType;
+    // $scope.types         = filterType;
     $scope.levels        = filterLevel;
     $scope.base_settings = base;
     // $scope.vpays         = wsaleService.vpays;
@@ -121,9 +121,8 @@ function wsaleUpdateDetailCtrlProvide(
 	    var base        = result.sale;
 
 	    diabloFilter.get_wretailer_batch([base.retailer_id]).then(function(retailers){
-		console.log(retailers);
-
-		var sells       = result.detail;
+		console.log(retailers); 
+		var sells = result.detail;
 		var wsale = wsaleUtils.cover_wsale(
 		    base,
 		    sells,
@@ -131,15 +130,14 @@ function wsaleUpdateDetailCtrlProvide(
 		    $scope.brands,
 		    retailers,
 		    filterEmployee,
-		    $scope.types,
+		    // $scope.types,
 		    $scope.colors,
 		    $scope.size_groups,
 		    $scope.promotions,
 		    $scope.commisions,
 		    $scope.scores);
 
-		// console.log(wsale);
-		
+		// console.log(wsale); 
 		$scope.old_select = wsale.select;
 		$scope.select = angular.extend($scope.select, wsale.select);
 		$scope.select.o_retailer = $scope.select.retailer;
@@ -207,12 +205,14 @@ function wsaleUpdateDetailCtrlProvide(
     };
 
     $scope.copy_select = function(add, src){
+	// console.log(src);
 	add.id           = src.id;
 	add.style_number = src.style_number;
 	add.brand_id     = src.brand_id;
 	add.brand        = $scope.get_object(src.brand_id, $scope.brands); 
 	add.type_id      = src.type_id;
-	add.type         = $scope.get_object(src.type_id, $scope.types);
+	// add.type         = $scope.get_object(src.type_id, $scope.types);
+	add.type         = src.type;
 	add.firm_id      = src.firm_id;
 	add.sex          = src.sex;
 	add.season       = src.season;
@@ -458,7 +458,7 @@ function wsaleUpdateDetailCtrlProvide(
 		style_number   : add.style_number,
 		brand          : add.brand.id,
 		brand_name     : add.brand.name,
-		type           : add.type.id,
+		type           : add.type_id,
 		// type_name   : add.type,
 		firm           : add.firm_id,
 		sex            : add.sex,

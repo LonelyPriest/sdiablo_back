@@ -44,8 +44,8 @@ function wsaleConfg(angular){
 	var firm = {"filterFirm": function(diabloFilter){
 	    return diabloFilter.get_firm()}}; 
 	
-	var type = {"filterType": function(diabloFilter){
-	    return diabloFilter.get_type()}};
+	// var type = {"filterType": function(diabloFilter){
+	//     return diabloFilter.get_type()}};
 
 	var employee = {"filterEmployee": function(diabloFilter){
 	    return diabloFilter.get_employee()}};
@@ -91,7 +91,7 @@ function wsaleConfg(angular){
 		templateUrl: '/private/wsale/html/new_wsale.html',
 		controller: 'wsaleNewCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, commision, charge, score, sysretailer, employee, s_group, brand, type, color, level, plan, base)
+		    {}, user, promotion, commision, charge, score, sysretailer, employee, s_group, color, level, plan, base)
 	    }).
 	    when('/new_wsale_detail/:page?', {
 		templateUrl: '/private/wsale/html/new_wsale_detail.html',
@@ -102,40 +102,40 @@ function wsaleConfg(angular){
 		templateUrl: '/private/wsale/html/update_wsale_detail.html',
 		controller: 'wsaleUpdateDetailCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, commision, score, sysretailer, employee, s_group, brand, color, type, level, base)
+		    {}, user, promotion, commision, score, sysretailer, employee, s_group, brand, color, level, base)
 	    }). 
 	    when('/wsale_rsn_detail/:rsn?/:ppage?', {
 		templateUrl: '/private/wsale/html/wsale_rsn_detail.html',
 		controller: 'wsaleRsnDetailCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, commision, score, sysretailer, brand, employee, firm, s_group, type, color, ctype, base)
+		    {}, user, promotion, commision, score, sysretailer, brand, employee, firm, s_group, color, ctype, base)
 	    }).
 	    when('/wsale_print_note/:note?', {
 		templateUrl: '/private/wsale/html/wsale_print_note.html',
 		controller: 'wsalePrintNoteCtrl',
-		resolve: angular.extend({}, user, brand, firm, s_group, type, color, base)
+		resolve: angular.extend({}, user, brand, firm, s_group, color, base)
 	    }).
 	    when('/wsale_print_a4/:rsn?', {
 		templateUrl: '/private/wsale/html/wsale_print_a4.html',
 		controller: 'wsalePrintA4Ctrl',
-		resolve: angular.extend({}, user, brand, employee, s_group, type, color, base)
+		resolve: angular.extend({}, user, brand, employee, s_group, color, base)
 	    }).
-	    when('/wsale_firm_detail', {
-		templateUrl: '/private/wsale/html/wsale_firm_detail.html',
-		controller: 'wsaleFirmDetailCtrl',
-		resolve: angular.extend({}, user, brand, firm,  type, base)
-	    }).
+	    // when('/wsale_firm_detail', {
+	    // 	templateUrl: '/private/wsale/html/wsale_firm_detail.html',
+	    // 	controller: 'wsaleFirmDetailCtrl',
+	    // 	resolve: angular.extend({}, user, brand, firm,  type, base)
+	    // }).
 	    when('/reject_wsale', {
 		templateUrl: '/private/wsale/html/reject_wsale.html',
 		controller: 'wsaleRejectCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, commision, score, sysretailer, brand, type, employee, s_group, color, level, base) 
+		    {}, user, promotion, commision, score, sysretailer, brand, employee, s_group, color, level, base) 
 	    }).
 	    when('/update_wsale_reject/:rsn?/:ppage?', {
 		templateUrl: '/private/wsale/html/update_wsale_reject.html',
 		controller: 'wsaleUpdateRejectCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, commision, score, sysretailer, employee, s_group, brand, color, type, level, base)
+		    {}, user, promotion, commision, score, sysretailer, employee, s_group, brand, color, level, base)
 	    }). 
 	    when('/wsale_print_preview/:rsn?', {
 		templateUrl: '/private/wsale/html/wsale_print_preview.html',
@@ -162,28 +162,29 @@ function wsaleConfg(angular){
 		controller: 'payScanCtrl',
 		resolve: angular.extend({}, user) 
 	    }).
+	    
 	    when('/order/new_order', {
 		templateUrl: '/private/wsale/html/new_wsale_order.html',
 		controller: 'wsaleOrderNewCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, score, sysretailer, employee, s_group, type, color, level, base) 
+		    {}, user, promotion, score, sysretailer, employee, s_group, color, level, base) 
 	    }). 
 	    when('/order/order_detail', {
 		templateUrl: '/private/wsale/html/wsale_order_detail.html',
 		controller: 'wsaleOrderDetailCtrl',
 		resolve: angular.extend({}, user, employee, base) 
 	    }).
-	    when('/order/order_note', {
+	    when('/order/order_note/:rsn?', {
 		templateUrl: '/private/wsale/html/wsale_order_note.html',
 		controller: 'wsaleOrderNoteCtrl',
 		resolve: angular.extend(
-		    {}, user, employee, brand, type, ctype, firm, s_group, color, base) 
+		    {}, user, employee, brand, ctype, firm, s_group, color, base) 
 	    }).
 	    when('/order/update_order/:rsn?', {
 		templateUrl: '/private/wsale/html/update_wsale_order.html',
 		controller: 'wsaleOrderUpdateCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, score, sysretailer, employee, s_group, type, color, level, base) 
+		    {}, user, promotion, score, sysretailer, employee, s_group, color, level, base) 
 	    }).
 	    otherwise({
 		templateUrl: '/private/wsale/html/new_wsale_detail.html',
@@ -498,10 +499,10 @@ function wsaleConfg(angular){
 function wsaleNewProvide(
     $scope, $q, $timeout, $interval, dateFilter, localStorageService,
     diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter,
-    diabloPattern, wsaleService, wsaleGoodService,
+    diabloPattern, wsaleService,
     user, filterPromotion, filterCommision, filterCharge, filterScore,
     filterSysRetailer, filterEmployee,
-    filterSizeGroup, filterType, filterColor, filterLevel, filterTicketPlan, base){
+    filterSizeGroup, filterColor, filterLevel, filterTicketPlan, base){
     // console.log(user);
     // console.log(base);
     // console.log(filterLevel);
@@ -604,9 +605,9 @@ function wsaleNewProvide(
     // };
     
     // wsaleGoodService.set_brand(filterBrand);
-    wsaleGoodService.set_type(filterType);
-    wsaleGoodService.set_size_group(filterSizeGroup);
-    wsaleGoodService.set_color(filterColor);
+    // wsaleGoodService.set_type(filterType);
+    // wsaleGoodService.set_size_group(filterSizeGroup);
+    // wsaleGoodService.set_color(filterColor);
 
     // base setting 
     $scope.immediately_print = function(shopId){
@@ -2103,12 +2104,16 @@ function wsaleNewProvide(
     /*
      * image mode
      */
+    $scope.match_prompt_type = function(viewValue){
+	return diabloFilter.match_prompt_type(viewValue, diablo_is_ascii_string(viewValue)); 
+    };
+    
     // filter
     $scope.filters = [];
     diabloFilter.reset_field();
     // diabloFilter.add_field("firm", filterFirm);
     // diabloFilter.add_field("brand", wsaleGoodService.get_brand());
-    diabloFilter.add_field("type",  wsaleGoodService.get_type()); 
+    diabloFilter.add_field("type",  $scope.match_prompt_type); 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
     $scope.time   = diabloFilter.default_time();

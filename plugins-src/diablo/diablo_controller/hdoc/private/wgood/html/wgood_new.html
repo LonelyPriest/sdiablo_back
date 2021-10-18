@@ -121,13 +121,18 @@
 			   name="type"
 			   required
 			   x-ng-edit
-			   placeholder="豹纹马甲等"
+			   placeholder="上衣/马甲等"
 			   x-ng-model="good.type"
-			   x-ng-pattern="pattern.type"
 			   x-ng-enter=""
+			   x-ng-pattern="pattern.type"
 			   typeahead-editable="base_settings.editable_type"
-			   uib-typeahead="t.name for t in types|filter:$viewValue|limitTo:20"/>
-		  </div> 
+			   typeahead-wait-ms="300"
+			   typeahead-loading="loading"
+			   uib-typeahead="t.name for t in match_prompt_type($viewValue)"/> 
+		  </div>
+		  <span x-ng-show="loading">
+		      <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+		  </span>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
 		<div ng-show="goodForm.type.$invalid && !goodForm.type.$pristine">

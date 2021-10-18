@@ -63,8 +63,8 @@ function bsaleConfig(angular){
 	var firm = {"filterFirm": function(diabloFilter){
 	    return diabloFilter.get_firm()}}; 
 	
-	var type = {"filterType": function(diabloFilter){
-	    return diabloFilter.get_type()}};
+	// var type = {"filterType": function(diabloFilter){
+	//     return diabloFilter.get_type()}};
 
 	var employee = {"filterEmployee": function(diabloFilter){
 	    return diabloFilter.get_employee()}}; 
@@ -96,21 +96,21 @@ function bsaleConfig(angular){
 		controller: 'bsaleNewCtrl',
 		resolve: angular.extend(
 		    {},
-		    employee, s_group, brand, type, color, region, department, sysbsaler, user, base)
+		    employee, s_group, brand, color, region, department, sysbsaler, user, base)
 	    }).
 	    when('/update_bsale_detail/:rsn?', {
 		templateUrl: '/private/bsale/html/update_bsale_detail.html',
 		controller: 'updateBSaleDetailCtrl',
 		resolve: angular.extend(
 		    {},
-		    employee, s_group, brand, type, color, region, department, user, base)
+		    employee, s_group, brand, color, region, department, user, base)
 	    }).
 	    when('/update_bsale_reject/:rsn?', {
 		templateUrl: '/private/bsale/html/update_bsale_reject.html',
 		controller: 'updateBSaleRejectCtrl',
 		resolve: angular.extend(
 		    {},
-		    employee, s_group, brand, type, color, region, department, user, base)
+		    employee, s_group, brand, color, region, department, user, base)
 	    }).
 	    when('/print_bsale/:rsn?', {
 		templateUrl: '/private/bsale/html/print_bsale_detail.html',
@@ -126,7 +126,7 @@ function bsaleConfig(angular){
 		templateUrl: '/private/bsale/html/new_bsale_note.html',
 		controller: 'bsaleNewNoteCtrl',
 		resolve: angular.extend(
-		    {}, employee, s_group, firm, brand, ctype, type, color, region, department, user, base)
+		    {}, employee, s_group, firm, brand, ctype, color, region, department, user, base)
 	    }). 
 	    when('/new_bsaler', {
 		templateUrl: '/private/bsale/html/new_bsaler.html',
@@ -149,7 +149,7 @@ function bsaleConfig(angular){
 		controller: 'bsaleNewDetailCtrl',
 		resolve: angular.extend(
 		    {},
-		    employee, s_group, brand, type, color, region, department, user, base) 
+		    employee, s_group, brand, color, region, department, user, base) 
             }) 
     }]);
 
@@ -391,7 +391,7 @@ function bsaleNewProvide(
     $scope, $q, $timeout, dateFilter, localStorageService,
     diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter,
     diabloPattern, bsaleService,
-    filterEmployee, filterSizeGroup, filterType, filterColor, filterRegion,
+    filterEmployee, filterSizeGroup, filterColor, filterRegion,
     filterDepartment, filterSysBSaler, user, base){
     // console.log(filterRegion); 
     $scope.pattern    = {
@@ -1900,7 +1900,7 @@ function bsaleNewDetailCtrlProvide(
 function bsaleNewNoteCtrlProvide(
     $scope, $q, $timeout, $routeParams, dateFilter, localStorageService, bsaleService,
     diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter, diabloPattern, 
-    filterEmployee, filterSizeGroup, filterFirm, filterBrand, filterCType, filterType, filterColor,
+    filterEmployee, filterSizeGroup, filterFirm, filterBrand, filterCType, filterColor,
     filterRegion, filterDepartment, user, base){
     $scope.shops    = user.sortShops;
     $scope.shopIds  = user.shopIds;
@@ -2011,13 +2011,18 @@ function bsaleNewNoteCtrlProvide(
 	    viewValue,
 	    bsaleUtils.format_time_from_second($scope.time, dateFilter));
     };
+
+    $scope.match_prompt_type = function(viewValue){
+	return diabloFilter.match_prompt_type(viewValue, diablo_is_ascii_string(viewValue)); 
+    };
     
     // console.log($scope.setting);
     // filter
     diabloFilter.reset_field();
     diabloFilter.add_field("style_number", $scope.match_style_number); 
     diabloFilter.add_field("brand",        filterBrand);
-    diabloFilter.add_field("type",         filterType); 
+    diabloFilter.add_field("type",         $scope.match_prompt_type);
+    
     diabloFilter.add_field("ctype",        filterCType);
     diabloFilter.add_field("sex",          diablo_sex2object);
     diabloFilter.add_field("season",       diablo_season2objects);

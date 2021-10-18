@@ -44,8 +44,8 @@ function firmConfig(angular){
 	var firm = {"filterFirm": function(diabloFilter){
 	    return diabloFilter.get_firm()}};
 
-	var type = {"filterType": function(diabloFilter){
-	    return diabloFilter.get_type()}};
+	// var type = {"filterType": function(diabloFilter){
+	//     return diabloFilter.get_type()}};
 
 	var color = {"filterColor": function(diabloFilter){
 	    return diabloFilter.get_color()}};
@@ -80,7 +80,7 @@ function firmConfig(angular){
 		templateUrl: '/private/firm/html/firm_trans_rsn_detail.html',
 		controller: 'firmTransRsnDetailCtrl',
 		resolve: angular.extend(
-		    {}, brand, firm, employee, s_group, type, color, user, base)
+		    {}, brand, firm, employee, s_group, color, user, base)
 	    }). 
 	    when('/new_firm', {
 		templateUrl: '/private/firm/html/new_firm.html',

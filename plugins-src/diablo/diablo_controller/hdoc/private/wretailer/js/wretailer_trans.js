@@ -189,7 +189,7 @@ function wretailerTransRsnDetailCtrlProvide(
     $scope, $routeParams, dateFilter, diabloUtilsService, diabloFilter,
     wretailerService,
     filterBrand, filterFirm, filterEmployee, filterSizeGroup,
-    filterType, filterPromotion, filterScore, filterColor, user, base){
+    filterPromotion, filterScore, filterColor, user, base){
     // console.log($routeParams); 
     // console.log(filterEmployee);
     // console.log(filterColor);
@@ -267,7 +267,7 @@ function wretailerTransRsnDetailCtrlProvide(
 		    d.firm     = diablo_get_object(d.firm_id, filterFirm);
 		    d.shop     = diablo_get_object(d.shop_id, user.sortShops);
 		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
-		    d.type     = diablo_get_object(d.type_id, filterType);
+		    // d.type     = diablo_get_object(d.type_id, filterType);
 
 		    d.oseason   = diablo_get_object(d.season, diablo_season2objects);
 		    d.promotion = diablo_get_object(d.pid, filterPromotion);

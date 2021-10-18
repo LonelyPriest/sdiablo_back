@@ -532,6 +532,18 @@ action(Session, Req, {"filter_w_good"}, Payload) ->
 		 goods, Match, {Merchant, UTable}, CurrentPage, ItemsPerPage, Conditions)
       end, Req, Payload);
 
+action(Session, Req, {"filter_w_type"}, Payload) ->
+    ?DEBUG("filter_w_type with session ~p~nPayload ~p", [Session, Payload]),
+    Merchant  = ?session:get(merchant, Session),
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?attr:filter(total_types, Match, Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?attr:filter(
+		  types, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+       end, Req, Payload);
+
 
 %%
 %% promotion 
@@ -685,7 +697,7 @@ action(Session, Req, {"update_w_type"}, Payload) ->
 	ok -> 
 	    case ?attr:type(update, Merchant, Payload) of 
 		{ok, TypeId} ->
-		    ?w_user_profile:update(type, Merchant),
+		    %% ?w_user_profile:update(type, Merchant),
 		    ?utils:respond(200, Req, ?succ(update_color, TypeId));
 		{error, Error} ->
 		    ?utils:respond(200, Req, Error)
@@ -697,10 +709,11 @@ action(Session, Req, {"update_w_type"}, Payload) ->
 action(Session, Req, {"delete_w_type"}, Payload) ->
     ?DEBUG("del_w_type: session ~p, paylaod ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
-    TypeId = ?v(<<"tid">>, Payload, 0),
-    case ?attr:type(delete, Merchant, TypeId) of 
+    TypeId = ?v(<<"tid">>, Payload, ?INVALID_OR_EMPTY),
+    Mode = ?v(<<"mode">>, Payload, ?YES),
+    case ?attr:type(delete, Merchant, TypeId, Mode) of 
 	{ok, TypeId} ->
-	    ?w_user_profile:update(type, Merchant),
+	    %% ?w_user_profile:update(type, Merchant),
 	    ?utils:respond(200, Req, ?succ(update_color, Merchant));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
@@ -712,7 +725,7 @@ action(Session, Req, {"syn_type_pinyin"}, Payload) ->
     Types = ?v(<<"type">>, Payload, []),
     case ?attr:syn(type_py, Merchant, Types) of 
 	{ok, Merchant} ->
-	    ?w_user_profile:update(type, Merchant),
+	    %% ?w_user_profile:update(type, Merchant),
 	    ?utils:respond(200, Req, ?succ(syn_retailer_pinyin, Merchant));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)

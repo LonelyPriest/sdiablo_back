@@ -3,9 +3,9 @@
 function wgoodNewCtrlProvide(
     $scope, $timeout, diabloPattern, diabloUtilsService, diabloFilter,
     wgoodService, filterPromotion, filterFirm, filterBrand,
-    filterType, filterSizeGroup,
+    filterSizeGroup,
     filterStdExecutive, filterCategory, filterFabric, filterTemplate, user, base) {
-    // console.log(filterPromotion);
+    // console.log(filterPromotion); 
     $scope.promotions = filterPromotion;
     
     $scope.seasons    = diablo_season2objects;
@@ -32,7 +32,7 @@ function wgoodNewCtrlProvide(
 	percent:      diabloPattern.percent,
 	expire:       diabloPattern.expire_date
     };
-
+    
     var dialog     = diabloUtilsService;
     var set_float  = diablo_set_float;
     
@@ -69,18 +69,21 @@ function wgoodNewCtrlProvide(
     $scope.firms = angular.copy(filterFirm);
     
     // type
-    $scope.types = angular.copy(filterType);
-    
-    $scope.refresh_type = function(){
-	$scope.types = wgoodService.list_purchaser_type().then(
-	    function(types){
-		return types.map(function(t){
-		    return {id: t.id, name:t.name, py:diablo_pinyin(t.name)};
-		})
-	    });
+    // $scope.types = angular.copy(filterType);
+    $scope.match_prompt_type = function(viewValue) {
+	return diabloFilter.match_prompt_type(viewValue, diablo_is_ascii_string(viewValue));
     };
+    
+    // $scope.refresh_type = function(){
+    // 	$scope.types = wgoodService.list_purchaser_type().then(
+    // 	    function(types){
+    // 		return types.map(function(t){
+    // 		    return {id: t.id, name:t.name, py:diablo_pinyin(t.name)};
+    // 		})
+    // 	    });
+    // };
 
-    $scope.is_same_good = false; 
+    // $scope.is_same_good = false; 
     // var timeout_brand = undefined;
     // $scope.$watch("good.brand", function(newValue, oldValue){
     // 	if(angular.isUndefined(newValue)
@@ -605,15 +608,15 @@ function wgoodNewCtrlProvide(
 			// console.log($scope.brands);
 
 			// type
-			if (!in_prompts($scope.types, good.type)){
-		    	    $scope.types.push({
-				// id   :$scope.types.length + 1,
-				id   :state.type,
-				name :good.type,
-				py   :good.type_py});
+			// if (!in_prompts($scope.types, good.type)){
+		    	//     $scope.types.push({
+			// 	// id   :$scope.types.length + 1,
+			// 	id   :state.type,
+			// 	name :good.type,
+			// 	py   :good.type_py});
 
-			    diabloFilter.reset_type();
-			};
+			//     diabloFilter.reset_type();
+			// };
 			// console.log($scope.types);
 		    });
 	    } else{
@@ -672,7 +675,6 @@ function wgoodDetailCtrlProvide(
     filterPromotion,
     filterBrand,
     filterFirm,
-    filterType,
     filterColor,
     filterSizeSpec,
     filterStdExecutive, filterCategory, filterFabric, filterTemplate, base, user){
@@ -687,6 +689,7 @@ function wgoodDetailCtrlProvide(
     // console.log(user.right);
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.right = authen.authenGoodRight(); 
+    // console.log($scope.right);
 
     $scope.setting = {
 	use_barcode  :stockUtils.use_barcode(diablo_default_shop, base),
@@ -708,7 +711,11 @@ function wgoodDetailCtrlProvide(
     $scope.templates = filterTemplate;
     $scope.printU = new stockPrintU($scope.setting.auto_barcode, $scope.setting.dual_barcode);
     $scope.printU.setPrinter($scope.setting.printer_barcode);
-    // console.log($scope.right);
+
+    $scope.match_prompt_type = function(viewValue) {
+	return diabloFilter.match_prompt_type(viewValue, diablo_is_ascii_string(viewValue));
+    };
+    
     /*
      * filter
      */ 
@@ -719,15 +726,19 @@ function wgoodDetailCtrlProvide(
     diabloFilter.add_field("brand", filterBrand);
     if ($scope.right.show_orgprice) {
 	diabloFilter.add_field("org_price", []);
-    }
-    diabloFilter.add_field("type", filterType);
+    };
+    
+    diabloFilter.add_field("type", $scope.match_prompt_type);
     diabloFilter.add_field("firm", filterFirm); 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
 
     var now = $.now();
     $scope.qtime_start = diablo_base_setting(
-	"qtime_start", -1, base, diablo_set_date,
+	"qtime_start",
+	diablo_invalid_index,
+	base,
+	diablo_set_date,
 	diabloFilter.default_start_time(now));
     
     $scope.time   = diabloFilter.default_time($scope.qtime_start);
@@ -750,7 +761,7 @@ function wgoodDetailCtrlProvide(
 		    angular.forEach(result.data, function(d){
 			// console.log(d);
 			d.firm  = diablo_get_object(d.firm_id, filterFirm);
-			d.type  = diablo_get_object(d.type_id, filterType);
+			// d.type  = diablo_get_object(d.type_id, filterType);
 			
 			d.executive = diablo_get_object(d.executive_id, filterStdExecutive);
 			d.category = diablo_get_object(d.category_id, filterCategory);

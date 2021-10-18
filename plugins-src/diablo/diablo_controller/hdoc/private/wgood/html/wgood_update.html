@@ -165,19 +165,22 @@
 			 class="form-control"
 			 name="type"
 			 required
-			 placeholder="豹纹马甲等"
+			 x-ng-edit
 			 x-ng-enter=""
-			 x-ng-model="good.type"
-			 uib-typeahead="t as t.name for t in
-				    types|filter:$viewValue|limitTo:8"/>
+			 x-ng-model="good.type" 
+			 x-ng-pattern="pattern.type"
+			 typeahead-editable="setting.editable_type"
+			 typeahead-wait-ms="300"
+			 typeahead-loading="loading"
+			 uib-typeahead="t.name for t in match_prompt_type($viewValue)"/>
+		  <span x-ng-show="loading">
+		    <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+		  </span>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
 	      </div>
-	      <div ng-if="goodForm.type.$invalid
-			    && !goodForm.type.$pristine">
-		<span class="fg-red">
-		  请输入以中文，字母或数字，必须以中文开头
-		</span>
+	      <div ng-if="goodForm.type.$invalid && !goodForm.type.$pristine">
+		<span style="color:red">中文，字母或数字或必须从下拉列表中选择</span>
 	      </div>
 	    </div> 
 

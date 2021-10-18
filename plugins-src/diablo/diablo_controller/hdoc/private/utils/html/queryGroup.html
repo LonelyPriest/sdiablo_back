@@ -23,6 +23,7 @@
 	      <input type="text" class="form-control" placeholder="请输入款号"
 		     x-ng-model="f.value"
 		     x-ng-edit
+		     typeahead-editable="false"
 		     typeahead-wait-ms="1000"
 		     typeahead-loading="loading"
 		     typeahead-on-select="f.value && ok()"
@@ -64,10 +65,25 @@
 	  </span>
 	  
 	  <span x-ng-switch-when="type">
-	    <input type="text" class="form-control" placeholder="请输入类别"
-		   x-ng-model="f.value"
-		   typeahead-editable="false"
-	  	   uib-typeahead="t as t.name for t in prompt.type|filter:$viewValue|limitTo:20"/>
+	    <div class="has-feedback">
+	      <input type="text" class="form-control" placeholder="请输入类别"
+		     x-ng-model="f.value"
+		     x-ng-edit
+		     typeahead-editable="false"
+		     typeahead-wait-ms="1000"
+		     typeahead-loading="loading"
+		     typeahead-on-select="f.value && ok()"
+	  	     uib-typeahead="t as t.name for t in prompt.type($viewValue)"
+		     x-ng-enter="f.value && ok()" />
+	      <span x-ng-show="loading">
+		<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+	      </span>
+	    </div>
+	    
+	    <!-- <input type="text" class="form-control" placeholder="请输入类别" -->
+	    <!-- 	   x-ng-model="f.value" -->
+	    <!-- 	   typeahead-editable="false" -->
+	    <!-- 	   uib-typeahead="t as t.name for t in prompt.type|filter:$viewValue|limitTo:20"/> -->
 	  </span>
 
 	  <span x-ng-switch-when="sex">

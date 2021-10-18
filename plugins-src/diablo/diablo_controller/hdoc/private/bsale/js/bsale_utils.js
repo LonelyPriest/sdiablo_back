@@ -66,6 +66,7 @@ var bsaleUtils = function(){
 		add.style_number = s.style_number; 
 		add.brand_id = s.brand_id; 
 		add.type_id  = s.type_id;
+		add.type     = s.type;
 		add.sex     = s.sex;
 		add.season  = s.season;
 		add.firm_id = s.firm_id;
@@ -123,7 +124,7 @@ var bsaleUtils = function(){
     };
     
     return {
-	cover_bsale: function(base, sells, shops, brands, bsalers, employees, types, colors, size_groups, regions){
+	cover_bsale: function(base, sells, shops, brands, bsalers, employees, colors, size_groups, regions){
 	    var bsale         = sort_bsale(base, sells);
 	    var details       = bsale.details;
 	    var order_length  = details.length;
@@ -136,10 +137,10 @@ var bsaleUtils = function(){
 		d.colors = d.colors_id.map(function(id){return diablo_find_color(id, colors);});
 		
 		d.brand     = diablo_get_object(d.brand_id, brands);
-		d.type      = diablo_get_object(d.type_id, types); 
+		// d.type      = diablo_get_object(d.type_id, types); 
 		d.select    = true;
 		// d.select    = d.total > 0 ? true : false;
-		d.full_name = d.style_number + "/" + d.brand.name + "/" + d.type.name;
+		d.full_name = d.style_number + "/" + d.brand.name + "/" + d.type;
 		d.order_id  = order_length; 
 		order_length--; 
 		

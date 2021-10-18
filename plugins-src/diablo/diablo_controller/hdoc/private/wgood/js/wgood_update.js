@@ -6,7 +6,6 @@ function wgoodUpdateCtrlProvide(
     filterPromotion,
     filterBrand,
     filterFirm,
-    filterType,
     filterColor,
     filterSizeGroup,
     filterStdExecutive, filterCategory, filterFabric, filterTemplate, base, user){
@@ -31,7 +30,7 @@ function wgoodUpdateCtrlProvide(
     $scope.promotions = filterPromotion;
     $scope.brands     = filterBrand; 
     $scope.firms      = filterFirm;
-    $scope.types      = filterType;
+    // $scope.types      = filterType;
     $scope.groups     = filterSizeGroup
     $scope.waynodes   = diablo_waynodes; 
     
@@ -47,7 +46,10 @@ function wgoodUpdateCtrlProvide(
     $scope.std_executives = filterStdExecutive;
     $scope.categories     = filterCategory;
     $scope.fabrics        = filterFabric;
-    $scope.template       = filterTemplate.length!==0 ? filterTemplate[0] : undefined;
+    $scope.template       = filterTemplate.length!==0 ? filterTemplate[0] : undefined; 
+    $scope.match_prompt_type = function(viewValue) {
+	return diabloFilter.match_prompt_type(viewValue, diablo_is_ascii_string(viewValue));
+    }; 
     // console.log($scope.template);
     
     // $scope.stock_right = {
@@ -115,11 +117,10 @@ function wgoodUpdateCtrlProvide(
 	} 
 	$scope.grouped_colors.push(color);
 	// console.log($scope.grouped_colors);
-    };
+    }; 
     
     var dialog = diabloUtilsService;
     var promise = diabloPromise.promise;
-
     // console.log($scope.types);
     // console.log($scope.firms);
     wgoodService.get_purchaser_good_by_id($routeParams.id).then(function(good){
@@ -129,12 +130,12 @@ function wgoodUpdateCtrlProvide(
 	$scope.src_good = angular.copy(good);
 	// $scope.src_good.brand =
 	//     diablo_get_object(good.brand_id, $scope.brands);
-	$scope.src_good.type  = diablo_get_object(good.type_id, $scope.types).name;
+	// $scope.src_good.type  = diablo_get_object(good.type_id, $scope.types).name;
 
 	// now
 	$scope.good = angular.copy(good);
 	// $scope.good.brand = brand.name;
-	$scope.good.type      = diablo_get_object(good.type_id, $scope.types);
+	// $scope.good.type      = diablo_get_object(good.type_id, $scope.types);
 	$scope.good.firm      = diablo_get_object(good.firm_id, $scope.firms);
 	$scope.good.sex       = diablo_get_object(good.sex, $scope.sexs);
 	$scope.good.season    = diablo_get_object(good.season, $scope.seasons);
@@ -436,19 +437,19 @@ function wgoodUpdateCtrlProvide(
 	
     });
 
-    $scope.$watch("good.type", function(newValue, oldValue){
-    	if(angular.isUndefined(newValue)){
-    	    return;
-    	}
+    // $scope.$watch("good.type", function(newValue, oldValue){
+    // 	if(angular.isUndefined(newValue)){
+    // 	    return;
+    // 	}
 	
-    	var re = $scope.pattern.type;
-    	if (!re.test(typeof(newValue) === "object" ? newValue.name : newValue)){
-    	    $scope.goodForm.type.$invalid = true;
-    	}else{
-    	    $scope.goodForm.type.$invalid = false;
-    	}
+    // 	var re = $scope.pattern.type;
+    // 	if (!re.test(typeof(newValue) === "object" ? newValue.name : newValue)){
+    // 	    $scope.goodForm.type.$invalid = true;
+    // 	}else{
+    // 	    $scope.goodForm.type.$invalid = false;
+    // 	}
 	
-    }); 
+    // });
 
     wgoodService.list_color_type().then(function(data){
 	// console.log(data);
@@ -656,7 +657,7 @@ function wgoodUpdateCtrlProvide(
 	update_good.bcode        = good.bcode;
 	// update_good.brand_id     = good.brand_id;
 	update_good.brand  = typeof(good.barnd) === "object" ? good.brand.name: good.brand;
-	update_good.type  = typeof(good.type) === "object" ? good.type.name: good.type;
+	update_good.type   = good.type;
 
 	update_good.firm_id   = function() {
 	    return angular.isDefined(good.firm) && good.firm.id ? good.firm.id : -1;
