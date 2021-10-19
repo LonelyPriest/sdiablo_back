@@ -14,12 +14,12 @@
 		    x-ng-click="new_retailer()">新增
 	      <i class="glyphicon glyphicon-plus"></i></button>
 
-	    <button x-ng-if="right.set_withdraw" class="btn red purple-stripe hidden-xxs"
-		    x-ng-click="withdraw()">提现
-	      <i class="glyphicon glyphicon-share"></i></button>
+	    <!-- <button x-ng-if="right.set_withdraw" class="btn red purple-stripe hidden-xxs" -->
+	    <!-- 	    x-ng-click="withdraw()">提现 -->
+	    <!--   <i class="glyphicon glyphicon-share"></i></button> -->
 
 	    <button x-ng-if="right.export_retailer"
-		    class="btn blue purple-stripe hidden-xs hidden-xxs"
+		    class="btn blue purple-stripe hidden-sm hidden-xs hidden-xxs"
 		    x-ng-click="export_retailer()">导出
 	      <i class="glyphicon glyphicon-export"></i></button> 
 
@@ -27,11 +27,12 @@
 		    x-ng-click="charge_detail()">充值记录
 	      <i class="glyphicon glyphicon-map-marker"></i></button>
 
-	    <button x-ng-if="right.master" class="btn red purple-stripe hidden-xs hidden-xxs"
+	    <button x-ng-if="right.master" class="btn red purple-stripe hidden-sm hidden-xs hidden-xxs"
 		    x-ng-click="syn_pinyin()">拼音
 	      <i class="glyphicon glyphicon-sort"></i></button>
 
-	    <button x-ng-if="right.print_retailer" class="btn yellow purple-stripe hidden-xs hidden-xxs"
+	    <button x-ng-if="right.print_retailer"
+		    class="btn yellow purple-stripe hidden-sm hidden-xs hidden-xxs"
 		    x-ng-click="print_retailer()">打印
 	      <i class="glyphicon glyphicon-print"></i>
 	    </button>
@@ -39,6 +40,22 @@
 	    <button x-ng-if="right.page_retailer" class="btn blue reload purple-stripe"
 		    x-ng-click="refresh()">刷新
 	      <i class="icon icon-spinner fg-white"></i></button>
+
+	    <!-- <button class="btn red hidden-md hidden-lg" -->
+	    <!-- 	    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> -->
+	    <!--   <span class="sr-only">Toggle Dropdown</span> -->
+	    <!--   <i class="glyphicon glyphicon-menu-hamburger"></i> -->
+	    <!-- </button>  -->
+	    <!-- <ul class="dropdown-menu pull-right"> -->
+	    <!--   <li> -->
+	    <!-- 	<a href="#/inventory_new_detail">积分电子券</a>  -->
+	    <!-- 	<a href="#/inventory_detail">优惠电子券</a> -->
+	    <!-- 	<a href="#/inventory/inventory_transfer">库存调出</a>  -->
+	    <!-- 	<a href="#/inventory/inventory_transfer_from_detail">调出记录</a> -->
+	    <!-- 	<a href="#/inventory/inventory_transfer_to_detail">调入记录</a>  -->
+	    <!--   </li>  -->
+	    <!-- </ul> -->
+	    
 	  </div>
 	</div>
 	

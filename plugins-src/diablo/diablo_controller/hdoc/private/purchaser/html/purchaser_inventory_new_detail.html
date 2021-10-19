@@ -19,16 +19,16 @@
 	  	    x-ng-click="reject()">退货
 	      <i class="glyphicon glyphicon-minus"></i></button>
 
-	    <button type="button" class="btn blue purple-stripe"
+	    <button type="button" class="btn blue purple-stripe hidden-sm hidden-xs hidden-xxs"
 	  	    x-ng-click="inventory_detail()">库存
 	      <i class="glyphicon glyphicon-book"></i></button>
 
-	    <button type="button" class="btn yellow-crusta purple-stripe"
+	    <button type="button" class="btn yellow-crusta purple-stripe hidden-sm hidden-xs hidden-xxs"
 	  	    x-ng-click="inventory_rsn_detail()">明细
 	      <i class="glyphicon glyphicon-map-marker"></i></button>
 	    
 	    <button x-ng-if="shop_right.show_orgprice"
-		    class="btn green purple-stripe hidden-xs hidden-sm" 
+		    class="btn green purple-stripe hidden-xs hidden-sm hidden-xxs" 
 		    type="button"
 		    x-ng-click="export_to()">导出
 	      <i class="glyphicon glyphicon-export"></i></button>
@@ -36,6 +36,22 @@
 	    <button type="button" class="btn blue reload purple-stripe"
 		    x-ng-click="refresh()">刷新
 	      <i class="icon icon-spinner fg-white"></i></button>
+
+	    <button class="btn red hidden-md hidden-lg"
+		    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	      <span class="sr-only">Toggle Dropdown</span>
+	      <i class="glyphicon glyphicon-menu-hamburger"></i>
+	    </button>
+	    <ul class="dropdown-menu pull-right">
+	      <li>
+		<a href="#/inventory_new_detail">采购明细</a> 
+		<a href="#/inventory_detail">库存详情</a>
+		<a href="#/inventory/inventory_transfer">库存调出</a> 
+		<a href="#/inventory/inventory_transfer_from_detail">调出记录</a>
+		<a href="#/inventory/inventory_transfer_to_detail">调入记录</a> 
+	      </li> 
+	    </ul>
+	    
 	  </div> 
 	</div> 
       </div>

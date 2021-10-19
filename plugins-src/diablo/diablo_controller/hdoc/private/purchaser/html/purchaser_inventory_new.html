@@ -5,7 +5,7 @@
       <div class="portlet-title">
 	<div class="caption">
 	  <i class="glyphicon glyphicon-menu-hamburger"></i>
-	  采购入库
+	  采购入库<span>{{select.date|date: 'yyyy-MM-dd'}}</span>
 	</div>
 	<div class="actions">
 	  <div class="btn-group">
@@ -33,7 +33,7 @@
 
       <!--BEGIN table container-->
       <div class="portlet-body">
-	<div class="table-toolbar hidden-xs hidden-sm"> 
+	<div class="table-toolbar hidden-xs hidden-sm hidden-xxs"> 
 	  <div class="row diablo-form-group">
 	    <div class="col-md-3">
 	      <div class="input-group">
@@ -302,7 +302,7 @@
 
 	<div class="table-toolbar hidden-md hidden-lg">
 	  <div class="row diablo-form-group">
-	    <div class="col-md-3">
+	    <div class="col-xs-6">
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="icon icon-rss fg-red"></i>厂商</span>
@@ -320,31 +320,25 @@
 		       value="******"/>
 	      </div>
 	    </div>
-	  </div>
-	    
-	  <div class="row diablo-form-group"> 
+
 	    <div class="col-xs-6">
 	      <div class="input-group">
-		<span class="input-group-addon">店铺</span>
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-shopping-cart fg-red"></i>店铺</span>
 	  	<select class="form-control" type="text" 
 	  		x-ng-model="select.shop"
 			x-ng-change="change_shop()"
 			x-ng-options="s as s.name for s in shops">
 		</select>
 	      </div>
-	    </div>
-
-	    <div class="col-xs-6">
-	      <time-search time="select.date" oread="true"></time-search> 
-	    </div>
+	    </div> 
 	  </div>
-	  
+
 	  <div class="row diablo-form-group">
 	    <div class="col-xs-6">
 	      <div class="input-group">
 		<span class="input-group-addon">
-	  	  <i class="icon-user fg-red"></i>
-	  	</span>
+	  	  <i class="glyphicon glyphicon-user fg-red"></i>员工</span>
 	  	<select class="form-control" type="text"
 	  		x-ng-model="select.employee"
 	  		x-ng-options="e as e.name for e in employees|filter:$viewValue|limitTo:8">
@@ -352,17 +346,63 @@
 	      </div>
 	    </div>
 	    
-	    <div class="col-md-3"> 
+	    <div class="col-xs-6"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-map-marker fg-red"></i>
-		  数量
-		</span>
-	  	<input class="form-control" type="text" readonly
+		  <i class="glyphicon glyphicon-map-marker fg-red"></i>数量</span>
+	  	<input class="form-control" type="number" readonly
 	  	       x-ng-model="select.total"/>
 	      </div>
 	    </div> 
-	  </div> 
+	  </div>
+	    
+	  <div class="row diablo-form-group"> 
+	    <div class="col-xs-6">
+	      <div class="input-group">
+	    	<span class="input-group-addon">
+	    	  <i class="glyphicon glyphicon-yen fg-red"></i>现金</span>
+	    	<form name="select.form.cashForm">
+	    	  <div ng-class="{'has-error':select.form.cashForm.$invalid
+	    			 && !select.form.cashForm.$pristine}">
+	    	    <input class="form-control"
+	    		   type="number" step="0.01"
+	    		   disable-key
+	    		   ng-edit
+	    		   placeholder="现金"
+	    		   x-ng-pattern="/^\d+(.\d{1,2})?$/"
+	    		   x-ng-model="select.cash" />
+	    	  </div>
+	    	</form>
+	      </div>
+	    </div>
+
+	    <div class="col-xs-6">
+	      <div class="input-group"> 
+	    	<span class="input-group-addon">
+	    	  <i class="glyphicon glyphicon-credit-card fg-red"></i>刷卡</span>
+	    	<form name="select.form.cardForm">
+	    	  <div ng-class="{'has-error':select.form.cardForm.$invalid
+	    			 && !select.form.cardForm.$pristine}">
+	    	    <input class="form-control"
+	    		   type="number" step="0.01"
+	    		   disable-key
+	    		   ng-edit
+	    		   placeholder="刷卡"
+	    		   x-ng-pattern="/^\d+(.\d{1,2})?$/"
+	    		   x-ng-model="select.card" />
+	    	  </div>
+	    	</form>
+	      </div>
+	    </div> 
+	    <!-- <div class="col-xs-6"> -->
+	    <!--   <div class="input-group"> -->
+	    <!-- 	<span class="input-group-addon"> -->
+	    <!-- 	  <i class=""></i>日期</span> -->
+	    <!-- 	<time-search time="select.date" oread="true"></time-search> -->
+	    <!--   </div> -->
+	    <!-- </div> -->
+	  </div>
+
 	</div>
 	
 	<!--BEGN portlet body--> 
