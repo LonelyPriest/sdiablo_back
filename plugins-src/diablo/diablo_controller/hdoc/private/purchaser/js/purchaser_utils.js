@@ -1423,7 +1423,15 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // type
     if (this.template.type) {
-	top = this.print_type(diablo_trim(this.stock.type), top, this.left, iwpx, pSecond, pThird, startSecond, startThird); 
+	top = this.print_type(
+	    diablo_trim(angular.isDefined(this.stock.type) ? this.stock.type : this.stock.type_name),
+	    top,
+	    this.left,
+	    iwpx,
+	    pSecond,
+	    pThird,
+	    startSecond,
+	    startThird); 
 	top += this.template.hpx_each;
     }
 

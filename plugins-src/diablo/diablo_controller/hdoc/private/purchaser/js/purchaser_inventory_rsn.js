@@ -1283,6 +1283,9 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
 	print_access: stockUtils.print_num(user.loginShop, base)
     };
 
+    if ($scope.setting.use_barcode && needCLodop()) 
+	loadCLodop($scope.setting.print_access.protocal);
+    
     $scope.printU = new stockPrintU($scope.setting.auto_barcode, diablo_default_setting);
     $scope.printU.setPrinter(diablo_default_setting); 
 
@@ -1417,7 +1420,8 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
 	    }
 	return undefined;
     }; 
-    
+
+    var dialog = diabloUtilsService;
     $scope.rsn_detail = function(inv){
 	console.log(inv);
 	if (angular.isDefined(inv.amounts)
@@ -1457,6 +1461,9 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
 			  get_amount: get_amount});
 		}); 
     }; 
+
+    var dialog_barcode_title = "条码打印";
+    var dialog_barcode_title_failed = "条码打印失败：";
     
     var start_print_barcode = function(barcode, stock, template) {
 	console.log(barcode);

@@ -278,7 +278,7 @@ print_content(_ShopId, PBrand, _Model, 58, Merchant, Setting, Invs) ->
 
     {ok, Brands} = ?w_user_profile:get(brand, Merchant),
     {ok, Colors} = ?w_user_profile:get(color, Merchant),
-    {ok, Types} = ?w_user_profile:get(type, Merchant),
+    %%  {ok, Types} = ?w_user_profile:get(type, Merchant),
     <<PColorSize:1/binary, _/binary>> = ?v(<<"p_color_size">>, Setting),
     
     
@@ -298,7 +298,8 @@ print_content(_ShopId, PBrand, _Model, 58, Merchant, Setting, Invs) ->
 		  StyleNumber = ?v(<<"style_number">>, Inv),
 		  %% ?DEBUG("StyleNumber ~p", [StyleNumber]),
 		  BrandId     = ?v(<<"brand_id">>, Inv),
-		  TypeId      = ?v(<<"type_id">>, Inv),
+		  %% TypeId      = ?v(<<"type_id">>, Inv),
+		  TypeName      = ?v(<<"type">>, Inv),
 		  SellTotal   = ?v(<<"total">>, Inv),
 		  TagPrice    = ?v(<<"tag_price">>, Inv),
 		  RPrice      = ?v(<<"rprice">>, Inv),
@@ -324,7 +325,7 @@ print_content(_ShopId, PBrand, _Model, 58, Merchant, Setting, Invs) ->
 		      end,
 
 		  BrandName = ?to_s(get_brand(Brands, BrandId)),
-		  TypeName = ?to_s(get_type(Types, TypeId)),
+		  %% TypeName = ?to_s(get_type(Types, TypeId)),
 
 		  {?to_s(StyleNumber) ++ pading(12 - width(latin1, StyleNumber))
 		   %% ++ "品名：" ++ ?to_s(get_brand(Brands, BrandId)) ++ br(PBrand)
@@ -812,11 +813,11 @@ get_color(Colors, ColorId) ->
 	FindColor -> ?v(<<"name">>, FindColor)
     end.
 
-get_type(Types, TypeId) ->
-    case ?w_user_profile:filter(Types, <<"id">>, TypeId) of
-	[] -> [];
-	FindType -> ?v(<<"name">>, FindType)
-    end.
+%% get_type(Types, TypeId) ->
+%%     case ?w_user_profile:filter(Types, <<"id">>, TypeId) of
+%% 	[] -> [];
+%% 	FindType -> ?v(<<"name">>, FindType)
+%%     end.
     
 server(1) ->
     fcloud.

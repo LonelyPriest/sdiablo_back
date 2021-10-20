@@ -538,7 +538,7 @@ function wsaleRsnDetailCtrlProvide (
     			    if (!found) {
     				// console.log(diablo_find_color(d.color_id, filterColor));
     				d.brand = diablo_get_object(d.brand_id, filterBrand).name;
-    				d.type = diablo_get_object(d.type_id, filterType).name;
+    				d.type = d.type;
     				d.note = diablo_find_color(d.color_id, filterColor).cname + ":" + d.size;
     				notes.push(d)
     			    }
