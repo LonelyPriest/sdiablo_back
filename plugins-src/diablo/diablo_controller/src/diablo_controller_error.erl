@@ -440,6 +440,9 @@ error(good_barcode_exist, BCode) ->
     {1910, "barcode of this good has been exist:" ++ ?to_s(BCode)};
 error(type_bcode_not_init, TypeId) ->
     {1911, "barcode of type not initial:" ++ ?to_s(TypeId)};
+error(color_max_999, Total) ->
+    {1912, "more then max count of color:" ++ ?to_s(Total)};
+
 
 
 

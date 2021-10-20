@@ -147,33 +147,46 @@ handle_call({new_w_color, Merchant, Attr}, _From, State) ->
 		    ++ ?to_s(Merchant) ++ ");",
 		?sql_utils:execute(insert, Sql1)
 	end,
-    
-    case ?sql_utils:execute(s_read, Sql0) of
-	{ok, []} ->
-	    NewBCode = case AutoBarcode of
-			   ?YES -> ?inventory_sn:sn(color, Merchant);
-			   ?NO -> BCode
-		       end,
-	    case NewBCode =/= 0 of
+
+    Sql1 = "select count(*) as total from colors where merchant="  ++ ?to_s(Merchant),
+    case ?sql_utils:execute(s_read, Sql1) of 
+	{ok, R} ->
+	    ?DEBUG("R ~p", [R]),
+	    Total = ?v(<<"total">>, R),
+	    case Total > 999 of
 		true ->
-		    Sql01 = "select id, bcode, name from colors"
-			" where bcode=" ++ ?to_s(NewBCode) ++
-			" and merchant=" ++ ?to_s(Merchant),
-		    case ?sql_utils:execute(s_read, Sql01) of
+		    {reply, {error, ?err(color_max_999, Total)}, State};
+		false -> 
+		    case ?sql_utils:execute(s_read, Sql0) of
 			{ok, []} ->
-			    R = AddColor(NewBCode),
-			    {reply, R, State};
-			{ok, _Color} ->
-			    {reply, {error, ?err(color_bcode_exist, BCode)}, State};
+			    NewBCode = case AutoBarcode of
+					   ?YES -> ?inventory_sn:sn(color, Merchant);
+					   ?NO -> BCode
+				       end,
+			    case NewBCode =/= 0 of
+				true ->
+				    Sql01 = "select id, bcode, name from colors"
+					" where bcode=" ++ ?to_s(NewBCode) ++
+					" and merchant=" ++ ?to_s(Merchant),
+				    case ?sql_utils:execute(s_read, Sql01) of
+					{ok, []} ->
+					    R = AddColor(NewBCode),
+					    {reply, R, State};
+					{ok, _Color} ->
+					    {reply, {error, ?err(color_bcode_exist, BCode)}, State};
+					Error ->
+					    {reply, Error, State}
+				    end;
+				false ->
+				    R = AddColor(NewBCode),
+				    {reply, R, State}
+			    end;
+			{ok, Color} ->
+			    {reply, {error, ?err(color_exist, ?v(<<"id">>, Color))}, State};
 			Error ->
 			    {reply, Error, State}
-		    end;
-		false ->
-		    R = AddColor(NewBCode),
-		    {reply, R, State}
+		    end
 	    end;
-	{ok, Color} ->
-	    {reply, {error, ?err(color_exist, ?v(<<"id">>, Color))}, State};
 	Error ->
 	    {reply, Error, State}
     end; 
