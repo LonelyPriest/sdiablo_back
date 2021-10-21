@@ -3224,40 +3224,49 @@ function wsaleNewProvide(
 	if (stock.total < stock.sell) {
 	    not_enought = true; 
 	} else {
-	    var existStocks = [];
-	    for(var i=0, l=$scope.inventories.length; i<l; i++){
-		var s = $scope.inventories[i];
-		if (stock.style_number === s.style_number && stock.brand_id === s.brand_id){
-		    existStocks.push(s); 
-		}
-	    }
-	    
 	    var willAmounts = stock.amounts.filter(function(a) {
-		return wsaleUtils.to_integer(a.sell_count) > 0;
+		return a.count > 0
+		    && wsaleUtils.to_integer(a.sell_count) > 0
+		    && wsaleUtils.to_integer(a.sell_count) <= a.count; 
 	    }).map(function(m) {
 		return {cid:m.cid, size:m.size, sell_count:m.sell_count, count:m.count}
 	    });
 	    // console.log(willAmounts); 
-	    
-	    angular.forEach(existStocks, function(e) {
-		var existAmounts = e.amounts;
-		for (var j=0, k=willAmounts.length; j<k; j++) {
-		    for (var m=0, n=existAmounts.length; m<n; m++) {
-			if (existAmounts[m].sell_count > 0) {
-			    if (existAmounts[m].cid === willAmounts[j].cid
-				&& existAmounts[m].size === willAmounts[j].size) {
-				willAmounts[j].sell_count += existAmounts[m].sell_count;
-				if (willAmounts[j].sell_count > willAmounts[j].count) {
-				    not_enought = true;
-				    break;
+
+	    if (willAmounts.length === 0) {
+		not_enought = true;
+	    } else {
+		var existStocks = [];
+		for(var i=0, l=$scope.inventories.length; i<l; i++){
+		    var s = $scope.inventories[i];
+		    if (stock.style_number === s.style_number && stock.brand_id === s.brand_id){
+			existStocks.push(s); 
+		    }
+		}
+		
+		angular.forEach(existStocks, function(e) {
+		    var existAmounts = e.amounts.filter(function(ex) {
+			return wsaleUtils.to_integer(ex.sell_count) > 0;
+		    });
+		    
+		    for (var j=0, k=willAmounts.length; j<k; j++) {
+			for (var m=0, n=existAmounts.length; m<n; m++) {
+			    if (wsaleUtils.to_integer(existAmounts[m].sell_count) > 0) {
+				if (existAmounts[m].cid === willAmounts[j].cid
+				    && existAmounts[m].size === willAmounts[j].size) {
+				    willAmounts[j].sell_count += existAmounts[m].sell_count;
+				    if (willAmounts[j].sell_count > willAmounts[j].count) {
+					not_enought = true;
+					break;
+				    }
 				}
+				
 			    }
 			    
 			}
-			
 		    }
-		}
-	    });
+		});
+	    }
 	}
 	
 	return not_enought;
@@ -3411,16 +3420,23 @@ function wsaleNewProvide(
 		$scope.auto_save_free(inv);
 	    } else{
 		var after_add = function(){
+		    // if ($scope.setting.check_sale
+		    // 	&& cs_stock_not_enought(inv)
+		    // 	&& !$scope.setting.negative_sale) {
 		    if ($scope.setting.check_sale
-			&& cs_stock_not_enought(inv)
-			&& !$scope.setting.negative_sale) {
+			&& cs_stock_not_enought(inv)) {
 			var ERROR = require("diablo-error");
-			diabloUtilsService.response_with_callback(
-			    false,
-			    response_title,
-			    ERROR[2021],
-			    undefined,
-			    $scope.focus_by_element);
+			if ($scope.setting.negative_sale) {
+			    // diabloUtilsService.request(
+			    // 	response_title, ERROR[2180], callback, true, undefined);
+			} else {
+			    diabloUtilsService.response_with_callback(
+				false,
+				response_title,
+				ERROR[2021],
+				undefined,
+				$scope.focus_by_element);
+			} 
 		    } else {
 			if (!$scope.right.master
 			    && user.discount !== diablo_nolimit_discount
@@ -3492,8 +3508,10 @@ function wsaleNewProvide(
 		    var color_size = inv.full_bcode.substr(inv.bcode.length, inv.full_bcode.length);
 		    console.log(color_size);
 
-		    var bcode_color = wsaleUtils.to_integer(color_size.substr(0, 3));
-		    var bcode_size_index = wsaleUtils.to_integer(color_size.substr(3, color_size.length));
+		    var bcode_color_len = diabloHelp.cal_color_len_by_barcode(color_size, inv.colors);
+		    var bcode_color = wsaleUtils.to_integer(color_size.substr(0, bcode_color_len));
+		    var bcode_size_index = wsaleUtils.to_integer(
+			color_size.substr(bcode_color_len, color_size.length)); 
 		    
 		    var bcode_size = bcode_size_index === 0 ? diablo_free_size:size_to_barcode[bcode_size_index];
 		    // console.log(bcode_color);

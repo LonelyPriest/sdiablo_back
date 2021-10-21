@@ -591,41 +591,49 @@ function purchaserInventoryTransferCtrlProvide (
 
     var cs_stock_not_enought = function(stock) {
 	var not_enought = false;
-	var existStocks = [];
-	for(var i=0, l=$scope.inventories.length; i<l; i++){
-	    var s = $scope.inventories[i];
-	    if (stock.style_number === s.style_number && stock.brand_id === s.brand_id){
-		existStocks.push(s); 
-	    }
-	}
-
-
 	var willAmounts = stock.amounts.filter(function(a) {
-	    return stockUtils.to_integer(a.reject_count) > 0;
+	    return stockUtils.to_integer(a.reject_count) > 0
+		&& stockUtils.to_integer(a.reject_count) > 0
+		&& stockUtils.to_integer(a.reject_count) <= a.count;
 	}).map(function(m) {
 	    return {cid:m.cid, size:m.size, reject_count:m.reject_count, count:m.count}
 	});
-	
-	angular.forEach(existStocks, function(e) {
-	    var existAmounts = e.amounts;
-	    for (var j=0, k=willAmounts.length; j<k; j++) {
-		for (var m=0, n=existAmounts.length; m<n; m++) {
-		    if (existAmounts[m].reject_count > 0) {
-			if (existAmounts[m].cid === willAmounts[j].cid
-			    && existAmounts[m].size === willAmounts[j].size) {
-			    willAmounts[j].reject_count += existAmounts[m].reject_count;
-			    if (willAmounts[j].reject_count > willAmounts[j].count) {
-				not_enought = true;
-				break;
-			    }
-			}
-			    
-		    }
-		    
+
+	if (willAmounts.length === 0) {
+	    not_enought = true;
+	} else {
+	    var existStocks = [];
+	    for(var i=0, l=$scope.inventories.length; i<l; i++){
+		var s = $scope.inventories[i];
+		if (stock.style_number === s.style_number && stock.brand_id === s.brand_id){
+		    existStocks.push(s); 
 		}
 	    }
-	});
 
+
+	    
+	    
+	    angular.forEach(existStocks, function(e) {
+		var existAmounts = e.amounts;
+		for (var j=0, k=willAmounts.length; j<k; j++) {
+		    for (var m=0, n=existAmounts.length; m<n; m++) {
+			if (existAmounts[m].reject_count > 0) {
+			    if (existAmounts[m].cid === willAmounts[j].cid
+				&& existAmounts[m].size === willAmounts[j].size) {
+				willAmounts[j].reject_count += existAmounts[m].reject_count;
+				if (willAmounts[j].reject_count > willAmounts[j].count) {
+				    not_enought = true;
+				    break;
+				}
+			    }
+			    
+			}
+			
+		    }
+		}
+	    });
+	}
+	
 	console.log(willAmounts);	
 	return not_enought;
     };
@@ -724,8 +732,10 @@ function purchaserInventoryTransferCtrlProvide (
 		    var color_size = inv.full_bcode.substr(inv.bcode.length, inv.full_bcode.length);
 		    console.log(color_size);
 
-		    var bcode_color = stockUtils.to_integer(color_size.substr(0, 3));
-		    var bcode_size_index = stockUtils.to_integer(color_size.substr(3, color_size.length));
+		    var bcode_color_len = diabloHelp.cal_color_len_by_barcode(color_size, inv.colors);
+		    var bcode_color = stockUtils.to_integer(color_size.substr(0, bcode_color_len));
+		    var bcode_size_index = stockUtils.to_integer(
+			color_size.substr(bcode_color_len, color_size.length));
 		    
 		    var bcode_size = bcode_size_index === 0 ? diablo_free_size:size_to_barcode[bcode_size_index];
 		    // console.log(bcode_color);

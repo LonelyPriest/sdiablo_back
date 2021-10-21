@@ -216,29 +216,48 @@ action(Session, Req, {"get_good_by_barcode"}, Payload) ->
     %% 128C code's lenght should be odd
     <<ZZ:2/binary, _/binary>> = Barcode,
     <<_Z:1/binary, SCode/binary>> = Barcode, 
+    %% NewBarcode = 
+    %% 	case AutoBarcode of
+    %% 	    ?YES -> 
+    %% 		case ZZ of
+    %% 		    <<"00">> ->
+    %% 			SCode;
+    %% 		    <<"0", _T/binary>> ->
+    %% 			SCode;
+    %% 		    _ ->
+    %% 			Barcode
+    %% 		end;
+    %% 	    ?NO ->
+    %% 		case ZZ of
+    %% 		    <<"00">> ->
+    %% 			SCode;
+    %% 		    <<"0", _T/binary>> ->
+    %% 			SCode;
+    %% 		    _ ->
+    %% 			Barcode
+    %% 		end
+    %% 	end,
     NewBarcode = 
 	case AutoBarcode of
 	    ?YES -> 
-		case ZZ of
-		    <<"00">> ->
-			SCode;
-		    <<"0", _T/binary>> ->
-			SCode;
+		case size(Barcode) of
+		    10 -> SCode;
 		    _ ->
 			Barcode
-		end;
+		end; 
 	    ?NO ->
-		case ZZ of
-		    <<"00">> ->
-			SCode;
-		    <<"0", _T/binary>> ->
-			SCode;
-		    _ ->
-			Barcode
-		end
-	end,
-
+		Barcode
+		%% case ZZ of
+		%%     <<"00">> ->
+		%% 	SCode;
+		%%     <<"0", _T/binary>> ->
+		%% 	SCode;
+		%%     _ ->
+		%% 	Barcode
+		%% end
+	end, 
     ?DEBUG("newBarcode ~p", [Barcode]),
+    
     case ?w_inventory:purchaser_good(get_by_barcode, {Merchant, UTable}, NewBarcode) of
 	{ok, Good} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},

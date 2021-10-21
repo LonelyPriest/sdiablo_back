@@ -234,6 +234,9 @@ diablo_left = 3;
 
 var diablo_barcode_lenth_of_color_size = 5;
 var diablo_ext_barcode_lenth_of_color_size = 6;
+var diablo_auto_barcode_lenth = 9;
+var diablo_auto_barcode_len_of_color = 3;
+var diablo_auto_barcode_len_of_ext_color = 4;
 var diablo_by_shop     = "by_shop";
 var diablo_print_px    = 5.56;
 
@@ -1296,24 +1299,31 @@ var diabloHelp = function(){
 		cuted = original;
 	    } else {
 		if (1 === auto_barcode) {
-		    var code_len = original.length; 
-		    if (original.startsWith('1')) {
-			correct = original; 
-			cuted = original.substr(0, original.length - diablo_barcode_lenth_of_color_size);
-		    }
-		    else if (original.startsWith('00')) {
-			correct = original.substr(1, original.length - 1); 
-			// cuted = correct;
+		    var code_len = original.length;
+		    if (code_len === 10) {
+			correct = original.substr(1, original.length - 1);
 			cuted = original;
+		    } else {
+			correct = original;
+			cuted = original.substr(0, diablo_auto_barcode_lenth);
 		    }
-		    else if (original.startsWith('01') && original.length > 14 ) {
-			correct = original.substr(1, original.length - 1); 
-			cuted = original.substr(1, original.length - diablo_ext_barcode_lenth_of_color_size - 1);
-		    } 
-		    else {
-			correct = original,
-			cuted = original;
-		    } 
+		    // if (original.startsWith('1')) {
+		    // 	correct = original; 
+		    // 	cuted = original.substr(0, original.length - diablo_barcode_lenth_of_color_size);
+		    // }
+		    // else if (original.startsWith('00')) {
+		    // 	correct = original.substr(1, original.length - 1); 
+		    // 	// cuted = correct;
+		    // 	cuted = original;
+		    // }
+		    // else if (original.startsWith('01') && original.length > 14 ) {
+		    // 	correct = original.substr(1, original.length - 1); 
+		    // 	cuted = original.substr(1, original.length - diablo_ext_barcode_lenth_of_color_size - 1);
+		    // } 
+		    // else {
+		    // 	correct = original,
+		    // 	cuted = original;
+		    // } 
 		} else {
 		    if (original.startsWith('00')) {
 			correct = original.substr(1, original.length - 1); 
@@ -1374,7 +1384,35 @@ var diabloHelp = function(){
 
 	pay_scan:function(payCode, shop, filterPromise, dialog, failTitle, callback) {
 	    
-	} 
+	},
+
+	cal_color_len_by_barcode: function(barcodeColorSize, stockColors) {
+	    var color_len = 0;
+	    if (barcodeColorSize.length === diablo_barcode_lenth_of_color_size) {
+		color_len = diablo_auto_barcode_len_of_color;
+	    } else if (barcodeColorSize.length === diablo_ext_barcode_lenth_of_color_size) {
+		var bcode_color = diablo_set_integer(
+		    barcodeColorSize.substr(0, diablo_auto_barcode_len_of_ext_color));
+		if (angular.isDefined(bcode_color) && bcode_color < 100) {
+		    color_len = diablo_auto_barcode_len_of_color;
+		} else {
+		    for (var i=0, l=stockColors.length; i<l; i++) {
+			if (stockColors[i].bcode === bcode_color) {
+			    color_len = diablo_auto_barcode_len_of_ext_color;
+			    break;
+			}
+		    } 
+		    // not found
+		    if (color_len === 0) {
+			color_len = diablo_auto_barcode_len_of_color;
+		    }
+		}
+		
+	    } else {
+		color_len = diablo_auto_barcode_len_of_ext_color;
+	    }
+	    return color_len;
+	}
 	//
     };
 }();

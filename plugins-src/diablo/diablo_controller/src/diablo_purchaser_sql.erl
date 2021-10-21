@@ -3490,9 +3490,9 @@ update_stock(state, Pos, Value) ->
 
 gen_barcode(self_barcode, Merchant, Year, Season, Type) ->
     <<_:2/binary, YY/binary>> = ?to_b(Year),
-    <<_:1/binary, Y/binary>>  = YY,
+    <<_:1/binary, Y0/binary>>  = YY,
     Flow = ?inventory_sn:sn(barcode_flow, Merchant, YY),
-    ?to_s(Y) 
+    ?to_s(Y0) 
 	++ ?to_s(?to_i(Season) + 1)
 	++ ?to_s(Type)
 	++ ?utils:pack_flow(Flow, 0).
