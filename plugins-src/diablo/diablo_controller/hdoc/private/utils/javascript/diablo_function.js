@@ -1304,8 +1304,13 @@ var diabloHelp = function(){
 			correct = original.substr(1, original.length - 1);
 			cuted = original;
 		    } else {
-			correct = original;
-			cuted = original.substr(0, diablo_auto_barcode_lenth);
+			if (original.startsWith('0')) {
+			    correct = original.substr(1, original.length - 1);
+			    cuted = original.substr(0, diablo_auto_barcode_lenth + 1);
+			} else {
+			    correct = original;
+			    cuted = original.substr(0, diablo_auto_barcode_lenth);
+			} 
 		    }
 		    // if (original.startsWith('1')) {
 		    // 	correct = original; 

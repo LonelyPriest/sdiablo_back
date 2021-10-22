@@ -3215,35 +3215,38 @@ function wsaleNewProvide(
 	    if (stock.style_number === s.style_number && stock.brand_id === s.brand_id){
 		existSaleStock += s.sell;
 	    }
-	} 
-	return existSaleStock + stock.sell > stock.total;
+	}
+	return {not_enought: stock.total<=0 || existSaleStock + stock.sell > stock.total,
+		first: existSaleStock === 0}
     };
 
     var cs_stock_not_enought = function(stock) {
 	var not_enought = false;
+	var first = true;
 	if (stock.total < stock.sell) {
 	    not_enought = true; 
 	} else {
+	    var existStocks = [];
+	    for(var i=0, l=$scope.inventories.length; i<l; i++){
+		var s = $scope.inventories[i];
+		if (stock.style_number === s.style_number && stock.brand_id === s.brand_id){
+		    existStocks.push(s);
+		    first = false;
+		}
+	    }
+
 	    var willAmounts = stock.amounts.filter(function(a) {
 		return a.count > 0
 		    && wsaleUtils.to_integer(a.sell_count) > 0
 		    && wsaleUtils.to_integer(a.sell_count) <= a.count; 
 	    }).map(function(m) {
 		return {cid:m.cid, size:m.size, sell_count:m.sell_count, count:m.count}
-	    });
-	    // console.log(willAmounts); 
-
+	    }); 
+	    // console.log(willAmounts);
+	    
 	    if (willAmounts.length === 0) {
 		not_enought = true;
 	    } else {
-		var existStocks = [];
-		for(var i=0, l=$scope.inventories.length; i<l; i++){
-		    var s = $scope.inventories[i];
-		    if (stock.style_number === s.style_number && stock.brand_id === s.brand_id){
-			existStocks.push(s); 
-		    }
-		}
-		
 		angular.forEach(existStocks, function(e) {
 		    var existAmounts = e.amounts.filter(function(ex) {
 			return wsaleUtils.to_integer(ex.sell_count) > 0;
@@ -3269,7 +3272,7 @@ function wsaleNewProvide(
 	    }
 	}
 	
-	return not_enought;
+	return {not_enought:not_enought, first:first};
     };
     
     // var cs_stock_not_enought = function(stock) {
@@ -3319,9 +3322,10 @@ function wsaleNewProvide(
 	};
 	
 	// check stock total
-	if ($scope.setting.check_sale && free_stock_not_enought(inv)) {
+	var enought = free_stock_not_enought(inv);
+	if ($scope.setting.check_sale && enought.not_enought) {
 	    var ERROR = require("diablo-error");
-	    if ($scope.setting.negative_sale) {
+	    if ($scope.setting.negative_sale && enought.first) {
 		diabloUtilsService.request(response_title, ERROR[2180], callback, true, undefined); 
 	    } else {
 		diabloUtilsService.response_with_callback(
@@ -3420,24 +3424,7 @@ function wsaleNewProvide(
 		$scope.auto_save_free(inv);
 	    } else{
 		var after_add = function(){
-		    // if ($scope.setting.check_sale
-		    // 	&& cs_stock_not_enought(inv)
-		    // 	&& !$scope.setting.negative_sale) {
-		    if ($scope.setting.check_sale
-			&& cs_stock_not_enought(inv)) {
-			var ERROR = require("diablo-error");
-			if ($scope.setting.negative_sale) {
-			    // diabloUtilsService.request(
-			    // 	response_title, ERROR[2180], callback, true, undefined);
-			} else {
-			    diabloUtilsService.response_with_callback(
-				false,
-				response_title,
-				ERROR[2021],
-				undefined,
-				$scope.focus_by_element);
-			} 
-		    } else {
+		    var check_add = function() {
 			if (!$scope.right.master
 			    && user.discount !== diablo_nolimit_discount
 			    && inv.fdiscount < user.discount) {
@@ -3452,7 +3439,51 @@ function wsaleNewProvide(
 			    // $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new})); 
 			    $scope.re_calculate();
 			    $scope.focus_good_or_barcode();
+			}
+		    };
+		    
+		    var enought = cs_stock_not_enought(inv);
+		    if ($scope.setting.check_sale && enought.not_enought) {
+			var ERROR = require("diablo-error");
+			
+			if ($scope.setting.negative_sale && enought.first) {
+			    var reject_callback = function() {
+				for (var i=0, l=inv.amounts.length; i<l; i++) {
+				    if (wsaleUtils.to_integer(inv.amounts[i].sell_count) > wsaleUtils.to_integer(inv.count)) {
+					inv.amounts[i].sell_count = -inv.amounts[i].sell_count;
+					inv.sell = -inv.sell;
+				    }
+				} 
+				check_add();
+			    };
+
+			    diabloUtilsService.request(
+			    	response_title, ERROR[2180], reject_callback, true, undefined);
+			} else {
+			    diabloUtilsService.response_with_callback(
+				false,
+				response_title,
+				ERROR[2021],
+				undefined,
+				$scope.focus_by_element);
 			} 
+		    } else {
+			// if (!$scope.right.master
+			//     && user.discount !== diablo_nolimit_discount
+			//     && inv.fdiscount < user.discount) {
+			//     dialog.set_error(response_title, 2719);
+			// } else {
+			//     inv.$edit = true;
+			//     inv.$new = false;
+			//     $scope.disable_refresh = false;
+			//     $scope.inventories.unshift(inv);
+			    
+			//     inv.order_id = $scope.inventories.length;
+			//     // $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new})); 
+			//     $scope.re_calculate();
+			//     $scope.focus_good_or_barcode();
+			// }
+			check_add();
 		    } 
 		};
 
