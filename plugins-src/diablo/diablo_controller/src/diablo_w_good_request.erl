@@ -214,7 +214,7 @@ action(Session, Req, {"get_good_by_barcode"}, Payload) ->
     AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)),
 
     %% 128C code's lenght should be odd
-    <<ZZ:2/binary, _/binary>> = Barcode,
+    %% <<ZZ:2/binary, _/binary>> = Barcode,
     <<_Z:1/binary, SCode/binary>> = Barcode, 
     %% NewBarcode = 
     %% 	case AutoBarcode of

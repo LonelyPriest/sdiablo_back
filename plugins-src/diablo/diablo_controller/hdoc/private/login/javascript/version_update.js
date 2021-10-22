@@ -1411,18 +1411,18 @@ var version_update = function(){
 	    }
 
 	    var apk = "<div class='update-content'>"
-		+ "<a type='button' href='/qzg_stock_fix-release2020-07-20_22-18-22.apk' download=''>"
+		+ "<a type='button' href='/qzg_stock_fix-release2021-10-22_23-18-22.apk' download=''>"
 		+ "<h5 class='text-center fg-pink'>盘点机软件(安卓)下载</h5>"
 		+ "</a>"
 		+ "</div>"
 	    $('body').append(apk);
 
-	    var scan_apk = "<div class='update-content'>"
-		+ "<a type='button' href='/iScan-V4.3.1.apk' download=''>"
-		+ "<h5 class='text-center fg-pink'>盘点机辅助软件(安卓)下载</h5>"
-		+ "</a>"
-		+ "</div>"
-	    $('body').append(scan_apk);
+	    // var scan_apk = "<div class='update-content'>"
+	    // 	+ "<a type='button' href='/iScan-V4.3.1.apk' download=''>"
+	    // 	+ "<h5 class='text-center fg-pink'>盘点机辅助软件(安卓)下载</h5>"
+	    // 	+ "</a>"
+	    // 	+ "</div>"
+	    // $('body').append(scan_apk);
 	    
 	    $('body').append(content);
 

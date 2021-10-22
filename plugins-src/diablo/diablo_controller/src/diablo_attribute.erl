@@ -151,7 +151,6 @@ handle_call({new_w_color, Merchant, Attr}, _From, State) ->
     Sql1 = "select count(*) as total from colors where merchant="  ++ ?to_s(Merchant),
     case ?sql_utils:execute(s_read, Sql1) of 
 	{ok, R} ->
-	    ?DEBUG("R ~p", [R]),
 	    Total = ?v(<<"total">>, R),
 	    case Total > 999 of
 		true ->
@@ -170,25 +169,23 @@ handle_call({new_w_color, Merchant, Attr}, _From, State) ->
 					" and merchant=" ++ ?to_s(Merchant),
 				    case ?sql_utils:execute(s_read, Sql01) of
 					{ok, []} ->
-					    R = AddColor(NewBCode),
-					    {reply, R, State};
+					    {reply, AddColor(NewBCode), State};
 					{ok, _Color} ->
 					    {reply, {error, ?err(color_bcode_exist, BCode)}, State};
-					Error ->
-					    {reply, Error, State}
+					Error0 ->
+					    {reply, Error0, State}
 				    end;
 				false ->
-				    R = AddColor(NewBCode),
-				    {reply, R, State}
+				    {reply, AddColor(NewBCode), State}
 			    end;
 			{ok, Color} ->
 			    {reply, {error, ?err(color_exist, ?v(<<"id">>, Color))}, State};
-			Error ->
-			    {reply, Error, State}
+			Error1 ->
+			    {reply, Error1, State}
 		    end
 	    end;
-	Error ->
-	    {reply, Error, State}
+	Error2 ->
+	    {reply, Error2, State}
     end; 
 
 handle_call({update_w_color, Merchant, Attrs}, _From, State) ->
