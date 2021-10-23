@@ -1145,6 +1145,7 @@ function wretailerChargeDetailCtrlProvide(
 
 function wretailerTicketDetailCtrlProvide(
     $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, filterShop, filterScore, user){
+    // console.log(user);
 
     var dialog = diabloUtilsService; 
     // $scope.shops = user.sortShops;
