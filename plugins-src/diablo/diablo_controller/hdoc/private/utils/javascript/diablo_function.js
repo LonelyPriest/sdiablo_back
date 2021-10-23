@@ -1297,7 +1297,10 @@ var diabloHelp = function(){
 	    if (original.length <= 6) {
 		correct = original;
 		cuted = original;
-	    } else {
+	    } else if (original.length === diablo_std_barcode_length){
+		correct = original;
+		cuted = original;
+	    }else {
 		if (1 === auto_barcode) {
 		    var code_len = original.length;
 		    if (code_len === 10) {
