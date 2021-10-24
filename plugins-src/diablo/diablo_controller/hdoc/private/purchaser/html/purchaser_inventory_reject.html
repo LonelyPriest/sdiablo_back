@@ -168,7 +168,28 @@
 	      </div>
 	    </div>
 
-	    <div class="col-xs-4 col-md-4 col-sm-4">
+	    <div x-ng-if="setting.scan_mode===2" class="col-xs-8 col-md-8 col-sm-8"> 
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-barcode fg-red"></i>条码</span>
+		<form name="bform">
+		  <div ng-class="{'has-error':bform.barcode.$invalid && !bform.barcode.$pristine}">
+		    <input id="barcode" class="form-control text-left"
+			   type="text"
+			   name="barcode"
+			   x-ng-edit
+			   x-ng-model="stock_reject.barcode"
+			   placeholder="请扫条码"
+			   focus-auto="focus.barcode"
+			   x-ng-pattern="pattern.barcode"
+			   barcode-scanner
+			   scanner="barcode_scanner"/>
+		  </div>
+		</form>
+	      </div>
+	    </div>
+	    
+	    <div x-ng-if="setting.scan_mode!==2" class="col-xs-4 col-md-4 col-sm-4"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-barcode fg-red"></i>条码</span>
@@ -189,7 +210,7 @@
 	      </div>
 	    </div>
 
-	    <div class="col-xs-4 col-md-4 col-sm-4">
+	    <div x-ng-if="setting.scan_mode!==2" class="col-xs-4 col-md-4 col-sm-4">
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-signal fg-red"></i>货号</span>

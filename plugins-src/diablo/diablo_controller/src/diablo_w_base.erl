@@ -1093,6 +1093,8 @@ sys_config() ->
 	      %%[0]:scan sale only
 	      %%[1]:add scan mode when stock_in
 	      %%[2]:add scan mode when stock_out
+	      %% [1] both scan and input
+	      %% [2] scan only
 	      %%[3]:add scan mode when stock_transfer
 	      %%[4]:foucs styleNumber when barcode use
 	      %%[5]:show tag_price in stock transfer
