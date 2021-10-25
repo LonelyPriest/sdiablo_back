@@ -2025,7 +2025,7 @@ var wsalePrint = function(){
 		}
 		
 		if (pSetting.print_perform) {
-		    l1 = wsaleUtils.to_float(sale.base_pay - sale.has_pay).toString();
+		    l1 = wsaleUtils.to_float(sale.base_pay - sale.should_pay).toString();
 		    LODOP.ADD_PRINT_TEXT(hLine, left + 135, vWidth - 135, hFont, l1);
 		    bold_style(LODOP);
 		}
