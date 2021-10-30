@@ -3160,10 +3160,12 @@ function wsaleNewProvide(
 	var sell = diablo_set_integer(amount.sell_count);
 	if (0 === wsaleUtils.to_integer(sell)) return true;
 
-	var valid = false; 
-	if ($scope.setting.check_sale && sell > amount.count) return false;
+	// var valid = false; 
+	if ($scope.setting.check_sale && sell > amount.count)
+	    return false;
 
-	if (diablo_no === $scope.setting.negative_sale && sell < 0) return false;
+	if (diablo_no === $scope.setting.negative_sale && sell < 0 && !$scope.right.master) 
+	    return false;
 	
 	return true;
     };
@@ -3893,14 +3895,14 @@ function wsaleNewProvide(
 			inv.form.sell.$pristine = false; 
 		    }
 		    inv.invalid_sell = true; 
-		} else if (!$scope.setting.negative_sale && sell < 0) {
+		} else if (!$scope.setting.negative_sale && sell < 0 && !$scope.right.master) {
 		    if (angular.isDefined(inv.form.sell)) {
 			inv.form.sell.$invalid = true;
 			inv.form.sell.$pristine = false;
 		    }
 		    inv.invalid_sell = true;
 		} else {
-		    $scope.save_free_update(inv); 
+		    $scope.save_free_update(inv);
 		}
 	    } 
 	} 
