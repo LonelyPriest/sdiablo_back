@@ -698,6 +698,8 @@ function wsaleNewProvide(
     var get_setting = function(shopId){
 	$scope.setting.check_sale    = wsaleUtils.check_sale(shopId, base);
 	$scope.setting.negative_sale = wsaleUtils.negative_sale(shopId, base);
+	if ($scope.right.master)
+	    $scope.setting.negative_sale = diablo_yes;
 	$scope.setting.no_vip        = wsaleUtils.no_vip(shopId, base);
 	$scope.setting.q_backend     = $scope.q_typeahead(shopId);
 	$scope.setting.round         = wsaleUtils.round(shopId, base);
@@ -3164,7 +3166,7 @@ function wsaleNewProvide(
 	if ($scope.setting.check_sale && sell > amount.count)
 	    return false;
 
-	if (diablo_no === $scope.setting.negative_sale && sell < 0 && !$scope.right.master) 
+	if (diablo_no === $scope.setting.negative_sale && sell < 0) 
 	    return false;
 	
 	return true;
@@ -3895,7 +3897,7 @@ function wsaleNewProvide(
 			inv.form.sell.$pristine = false; 
 		    }
 		    inv.invalid_sell = true; 
-		} else if (!$scope.setting.negative_sale && sell < 0 && !$scope.right.master) {
+		} else if (!$scope.setting.negative_sale && sell < 0) {
 		    if (angular.isDefined(inv.form.sell)) {
 			inv.form.sell.$invalid = true;
 			inv.form.sell.$pristine = false;

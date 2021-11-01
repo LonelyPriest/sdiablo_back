@@ -1668,8 +1668,9 @@ handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo, ChargePromotio
 	    Reply = ?sql_utils:execute(write, Sql1, RechargeId),
 	    {reply, Reply, State};
 	_ ->
-	    RetailerId = ?v(<<"retailer">>, RechargeInfo), 
-	    Rule = ?v(<<"rule_id">>, ChargePromotion),
+	    RetailerId = ?v(<<"retailer">>, RechargeInfo),
+	    ShopId     = ?v(<<"shop">>, RechargeInfo), 
+	    Rule       = ?v(<<"rule_id">>, ChargePromotion),
 
 	    RSN      = ?v(<<"rsn">>, RechargeInfo), 
 	    CBalance = ?v(<<"cbalance">>, RechargeInfo),
@@ -1693,6 +1694,7 @@ handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo, ChargePromotio
 
 			 "update w_retailer_bank set balance=balance-" ++ ?to_s(AllBalance)
 			 ++ " where merchant=" ++ ?to_s(Merchant)
+			 ++ " and shop=" ++ ?to_s(ShopId)
 			 ++ " and retailer=" ++ ?to_s(RetailerId)
 			 ++ " and cid=" ++ ?to_s(?v(<<"id">>, ChargePromotion)),
 
@@ -1821,6 +1823,7 @@ handle_call({get_recharge, Merchant, RechargeId}, _From, State) ->
     Sql = "select a.id"
 	", a.rsn"
 	", a.csn"
+	", a.shop"
 	", a.retailer"
 	", a.cid"
 	", a.ledate"
