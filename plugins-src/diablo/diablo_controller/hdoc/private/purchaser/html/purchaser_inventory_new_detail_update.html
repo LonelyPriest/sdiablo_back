@@ -710,8 +710,11 @@
 			   x-ng-disabled="inv.free_color_size"
 			   x-ng-click="inventory_detail(inv)">详情
 			  <i class="glyphicon glyphicon-eye-open"></i></a>
+			<!-- <a class="btn diablo-input-button yellow" -->
+			<!--    x-ng-if="!inv.update_directory" -->
+			<!--    x-ng-click="update_inventory(inv)">修改 -->
+			<!--   <i class="glyphicon glyphicon-edit"></i></a> -->
 			<a class="btn diablo-input-button yellow"
-			   x-ng-if="!inv.update_directory"
 			   x-ng-click="update_inventory(inv)">修改
 			  <i class="glyphicon glyphicon-edit"></i></a>
 			<a class="btn diablo-input-button btn-danger"
@@ -723,18 +726,18 @@
 			   x-ng-click="p_barcode(inv)">条码
 			  <i class="glyphicon glyphicon-barcode"></i></a>
 
-			<a class="btn diablo-input-button btn-success"
-			   x-ng-if="inv.update_directory"
-			   x-ng-disabled="inv.form.amount.$invalid
-					  || inv.form.ediscount.$invalid
-					  || inv.form.orgprice.$invalid"
-			   x-ng-click="save_free_update(inv)">保存
-			  <i class="glyphicon glyphicon-plus"></i></a>
-			<a class="btn diablo-input-button btn-danger"
-			   ng-if="inv.update_directory"
-			   x-ng-disabled="inv.form.amount.$invalid"
-			   x-ng-click="cancel_free_update(inv)">取消
-			  <i class="glyphicon glyphicon-erase"></i></a> 
+			<!-- <a class="btn diablo-input-button btn-success" -->
+			<!--    x-ng-if="inv.update_directory" -->
+			<!--    x-ng-disabled="inv.form.amount.$invalid -->
+			<!-- 		  || inv.form.ediscount.$invalid -->
+			<!-- 		  || inv.form.orgprice.$invalid" -->
+			<!--    x-ng-click="save_free_update(inv)">保存 -->
+			<!--   <i class="glyphicon glyphicon-plus"></i></a> -->
+			<!-- <a class="btn diablo-input-button btn-danger" -->
+			<!--    ng-if="inv.update_directory" -->
+			<!--    x-ng-disabled="inv.form.amount.$invalid" -->
+			<!--    x-ng-click="cancel_free_update(inv)">取消 -->
+			<!--   <i class="glyphicon glyphicon-erase"></i></a>  -->
 		      </div>
 		      
 		    </td>

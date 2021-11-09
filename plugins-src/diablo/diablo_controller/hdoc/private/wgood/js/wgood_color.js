@@ -238,7 +238,7 @@ function wgoodTypeDetailCtrlProvide(
 		}
 
 		angular.forEach(result.data, function(t) {
-		    t.ctype = diablo_get_object(t.cid, $scope.ctypes);
+		    t.ctype = diablo_get_object(t.ctype_id, $scope.ctypes);
 		});
 		
 		$scope.good_types = result.data;
@@ -263,13 +263,13 @@ function wgoodTypeDetailCtrlProvide(
 	    wgoodService.add_good_type(goodType).then(function(state){
 		console.log(state);
 
-		var append_type = function(typeId){
-		    $scope.goodTypes.push({
-			order_id:$scope.goodTypes.length + 1,
-			id:      typeId,
-			bcode:   stockUtils.to_integer(params.type.bcode),
-			name:    params.type.name});
-		};
+		// var append_type = function(typeId){
+		//     $scope.goodTypes.push({
+		// 	order_id:$scope.goodTypes.length + 1,
+		// 	id:      typeId,
+		// 	bcode:   stockUtils.to_integer(params.type.bcode),
+		// 	name:    params.type.name});
+		// };
 		
 		if (state.ecode == 0){
 		    dialog.response_with_callback(
@@ -277,8 +277,9 @@ function wgoodTypeDetailCtrlProvide(
 			"新增品类", "新增品类成功！！",
 			undefined,
 			function(){
-			    append_type(state.id);
-			    diabloFilter.reset_type(); 
+			    // append_type(state.id);
+			    // diabloFilter.reset_type();
+			    $scope.refresh();
 			});
 		} else{
 		    dialog.response(
@@ -318,20 +319,20 @@ function wgoodTypeDetailCtrlProvide(
 	    };
 
 	    
-	    for (var i=0, l=$scope.goodTypes.length; i<l; i++){
-		if (params.type.name === $scope.goodTypes[i].name
-		    && params.type.name !== type.name){
-		    dialog.response(
-			false, "品类编辑", wgoodService.error[1908], undefined);
-		    return;
-		}
+	    // for (var i=0, l=$scope.goodTypes.length; i<l; i++){
+	    // 	if (params.type.name === $scope.goodTypes[i].name
+	    // 	    && params.type.name !== type.name){
+	    // 	    dialog.response(
+	    // 		false, "品类编辑", wgoodService.error[1908], undefined);
+	    // 	    return;
+	    // 	}
 		
-		// if (uBarcode === $scope.goodTypes[i].bcode && uBarcode !== type.bcode){
-		//     dialog.response(
-		// 	false, "品类编辑", wgoodService.error[1907], undefined);
-		//     return;
-		// }
-	    };
+	    // 	// if (uBarcode === $scope.goodTypes[i].bcode && uBarcode !== type.bcode){
+	    // 	//     dialog.response(
+	    // 	// 	false, "品类编辑", wgoodService.error[1907], undefined);
+	    // 	//     return;
+	    // 	// }
+	    // };
 
 	    var update = {
 		tid:  type.id,
@@ -347,14 +348,7 @@ function wgoodTypeDetailCtrlProvide(
 			"品类编辑",
 			"品类编辑成功！！",
 			undefined,
-			function() {
-			    type.name  = params.type.name;
-			    type.bcode = uBarcode;
-			    type.cid   = params.type.ctype.id;
-			    type.ctype = params.type.ctype;
-			    console.log(type);
-			    diabloFilter.reset_type();
-			});
+			$scope.refresh);
 		} else {
 		    dialog.response(false,
 				    "品类编辑",

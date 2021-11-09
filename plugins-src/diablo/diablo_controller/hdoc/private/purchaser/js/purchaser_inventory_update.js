@@ -968,10 +968,10 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	inv.$update = true;
 	inv.o_org_price = inv.org_price;
 	inv.o_ediscount = inv.ediscount;
-	if (inv.free_color_size){
-	    inv.update_directory = true;
-	    return; 
-	}
+	// if (inv.free_color_size){
+	//     inv.update_directory = true;
+	//     return; 
+	// }
 	
 	var callback = function(params){
 	    var result    = add_callback(params);
@@ -1006,25 +1006,25 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	}); 
     };
 
-    $scope.save_free_update = function(inv){
-	inv.$update = false;
-	inv.update_directory = false;
+    // $scope.save_free_update = function(inv){
+    // 	inv.$update = false;
+    // 	inv.update_directory = false;
 	
-	if (inv.free_color_size){
-	    inv.total = inv.amounts[0].count;
-	} //else{
-	$scope.re_calculate()
-	// }; 
-    }
+    // 	if (inv.free_color_size){
+    // 	    inv.total = inv.amounts[0].count;
+    // 	} //else{
+    // 	$scope.re_calculate()
+    // 	// }; 
+    // }
 
-    $scope.cancel_free_update = function(inv){
-	console.log(inv);
-	inv.$update          = false; 
-	inv.update_directory = false;
-	inv.org_price        = inv.o_org_price;
-	inv.ediscount        = inv.o_ediscount;
-	inv.amounts[0].count  = inv.total; 
-    };
+    // $scope.cancel_free_update = function(inv){
+    // 	console.log(inv);
+    // 	inv.$update          = false; 
+    // 	inv.update_directory = false;
+    // 	inv.org_price        = inv.o_org_price;
+    // 	inv.ediscount        = inv.o_ediscount;
+    // 	inv.amounts[0].count  = inv.total; 
+    // };
 
     $scope.reset_inventory = function(inv){
 	$scope.inventories[0] = {$edit:false, $new:true}; 

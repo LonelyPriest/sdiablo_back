@@ -550,6 +550,7 @@ handle_call({update_type, Merchant, Attrs}, _From, State) ->
 	case BCode of
 	    undefined -> ok;
 	    0 -> ok;
+	    ?INVALID_OR_EMPTY -> ok;
 	    _ ->
 		Sql01 = "select id, bcode, name from inv_types"
 		    " where bcode=" ++ ?to_s(BCode) ++
@@ -569,13 +570,27 @@ handle_call({update_type, Merchant, Attrs}, _From, State) ->
 		++ ?utils:v(bcode, integer, BCode)
 		++ ?utils:v(ctype, integer, CId),
 	    ?DEBUG("updates ~p", [Updates]),
-
 	    Sql  = "update inv_types set "
 		++ ?utils:to_sqls(proplists, comma, Updates)
 		++ " where merchant=" ++ ?to_s(Merchant)
-		++ " and id=" ++ ?to_s(TypeId), 
-	    Reply = ?sql_utils:execute(write, Sql, TypeId),
-	    {reply, Reply, State};
+		++ " and id=" ++ ?to_s(TypeId),
+	    
+	    case Name of
+		undefined ->
+		    {reply, ?sql_utils:execute(write, Sql, TypeId), State};
+		_ ->
+		    Sql02 = "select id, name from inv_types"
+			" where name=\'" ++ ?to_s(Name) ++ "\'"
+			" and merchant=" ++ ?to_s(Merchant),
+		    case ?sql_utils:execute(s_read, Sql02) of
+			{ok, []} ->
+			    {reply, ?sql_utils:execute(write, Sql, TypeId), State};
+			{ok, _} ->
+			    {reply, {error, ?err(good_type_exist, Name)}, State};
+			_Error ->
+			    {reply, _Error, State}
+		    end
+	    end; 
 	Error1 ->
 	    {reply, Error1, State}
     end;
