@@ -3776,7 +3776,7 @@ handle_call({stock_detail_get_by_shop, Merchant, UTable, Shop, Firm, ExtraCondti
 		  %%     ++ " and total!=0"
 		  %%     ++ " order by id desc";
 	      false ->
-		  "select a.style_number, a.brand, a.merchant, a.shop"
+		  "select a.style_number, a.brand, a.type, a.merchant, a.shop"
 		      ", b.color, b.size, b.total"
 		      " from "
 		      

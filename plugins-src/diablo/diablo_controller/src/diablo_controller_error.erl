@@ -495,6 +495,10 @@ error(not_enought_stock, Stocks) ->
     {2021, "not enought stock:" ++ ?to_s(Stocks)};
 error(stock_diff_detail_and_note, Shop) ->
     {2022, "stock detail not equal stock note:" ++ ?to_s(Shop)};
+error(both_ctype_and_stock_not_bind, Barcode) ->
+    {2023, "stock not bind to ctype:" ++ ?to_s(Barcode)};
+error(both_ctype_and_type_not_bind, CType) ->
+    {2024, "both ctype and type does not bind:" ++ ?to_s(CType)};
 
 
 

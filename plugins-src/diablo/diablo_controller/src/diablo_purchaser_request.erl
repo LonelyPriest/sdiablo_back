@@ -1319,64 +1319,88 @@ action(Session, Req, {"get_stock_by_barcode"}, Payload) ->
     
     Barcode = ?v(<<"barcode">>, Payload),
     Shop = ?v(<<"shop">>, Payload),
-    Firm = ?v(<<"firm">>, Payload, ?INVALID_OR_EMPTY), 
-    ExtraConditions =
-	case ?v(<<"ctype">>, Payload, ?INVALID_OR_EMPTY) of
+    Firm = ?v(<<"firm">>, Payload, ?INVALID_OR_EMPTY),
+    CType = ?v(<<"ctype">>, Payload, ?INVALID_OR_EMPTY),
+    
+    TypesOfCType =
+	case CType of
 	    ?INVALID_OR_EMPTY ->
 		[];
-	    CType ->
+	    _ ->
 		case ?attr:type(get, Merchant, [{<<"ctype">>, CType}]) of
 		    {ok, []} -> [];
 		    {ok, Types}  ->
-			[{<<"type">>, 
-			  lists:foldr(
+			lists:foldr(
 			    fun({Type}, Acc) ->
 				    [?v(<<"id">>, Type)|Acc]
-			    end, [], Types)}]
+			    end, [], Types)
 		end
 	end,
-    
-    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
-    AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)), 
-    
-    %% 128C code's lenght should be odd
-    %% <<ZZ:2/binary, _/binary>> = Barcode,
-    <<_Z:1/binary, SCode/binary>> = Barcode,
-    NewBarcode = 
-	case AutoBarcode of
-	    ?YES -> 
-		case size(Barcode) of
-		    10 -> SCode;
-		    _ ->
-			Barcode
-		end; 
-	    ?NO ->
-		Barcode
-		%% case ZZ of
-		%%     <<"00">> ->
-		%% 	SCode;
-		%%     <<"0", _T/binary>> ->
-		%% 	SCode;
-		%%     _ ->
-		%% 	Barcode
-		%% end
-	end,
-	
-    %% ?DEBUG("newBarcode ~p", [Barcode]), 
-    case ?w_inventory:purchaser_inventory(
-	    get_by_barcode,
-	    {Merchant, UTable},
-	    Shop,
-	    Firm,
-	    NewBarcode,
-	    ExtraConditions) of 
-	{ok, Stock} ->
-	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
-					       {<<"stock">>, {Stock} }]});
-	{error, Error} ->
-	    ?utils:respond(200, Req, Error)
-    end;
 
+    case CType =/= ?INVALID_OR_EMPTY andalso TypesOfCType =:= [] of
+	true ->
+	    ?utils:respond(200, Req, ?err(both_ctype_and_type_not_bind, CType));
+	false ->
+	    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+	    AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)), 
+
+	    %% 128C code's lenght should be odd
+	    %% <<ZZ:2/binary, _/binary>> = Barcode,
+	    <<_Z:1/binary, SCode/binary>> = Barcode,
+	    NewBarcode = 
+		case AutoBarcode of
+		    ?YES -> 
+			case size(Barcode) of
+			    10 -> SCode;
+			    _ ->
+				Barcode
+			end; 
+		    ?NO ->
+			Barcode
+			%% case ZZ of
+			%%     <<"00">> ->
+			%% 	SCode;
+			%%     <<"0", _T/binary>> ->
+			%% 	SCode;
+			%%     _ ->
+			%% 	Barcode
+			%% end
+		end,
+
+	    %% ?DEBUG("newBarcode ~p", [Barcode]), 
+	    case ?w_inventory:purchaser_inventory(
+		    get_by_barcode,
+		    {Merchant, UTable},
+		    Shop,
+		    Firm,
+		    NewBarcode,
+		    [])
+	    of
+		{ok, []} ->
+		    ?utils:respond(200, Req, ?err(stock_not_exist, Barcode));
+		{ok, Stock} ->
+		    StockType = ?v(<<"type_id">>, Stock),
+		    %% ?DEBUG("StockType ~p, TypesOfCType ~p", [StockType, TypesOfCType]),
+		    case TypesOfCType =/= [] of
+			true ->
+			    case not lists:member(StockType, TypesOfCType) of
+				true ->
+				    ?utils:respond(
+				       200, Req, ?err(both_ctype_and_stock_not_bind, Barcode));
+				false ->
+				    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+								       {<<"stock">>, {Stock} }]})
+			    end;
+			false ->
+			    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+							       {<<"stock">>, {Stock} }]})
+		    end;
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end
+		    
+    end;
+    
 action(Session, Req, {"syn_w_inventory_barcode"}, Payload) ->
     ?DEBUG("syn_w_inventory_barcode with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
@@ -2778,7 +2802,7 @@ compare_stock(shop_to_db, [], _DBStockDict, StocksNotInDB, StocksNotEqualDB) ->
 compare_stock(shop_to_db, [{struct, Stock}|T], DBStockDict, StocksNotInDB, StocksNotEqualDB) ->
     ?DEBUG("stock ~p", [Stock]),
     Key = key(stock, Stock),
-    ?DEBUG("key ~p", [Key]),
+    %% ?DEBUG("key ~p", [Key]),
     case dict:find(Key, DBStockDict) of
 	{ok, DBStock} ->
 	    StockFixed = ?v(<<"fix">>, Stock),
