@@ -45,29 +45,14 @@
 	  	       placeholder="请选择厂商"
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_firm()"
-	  	       uib-typeahead="f as f.name for f in get_prompt_firm($viewValue)"/>
-		
+	  	       uib-typeahead="f as f.name for f in get_prompt_firm($viewValue)"/> 
 		<input x-ng-if="!stock_right.show_stock_firm_info"
 		       class="form-control"
 		       type="text"
 		       readonly
 		       value="******"/>
 	      </div>
-	    </div>
-
-	    <!-- <div x-ng-if="!stock_right.show_orgprice" class="col-xs-3 col-md-3"> -->
-	    <!--   <div class="input-group"> -->
-	    <!-- 	<span class="input-group-addon"> -->
-	    <!-- 	  <i class="glyphicon glyphicon-bold fg-red"></i>厂商 -->
-	    <!-- 	</span> -->
-	    <!-- 	<input class="form-control" -->
-	    <!-- 	       type="text" -->
-	    <!-- 	       x-ng-model="select.firm" -->
-	    <!-- 	       placeholder="厂商自动选择"  -->
-	    <!-- 	       uib-typeahead="f as f.name for f in -->
-	    <!-- 			  firms|filter:$viewValue|limitTo:15"/>  -->
-	    <!--   </div> -->
-	    <!-- </div> -->
+	    </div> 
 
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
@@ -77,13 +62,6 @@
 		<input class="form-control" type="text"
 		       readonly
 	  	       x-ng-model="select.shop.name"/> 
-	  	<!-- <input class="form-control" -->
-		<!--        type="text" -->
-		<!--        readonly -->
-	  	<!--        x-ng-model="select.shop" -->
-	  	<!--        placeholder="请选择店铺" -->
-	  	<!--        typeahead-editable="false" -->
-	  	<!--        uib-typeahead="s as s.name for s in shops|filter:$viewValue"/> -->
 	      </div>
 	    </div>
 
@@ -116,16 +94,15 @@
 	  	</span>
 	  	<select class="form-control" type="text"
 	  		x-ng-model="select.employee"
-	  		x-ng-options="e as e.name for e in
-	  			      employees|filter:$viewValue|limitTo:8">
+	  		x-ng-options="e as e.name for e in employees|filter:$viewValue|limitTo:20">
 		</select> 
 	      </div>
 	    </div> 
 	  </div> <!--END from-group-->
 
 	  <!--BEGIN row-->
-	  <div class="row diablo-form-group">
-	    <div class="col-xs-3 col-md-3"> 
+	  <div x-ng-if="stock_right.show_orgprice"  class="row diablo-form-group">
+	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-comment fg-red"></i>备注
@@ -137,7 +114,7 @@
 	  	       x-ng-model="select.comment"/>
 	      </div>
 	    </div>
-	    
+
 	    <div class="col-xs-9 col-md-9"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
@@ -151,42 +128,39 @@
 			   disable-key
 			   ng-edit
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-	  		   x-ng-model="select.cash" />
+	  		   x-ng-model="select.cash" /> 
 		  </div>
 		</form>
-
+		
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-credit-card fg-red"></i>
-		  刷卡
+		  <i class="glyphicon glyphicon-credit-card fg-red"></i>刷卡
 		</span>
 		<form name="select.form.cardForm">
 		  <div ng-class="{'has-error':select.form.cardForm.$invalid
 				 && !select.form.cardForm.$pristine}">
-	  	    <input class="form-control"
+	  	    <input x-ng-if="stock_right.show_orgprice" class="form-control"
 			   type="number" step="0.01" 
 			   placeholder="刷卡"
 			   ng-edit
 			   disable-key
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-	  		   x-ng-model="select.card" />
+	  		   x-ng-model="select.card" /> 
 		  </div>
 		</form>
 
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-piggy-bank fg-red"></i>
-		  汇款
-		</span> 
+		  <i class="glyphicon glyphicon-piggy-bank fg-red"></i>汇款</span> 
 		<form name="select.form.wireForm">
 		  <div ng-class="{'has-error':select.form.wireForm.$invalid
 				 && !select.form.wireForm.$pristine}">
-	  	    <input class="form-control"
+	  	    <input x-ng-if="stock_right.show_orgprice" class="form-control"
 			   type="number" step="0.01"
 			   disable-key
 			   ng-edit
 			   placeholder="汇款"
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/" 
-	  		   x-ng-model="select.wire"/>
-		  </div> 
+	  		   x-ng-model="select.wire"/> 
+		  </div>
 		</form>
 
 		<span x-ng-if="stock_right.bill_firm_on_stock_in" class="input-group-addon">
@@ -197,8 +171,62 @@
 	    </div> 
 	  </div> <!--END row-->
 
+	  <div x-ng-if="!stock_right.show_orgprice" class="row diablo-form-group">
+	    <div class="col-xs-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-comment fg-red"></i>备注
+		</span>
+	  	<input class="form-control"
+		       type="text"
+		       placeholder="备注"
+		       ng-edit
+	  	       x-ng-model="select.comment"/>
+	      </div>
+	    </div>
+
+	    <div class="col-xs-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-map-marker fg-red"></i>总数</span>
+	  	<input class="form-control" type="text" readonly x-ng-model="select.total"/> 
+	      </div>
+	    </div>
+
+	    <div class="col-xs-3 col-md-3">
+	      <div class="input-group"> 
+	    	<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-plane fg-red"></i>费用性质</span> 
+		<select class="form-control" type="text"
+	  		x-ng-model="select.e_pay_type"
+	  		x-ng-options="ex as ex.name for ex in
+	  			      e_pay_types|filter:$viewValue|limitTo:8">
+		</select> 
+	      </div>
+	    </div>
+
+	    <div class="col-xs-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-yen fg-red"></i>关联费用</span> 
+		<form name="select.form.extraForm">
+		  <div ng-class="{'has-error':select.form.extraForm.$invalid
+				 && !select.form.extraForm.$pristine}">
+	  	    <input class="form-control" 
+			   type="number" step="0.01"
+			   ng-edit
+			   disable-wheel
+			   placeholder="关联费用，支持二位小数"
+			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
+	  		   x-ng-model="select.e_pay" />
+		  </div>
+		</form>
+	      </div>
+	    </div>
+	  </div>
+
 	  <!--BEGIN row-->
-	  <div class="row diablo-form-group">
+	  <div x-ng-if="stock_right.show_orgprice" class="row diablo-form-group">
 	    <div class="col-sm-3 col-md-3"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
@@ -219,31 +247,36 @@
 		<form name="select.form.vForm">
 		  <div ng-class="{'has-error':select.form.vForm.$invalid
 				 && !select.form.vForm.$pristine}">
-	  	    <input class="form-control"
+	  	    <input x-ng-if="stock_right.show_orgprice" class="form-control"
 			   type="number" step="0.01"
 			   disable-key 
 			   placeholder="核销"
 			   ng-edit
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-	  		   x-ng-model="select.verificate" />
+	  		   x-ng-model="select.verificate"/> 
 		  </div>
 		</form>
 		
 		<span x-ng-if="stock_right.bill_firm_on_stock_in" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>应付</span>
-		<input x-ng-if="stock_right.bill_firm_on_stock_in" class="form-control" type="text" readonly
-		       x-ng-model="select.should_pay"></input>
+		<input x-ng-if="stock_right.bill_firm_on_stock_in"
+		       class="form-control"
+		       type="text"
+		       readonly
+		       x-ng-model="select.should_pay"/>
 
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>实付</span>
-	  	<input class="form-control" readonly
-	  	       x-ng-model="select.has_pay"></input>
+	  	<input x-ng-if="stock_right.show_orgprice"
+		       class="form-control" readonly x-ng-model="select.has_pay"/>
+		<input x-ng-if="!stock_right.show_orgprice"
+		       class="form-control" readonly value="******"/>
 
 		<span x-ng-if="stock_right.bill_firm_on_stock_in" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
 	  	<input x-ng-if="stock_right.bill_firm_on_stock_in" class="form-control"
 		       type="text" readonly
-	  	       x-ng-model="select.left_balance"></input> 
+	  	       x-ng-model="select.left_balance"/> 
 		
 	      </div>
 	    </div> 
@@ -251,7 +284,8 @@
 	  </div> <!--END row-->
 
 	  <!--BEGIN row-->
-	  <div class="row form-group"> 
+	  <div x-ng-if="stock_right.show_orgprice && stock_right.bill_firm_on_stock_in"
+	       class="row form-group"> 
 	    <div class="col-xs-6 col-md-6">
 	      <div class="input-group">
 	    	<span class="input-group-addon">
@@ -385,9 +419,105 @@
 		       placeholder="备注"
 		       ng-edit
 	  	       x-ng-model="select.comment"/>
+	      </div> 
+	    </div> 
+	  </div> <!--END row-->
+	  
+	  <div x-ng-if="stock_right.show_orgprice" class="row diablo-form-group">
+	    <div class="col-xs-6"> 
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-yen fg-red"></i>现金</span>
+		<form name="select.form.cashForm">
+		  <div ng-class="{'has-error':select.form.cashForm.$invalid
+				 && !select.form.cashForm.$pristine}">
+	  	    <input x-ng-if="stock_right.show_orgprice" class="form-control"
+			   type="number" step="0.01" 
+			   placeholder="现金"
+			   disable-key
+			   ng-edit
+			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
+	  		   x-ng-model="select.cash" /> 
+		  </div>
+		</form> 
+	      </div>
+	    </div>
+	    
+	    <div class="col-xs-6"> 
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-credit-card fg-red"></i>刷卡
+		</span>
+		<form name="select.form.cardForm">
+		  <div ng-class="{'has-error':select.form.cardForm.$invalid
+				 && !select.form.cardForm.$pristine}">
+	  	    <input x-ng-if="stock_right.show_orgprice" class="form-control"
+			   type="number" step="0.01" 
+			   placeholder="刷卡"
+			   ng-edit
+			   disable-key
+			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
+	  		   x-ng-model="select.card" /> 
+		  </div>
+		</form>
 	      </div>
 	    </div> 
-	  </div> <!--END row--> 
+	  </div>
+
+	  <div x-ng-if="stock_right.show_orgprice" class="row diablo-form-group">
+	    <div class="col-xs-6"> 
+	      <div class="input-group"> 
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-piggy-bank fg-red"></i>汇款</span> 
+		<form name="select.form.wireForm">
+		  <div ng-class="{'has-error':select.form.wireForm.$invalid
+				 && !select.form.wireForm.$pristine}">
+	  	    <input x-ng-if="stock_right.show_orgprice" class="form-control"
+			   type="number" step="0.01"
+			   disable-key
+			   ng-edit
+			   placeholder="汇款"
+			   x-ng-pattern="/^\d+(.\d{1,2})?$/" 
+	  		   x-ng-model="select.wire"/> 
+		  </div>
+		</form> 
+	      </div>
+	    </div>
+	    
+	    <div class="col-xs-6"> 
+	      <div class="input-group"> 
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-yen fg-red"></i>应付</span>
+		<input x-ng-if="stock_right.bill_firm_on_stock_in"
+		       class="form-control" type="number" readonly
+		       x-ng-model="select.should_pay"/>
+	      </div>
+	    </div> 
+	  </div>
+
+	  <div x-ng-if="stock_right.show_orgprice" class="row diablo-form-group">
+	    <div class="col-xs-6"> 
+	      <div class="input-group"> 
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-yen fg-red"></i>欠款</span>
+	  	<input x-ng-if="stock_right.bill_firm_on_stock_in"
+		       class="form-control" readonly
+	  	       x-ng-model="select.surplus"/>
+	      </div>
+	    </div>
+	    
+	    <div class="col-xs-6"> 
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
+	  	<input class="form-control"
+		       type="number"
+		       readonly
+	  	       x-ng-model="select.left_balance"/>
+	      </div>
+	    </div> 
+	  </div>
+	  
 	</div>
 	
 	<!--BEGN portlet body--> 
@@ -744,15 +874,17 @@
 		  </tr>
 
 		  <tr x-ng-if="select.total!==0" class="text-center bg-white">
-		    <td colspan="3"></td>
+		    <td colspan="2"></td>
+		    <td class="hidden-xs"></td>
 		    <td x-ng-if="!setting.hide_vprice"></td>
 		    <td>{{select.acc_tag_price}}</td>
 		    <td></td>
 		    <td class="vert-align">{{select.total}}</td>
-		    <td x-ng-if="stock_right.show_orgprice"></td>
-		    <td x-ng-if="stock_right.show_orgprice"></td>
+		    <td x-ng-if="stock_right.show_orgprice" class="hidden-xs"></td>
+		    <td x-ng-if="stock_right.show_orgprice" class="hidden-xs"></td>
 		    <td x-ng-if="stock_right.show_orgprice"
-			class="vert-align">{{select.should_pay}}</td>
+			class="vert-align hidden-xs">{{select.should_pay}}</td>
+		    <td class="hidden-xs"></td>
 		    <td colspan="1"></td>
 		  </tr> 
 		</tbody>

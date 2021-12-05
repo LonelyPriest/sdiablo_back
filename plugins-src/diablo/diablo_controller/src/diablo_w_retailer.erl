@@ -2679,33 +2679,70 @@ handle_call({filter_charge_detail, Merchant, Conditions, CurrentPage, ItemsPerPa
 handle_call({total_ticket_detail, Merchant, Conditions}, _From, State) ->
     ?DEBUG("total_ticket_detail: merchant ~p, conditions ~p", [Merchant, Conditions]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
-    Sql = "select count(*) as total"
-	", sum(balance) as balance"
-	" from w_ticket"
-	" where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, NewConditions)
-	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime),
-
+    Shop = ?v(<<"shop">>, NewConditions),
+    Sql = case Shop of
+	      undefined ->
+		  "select count(*) as total"
+		      ", sum(balance) as balance"
+		      " from w_ticket"
+		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ ?sql_utils:condition(proplists, lists:keydelete(<<"shop">>, 1, NewConditions))
+		      ++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime);
+	      Shop ->
+		  "select count(*) as total"
+		      ", sum(x.balance) as balance"
+		      " from ("
+		      "select a.id, a.retailer, a.balance, b.shop from w_ticket a"
+		      " inner join ("
+		      " select id, name, mobile, shop, merchant from w_retailer"
+		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and shop=" ++ ?to_s(Shop) ++ ") b"
+		      " on a.merchant=b.merchant and a.retailer=b.id"
+		      " where a.merchant=" ++ ?to_s(Merchant)
+		      ++ ?sql_utils:condition(proplists, lists:keydelete(<<"shop">>, 1, NewConditions))
+		      ++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime) ++ ") x" 
+	  end, 
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
 handle_call({filter_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
     ?DEBUG("filter_ticket_detail: merchant ~p, conditions ~p, page ~p",
 	   [Merchant, Conditions, CurrentPage]),
-    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
-    Sql = 
-	"select a.id, a.batch, a.sid, a.balance"
-	", a.retailer as retailer_id" 
-	", a.state, a.remark, a.entry_date"
+    CorrectCondition = ticket_condition(score, Conditions, []),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, CorrectCondition),
+    %% Shop = ?v(<<"a.shop">>, Conditions),
+    Sql = "select a.id"
+	", a.batch"
+	", a.sid"
+	", a.balance"
+	", a.retailer_id"
+	", a.state"
+	", a.remark"
+	", a.entry_date"
+	", a.retailer"
+	", a.shop_id"
+	", a.mobile"
+	", a.score"
+	" from ("
+	"select x.id"
+	", x.merchant"
+	", x.batch"
+	", x.sid"
+	", x.balance"
+	", x.retailer as retailer_id" 
+	", x.state"
+	", x.remark"
+	", x.entry_date"
 	
 	", b.name as retailer"
 	", b.shop as shop_id"
 	", b.mobile"
 	", c.name as score"
 	
-	" from w_ticket a"
-	" left join w_retailer b on a.retailer=b.id"
-	" left join w_score c on a.sid=c.id"
+	" from w_ticket x"
+	" left join w_retailer b on x.retailer=b.id"
+	" left join w_score c on x.sid=c.id"
+	" where x.merchant=" ++ ?to_s(Merchant) ++ ") a"
 
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
@@ -4100,7 +4137,16 @@ ticket_condition(custome, [{<<"ticket_batch">>, Value}|T], Acc) ->
 ticket_condition(custome, [{<<"ticket_employee">>, Value}|T], Acc) ->
     ticket_condition(custome, T, [{<<"employee">>, Value}|Acc]);
 ticket_condition(custome, [H|T], Acc) ->
-    ticket_condition(custome, T, [H|Acc]).
+    ticket_condition(custome, T, [H|Acc]);
+
+ticket_condition(score, [], Acc) ->
+    Acc;
+ticket_condition(score, [{<<"shop">>, Shop}|T], Acc) ->
+    ticket_condition(score, T, [{<<"shop_id">>, Shop}|Acc]);
+ticket_condition(score, [{<<"retailer">>, Shop}|T], Acc) ->
+    ticket_condition(score, T, [{<<"retailer_id">>, Shop}|Acc]);
+ticket_condition(score, [H|T], Acc) ->
+    ticket_condition(score, T, [H|Acc]).
 
 correct_condition(card_sale, [], Acc) ->
     Acc;
@@ -4109,3 +4155,5 @@ correct_condition(card_sale, [{<<"employ">>, Value}|T], Acc) ->
 correct_condition(card_sale, [H|T], Acc) ->
     correct_condition(card_sale, T, [H|Acc]).
 
+
+    

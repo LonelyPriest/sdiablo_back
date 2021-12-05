@@ -994,7 +994,8 @@ sys_config() ->
 
 	      %% [0]: auto generate ticket at 04:00
 	      %% [1]: use ticket with no check 0-> check 1-> no check
-	      {"gen_ticket",      "自动生成电子卷",       "00",   "0"},
+	      %% [2]: part calculate total score to genrate ticket 0:total 1:part
+	      {"gen_ticket",      "自动生成电子卷",       "000",   "0"},
 	      
 	      %% [0]: recharge notify
 	      %% [1]: threshold_card consume notify

@@ -528,12 +528,13 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
 	end,    
     %% ?DEBUG("score2money ~p, ", [Score2Money]),
     
-    TicketSetting = ?to_s(?v(<<"gen_ticket">>, BaseSetting, <<"00">>)),
-    ?DEBUG("TicketSetting ~p", [TicketSetting]),
+    TicketSetting = ?to_s(?v(<<"gen_ticket">>, BaseSetting)),
+    %% ?DEBUG("TicketSetting ~p", [TicketSetting]),
 
     AutoGenTicket = ?utils:nth(1, TicketSetting),
     IsCheck = ?utils:nth(2, TicketSetting),
-    ?DEBUG("AutoGenTicket ~p, IsCheck ~p", [AutoGenTicket, IsCheck]),
+    PartCalc = ?utils:nth(3, TicketSetting), 
+    ?DEBUG("AutoGenTicket ~p, IsCheck ~p, PartCalc ~p", [AutoGenTicket, IsCheck, PartCalc]),
 
     SortScores = lists:sort(
 		   fun({S0}, {S1}) -> ?v(<<"score">>, S0) < ?v(<<"score">>, S1) end,
@@ -583,7 +584,7 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
 		       end, 
 
 		[MinScore2Money|_] = SortScores,
-		MinAccScore    = ?v(<<"score">>, MinScore2Money), 
+		MinAccScore = ?v(<<"score">>, MinScore2Money), 
 		Sql = "select id, score from w_retailer where merchant=" ++ ?to_s(Merchant) 
 		    ++ " and score>=" ++ ?to_s(MinAccScore)
 		    %% ++ case SortScores of
@@ -609,6 +610,7 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
 					    Merchant,
 					    Max2MinSortScores,
 					    IsCheck,
+					    PartCalc,
 					    FormatDatetime,
 					    []) ++ Acc
 					  %% only one ticket unless the ticked was consumed
@@ -1237,22 +1239,29 @@ charge(info, [{ChargeInfo}]) ->
      ?v(<<"tcard">>, ChargeInfo, 0),
      ?v(<<"twxin">>, ChargeInfo, 0)}.
 
-travel_retailer_score(_Retailer, _Merchant, [], _IsCheck, _Datetime, Sql) ->
+travel_retailer_score(_Retailer, _Merchant, [], _IsCheck, _PartCalc, _Datetime, Sql) ->
     Sql;
-travel_retailer_score(Retailer, Merchant, [{Score2Money}|T], IsCheck, Datetime, Sql) -> 
-    %% ?DEBUG("Retailer ~p, Score2Money ~p", [Retailer, Score2Money]),
+travel_retailer_score(Retailer, Merchant, [{Score2Money}|T], IsCheck, PartCalc, Datetime, Sql) -> 
+    %% ?DEBUG("Retailer ~p, Score2Money ~p, PartCalc ~p", [Retailer, Score2Money, PartCalc]),
     RetailerScore = ?v(<<"score">>, Retailer, 0),
     AccScore = ?v(<<"score">>, Score2Money),
     case RetailerScore >= AccScore of
 	true ->
 	    SendBalance = ?v(<<"balance">>, Score2Money),
-	    TicketBalance = RetailerScore div AccScore * SendBalance,
+	    TicketBalance =
+		case PartCalc of
+		    ?YES ->
+			SendBalance;
+		    ?NO ->
+			RetailerScore div AccScore * SendBalance
+		end,
 	    %% TicketBalance = SendBalance, 
 	    travel_retailer_score(
 	      Retailer,
 	      Merchant,
 	      [],
 	      IsCheck,
+	      PartCalc,
 	      Datetime,
 	      gen_sql(ticket,
 		      Merchant,
@@ -1262,10 +1271,11 @@ travel_retailer_score(Retailer, Merchant, [{Score2Money}|T], IsCheck, Datetime, 
 		      IsCheck,
 		      Datetime));
 	false ->
-	    travel_retailer_score(Retailer, Merchant, T, IsCheck, Datetime, Sql)
+	    travel_retailer_score(Retailer, Merchant, T, IsCheck, PartCalc, Datetime, Sql)
     end.
 		     
 gen_sql(ticket, Merchant, RetailerId, Score2Money, TicketBalance, IsCheck, Datetime) ->
+    %% ?DEBUG("TicketBalance ~p", [TicketBalance]),
     case ?sql_utils:execute(
 	    s_read , "select id, batch, balance, retailer from w_ticket"
 	    " where merchant=" ++ ?to_s(Merchant)

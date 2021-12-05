@@ -1150,6 +1150,7 @@ function wretailerTicketDetailCtrlProvide(
     var dialog = diabloUtilsService; 
     // $scope.shops = user.sortShops;
     $scope.scores = filterScore.filter(function(s) {return s.type_id === 1});
+    $scope.shops = user.sortShops.filter(function(s) {return s.deleted===0});
     $scope.pattern = {comment: diabloPattern.comment};
     $scope.items_perpage = diablo_items_per_page();
     $scope.max_page_size = 10;
@@ -1167,6 +1168,7 @@ function wretailerTicketDetailCtrlProvide(
     diabloFilter.add_field("retailer", function(viewValue){
 	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
     });
+    diabloFilter.add_field("shop", $scope.shops);
     
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
