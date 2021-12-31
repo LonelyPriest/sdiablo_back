@@ -378,7 +378,7 @@ check_transfer(Merchant, UTable, FShop, TShop, CheckProps) ->
 		    ++ " and merchant=" ++ ?to_s(Merchant),
 		{ok, Good} = ?sql_utils:execute(s_read, Sql22),
 
-		Sql21 = "select id, bcode, style_number, brand, shop, merchant"
+		Sql21 = "select id, bcode, style_number, brand, org_price, shop, merchant"
 		%%" from w_inventory"
 		    " from" ++ ?table:t(stock, Merchant, UTable)
 		    ++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
@@ -467,6 +467,10 @@ check_transfer(Merchant, UTable, FShop, TShop, CheckProps) ->
 				false -> []
 			    end
 			 ++ "amount=amount+" ++ ?to_s(Amount)
+			 ++ case OrgPrice /= ?v(<<"org_price">>, R) of
+				true -> ", org_price=" ++ ?to_s(OrgPrice);
+				false -> []
+			    end
 			 ++ ", s_group=\'" ++ ?to_s(SizeGroup) ++ "\'"
 			 %% ++ ", org_price=" ++ ?to_s(OrgPrice) 
 			 %% ++ ", ediscount=" ++ ?to_s(eDiscount)

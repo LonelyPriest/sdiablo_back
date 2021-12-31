@@ -2025,6 +2025,7 @@ function wsaleNewProvide(
 	add.sex          = src.sex;
 	add.season       = src.season;
 	add.year         = src.year;
+	add.ysell        = src.ysell;
 	
 	add.pid          = src.pid;
 	add.promotion    = diablo_get_object(src.pid, $scope.promotions);
@@ -2747,6 +2748,7 @@ function wsaleNewProvide(
 		    all_tagprice: wsaleUtils.to_decimal(add.tag_price * sell_total),
 		    
 		    stock       : add.total,
+		    ysell       : add.ysell,
 		    negative    : add.negative ? diablo_yes : diablo_no,
 		    sprice      : add.bargin_price === 3 ? diablo_yes : diablo_no,
 		    ticket      : add.ticket,

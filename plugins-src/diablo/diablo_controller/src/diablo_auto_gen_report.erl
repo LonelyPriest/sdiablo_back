@@ -1280,7 +1280,7 @@ gen_sql(ticket, Merchant, RetailerId, Score2Money, TicketBalance, IsCheck, Datet
 	    s_read , "select id, batch, balance, retailer from w_ticket"
 	    " where merchant=" ++ ?to_s(Merchant)
 	    ++ " and retailer=" ++ ?to_s(RetailerId)
-	    ++ " and state in (0, 1)" ) of
+	    ++ " and state in (0,1)" ) of
 	{ok, []} ->
 	    Batch = ?inventory_sn:sn(w_ticket, Merchant), 
 	    ["insert into w_ticket(batch, sid, balance"

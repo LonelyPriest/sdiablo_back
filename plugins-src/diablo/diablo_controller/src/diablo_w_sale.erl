@@ -1376,11 +1376,24 @@ handle_call({reject_sale, Merchant, UTable, Inventories, Props, OldProps}, _From
 			C0 = ?sql_utils:condition(proplists, {<<"batch">>, TicketBatchs}),
 			case TicketCustom of 
 			    ?SCORE_TICKET ->
-				["update w_ticket set sale_rsn=\'-1\'"
-				 ", state=" ++ ?to_s(?TICKET_STATE_CHECKED) 
-				 ++ " where merchant=" ++ ?to_s(Merchant)
-				 ++ " and retailer=" ++ ?to_s(Retailer)
-				 ++ C0];
+				case ?sql_utils:execute(
+					s_read,
+					"select id, batch, retailer from w_ticket"
+					" where merchant=" ++ ?to_s(Merchant)
+					++ " and retailer=" ++ ?to_s(Retailer)
+					++ " and state in(0,1)") of
+				    {ok, []} ->
+					["update w_ticket set sale_rsn=\'-1\'"
+					 ", state=" ++ ?to_s(?TICKET_STATE_CHECKED) 
+					 ++ " where merchant=" ++ ?to_s(Merchant)
+					 ++ " and retailer=" ++ ?to_s(Retailer)
+					 ++ C0]; 
+				    {ok, _} ->
+					["delete from w_ticket"
+					 ++ " where merchant=" ++ ?to_s(Merchant)
+					 ++ " and retailer=" ++ ?to_s(Retailer)
+					 ++ C0]
+				end; 
 			    ?CUSTOM_TICKET ->
 				["update w_ticket_custom set sale_rsn=\'-1\'"
 				 ++ ", state=" ++ ?to_s(?TICKET_STATE_CHECKED)
@@ -3824,7 +3837,8 @@ valid_orgprice(stock, Merchant, UTable, Shop, Inventory) ->
     Brand       = ?v(<<"brand">>, Inventory),
     OrgPrice    = ?v(<<"org_price">>, Inventory),
     EDiscount   = ?v(<<"ediscount">>, Inventory),
-    Stock       = ?v(<<"stock">>, Inventory, 0),
+    %% Stock       = ?v(<<"stock">>, Inventory, 0),
+    YSell       = ?v(<<"ysell">>, Inventory, 0),
 
     Sql = "select style_number, brand, org_price, ediscount, amount"
     %% " from w_inventory_new_detail"
@@ -3833,27 +3847,30 @@ valid_orgprice(stock, Merchant, UTable, Shop, Inventory) ->
 	++ " and shop=" ++ ?to_s(Shop)
 	++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 	++ " and brand=" ++ ?to_s(Brand)
+    %% ++ " and amount>0"
     %% ++ " and rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-" ++ ?to_s(Shop) ++ "%\'"
-	++ " order by id desc",
+	++ " order by entry_date",
 
     case ?sql_utils:execute(read, Sql) of
 	{ok, StockNews} ->
-	    filter_stock(news, StockNews, Stock, OrgPrice, EDiscount);
+	    filter_stock(news, StockNews, YSell, OrgPrice, EDiscount);
 	_ -> OrgPrice
     end.
 
-filter_stock(news, [], _Stock, OrgPrice, EDiscount) ->
+filter_stock(news, [], _YSell, OrgPrice, EDiscount) ->
     {OrgPrice, EDiscount};
-filter_stock(news, [{H}|T], Stock, OrgPrice, EDiscount) ->
+filter_stock(news, [{H}|T], YSell, OrgPrice, EDiscount) ->
     Amount = ?v(<<"amount">>, H),
+    %% ?DEBUG("YSell ~p, Amount ~p", [YSell, Amount]), 
     case Amount > 0 of
 	true ->
-	    case Stock - Amount =< 0 of
-		true -> {?v(<<"org_price">>, H), ?v(<<"ediscount">>, H)};
-		false -> filter_stock(news, T, Stock - Amount, OrgPrice, EDiscount)
+	    case YSell - Amount > 0 of
+		true -> filter_stock(news, T, YSell - Amount, OrgPrice, EDiscount);
+		false -> {?v(<<"org_price">>, H), ?v(<<"ediscount">>, H)}
+
 	    end;
 	false ->
-	    filter_stock(news, T, Stock, OrgPrice, EDiscount)
+	    filter_stock(news, T, YSell, OrgPrice, EDiscount)
     end.
 
 sale_new(rsn_groups, MatchMode, {Merchant, UTable}, Conditions, PageFun) ->

@@ -566,7 +566,8 @@ function wretailerGiftExchangeCtrlProvide(
     $scope.total_items = 0;
 
     $scope.filters = []; 
-    diabloFilter.reset_field(); 
+    diabloFilter.reset_field();
+    diabloFilter.add_field("shop", $scope.shops);
     diabloFilter.add_field("retailer", function(viewValue){
 	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
     });

@@ -46,9 +46,9 @@ left join (select a.rsn, a.amount from (select rsn, sum(amount) as amount from w
 * check stock in
 */
 select x.rsn, x.total, x.amount from \
-(select a.rsn, b.style_number, b.brand, a.total, b.amount from w_inventory_new_101 a left join \
-(select rsn, style_number, brand, sum(amount) as amount from w_inventory_new_detail_101 where merchant=101 and shop=282 group by rsn) b on \
-a.rsn=b.rsn where a.rsn like 'm-101-s-282-%') x where x.total!=x.amount;
+(select a.rsn, b.style_number, b.brand, a.total, b.amount from w_inventory_new_4 a left join \
+(select rsn, style_number, brand, sum(amount) as amount from w_inventory_new_detail_4 where merchant=4 and shop=18 group by rsn) b on \
+a.rsn=b.rsn) x where x.total!=x.amount;
 
 select a.rsn, a.style_number, a.brand, a.total, b.amount from \
 (select rsn, style_number, brand, sum(total) as total from w_inventory_new_detail_amount_101 where rsn like 'm-101-s-282-%' group by rsn) a left join \
@@ -107,7 +107,7 @@ select a.merchant, a.amount, b.total from \
 left join (select merchant, sum(total) as total from w_inventory_amount group by merchant) b on a.merchant=b.merchant;
 
 -- check w_sale
-select a.rsn, a.total from (select rsn, sum(total) as total from w_sale_detail where shop=56 group by rsn) a, w_sale b where a.rsn=b.rsn and a.total!=b.total;
+select a.rsn, a.total from (select rsn, sum(total) as total from w_sale_detail_4 where shop=18 group by rsn) a, w_sale_4 b where a.rsn=b.rsn and a.total!=b.total;
 
 -- export special record from special table
 mysqldump -uroot -pbxh --where="rsn='M-2-S-12-695'" sdiablo w_inventory_new > w_inventory_new.sql;
@@ -211,8 +211,10 @@ on a.style_number=b.style_number and a.brand=b.brand and a.merchant=b.merchant s
 where a.merchant=101 and a.style_number='nph9831'
 
 -- check sale
-select a.merchant, a.rsn, a.total, b.rsn, c.name from w_sale a left join w_sale_detail_101 b on a.rsn=b.rsn left join merchants c on a.merchant=c.id where b.rsn is null and a.total!=0;
-select a.entry_date, a.rsn, a.total, b.rsn, b.total from w_sale_101 a left join (select rsn, sum(total) as total from w_sale_detail_101 group by rsn) b on a.rsn=b.rsn where a.total != b.total;
+select a.merchant, a.rsn, a.total, b.rsn, c.name from w_sale a left join w_sale_detail_4 b on a.rsn=b.rsn left join merchants c on a.merchant=c.id where b.rsn is null and a.total!=0;
+select a.entry_date, a.rsn, a.total, b.rsn, b.total from w_sale_4 a left join (select rsn, sum(total) as total from w_sale_detail_4 group by rsn) b on a.rsn=b.rsn where a.total != b.total;
+select a.rsn, a.total, b.rsn, b.total from (select rsn, sum(total) as total from w_sale_detail_4 group by rsn) a left join w_sale_4 b on a.rsn=b.rsn where a.total != b.total;
+select a.rsn, a.total, b.rsn from w_sale_4 a left join w_sale_detail_4 b on a.rsn=b.rsn where b.rsn is null and a.total!=0;
 
 -- check firm
 select * from \
@@ -242,50 +244,50 @@ set a.type=b.type where a.rsn='M-31-S-134-x-9' and a.merchant=31 and a.shop=134;
 -- delete from w_inventory_good where merchant=86;
 
 -- goods
-delete from w_inventory_good where merchant=86;
+delete from w_inventory_good where merchant=49;
 
 -- delete from w_inventory_new_detail_amount_117 where merchant=117;
-delete from w_inventory_new_detail_amount where merchant=86;
-delete from w_inventory_new_detail where merchant=86;
-delete from w_inventory_new where merchant=86;
+delete from w_inventory_new_detail_amount where merchant=49;
+delete from w_inventory_new_detail where merchant=49;
+delete from w_inventory_new where merchant=49;
 
 -- clear stock
-delete from w_inventory_amount where merchant=86;
-delete from w_inventory where merchant=86;
+delete from w_inventory_amount where merchant=49;
+delete from w_inventory where merchant=49;
 
 -- clear sale
-delete from w_sale_detail_amount where merchant=86;
-delete from w_sale_detail where merchant=86;
-delete from w_sale where merchant=86;
+delete from w_sale_detail_amount where merchant=49;
+delete from w_sale_detail where merchant=49;
+delete from w_sale where merchant=49;
 
 -- clear batch sale
-delete from batch_sale where merchant=86;
-delete from batch_sale_detail where merchant=86;
-delete from batch_sale_detail_amount where merchant=86;
+delete from batch_sale where merchant=49;
+delete from batch_sale_detail where merchant=49;
+delete from batch_sale_detail_amount where merchant=49;
 -- delete from batchsaler where merchant=27 and type!=2;
 
 
 -- clear transefer
-delete from w_inventory_transfer_detail_amount where merchant=117;
-delete from w_inventory_transfer_detail where merchant=117;
-delete from w_inventory_transfer where merchant=117;
+delete from w_inventory_transfer_detail_amount where merchant=49;
+delete from w_inventory_transfer_detail where merchant=49;
+delete from w_inventory_transfer where merchant=49;
 
 
 -- report
-delete from w_daily_report where merchant=86;
-delete from w_change_shift where merchant=86;
+delete from w_daily_report where merchant=49;
+delete from w_change_shift where merchant=49;
 
 -- charge
 -- delete from w_charge_detail where merchant=27;
 
 -- brands
-delete from brands where merchant=86;
-delete from inv_types where merchant=86;
+delete from brands where merchant=49;
+delete from inv_types where merchant=49;
 
 -- types
 -- delete from inv_types where merchant=27;
 
 -- bill
-delete from w_bill_detail where merchant=86;
+delete from w_bill_detail where merchant=49;
 
-update suppliers set balance=0 where merchant=86;
+update suppliers set balance=0 where merchant=49;
