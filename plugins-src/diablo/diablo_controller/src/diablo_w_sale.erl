@@ -3837,8 +3837,8 @@ valid_orgprice(stock, Merchant, UTable, Shop, Inventory) ->
     Brand       = ?v(<<"brand">>, Inventory),
     OrgPrice    = ?v(<<"org_price">>, Inventory),
     EDiscount   = ?v(<<"ediscount">>, Inventory),
-    %% Stock       = ?v(<<"stock">>, Inventory, 0),
-    YSell       = ?v(<<"ysell">>, Inventory, 0),
+    Stock       = ?v(<<"stock">>, Inventory, 0),
+    %% YSell       = ?v(<<"ysell">>, Inventory, 0),
 
     Sql = "select style_number, brand, org_price, ediscount, amount"
     %% " from w_inventory_new_detail"
@@ -3849,28 +3849,29 @@ valid_orgprice(stock, Merchant, UTable, Shop, Inventory) ->
 	++ " and brand=" ++ ?to_s(Brand)
     %% ++ " and amount>0"
     %% ++ " and rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-" ++ ?to_s(Shop) ++ "%\'"
-	++ " order by entry_date",
+	++ " order by entry_date desc;",
 
     case ?sql_utils:execute(read, Sql) of
 	{ok, StockNews} ->
-	    filter_stock(news, StockNews, YSell, OrgPrice, EDiscount);
+	    filter_stock(news, StockNews, Stock, OrgPrice, EDiscount);
 	_ -> OrgPrice
     end.
 
-filter_stock(news, [], _YSell, OrgPrice, EDiscount) ->
+filter_stock(news, [], _Stock, OrgPrice, EDiscount) ->
     {OrgPrice, EDiscount};
-filter_stock(news, [{H}|T], YSell, OrgPrice, EDiscount) ->
+filter_stock(news, [{H}|T], Stock, OrgPrice, EDiscount) ->
     Amount = ?v(<<"amount">>, H),
     %% ?DEBUG("YSell ~p, Amount ~p", [YSell, Amount]), 
     case Amount > 0 of
 	true ->
-	    case YSell - Amount > 0 of
-		true -> filter_stock(news, T, YSell - Amount, OrgPrice, EDiscount);
-		false -> {?v(<<"org_price">>, H), ?v(<<"ediscount">>, H)}
-
+	    case Stock - Amount =< 0 of
+		true ->
+		    {?v(<<"org_price">>, H), ?v(<<"ediscount">>, H)}; 
+		false ->
+		    filter_stock(news, T, Stock - Amount, OrgPrice, EDiscount) 
 	    end;
 	false ->
-	    filter_stock(news, T, YSell, OrgPrice, EDiscount)
+	    filter_stock(news, T, Stock, OrgPrice, EDiscount)
     end.
 
 sale_new(rsn_groups, MatchMode, {Merchant, UTable}, Conditions, PageFun) ->
