@@ -4,7 +4,7 @@
 -include("diablo_controller.hrl").
 
 -export([pay/3, pay/5]).
--export([pay_yc/4, pay_yc/5]).
+-export([pay_yc/4, pay_yc/5, pay_sx/5]).
 -export([pack_sn/1]).
 
 -define(MIN_SN_LEN, 7).
@@ -405,6 +405,92 @@ pay_yc(query_yc, Merchant, MchntCd, MchntOrder) ->
 	    ?INFO("pay sacn send http failed, Reason ~p", [Reason]),
 	    {error, pay_http_failed, Reason}
     end.
+
+pay_sx(sx, Merchant, MchntCd, PayCode, Moneny) ->
+    ?DEBUG("pay sx: merchant ~p, MchntCd ~p, PayCode ~p, Moneny ~p",
+	   [Merchant, MchntCd, PayCode, Moneny]),
+    case erlang:size(PayCode) =/= ?PAY_SCAN_CODE_LEN of 
+	true ->
+	    {error, invalid_pay_scan_code_len, PayCode};
+	false ->
+	    %% Path = "https://ipayfront.cloudwalk.cn/api/transaction/front/pay/gateway",
+	    %% Service = "unified.trade.micropay",
+	    %% MchId = "800310000015826",
+	    OutTradeNo = pack_sn(?to_s(?inventory_sn:sn(pay_order_sn, Merchant))),
+
+	    OrgNo = "8028",
+	    MchId = "80280106",
+	    TermId = "QR802804048",
+	    TradeKey = <<"80C2D8BDDB692B06F6B109E1A3A18D72">>,
+	    Path = "http://test-gateway.dbs12580.com",
+	    Timestamp = ?utils:current_time(localtime),
+
+	    
+	    
+	    S = lists:sort(
+		  [{<<"opSys">>, ?to_b(0)},
+		   {<<"orgNo">>, ?to_b(OrgNo)},
+		   {<<"merchantNo">>, ?to_b(MchId)},
+		   {<<"terminalNo">>, ?to_b(TermId)},
+		   {<<"outTradeNo">>, ?to_b(OutTradeNo)},
+		   {<<"tradeTime">>, ?to_b(Timestamp)},
+		   {<<"signType">>, ?to_b("MD5")},
+		   {<<"version">>, ?to_b("V1.0.0")},
+
+		   {<<"amount">>, ?to_b(1)},
+		   {<<"totalAmount">>, ?to_b(1)},
+		   {<<"authCode">>, ?to_b(PayCode)},
+		   {<<"payMode">>, ?to_b("WXPAY")},
+		   {<<"subject">>, ?to_b(<<"DTGOOD">>)}
+		  ]),
+	    
+	    %% ),
+	    ?DEBUG("S ~p", [S]),
+	    Params = lists:foldr(
+	      fun({_K, V}, Acc)->
+		      <<V/binary, Acc/binary>>
+	      end, <<>>, S),
+	    ?DEBUG("Params ~p", [Params]),
+	    
+	    %% MD5 = crypto:hmac(md5, ?to_b(TradeKey), unicode:characters_to_list(Params, utf8)),
+	    MD5 = crypto:hash(md5, unicode:characters_to_list(<<Params/binary, TradeKey/binary>>, utf8)),
+	    ?DEBUG("MD5 ~p", [MD5]),
+	    SignMD5 = ?wifi_print:bin2hex(sha1, MD5),
+	    ?DEBUG("SingMD5 ~p", [SignMD5]),
+	    
+	    Body = S ++ [{<<"signValue">>, ?to_b(SignMD5)}],
+	    JsonBody = ejson:encode({Body}),
+	    ?DEBUG("Body ~p", [Body]),
+	    ?DEBUG("JsonBody ~p", [JsonBody]),
+
+	    case 
+		httpc:request(
+		  post,
+		  {?to_s(Path) ++ "/mapi/pay/b2c",
+		   [], "application/json;charset=utf-8", JsonBody}, [], []) of
+		{ok, {{"HTTP/1.1", 200, _}, _Head, Reply}} -> 
+		    ?DEBUG("Head ~p, Reply ~ts", [_Head, Reply]),
+		    {struct, Result} = mochijson2:decode(Reply), 
+		    ?DEBUG("pay result ~p", [Result]),
+		    case ?v(<<"returnCode">>, Result) of
+			undefined ->
+			    ok;
+			CheckCode ->
+			    Msg = ?v(<<"message">>, Result),
+			    ?DEBUG("code ~p, msg ~ts", [CheckCode, Msg]),
+			    ?INFO("pay sacn http transe failed,"
+				  "merchant ~p, Code ~p, msg ~ts", [Merchant, CheckCode, Msg]),
+			    {error, pay_http_trans_failed, CheckCode}
+		    end; 
+		{ok, {{"HTTP/1.1", HttpCode, _}, _Head, Reply}} ->
+		    ?DEBUG("HttpCode ~p, Head ~p, Reply ~ts", [HttpCode, _Head, Reply]),
+		    ?INFO("pay sacn http retun failed, merchant ~p, Reason ~p", [Merchant, HttpCode]),
+		    {error, pay_http_failed, HttpCode};
+		{error, Reason} ->
+		    ?INFO("pay sacn send http failed, merchant ~p, Reason ~p", [Merchant, Reason]),
+		    {error, pay_http_failed, Reason}
+	    end
+    end .
     
 
 get_pay_type(by_prefix, PayCodePrefix) when PayCodePrefix =:= <<"10">>

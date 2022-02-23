@@ -539,6 +539,7 @@ handle_call({month_report_by_shop, Merchant, Conditions}, _From, State) ->
 	", SUM(ticket) as ticket"
 
 	", SUM(charge) as charge"
+	", SUM(sbalance) as sbalance"
 	
 	", SUM(stock_in) as stock_in"
 	", SUM(stock_out) as stock_out"

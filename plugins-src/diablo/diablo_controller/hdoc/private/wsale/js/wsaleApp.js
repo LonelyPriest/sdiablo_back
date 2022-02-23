@@ -2382,7 +2382,8 @@ function wsaleNewProvide(
 		    $scope.select.shop.name,
 		    $scope.select.rsn,
 		    $scope.select.employee.name,
-		    $scope.select.retailer.name, 
+		    // $scope.select.retailer.name,
+		    $scope.select.retailer.wname + wsaleUtils.mark_phone($scope.select.retailer.mobile),
 		    dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
 		    wsaleService.direct.wsale,
 		    $scope.print_setting);

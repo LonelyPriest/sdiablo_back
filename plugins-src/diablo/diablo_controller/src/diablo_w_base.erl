@@ -984,7 +984,7 @@ sys_config() ->
 	      %% [29]: check retailer trans count, 0 means nocheck
 	      %% [30]: remain
 	      %% [31]: remain
-	      %% [32]: which pay_scan to use 0:wwt, 1:yc, default 0
+	      %% [32]: which pay_scan to use 0:wwt, 1:yc, 2:sx, default 0
 	      %% [33]: can save sale when then money is not enought 0: not allowed, 1:allowed
 	      %% [34]: use member discount when take ticket. 1: use
 	      %% [35]: active score when on sale 

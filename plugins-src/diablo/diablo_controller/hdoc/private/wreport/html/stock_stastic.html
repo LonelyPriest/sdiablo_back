@@ -84,7 +84,8 @@
 		    <th class="text-center" style="background-color:#CCCCCC">电子券</th>
 		    <th class="text-cente"  style="background-color:#CCCCCC">核销</th>
 		    
-		    <th class="text-center success">充值</th>
+		    <th class="text-center bg-magenta">充值</th>
+		    <th class="text-center bg-magenta">赠送</th>
 		    <th class="text-center">入库数量</th>
 		    <th x-ng-if="right.show_orgprice" class="text-center">入库成本</th>
 		    <th class="text-center">出库数量</th>
@@ -123,7 +124,8 @@
 		    <td style="background-color:#CCCCCC">{{r.ticket}}</td>
 		    <td style="background-color:#CCCCCC">{{r.veri}}</td>
 
-		    <td class="success">{{r.charge}}</td>
+		    <td class="bg-magenta">{{r.charge}}</td>
+		    <td class="bg-magenta">{{r.sbalance}}</td>
 		    
 		    <td>{{r.stockIn}}</td>
 		    <td x-ng-if="right.show_orgprice">{{r.stockInCost}}</td> 

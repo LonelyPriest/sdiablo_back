@@ -133,7 +133,9 @@ update w_inventory a inner join (select a.style_number, a.brand, a.amount, b.tot
 select a.style_number, a.brand, a.stotal, b.sell from (select style_number, brand, sum(total) as stotal from w_sale_detail where rsn like 'm-4-s-20-%' group by style_number, brand) a left join w_inventory b on a.style_number=b.style_number and a.brand=b.brand and b.shop=20;
 
 -- check different org_price from w_inentory_new_detail
-select a.total, a.style_number, a.brand, a.org_price, a.entry_date from (select count(1) as total,  style_number, brand, org_price, entry_date from w_inventory_new_detail_101 where merchant=101 and shop=287 group by style_number , brand, org_price) a where a.total>1 and a.entry_date>'2021-01-01' order by a.style_number;
+select a.total, a.style_number, a.brand, a.org_price, a.entry_date \
+from (select count(1) as total,  style_number, brand, org_price, entry_date from w_inventory_new_detail_101 \
+where merchant=101 and shop=287 group by style_number , brand, org_price) a where a.entry_date>'2021-01-01' order by a.style_number;
 
 
 -- delete wsale

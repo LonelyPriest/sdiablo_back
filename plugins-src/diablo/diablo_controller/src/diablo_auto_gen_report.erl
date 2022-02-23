@@ -326,7 +326,7 @@ syn_stastic_per_shop(Merchant, UTable, Shop, StartDay, EndDay) ->
      SellVeri,
      SellDraw,
      SellTicket} = sell(info, SaleInfo),
-    {CBalance, _CCash, _CCard, _CWxin} = charge(info, ChargeInfo),
+    {CBalance, SBalance, _CCash, _CCard, _CWxin} = charge(info, ChargeInfo),
     {SellCost} = sell(cost, SaleProfit),
 
     %% {CurrentStockTotal, CurrentStockCost} = stock(current, StockR), 
@@ -346,6 +346,7 @@ syn_stastic_per_shop(Merchant, UTable, Shop, StartDay, EndDay) ->
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
 	    case SellTotal == 0
+		andalso SellBalance == 0
 		andalso CBalance == 0
 		andalso StockInTotal == 0
 		andalso StockOutTotal == 0
@@ -369,6 +370,7 @@ syn_stastic_per_shop(Merchant, UTable, Shop, StartDay, EndDay) ->
 			", veri" 
 			
 			", charge"
+			", sbalance"
 			", stock"
 			", stockc"
 			", stock_cost"
@@ -402,6 +404,7 @@ syn_stastic_per_shop(Merchant, UTable, Shop, StartDay, EndDay) ->
 			++ ?to_s(SellVeri) ++ "," 
 
 			++ ?to_s(CBalance) ++ ","
+			++ ?to_s(SBalance) ++ ","
 			++ ?to_s(0) ++ ","
 			++ ?to_s(StockCalcTotal) ++ ","
 			++ ?to_s(StockCalcCost) ++ ","
@@ -438,6 +441,7 @@ syn_stastic_per_shop(Merchant, UTable, Shop, StartDay, EndDay) ->
 
 	    %% ++ ?utils:v(stock, integer, LastStockTotal)
 		++ ?utils:v(charge, float, CBalance)
+		++ ?utils:v(sbalance, float, SBalance)
 		++ ?utils:v(stockc, integer, StockCalcTotal)
 		++ ?utils:v(stock_cost, float, StockCalcCost)
 
@@ -874,7 +878,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [{S}|Shops], Sqls) ->
 	     SellDraw,
 	     SellTicket} = sell(info, SaleInfo),
 	    
-	    {CBalance, _CCash, _CCard, _CWxin} = charge(info, ChargeInfo),
+	    {CBalance, SBalance, _CCash, _CCard, _CWxin} = charge(info, ChargeInfo),
 	    {SellCost} = sell(cost, SaleProfit),
 
 	    {CurrentStockTotal, _CurrentStockCost} = stock(current, StockR), 
@@ -886,6 +890,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [{S}|Shops], Sqls) ->
 	    {StockFixTotal, StockFixCost} = stock(fix, StockFix),
 
 	    case SellTotal == 0
+		andalso SellBalance == 0
 	    	andalso CBalance == 0
 	    	andalso StockInTotal == 0
 	    	andalso StockOutTotal == 0
@@ -920,6 +925,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [{S}|Shops], Sqls) ->
 				", veri"
 				
 				", charge"
+				", sbalance"
 				", stock"
 				", stockc"
 				", stock_cost"
@@ -953,6 +959,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [{S}|Shops], Sqls) ->
 				++ ?to_s(SellVeri) ++ ","
 
 				++ ?to_s(CBalance) ++ ","
+				++ ?to_s(SBalance) ++ ","
 				++ ?to_s(CurrentStockTotal) ++ ","
 				++ ?to_s(StockCalcTotal) ++ ","
 				++ ?to_s(StockCalcCost) ++ ","
@@ -988,6 +995,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [{S}|Shops], Sqls) ->
 				++ ?utils:v(veri, float, SellVeri)
 
 				++ ?utils:v(charge, float, CBalance)
+				++ ?utils:v(sbalance, float, SBalance)
 				++ ?utils:v(stock, integer, CurrentStockTotal) 
 				++ ?utils:v(stockc, integer, StockCalcTotal)
 				++ ?utils:v(stock_cost, float, StockCalcCost)
@@ -1235,6 +1243,7 @@ charge(info, []) ->
     {0, 0, 0, 0};
 charge(info, [{ChargeInfo}]) ->
     {?v(<<"cbalance">>, ChargeInfo, 0),
+     ?v(<<"sbalance">>, ChargeInfo, 0),
      ?v(<<"tcash">>, ChargeInfo, 0),
      ?v(<<"tcard">>, ChargeInfo, 0),
      ?v(<<"twxin">>, ChargeInfo, 0)}.

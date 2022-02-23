@@ -44,7 +44,7 @@ current_time(timestamp) ->
 current_time(localtime2second) ->
     {{Year, Month, Date}, {Hour, Minute, Second}} =
 	calendar:now_to_local_time(erlang:now()),
-    calendar:datetime_to_gregorian_seconds({{Year, Month, Date}, {Hour, Minute, Second}});
+    calendar:datetime_to_gregorian_seconds({{Year, Month, Date}, {Hour, Minute, Second}});    
 
 current_time(db) ->
     "CURRENT_TIMESTAMP()";

@@ -116,6 +116,7 @@ daily(detail, Merchant, Conditions) ->
 	", veri"
 	
 	", charge"
+	", sbalance"
 	
 	", stock"
 	", stockc"

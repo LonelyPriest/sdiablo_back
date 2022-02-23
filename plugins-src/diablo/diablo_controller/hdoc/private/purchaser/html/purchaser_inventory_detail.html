@@ -362,13 +362,13 @@
 		</div> <!--END table responsive--> 
 	      </div> <!--END panel-->
 
-	      <div x-ng-show="total_items>items_perpage" class="row">
+	      <div x-ng-show="tab_total.total_of_time>items_perpage" class="row">
 		<div class="col-md-12, col-sm-12, col-xs-12"> 
 		  <span>显示第 {{tab_page.page_of_time}} / {{num_pages}} 项结果，
-		    共 {{total_items}} 项
+		    共 {{tab_total.total_of_time}} 项
 		  </span>
 		  <uib-pagination class="pagination-lg table-pagination pull-right"
-		  	      total-items="total_items"
+		  	      total-items="tab_total.total_of_time"
 		  	      items-per-page="items_perpage"
 		  	      num-pages="num_pages"
 		  	      max-size="max_page_size"
@@ -381,12 +381,59 @@
 		</div>
 	      </div>
 	    </uib-tab>
+
+	    <uib-tab heading="色码分布" active="tab_active.color_mode">
+	      <div class="panel panel-default table-panel">
+	    	<div class="table-responsive diablo-table">
+	    	  <table class="table table-bordered
+	    			table-striped table-hover
+	    			table-condensed table-advanced">
+	    	    <thead>
+	    	      <tr>
+	    		<th>序号</th>
+	    		<th>款号</th>
+	    		<th>品牌</th>
+	    		<th>颜色</th>
+	    		<th>尺码</th>
+	    		<th>数量</th>
+	    		<th>店铺</th>
+	    		<th>上架日期</th>
+	    	      </tr>
+	    	    </thead>
+
+	    	    <tbody>
+	    	      <tr ng-repeat="s in color_stocks track by s.id">
+	    	      </tr>
+	    	    </tbody>
+		    
+	    	  </table>
+	    	</div>
+	      </div>
+
+	      <div x-ng-show="tab_total.total_of_color>items_perpage" class="row">
+	    	<div class="col-md-12, col-sm-12, col-xs-12">
+	    	  <span>显示第 {{tab_page.page_of_color}} / {{num_pages}} 项结果，
+	    	    共 {{total_items}} 项</span>
+	    	  <uib-pagination class="pagination-lg table-pagination pull-right"
+	    	  		  total-items="tab_total.total_of_color"
+	    	  		  items-per-page="items_perpage"
+	    	  		  num-pages="num_pages"
+	    	  		  max-size="max_page_size"
+	    	  		  boundary-links="true"
+	    	  		  previous-text="&lsaquo;" next-text="&rsaquo;"
+	    	  		  first-text="&laquo;" last-text="&raquo;"
+	    	  		  x-ng-model="tab_page.page_of_time"
+	    	  		  x-ng-change="page_changed(tab_page.page_of_color)">
+	    	  </uib-pagination>
+	    	</div>
+	      </div>
+	      
+	    </uib-tab> 
 	    
 	    <uib-tab heading="销售分布"
 	    	 active="tab_active.chart"
 	    	 select="chart_mode(default_page)">
-	    </uib-tab>
-	    
+	    </uib-tab> 
 	  </uib-tabset> 
 	  
 	  <div x-ng-if="tab_active.chart" class="panel panel-default">

@@ -565,6 +565,37 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 			 + extra);
     };
 
+    var get_amount = function(cid, size, amounts){
+	for(var i=0, l=amounts.length; i<l; i++){
+	    if (amounts[i].cid === cid && amounts[i].size === size){
+		return amounts[i].count;
+	    }
+	}
+	return undefined;
+    };
+    
+    $scope.stock_info = function(inv) {
+	console.log(inv);
+	diabloFilter.list_purchaser_inventory(
+	    {style_number:inv.style_number, brand:inv.brand_id, shop: inv.shop_id}
+	).then(function(stocks) {
+	    console.log(stocks);
+	    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+	    var sort = diabloHelp.sort_stock(stocks, order_sizes, filterColor);
+	    
+	    var payload = {
+		style_number: inv.style_number,
+		brand:        inv.brand,
+		sizes:        sort.size,
+		colors:       sort.color,
+		path:         inv.path,
+		get_amount: function(cid, size){
+		    return get_amount(cid, size, sort.sort);
+		}};
+	    dialog.edit_with_modal("stock-info.html", undefined, undefined, undefined, payload); 
+	});
+    };
+
     $scope.export_to = function(){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    add_search_condition(search);

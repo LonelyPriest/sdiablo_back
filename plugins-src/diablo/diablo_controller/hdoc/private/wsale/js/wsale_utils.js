@@ -841,6 +841,10 @@ var wsaleUtils = function(){
 	    }
 	    
 	    return condition;
+	},
+
+	mark_phone: function(phone) {
+	    return phone.replace(phone.substring(3,7), "****");
 	}
 	
 	// 
@@ -1866,9 +1870,9 @@ var wsalePrint = function(){
 		top += 25; 
 		// LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
 	    } 
-
+	    
 	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "单号：" + rsn); 
-	    top += 15; // 55
+	    top += 15; // 55 
 	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "客户：" + retailer);
 	    top += 15; // 70
 	    LODOP.ADD_PRINT_TEXT(top,  left, vWidth, hFont, "店员：" + employee);

@@ -1988,6 +1988,7 @@ sidebar(Session) ->
 	    TransR = [{"inventory_new_detail", "采购记录", "glyphicon glyphicon-download"}],
 	    TransD = [{"inventory_rsn_detail", "采购明细", "glyphicon glyphicon-map-marker"}], 
 	    InvDetail = [{"inventory_detail",  "库存详情", "glyphicon glyphicon-home"}],
+	    %% ColorInvDetail = [{"color_inventory_detail",  "色码详情", "glyphicon glyphicon-superscript"}],
 
 	    HistoryStock = 
 		case ?right_auth:authen(?analysis_history_stock, Session) of
@@ -2115,7 +2116,7 @@ sidebar(Session) ->
 
 	    Level1 = ?menu:sidebar(
 			level_1_menu,
-			Record ++ Reject ++ TransR ++ TransD ++ InvDetail ++ HistoryStock ++ InvPrice),
+			Record ++ Reject ++ TransR ++ TransD ++ InvDetail ++  HistoryStock ++ InvPrice),
 	    Level2 = ?menu:sidebar(
 			level_2_menu, Order ++ InvMgr ++ Transfer ++ GoodMgr ++ PromotionMgr),
 			%% level_2_menu, InvMgr ++ Transfer ++ GoodMgr ++ PromotionMgr), 

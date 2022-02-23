@@ -2301,7 +2301,7 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.seasons   = diablo_season;
     $scope.goto_page = diablo_goto_page;
     $scope.waynodes  = diablo_waynodes;
-    $scope.total_items = 0;
+    // $scope.total_items = 0;
 
     /*
      * order
@@ -2445,7 +2445,13 @@ function purchaserInventoryDetailCtrlProvide(
     
     $scope.tab_page = {
 	page_of_time: $scope.default_page,
-	page_of_chart: $scope.default_page
+	page_of_chart: $scope.default_page,
+	page_of_color: $scope.default_page
+    };
+
+    $scope.tab_total = {
+	total_of_time: 0,
+	total_of_color: 0
     };
     
     // $scope.current_page = $scope.default_page;
@@ -2495,6 +2501,8 @@ function purchaserInventoryDetailCtrlProvide(
 	    $scope.mode = $scope.order_fields.sell;
 	    $scope.sort =0;
 	    $scope.tab_page.page_of_chart = page;
+	} else if ($scope.tab_active.color_mode) {
+	    $scope.tab_page.page_of_color = page;
 	} else {
 	    $scope.tab_page.page_of_time = page; 
 	}
@@ -2528,7 +2536,7 @@ function purchaserInventoryDetailCtrlProvide(
 		    
 		} else {
 		    if (page === 1){
-			$scope.total_items  = result.total;
+			$scope.tab_total.total_of_time  = result.total;
 			$scope.total_amount = result.t_amount;
 			$scope.total_sell   = result.t_sell;
 			$scope.total_lmoney = result.t_lmoney;

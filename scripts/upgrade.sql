@@ -825,6 +825,9 @@ alter table w_inventory_fix_detail_amount add column type INTEGER not null defau
 --2021-10-15
 alter table users add column discount INTEGER not null default 0 after sdays;
 
+--2022-01-09
+alter table w_daily_report add column sbalance DECIMAL(10,2) not null default 0 after charge;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 
