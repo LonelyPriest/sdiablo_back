@@ -529,7 +529,12 @@ check_empty(barcode, Barcode) ->
 
 check_empty(good_extra, GoodExtraId) ->
     GoodExtraId =:= <<>>
-	orelse GoodExtraId =:= [].
+	orelse GoodExtraId =:= [];
+
+check_empty(pay, PayExtra) ->
+    PayExtra =:= undefined
+	orelse PayExtra =:= <<>>
+	orelse PayExtra =:= [].
 
 get_modified(NewValue, OldValue) when NewValue =/= OldValue -> NewValue;
 get_modified(_NewValue, _OldValue) ->  undefined.

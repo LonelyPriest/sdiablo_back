@@ -169,9 +169,12 @@ filter(order_detail, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage, Condi
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {filter_order_detail, Merchant, UTable, CurrentPage, ItemsPerPage, Conditions}).
 
-pay_scan(start, Merchant, Shop, {PayType, PayState, Live, PayOrderNo, Balance}) ->
+pay_scan(start, Merchant, Shop, {PayType, PayState, Live, PayOrderNo, Balance, PayTime}) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {start_pay_scan, Merchant, Shop, {PayType, PayState, Live, PayOrderNo, Balance}}); 
+    gen_server:call(Name, {start_pay_scan,
+			   Merchant,
+			   Shop,
+			   {PayType, PayState, Live, PayOrderNo, Balance, PayTime}}); 
 pay_scan(check, Merchant, Shop, {PayType, PayState, PayOrderNo, Balance}) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {check_pay_scan, Merchant, Shop, {PayType, PayState, PayOrderNo, Balance}}).
@@ -1852,7 +1855,10 @@ handle_call({filter_employee_evaluation,
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({start_pay_scan, Merchant, Shop, {PayType, PayState, Live, PayOrderNo, Balance}}, _From, State) ->
+handle_call({start_pay_scan,
+	     Merchant,
+	     Shop,
+	     {PayType, PayState, Live, PayOrderNo, Balance, PayTime}}, _From, State) ->
     Sql = "insert into w_pay(sn" 
 	", type"
 	", live" 
@@ -1871,7 +1877,7 @@ handle_call({start_pay_scan, Merchant, Shop, {PayType, PayState, Live, PayOrderN
 	
 	++ ?to_s(Shop) ++ ","
 	++ ?to_s(Merchant) ++ ","
-	++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')",
+	++ "\'" ++ ?to_s(PayTime) ++ "\')",
     Reply =  ?sql_utils:execute(insert, Sql),
     {reply, Reply, State};
 

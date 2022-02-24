@@ -81,7 +81,10 @@ create table shops
     open_date          DATE, 
     master             VARCHAR(8) default null,
     region             INTEGER default -1, -- which repertory
+    
     pay_cd             VARCHAR(32) default '' not null, -- pay no, unique
+    pay_term           VARCHAR(64) default '' not null, -- pay terminate number
+    pay_key            VARCHAR(64) default '' not null, -- pay key
 
     charge             INTEGER default -1, -- charge strategy
     draw               INTEGER default -1, -- withdraw strategy

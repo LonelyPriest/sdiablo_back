@@ -828,6 +828,10 @@ alter table users add column discount INTEGER not null default 0 after sdays;
 --2022-01-09
 alter table w_daily_report add column sbalance DECIMAL(10,2) not null default 0 after charge;
 
+--2022-02-24
+alter table shops add column pay_term VARCHAR(64) default '' not null after pay_cd;
+alter table shops add column pay_key VARCHAR(64) default '' not null after term;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 

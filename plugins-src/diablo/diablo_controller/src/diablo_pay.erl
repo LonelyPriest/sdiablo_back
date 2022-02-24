@@ -4,8 +4,9 @@
 -include("diablo_controller.hrl").
 
 -export([pay/3, pay/5]).
--export([pay_yc/4, pay_yc/5, pay_sx/5]).
--export([pack_sn/1]).
+-export([pay_yc/4, pay_yc/5, pay_sx/9, pay_sx/7]).
+-export([pack_sn/1, get_pay_type/2]).
+-export([pay_test_sx/4]).
 
 -define(MIN_SN_LEN, 7).
 -define(YC_AGENT, "A103373").
@@ -16,6 +17,14 @@
 -define(YC_PAY_SERVICE, "unified.trade.micropay").
 -define(YC_PAY_QUERY_SERVICE, "unified.trade.query").
 
+-define(SX_ORGANIZE, "8080").
+-define(SX_PATH, "http://gateway.dbs12580.com").
+-define(WXPAY, <<"WXPAY">>).
+-define(ALIPAY, <<"ALIPAY">>).
+-define(YLPAY, <<"YLPAY">>).
+-define(BESTPAY, <<"BESTPAY">>).
+-define(CCBPAY, <<"CCBPAY">>).
+
 %% -define(YC_AGENT, "A100721").
 %% -define(YC_AGENT_KEY, "S6Fl7nurJ5E6zyrb2tBLxg40+21RNmEClZ0fivTIX+k=").
 %% -define(YC_PATH, "https://ipayfront.cloudwalk.cn/api/transaction/front/pay/gateway").
@@ -23,7 +32,9 @@
 pay(wwt, Merchant, MchntCd, PayCode, Moneny) ->
     ?DEBUG("pay wwt: merchant ~p, MchntCd ~p, PayCode ~p, Moneny ~p",
 	   [Merchant, MchntCd, PayCode, Moneny]),
-    case erlang:size(PayCode) =/= ?PAY_SCAN_CODE_LEN of 
+    PayCodeLen = erlang:size(PayCode),
+    case PayCodeLen < ?PAY_SCAN_CODE_MIN_LEN
+    orelse PayCodeLen > ?PAY_SCAN_CODE_MAX_LEN of 
 	true ->
 	    {error, invalid_pay_scan_code_len, PayCode};
 	false ->
@@ -187,7 +198,9 @@ pay(wwt_query, MchntCd, MchntOrder) ->
 pay_yc(yc, Merchant, MchntCd, PayCode, Moneny) ->
     ?DEBUG("pay yc: merchant ~p, MchntCd ~p, PayCode ~p, Moneny ~p",
 	   [Merchant, MchntCd, PayCode, Moneny]),
-    case erlang:size(PayCode) =/= ?PAY_SCAN_CODE_LEN of 
+    PayCodeLen = erlang:size(PayCode),
+    case PayCodeLen < ?PAY_SCAN_CODE_MIN_LEN
+	orelse PayCodeLen > ?PAY_SCAN_CODE_MAX_LEN of 
 	true ->
 	    {error, invalid_pay_scan_code_len, PayCode};
 	false ->
@@ -277,7 +290,7 @@ pay_yc(yc, Merchant, MchntCd, PayCode, Moneny) ->
 			    %% ?DEBUG("biz_code ~p, pay_result ~p", [BizCode, PayResult]),
 			    
 			    <<PayCodePrefix:2/binary, _/binary>> = PayCode,
-			    PayType = get_pay_type(by_prefix, PayCodePrefix), 
+			    {PayType, _} = get_pay_type(by_prefix, PayCodePrefix), 
 				case ?v(<<"need_query">>, Result) of
 				    <<"Y">> ->
 					%% ?DEBUG("PayType ~p", [PayType]),
@@ -406,45 +419,34 @@ pay_yc(query_yc, Merchant, MchntCd, MchntOrder) ->
 	    {error, pay_http_failed, Reason}
     end.
 
-pay_sx(sx, Merchant, MchntCd, PayCode, Moneny) ->
+pay_sx(sx, Merchant, MchntCd, PayOrder, PayTime, PayTerm, PayKey, PayCode, Moneny) ->
     ?DEBUG("pay sx: merchant ~p, MchntCd ~p, PayCode ~p, Moneny ~p",
 	   [Merchant, MchntCd, PayCode, Moneny]),
-    case erlang:size(PayCode) =/= ?PAY_SCAN_CODE_LEN of 
+    PayCodeLen = erlang:size(PayCode),
+    case PayCodeLen < ?PAY_SCAN_CODE_MIN_LEN
+	orelse PayCodeLen > ?PAY_SCAN_CODE_MAX_LEN of 
 	true ->
 	    {error, invalid_pay_scan_code_len, PayCode};
-	false ->
-	    %% Path = "https://ipayfront.cloudwalk.cn/api/transaction/front/pay/gateway",
-	    %% Service = "unified.trade.micropay",
-	    %% MchId = "800310000015826",
-	    OutTradeNo = pack_sn(?to_s(?inventory_sn:sn(pay_order_sn, Merchant))),
-
-	    OrgNo = "8028",
-	    MchId = "80280106",
-	    TermId = "QR802804048",
-	    TradeKey = <<"80C2D8BDDB692B06F6B109E1A3A18D72">>,
-	    Path = "http://test-gateway.dbs12580.com",
-	    Timestamp = ?utils:current_time(localtime),
-
-	    
-	    
+	false -> 
+	    <<PayCodePrefix:2/binary, _/binary>> = ?to_b(PayCode),
+	    {_, PayMode} = get_pay_type (by_prefix, PayCodePrefix), 
 	    S = lists:sort(
 		  [{<<"opSys">>, ?to_b(0)},
-		   {<<"orgNo">>, ?to_b(OrgNo)},
-		   {<<"merchantNo">>, ?to_b(MchId)},
-		   {<<"terminalNo">>, ?to_b(TermId)},
-		   {<<"outTradeNo">>, ?to_b(OutTradeNo)},
-		   {<<"tradeTime">>, ?to_b(Timestamp)},
+		   {<<"orgNo">>, ?to_b(?SX_ORGANIZE)},
+		   {<<"merchantNo">>, ?to_b(MchntCd)},
+		   {<<"terminalNo">>, ?to_b(PayTerm)},
+		   {<<"outTradeNo">>, ?to_b(PayOrder)},
+		   {<<"tradeTime">>, ?to_b(PayTime)},
 		   {<<"signType">>, ?to_b("MD5")},
 		   {<<"version">>, ?to_b("V1.0.0")},
 
 		   {<<"amount">>, ?to_b(1)},
 		   {<<"totalAmount">>, ?to_b(1)},
 		   {<<"authCode">>, ?to_b(PayCode)},
-		   {<<"payMode">>, ?to_b("WXPAY")},
+		   {<<"payMode">>, ?to_b(PayMode)},
 		   {<<"subject">>, ?to_b(<<"DTGOOD">>)}
 		  ]),
 	    
-	    %% ),
 	    ?DEBUG("S ~p", [S]),
 	    Params = lists:foldr(
 	      fun({_K, V}, Acc)->
@@ -452,9 +454,8 @@ pay_sx(sx, Merchant, MchntCd, PayCode, Moneny) ->
 	      end, <<>>, S),
 	    ?DEBUG("Params ~p", [Params]),
 	    
-	    %% MD5 = crypto:hmac(md5, ?to_b(TradeKey), unicode:characters_to_list(Params, utf8)),
-	    MD5 = crypto:hash(md5, unicode:characters_to_list(<<Params/binary, TradeKey/binary>>, utf8)),
-	    ?DEBUG("MD5 ~p", [MD5]),
+	    MD5 = crypto:hash(md5, unicode:characters_to_list(<<Params/binary, PayKey/binary>>, utf8)),
+	    %% ?DEBUG("MD5 ~p", [MD5]),
 	    SignMD5 = ?wifi_print:bin2hex(sha1, MD5),
 	    ?DEBUG("SingMD5 ~p", [SignMD5]),
 	    
@@ -466,21 +467,34 @@ pay_sx(sx, Merchant, MchntCd, PayCode, Moneny) ->
 	    case 
 		httpc:request(
 		  post,
-		  {?to_s(Path) ++ "/mapi/pay/b2c",
+		  {?SX_PATH ++ "/mapi/pay/b2c",
 		   [], "application/json;charset=utf-8", JsonBody}, [], []) of
 		{ok, {{"HTTP/1.1", 200, _}, _Head, Reply}} -> 
 		    ?DEBUG("Head ~p, Reply ~ts", [_Head, Reply]),
-		    {struct, Result} = mochijson2:decode(Reply), 
-		    ?DEBUG("pay result ~p", [Result]),
-		    case ?v(<<"returnCode">>, Result) of
-			undefined ->
-			    ok;
-			CheckCode ->
-			    Msg = ?v(<<"message">>, Result),
-			    ?DEBUG("code ~p, msg ~ts", [CheckCode, Msg]),
-			    ?INFO("pay sacn http transe failed,"
-				  "merchant ~p, Code ~p, msg ~ts", [Merchant, CheckCode, Msg]),
-			    {error, pay_http_trans_failed, CheckCode}
+		    {struct, Info} = mochijson2:decode(Reply), 
+		    ?DEBUG("pay result ~p", [Info]),
+		    ReturnCode = ?v(<<"returnCode">>, Info),
+		    Msg = ?v(<<"message">>, Info),
+		    case ReturnCode of 
+			<<"000000">> ->
+			    TradeState = ?v(<<"result">>, Info), 
+			    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
+			    case TradeState of
+				<<"S">> ->
+				    {ok, ?PAY_SCAN_SUCCESS, PayOrder, PayMode};
+				<<"F">> ->
+				    {error, ?PAY_SCAN_FAILED, PayOrder, PayMode};
+				<<"A">> ->
+				    {error, ?PAY_SCAN_PAYING, PayOrder, PayMode};
+				<<"Z">> ->
+				    {error, ?PAY_SCAN_UNKOWN, PayOrder, PayMode};
+				<<"C">> ->
+				    {error, ?PAY_SCAN_CLOSED, PayOrder, PayMode}
+			    end;
+			_ ->
+			    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
+			    ?INFO("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
+			    {error, ?PAY_SCAN_FAILED, ReturnCode, Msg}
 		    end; 
 		{ok, {{"HTTP/1.1", HttpCode, _}, _Head, Reply}} ->
 		    ?DEBUG("HttpCode ~p, Head ~p, Reply ~ts", [HttpCode, _Head, Reply]),
@@ -490,7 +504,280 @@ pay_sx(sx, Merchant, MchntCd, PayCode, Moneny) ->
 		    ?INFO("pay sacn send http failed, merchant ~p, Reason ~p", [Merchant, Reason]),
 		    {error, pay_http_failed, Reason}
 	    end
-    end .
+    end.
+
+pay_sx(query_sx, Merchant, MchntCd, PayOrder, PayTime, PayTerm, PayKey) ->
+    ?DEBUG("query_sx: merchant ~p, MchntCd ~p, PayOrder ~p, PayTime ~p, PayTerm, PayKey",
+	   [Merchant, MchntCd, PayOrder, PayTime, PayTerm, PayKey]),
+
+    TradeTime = ?utils:current_time(localtime),
+    S = lists:sort(
+	  [{<<"opSys">>, ?to_b(0)},
+	   {<<"orgNo">>, ?to_b(?SX_ORGANIZE)},
+	   {<<"merchantNo">>, ?to_b(MchntCd)},
+	   {<<"terminalNo">>, ?to_b(PayTerm)},
+	   {<<"outTradeNo">>, ?to_b(PayOrder)},
+	   {<<"tradeTime">>, ?to_b(TradeTime)},
+	   {<<"signType">>, ?to_b("MD5")},
+	   {<<"version">>, ?to_b("V1.0.0")},
+	   
+	   {<<"queryNo">>, ?to_b(PayOrder)},
+	   {<<"queryDate">>, ?to_b(PayTime)}
+	  ]),
+
+    ?DEBUG("S ~p", [S]),
+    Params = lists:foldr(
+	       fun({_K, V}, Acc)->
+		       <<V/binary, Acc/binary>>
+	       end, <<>>, S),
+    ?DEBUG("Params ~p", [Params]),
+
+    %% MD5 = crypto:hmac(md5, ?to_b(TradeKey), unicode:characters_to_list(Params, utf8)),
+    MD5 = crypto:hash(md5, unicode:characters_to_list(<<Params/binary, PayKey/binary>>, utf8)),
+    %% ?DEBUG("MD5 ~p", [MD5]),
+    SignMD5 = ?wifi_print:bin2hex(sha1, MD5),
+    ?DEBUG("SingMD5 ~p", [SignMD5]),
+
+    Body = S ++ [{<<"signValue">>, ?to_b(SignMD5)}],
+    JsonBody = ejson:encode({Body}),
+    ?DEBUG("Body ~p", [Body]),
+    ?DEBUG("JsonBody ~p", [JsonBody]),
+
+    case 
+	httpc:request(
+	  post,
+	  {?SX_PATH ++ "/mapi/pay/orderQuery",
+	   [], "application/json;charset=utf-8", JsonBody}, [], []) of
+	{ok, {{"HTTP/1.1", 200, _}, _Head, Reply}} -> 
+	    ?DEBUG("Head ~p, Reply ~ts", [_Head, Reply]),
+	    {struct, Info} = mochijson2:decode(Reply), 
+	    ?DEBUG("pay result ~p", [Info]),
+	    ReturnCode = ?v(<<"returnCode">>, Info),
+	    Msg = ?v(<<"message">>, Info),
+	    case ReturnCode of 
+		<<"000000">> ->
+		    TradeState = ?v(<<"result">>, Info), 
+		    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
+		    {PayMode, _} = get_pay_type(by_name, ?to_b(?v(<<"payMode">>, Info))),
+		    {ok,
+		     case TradeState of
+			 <<"S">> ->
+			     ?PAY_SCAN_SUCCESS;
+			 <<"F">> ->
+			     ?PAY_SCAN_FAILED;
+			 <<"A">> ->
+			     ?PAY_SCAN_PAYING;
+			 <<"Z">> ->
+			     ?PAY_SCAN_UNKOWN;
+			 <<"C">> ->
+			     ?PAY_SCAN_CLOSED
+		     end,
+		     PayMode,
+		     ?to_i(?v(<<"totalAmount">>, Info, 0)) / 100
+		    }; 
+		_ ->
+		    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
+		    ?INFO("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
+		    {error, ?PAY_SCAN_FAILED, ReturnCode, Msg}
+	    end; 
+	{ok, {{"HTTP/1.1", HttpCode, _}, _Head, Reply}} ->
+	    ?DEBUG("HttpCode ~p, Head ~p, Reply ~ts", [HttpCode, _Head, Reply]),
+	    ?INFO("pay sacn http retun failed, merchant ~p, Reason ~p", [Merchant, HttpCode]),
+	    {error, pay_http_failed, HttpCode};
+	{error, Reason} ->
+	    ?INFO("pay sacn send http failed, merchant ~p, Reason ~p", [Merchant, Reason]),
+	    {error, pay_http_failed, Reason}
+    end.
+
+
+pay_test_sx(sx, Merchant, PayCode, Moneny) ->
+    ?DEBUG("pay sx: merchant ~p, PayCode ~p, Moneny ~p", [Merchant, PayCode, Moneny]),
+    PayCodeLen = erlang:size(?to_b(PayCode)),
+    case PayCodeLen < ?PAY_SCAN_CODE_MIN_LEN
+	orelse PayCodeLen > ?PAY_SCAN_CODE_MAX_LEN of 
+	true ->
+	    {error, invalid_pay_scan_code_len, PayCode};
+	false ->
+	    %% Path = "https://ipayfront.cloudwalk.cn/api/transaction/front/pay/gateway",
+	    %% Service = "unified.trade.micropay",
+	    %% MchId = "800310000015826",
+	    
+	    OutTradeNo = pack_sn(?to_s(?inventory_sn:sn(pay_order_sn, Merchant))),
+
+	    OrgNo = "8028",
+	    MchntCd = "80280106",
+	    TermId = "QR802804048",
+	    TradeKey = <<"80C2D8BDDB692B06F6B109E1A3A18D72">>,
+	    Path = "http://test-gateway.dbs12580.com",
+	    Timestamp = ?utils:current_time(localtime),
+	    
+	    <<PayCodePrefix:2/binary, _/binary>> = ?to_b(PayCode), 
+	    {_, PayMode} = get_pay_type (by_prefix, PayCodePrefix),
+
+	    S = lists:sort(
+		  [{<<"opSys">>, ?to_b(0)},
+		   {<<"orgNo">>, ?to_b(OrgNo)},
+		   {<<"merchantNo">>, ?to_b(MchntCd)},
+		   {<<"terminalNo">>, ?to_b(TermId)},
+		   {<<"outTradeNo">>, ?to_b(OutTradeNo)},
+		   {<<"tradeTime">>, ?to_b(Timestamp)},
+		   {<<"signType">>, ?to_b("MD5")},
+		   {<<"version">>, ?to_b("V1.0.0")},
+
+		   {<<"amount">>, ?to_b(Moneny)},
+		   {<<"totalAmount">>, ?to_b(Moneny)},
+		   {<<"authCode">>, ?to_b(PayCode)},
+		   {<<"payMode">>, ?to_b(PayMode)},
+		   {<<"subject">>, ?to_b(<<"DTGOOD">>)}
+		  ]),
+
+	    ?DEBUG("S ~p", [S]),
+	    Params = lists:foldr(
+		       fun({_K, V}, Acc)->
+			       <<V/binary, Acc/binary>>
+		       end, <<>>, S),
+	    ?DEBUG("Params ~p", [Params]),
+
+	    %% MD5 = crypto:hmac(md5, ?to_b(TradeKey), unicode:characters_to_list(Params, utf8)),
+	    MD5 = crypto:hash(md5, unicode:characters_to_list(<<Params/binary, TradeKey/binary>>, utf8)),
+	    ?DEBUG("MD5 ~p", [MD5]),
+	    SignMD5 = ?wifi_print:bin2hex(sha1, MD5),
+	    ?DEBUG("SingMD5 ~p", [SignMD5]),
+
+	    Body = S ++ [{<<"signValue">>, ?to_b(SignMD5)}],
+	    JsonBody = ejson:encode({Body}),
+	    ?DEBUG("Body ~p", [Body]),
+	    ?DEBUG("JsonBody ~p", [JsonBody]),
+
+	    case 
+		httpc:request(
+		  post,
+		  {Path ++ "/mapi/pay/b2c",
+		   [], "application/json;charset=utf-8", JsonBody}, [], []) of
+		{ok, {{"HTTP/1.1", 200, _}, _Head, Reply}} -> 
+		    ?DEBUG("Head ~n~p, Reply ~ts", [_Head, Reply]),
+		    {struct, Info} = mochijson2:decode(Reply), 
+		    ?DEBUG("pay result ~p", [Info]),
+		    ReturnCode = ?v(<<"returnCode">>, Info),
+		    Msg = ?v(<<"message">>, Info),
+		    case ReturnCode of 
+			<<"000000">> ->
+			    TradeState = ?v(<<"result">>, Info), 
+			    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
+			    case TradeState of
+				<<"S">> ->
+				    {ok, ?PAY_SCAN_SUCCESS, OutTradeNo, PayMode};
+				<<"F">> ->
+				    {error, ?PAY_SCAN_FAILED, OutTradeNo, PayMode};
+				<<"A">> ->
+				    {error, ?PAY_SCAN_PAYING, OutTradeNo, PayMode};
+				<<"Z">> ->
+				    {error, ?PAY_SCAN_UNKOWN, OutTradeNo, PayMode};
+				<<"C">> ->
+				    {error, ?PAY_SCAN_CLOSED, OutTradeNo, PayMode}
+			    end;
+			_ ->
+			    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
+			    ?INFO("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
+			    {error, ?PAY_SCAN_FAILED, ReturnCode, Msg}
+		    end; 
+		{ok, {{"HTTP/1.1", HttpCode, _}, _Head, Reply}} ->
+		    ?DEBUG("HttpCode ~p, Head ~p, Reply ~ts", [HttpCode, _Head, Reply]),
+		    ?INFO("pay sacn http retun failed, merchant ~p, Reason ~p", [Merchant, HttpCode]),
+		    {error, pay_http_failed, HttpCode};
+		{error, Reason} ->
+		    ?INFO("pay sacn send http failed, merchant ~p, Reason ~p", [Merchant, Reason]),
+		    {error, pay_http_failed, Reason}
+	    end
+    end;
+
+pay_test_sx(query_sx, Merchant, PayOrder, PayTime) ->
+    ?DEBUG("query_sx: merchant ~p, PayOrder ~p, PayTime ~p", [Merchant, PayOrder, PayTime]),
+
+    OrgNo = "8028",
+    MchntCd = "80280106",
+    TermId = "QR802804048",
+    TradeKey = <<"80C2D8BDDB692B06F6B109E1A3A18D72">>,
+    Path = "http://test-gateway.dbs12580.com",
+    TradeTime = ?utils:current_time(localtime),
+    
+    S = lists:sort(
+	  [{<<"opSys">>, ?to_b(0)},
+	   {<<"orgNo">>, ?to_b(OrgNo)},
+	   {<<"merchantNo">>, ?to_b(MchntCd)},
+	   {<<"terminalNo">>, ?to_b(TermId)},
+	   {<<"outTradeNo">>, ?to_b(PayOrder)},
+	   {<<"tradeTime">>, ?to_b(TradeTime)},
+	   {<<"signType">>, ?to_b("MD5")},
+	   {<<"version">>, ?to_b("V1.0.0")},
+
+	   {<<"queryNo">>, ?to_b(PayOrder)},
+	   {<<"queryDate">>, ?to_b(PayTime)}
+	  ]),
+
+    ?DEBUG("S ~p", [S]),
+    Params = lists:foldr(
+	       fun({_K, V}, Acc)->
+		       <<V/binary, Acc/binary>>
+	       end, <<>>, S),
+    ?DEBUG("Params ~p", [Params]),
+
+    %% MD5 = crypto:hmac(md5, ?to_b(TradeKey), unicode:characters_to_list(Params, utf8)),
+    MD5 = crypto:hash(md5, unicode:characters_to_list(<<Params/binary, TradeKey/binary>>, utf8)),
+    ?DEBUG("MD5 ~p", [MD5]),
+    SignMD5 = ?wifi_print:bin2hex(sha1, MD5),
+    ?DEBUG("SingMD5 ~p", [SignMD5]),
+
+    Body = S ++ [{<<"signValue">>, ?to_b(SignMD5)}],
+    JsonBody = ejson:encode({Body}),
+    ?DEBUG("Body ~p", [Body]),
+    ?DEBUG("JsonBody ~p", [JsonBody]),
+
+    case 
+	httpc:request(
+	  post,
+	  {Path ++ "/mapi/pay/orderQuery",
+	   [], "application/json;charset=utf-8", JsonBody}, [], []) of
+	{ok, {{"HTTP/1.1", 200, _}, _Head, Reply}} -> 
+	    ?DEBUG("Head ~p, Reply ~ts", [_Head, Reply]),
+	    {struct, Info} = mochijson2:decode(Reply), 
+	    ?DEBUG("pay result ~p", [Info]),
+	    ReturnCode = ?v(<<"returnCode">>, Info),
+	    Msg = ?v(<<"message">>, Info),
+	    case ReturnCode of 
+		<<"000000">> ->
+		    TradeState = ?v(<<"result">>, Info), 
+		    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
+		    {PayMode, _} = get_pay_type(by_name, ?to_b(?v(<<"payMode">>, Info))),
+		    {ok,
+		     case TradeState of
+			    <<"S">> ->
+				?PAY_SCAN_SUCCESS;
+			    <<"F">> ->
+				?PAY_SCAN_FAILED;
+			    <<"A">> ->
+				?PAY_SCAN_PAYING;
+			    <<"Z">> ->
+				?PAY_SCAN_UNKOWN;
+			    <<"C">> ->
+				?PAY_SCAN_CLOSED
+			end,
+		     PayMode,
+		     ?to_i(?v(<<"totalAmount">>, Info, 0)) / 100
+		     }; 
+		_ ->
+		    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
+		    ?INFO("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
+		    {error, ?PAY_SCAN_FAILED, ReturnCode, Msg}
+	    end; 
+	{ok, {{"HTTP/1.1", HttpCode, _}, _Head, Reply}} ->
+	    ?DEBUG("HttpCode ~p, Head ~p, Reply ~ts", [HttpCode, _Head, Reply]),
+	    ?INFO("pay sacn http retun failed, merchant ~p, Reason ~p", [Merchant, HttpCode]),
+	    {error, pay_http_failed, HttpCode};
+	{error, Reason} ->
+	    ?INFO("pay sacn send http failed, merchant ~p, Reason ~p", [Merchant, Reason]),
+	    {error, pay_http_failed, Reason}
+    end.
     
 
 get_pay_type(by_prefix, PayCodePrefix) when PayCodePrefix =:= <<"10">>
@@ -499,19 +786,32 @@ get_pay_type(by_prefix, PayCodePrefix) when PayCodePrefix =:= <<"10">>
 					  orelse PayCodePrefix =:= <<"13">>
 					  orelse PayCodePrefix =:= <<"14">>
 					  orelse PayCodePrefix =:= <<"15">> ->
-    0;
+    {0, ?WXPAY};
 get_pay_type(by_prefix, PayCodePrefix) when PayCodePrefix =:= <<"25">>
 					  orelse PayCodePrefix =:= <<"26">>
 					  orelse PayCodePrefix =:= <<"27">>
 					  orelse PayCodePrefix =:= <<"28">>
 					  orelse PayCodePrefix =:= <<"29">>
 					  orelse PayCodePrefix =:= <<"30">> ->
-    1;
+    {1, ?ALIPAY};
 get_pay_type(by_prefix, PayCodePrefix) when PayCodePrefix =:= <<"62">> ->
-    6;
+    {6, ?YLPAY};
+get_pay_type(by_prefix, PayCodePrefix) when PayCodePrefix =:= <<"51">> ->
+    {5, ?BESTPAY};
 get_pay_type(by_prefix, _PayCodePrefix) ->
-    1.    
+    {1, ?ALIPAY};
 
+get_pay_type(by_name, ?WXPAY) ->
+    {0, ?WXPAY};
+get_pay_type(by_name, ?ALIPAY) ->
+    {1, ?ALIPAY};
+get_pay_type(by_name, ?YLPAY) ->
+    {6, ?YLPAY};
+get_pay_type(by_name, ?BESTPAY) ->
+    {5, ?BESTPAY};
+get_pay_type(by_name, _) ->
+    {1, ?ALIPAY}. 
+    
 pack_sn(String) when length(String) =:= ?MIN_SN_LEN ->
     "M" ++ String;
 pack_sn(String) when length(String) > ?MIN_SN_LEN ->

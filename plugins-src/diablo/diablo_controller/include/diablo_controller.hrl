@@ -48,7 +48,8 @@
 
 %% pay scan
 -define(MAX_PAY_SCAN, 10000).
--define(PAY_SCAN_CODE_LEN, 18).
+-define(PAY_SCAN_CODE_MIN_LEN, 16).
+-define(PAY_SCAN_CODE_MAX_LEN, 30).
 -define(PAY_SCAN_SUCCESS, 0).
 -define(PAY_SCAN_FAILED, 1).
 -define(PAY_SCAN_PAYING, 2).

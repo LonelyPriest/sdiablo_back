@@ -6,7 +6,8 @@ var diablo_max_pay_scan   = 99999;
 var diablo_max_sale_money = 99999;
 var diablo_wxin_scan = 0;
 var diablo_alipay_scan = 1;
-var diablo_scan_code_length = 18;
+var diablo_scan_code_min_length = 16;
+var diablo_scan_code_max_length = 30;
 
 var diablo_default_setting = -1;
 var diablo_default_shop = -1;

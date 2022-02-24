@@ -1698,67 +1698,37 @@ action(Session, Req, {"w_pay_scan"}, Payload) ->
 		{ok, []} ->
 		    ?utils:respond(200, Req, ?err(pay_scan_no_shop, ShopId));
 		{ok, Shop} ->
+		    %% case ?v(<<"pay_cd">>, Shop) of
+		    %% 	<<>> ->
+		    %% 	    ?utils:respond(200, Req, ?err(pay_scan_not_open, ShopId));
+		    %% 	undefined ->
+		    %% 	    ?utils:respond(200, Req, ?err(pay_scan_not_open, ShopId)); 
+		    %% 	MchntCd -> 
+		    %% 	    case start_pay(
+		    %% 		   PayUse,
+		    %% 		   Merchant,
+		    %% 		   ShopId,
+		    %% 		   PayType,
+		    %% 		   MchntCd,
+		    %% 		   PayCode,
+		    %% 		   Balance) of
+		    %% 		{{ECode, EInfo}, Extra} ->
+		    %% 		    ?utils:respond(200, Req, {ECode, EInfo}, Extra);
+		    %% 		{ECode, EInfo} ->
+		    %% 		    ?utils:respond(200, Req, {ECode, EInfo})
+		    %% 	    end
+		    %% end,
+
 		    case ?v(<<"pay_cd">>, Shop) of
 			<<>> ->
 			    ?utils:respond(200, Req, ?err(pay_scan_not_open, ShopId));
 			undefined ->
 			    ?utils:respond(200, Req, ?err(pay_scan_not_open, ShopId)); 
 			MchntCd -> 
-			    %% case diablo_pay:pay(wwt, Merchant, MchntCd, PayCode, Balance) of
-			    %% 		{ok, ?PAY_SCAN_SUCCESS, PayOrder, PayType, PayBalance} ->
-			    %% 		    Extra = [{<<"pay_order">>, ?to_b(PayOrder)},
-			    %% 			     {<<"balance">>, PayBalance},
-			    %% 			     {<<"pay_type">>, PayType}],
-			    %% 		    case ?w_sale:pay_scan(
-			    %% 			    start,
-			    %% 			    Merchant,
-			    %% 			    ShopId,
-			    %% 			    {PayType, ?PAY_SCAN_SUCCESS, ?NEW_SALE, PayOrder, PayBalance}) of
-			    %% 			{ok, _} ->
-			    %% 			    ?utils:respond(
-			    %% 			       200, Req, ?succ(pay_scan, Merchant), Extra);
-			    %% 			{error, _Error} ->
-			    %% 			    ?utils:respond(
-			    %% 			       200,
-			    %% 			       Req,
-			    %% 			       ?err(pay_scan_success_but_db_error, PayOrder),
-			    %% 			       Extra)
-			    %% 		    end;
-			    %% 		{error, ?PAY_SCAN_UNKOWN, PayOrderNo} ->
-			    %% 		    PayType = ?v(<<"type">>, Payload),
-			    %% 		    ?w_sale:pay_scan(
-			    %% 		       start,
-			    %% 		       Merchant,
-			    %% 		       ShopId,
-			    %% 		       {PayType, ?PAY_SCAN_UNKOWN, ?NEW_SALE, PayOrderNo, Balance}),
-			    %% 		    ?utils:respond(
-			    %% 		       200, Req, ?err(pay_scan_unkown, PayOrderNo),
-			    %% 		       [{<<"pay_order">>, ?to_b(PayOrderNo)}]); 
-
-			    %% 		{error, invalid_pay_scan_code_len, PayCode} ->
-			    %% 		    ?utils:respond(
-			    %% 		       200,
-			    %% 		       Req,
-			    %% 		       ?err(invalid_pay_scan_code_len, PayCode));
-			    %% 		{error, pay_http_failed, Reason} ->
-			    %% 		    ?utils:respond(
-			    %% 		       200,
-			    %% 		       Req,
-			    %% 		       ?err(pay_http_failed, Reason)); 
-			    %% 		{error, Code, _PayOrderNo} -> 
-			    %% 		    ?utils:respond(
-			    %% 		       200,
-			    %% 		       Req,
-			    %% 		       ?err(pay_scan_failed, Merchant),
-			    %% 		       [{<<"pay_code">>, ?to_b(Code)}]) 
-			    %% 	    end
-			    %%     end;
-			    %% {error, Error} ->
-			    %%     ?utils:respond(200, Req, Error)
 			    case start_pay(
 				   PayUse,
 				   Merchant,
-				   ShopId,
+				   Shop,
 				   PayType,
 				   MchntCd,
 				   PayCode,
@@ -1769,6 +1739,7 @@ action(Session, Req, {"w_pay_scan"}, Payload) ->
 				    ?utils:respond(200, Req, {ECode, EInfo})
 			    end
 		    end
+			
 	    end;
 	false ->
 	    ?utils:respond(200, Req, ?err(pay_can_max_balance, Balance))
@@ -1793,6 +1764,7 @@ action(Session, Req, {"check_w_pay_scan"}, Payload) ->
     ShopId   = ?v(<<"shop">>, Payload),
     PayOrder = ?v(<<"pay_order">>, Payload),
     PayUse   = ?v(<<"use">>, Payload),
+    PayTime   = ?v(<<"pay_time">>, Payload),
     case ?shop:shop(get, Merchant, ShopId) of
 	{ok, Shop} ->
 	    MchntCd = ?v(<<"pay_cd">>, Shop),
@@ -1825,7 +1797,7 @@ action(Session, Req, {"check_w_pay_scan"}, Payload) ->
 	    %% 	       ?err(check_pay_scan_failed, MchntOrder),
 	    %% 	       [{<<"pay_code">>, ?to_b(Code)}])
 	    %% end;
-	    case check_pay(PayUse, Merchant, ShopId, MchntCd, PayOrder) of
+	    case check_pay(PayUse, Merchant, Shop, MchntCd, PayOrder, PayTime) of
 		{Result, Extra} ->
 		    ?utils:respond(200, Req, Result, Extra);
 		Result ->
@@ -3126,7 +3098,8 @@ send_sms(Merchant, Action, ShopId, Retailer, Score0, ShouldPay) ->
 	    ?err(sms_send_failed, Merchant)
     end.
 	    
-start_pay(0, Merchant, ShopId, PayType, MchntCd, PayCode, Balance) ->
+start_pay(0, Merchant, Shop, PayType, MchntCd, PayCode, Balance) ->
+    ShopId = ?v(<<"id">>, Shop),
     case diablo_pay:pay(wwt, Merchant, MchntCd, PayCode, Balance) of
 	{ok, ?PAY_SCAN_SUCCESS, PayOrder, RealPayType, PayBalance} ->
 	    Extra = [{<<"pay_order">>, ?to_b(PayOrder)},
@@ -3158,7 +3131,9 @@ start_pay(0, Merchant, ShopId, PayType, MchntCd, PayCode, Balance) ->
 	       {?err(pay_scan_failed, Merchant), [{<<"pay_code">>, ?to_b(Code)}]} 
     end;
 
-start_pay(1, Merchant, ShopId, PayType, MchntCd, PayCode, Balance) -> 
+start_pay(1, Merchant, Shop, PayType, MchntCd, PayCode, Balance) ->
+    ShopId = ?v(<<"id">>, Shop),
+    PayTime = ?utils:current_time(localtime), 
     case diablo_pay:pay_yc(yc, Merchant, MchntCd, PayCode, Balance) of
 	{ok, ?PAY_SCAN_SUCCESS, PayOrder, RealPayType} ->
 	    Extra = [{<<"pay_order">>, ?to_b(PayOrder)},
@@ -3168,7 +3143,7 @@ start_pay(1, Merchant, ShopId, PayType, MchntCd, PayCode, Balance) ->
 		    start,
 		    Merchant,
 		    ShopId,
-		    {RealPayType, ?PAY_SCAN_SUCCESS, ?NEW_SALE, PayOrder, Balance}) of
+		    {RealPayType, ?PAY_SCAN_SUCCESS, ?NEW_SALE, PayOrder, Balance, PayTime}) of
 		{ok, _} ->
 		    {?succ(pay_scan, Merchant), Extra}; 
 		{error, _Error} ->
@@ -3189,15 +3164,61 @@ start_pay(1, Merchant, ShopId, PayType, MchntCd, PayCode, Balance) ->
 	    ?err(pay_http_failed, Reason);
 	{error, pay_http_trans_failed, TransCode} ->
 	    ?err(pay_http_trans_failed, TransCode)
+    end;
+
+start_pay(2, Merchant, Shop, _PayType, MchntCd, PayCode, Balance) ->
+    ShopId = ?v(<<"id">>, Shop),
+    PayTerm = ?v(<<"pay_term">>, Shop),
+    PayKey = ?v(<<"pay_key">>, Shop),
+    case ?utils:check_empty(pay, PayTerm)
+	orelse ?utils:check_empty(pay, PayKey) of
+	true ->
+	    {?err(pay_scan_not_open, ShopId)};
+	false ->
+	    %% record first
+	    {RealPayType, _} = diablo_pay:get_pay_type(by_prefix, PayCode),
+	    PayOrder = diablo_pay:pack_sn(?to_s(?inventory_sn:sn(pay_order_sn, Merchant))),
+	    PayTime = ?utils:current_time(localtime),
+	    case ?w_sale:pay_scan(
+		    start,
+		    Merchant,
+		    ShopId,
+		    {RealPayType, ?PAY_SCAN_UNKOWN, ?NEW_SALE, PayOrder, Balance, PayTime}) of
+		{ok, _} ->
+		    case diablo_pay:pay_sx(
+			   sx,
+			   Merchant,
+			   {MchntCd, PayOrder, PayTime, PayTerm, PayKey},
+			   PayCode,
+			   Balance) of
+			{ok, ?PAY_SCAN_SUCCESS} ->
+			    Extra = [{<<"pay_order">>, ?to_b(PayOrder)},
+			    	     {<<"balance">>, Balance},
+			    	     {<<"pay_type">>, RealPayType}], 
+			    {?succ(pay_scan, Merchant), Extra}; 
+			{ok, ?PAY_SCAN_UNKOWN} -> 
+			    {?err(pay_scan_unkown, PayOrder), [{<<"pay_order">>, ?to_b(PayOrder)}]};
+			{error, ?PAY_SCAN_FAILED, Code} ->
+			    {?err(pay_scan_failed, Merchant), [{<<"pay_code">>, ?to_b(Code)}]};
+			{error, invalid_pay_scan_code_len, PayCode} ->
+			    ?err(invalid_pay_scan_code_len, PayCode); 
+			{error, pay_http_failed, Reason} ->
+			    ?err(pay_http_failed, Reason);
+			{error, pay_http_trans_failed, TransCode} ->
+			    ?err(pay_http_trans_failed, TransCode)
+		    end; 
+		Error ->
+		    Error
+	    end 
     end.
     
-check_pay(0, Merchant, ShopId, MchntCd, PayOrder) ->
+check_pay(0, Merchant, Shop, MchntCd, PayOrder, _PayTime) ->
     case diablo_pay:pay(wwt_query, MchntCd, PayOrder) of
 	{ok, PayState, PayType, PayBalance} ->
 	    case ?w_sale:pay_scan(
 		    check,
 		    Merchant,
-		    ShopId,
+		    ?v(<<"id">>, Shop),
 		    {PayType, PayState, PayOrder, PayBalance}) of
 		{ok, _} ->
 		    {?succ(check_pay_scan, PayOrder),
@@ -3213,13 +3234,39 @@ check_pay(0, Merchant, ShopId, MchntCd, PayOrder) ->
 	    {?err(check_pay_scan_failed, MchntOrder), [{<<"pay_code">>, ?to_b(Code)}]}
     end;
 
-check_pay(1, Merchant, ShopId, MchntCd, PayOrder) ->
+check_pay(1, Merchant, Shop, MchntCd, PayOrder, _PayTime) ->
     case diablo_pay:pay_yc(query_yc, Merchant, MchntCd, PayOrder) of
 	{ok, PayState, PayType, PayBalance} ->
 	    case ?w_sale:pay_scan(
 		    check,
 		    Merchant,
-		    ShopId,
+		    ?v(<<"id">>, Shop),
+		    {PayType, PayState, PayOrder, PayBalance}) of
+		{ok, _} ->
+		    {?succ(check_pay_scan, PayOrder),
+		     [{<<"balance">>, PayBalance},
+		      {<<"pay_type">>, PayType},
+		      {<<"pay_state">>, PayState}]};
+		{error, _CheckError} ->
+		    ?err(check_pay_scan_but_db_error, PayOrder)		    
+	    end; 
+	{error, pay_http_trans_failed, Reason} ->
+	    ?err(check_pay_http_trans_failed, Reason);
+	{error, pay_http_failed, Reason} ->
+	    ?err(check_pay_http_failed, Reason); 
+	{error, pay_scan_failed, Code} ->
+	    {?err(check_pay_scan_failed, Code), [{<<"pay_code">>, ?to_b(Code)}]}
+    end;
+
+check_pay(2, Merchant, Shop, MchntCd, PayOrder, PayTime) ->
+    PayTerm = ?v(<<"pay_term">>, Shop),
+    PayKey = ?v(<<"pay_key">>, Shop),
+    case diablo_pay:pay_sx(query_sx, Merchant, MchntCd, PayOrder,  PayTime, PayTerm, PayKey) of
+	{ok, PayState, PayType, PayBalance} ->
+	    case ?w_sale:pay_scan(
+		    check,
+		    Merchant,
+		    ?v(<<"id">>, Shop),
 		    {PayType, PayState, PayOrder, PayBalance}) of
 		{ok, _} ->
 		    {?succ(check_pay_scan, PayOrder),

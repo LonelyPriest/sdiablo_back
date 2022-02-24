@@ -3926,7 +3926,6 @@ function wsaleNewProvide(
 	else {
 	    // default alipay
 	    $scope.select.pay_order = pay_order; 
-	    $scope.select.wxin = 0;
 	    $scope.select.aliPay = wsaleUtils.to_float(pay_balance);
 	} 
     };
@@ -3975,7 +3974,9 @@ function wsaleNewProvide(
     $scope.pay_scan = function(pay_type) {
 	var callback = function(params) {
 	    console.log(params);
-	    if (params.pay_code.toString().length !== diablo_scan_code_length) {
+	    var pay_code_len = params.pay_code.toString().length;
+	    if (pay_code_len < diablo_scan_code_min_length
+		|| pay_code_len > diablo_scan_code_max_length) {
 		dialog.set_error("扫码支付", 2617);
 	    } else {
 		diabloFilter.pay_scan(
