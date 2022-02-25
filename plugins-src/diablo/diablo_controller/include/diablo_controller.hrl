@@ -61,6 +61,7 @@
 -define(PAY_SCAN_REVOKED, 8).
 -define(PAY_SCAN_UNKOWN, 9).
 -define(PAY_SCAN_NEED_QUERY, 10).
+-define(PAY_SCAN_ABNORMAL, 11).
 
 %% WeiXin Pay Code
 -define(PREFIX_WEI_XIN, [<<"10">>, <<"11">>, <<"12">>, <<"13">>, <<"14">>, <<"15">>]).

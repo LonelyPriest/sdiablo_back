@@ -4,7 +4,7 @@
 -include("diablo_controller.hrl").
 
 -export([pay/3, pay/5]).
--export([pay_yc/4, pay_yc/5, pay_sx/9, pay_sx/7]).
+-export([pay_yc/4, pay_yc/5, pay_sx/5, pay_sx/7]).
 -export([pack_sn/1, get_pay_type/2]).
 -export([pay_test_sx/4]).
 
@@ -18,6 +18,8 @@
 -define(YC_PAY_QUERY_SERVICE, "unified.trade.query").
 
 -define(SX_ORGANIZE, "8080").
+%% -define(SX_TEST_ORGANIZE, "8028").
+%% -define(SX_TEST_PATH, "http://test-gateway.dbs12580.com").
 -define(SX_PATH, "http://gateway.dbs12580.com").
 -define(WXPAY, <<"WXPAY">>).
 -define(ALIPAY, <<"ALIPAY">>).
@@ -419,14 +421,14 @@ pay_yc(query_yc, Merchant, MchntCd, MchntOrder) ->
 	    {error, pay_http_failed, Reason}
     end.
 
-pay_sx(sx, Merchant, MchntCd, PayOrder, PayTime, PayTerm, PayKey, PayCode, Moneny) ->
+pay_sx(sx, Merchant, {MchntCd, PayOrder, PayTime, PayTerm, PayKey}, PayCode, Moneny) ->
     ?DEBUG("pay sx: merchant ~p, MchntCd ~p, PayCode ~p, Moneny ~p",
 	   [Merchant, MchntCd, PayCode, Moneny]),
     PayCodeLen = erlang:size(PayCode),
     case PayCodeLen < ?PAY_SCAN_CODE_MIN_LEN
 	orelse PayCodeLen > ?PAY_SCAN_CODE_MAX_LEN of 
 	true ->
-	    {error, invalid_pay_scan_code_len, PayCode};
+	    {error, invalid_pay_scan_code_len};
 	false -> 
 	    <<PayCodePrefix:2/binary, _/binary>> = ?to_b(PayCode),
 	    {_, PayMode} = get_pay_type (by_prefix, PayCodePrefix), 
@@ -481,20 +483,20 @@ pay_sx(sx, Merchant, MchntCd, PayOrder, PayTime, PayTerm, PayKey, PayCode, Monen
 			    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
 			    case TradeState of
 				<<"S">> ->
-				    {ok, ?PAY_SCAN_SUCCESS, PayOrder, PayMode};
+				    {ok, ?PAY_SCAN_SUCCESS};
 				<<"F">> ->
-				    {error, ?PAY_SCAN_FAILED, PayOrder, PayMode};
+				    {error, ?PAY_SCAN_FAILED};
 				<<"A">> ->
-				    {error, ?PAY_SCAN_PAYING, PayOrder, PayMode};
+				    {error, ?PAY_SCAN_PAYING};
 				<<"Z">> ->
-				    {error, ?PAY_SCAN_UNKOWN, PayOrder, PayMode};
+				     {error, ?PAY_SCAN_UNKOWN};
 				<<"C">> ->
-				    {error, ?PAY_SCAN_CLOSED, PayOrder, PayMode}
+				    {error, ?PAY_SCAN_CLOSED}
 			    end;
 			_ ->
 			    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
 			    ?INFO("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
-			    {error, ?PAY_SCAN_FAILED, ReturnCode, Msg}
+			    {error, ?PAY_SCAN_ABNORMAL, ReturnCode, Msg}
 		    end; 
 		{ok, {{"HTTP/1.1", HttpCode, _}, _Head, Reply}} ->
 		    ?DEBUG("HttpCode ~p, Head ~p, Reply ~ts", [HttpCode, _Head, Reply]),
@@ -502,12 +504,12 @@ pay_sx(sx, Merchant, MchntCd, PayOrder, PayTime, PayTerm, PayKey, PayCode, Monen
 		    {error, pay_http_failed, HttpCode};
 		{error, Reason} ->
 		    ?INFO("pay sacn send http failed, merchant ~p, Reason ~p", [Merchant, Reason]),
-		    {error, pay_http_failed, Reason}
+		    {error, pay_http_trans_failed, Reason}
 	    end
     end.
 
 pay_sx(query_sx, Merchant, MchntCd, PayOrder, PayTime, PayTerm, PayKey) ->
-    ?DEBUG("query_sx: merchant ~p, MchntCd ~p, PayOrder ~p, PayTime ~p, PayTerm, PayKey",
+    ?DEBUG("query_sx: merchant ~p, MchntCd ~p, PayOrder ~p, PayTime ~p, PayTerm ~p, PayKey ~p",
 	   [Merchant, MchntCd, PayOrder, PayTime, PayTerm, PayKey]),
 
     TradeTime = ?utils:current_time(localtime),
@@ -559,26 +561,23 @@ pay_sx(query_sx, Merchant, MchntCd, PayOrder, PayTime, PayTerm, PayKey) ->
 		    TradeState = ?v(<<"result">>, Info), 
 		    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
 		    {PayMode, _} = get_pay_type(by_name, ?to_b(?v(<<"payMode">>, Info))),
-		    {ok,
+		    TotalFee = ?to_i(?v(<<"totalAmount">>, Info, 0)) / 100,
 		     case TradeState of
 			 <<"S">> ->
-			     ?PAY_SCAN_SUCCESS;
+			     {ok, ?PAY_SCAN_SUCCESS, PayMode, TotalFee};
 			 <<"F">> ->
-			     ?PAY_SCAN_FAILED;
+			     {ok, ?PAY_SCAN_FAILED, PayMode, TotalFee};
 			 <<"A">> ->
-			     ?PAY_SCAN_PAYING;
+			     {ok, ?PAY_SCAN_PAYING, PayMode, TotalFee};
 			 <<"Z">> ->
-			     ?PAY_SCAN_UNKOWN;
+			     {ok, ?PAY_SCAN_UNKOWN, PayMode, TotalFee};
 			 <<"C">> ->
-			     ?PAY_SCAN_CLOSED
-		     end,
-		     PayMode,
-		     ?to_i(?v(<<"totalAmount">>, Info, 0)) / 100
-		    }; 
+			     {ok, ?PAY_SCAN_CLOSED, PayMode, TotalFee}
+		     end; 
 		_ ->
 		    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
 		    ?INFO("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
-		    {error, ?PAY_SCAN_FAILED, ReturnCode, Msg}
+		    {error, ?PAY_SCAN_ABNORMAL, ReturnCode, Msg}
 	    end; 
 	{ok, {{"HTTP/1.1", HttpCode, _}, _Head, Reply}} ->
 	    ?DEBUG("HttpCode ~p, Head ~p, Reply ~ts", [HttpCode, _Head, Reply]),
@@ -586,7 +585,7 @@ pay_sx(query_sx, Merchant, MchntCd, PayOrder, PayTime, PayTerm, PayKey) ->
 	    {error, pay_http_failed, HttpCode};
 	{error, Reason} ->
 	    ?INFO("pay sacn send http failed, merchant ~p, Reason ~p", [Merchant, Reason]),
-	    {error, pay_http_failed, Reason}
+	    {error, pay_http_trans_failed, Reason}
     end.
 
 
@@ -679,7 +678,7 @@ pay_test_sx(sx, Merchant, PayCode, Moneny) ->
 			_ ->
 			    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
 			    ?INFO("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
-			    {error, ?PAY_SCAN_FAILED, ReturnCode, Msg}
+			    {error, ?PAY_SCAN_ABNORMAL, ReturnCode, Msg}
 		    end; 
 		{ok, {{"HTTP/1.1", HttpCode, _}, _Head, Reply}} ->
 		    ?DEBUG("HttpCode ~p, Head ~p, Reply ~ts", [HttpCode, _Head, Reply]),
@@ -815,7 +814,7 @@ get_pay_type(by_name, _) ->
 pack_sn(String) when length(String) =:= ?MIN_SN_LEN ->
     "M" ++ String;
 pack_sn(String) when length(String) > ?MIN_SN_LEN ->
-    String;
+    "M" ++ String;
 pack_sn(String) when length(String) < ?MIN_SN_LEN ->
     pack_sn(String, "0").
 

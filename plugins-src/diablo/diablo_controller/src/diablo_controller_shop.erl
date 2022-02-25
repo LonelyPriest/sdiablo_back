@@ -207,7 +207,13 @@ handle_call({delete_shop, Merchant, _UTable, ShopId}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({get_shop, Merchant, ShopId}, _From, State) ->
-    Sql = "select id, name, sms_sign, pay_cd from shops"
+    Sql = "select id"
+	", name"
+	", sms_sign"
+	", pay_cd"
+	", pay_term"
+	", pay_key"
+	" from shops"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and id=" ++ ?to_s(ShopId),
     Reply = ?sql_utils:execute(s_read, Sql),

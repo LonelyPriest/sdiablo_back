@@ -6,6 +6,8 @@ var diablo_max_pay_scan   = 99999;
 var diablo_max_sale_money = 99999;
 var diablo_wxin_scan = 0;
 var diablo_alipay_scan = 1;
+var diablo_best_pay_scan = 5;
+var diablo_yl_pay_scan = 6;
 var diablo_scan_code_min_length = 16;
 var diablo_scan_code_max_length = 30;
 
@@ -1394,7 +1396,7 @@ var diabloHelp = function(){
 	pay_scan:function(payCode, shop, filterPromise, dialog, failTitle, callback) {
 	    
 	},
-
+	
 	cal_color_len_by_barcode: function(barcodeColorSize, stockColors) {
 	    var color_len = 0;
 	    if (barcodeColorSize.length === diablo_barcode_lenth_of_color_size) {

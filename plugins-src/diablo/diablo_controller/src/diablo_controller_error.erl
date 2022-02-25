@@ -663,6 +663,12 @@ error(pay_scan_unkown, PayOrderNo) ->
     {2687, "unkown state while pay scan:" ++ ?to_s(PayOrderNo)};
 error(pay_scan_success_but_db_error, PayOrderNo) ->
     {2688, "success to pay, error to db:" ++ ?to_s(PayOrderNo)};
+error(pay_scan_paying, PayOrderNo) ->
+    {2689, "paying state while pay scan:" ++ ?to_s(PayOrderNo)};
+error(pay_scan_closed, PayOrderNo) ->
+    {2690, "closed state while pay scan:" ++ ?to_s(PayOrderNo)};
+error(pay_scan_abnormal, PayOrderNo) ->
+    {2691, "pay scan abnormal:" ++ ?to_s(PayOrderNo)};
 
 %% about print
 error(invalid_sn, PrintSN) ->

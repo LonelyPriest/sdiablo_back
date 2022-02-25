@@ -3932,7 +3932,7 @@ function wsaleNewProvide(
     
     $scope.check_pay_scan = function(pay) {
 	diabloFilter.check_pay_scan(
-	    pay.sn, pay.shop_id, $scope.setting.pay_scan_use
+	    pay.sn, pay.shop_id, $scope.setting.pay_scan_use, pay.entry_date
 	).then(function(result) {
 	    console.log(result); 
 	    if (result.ecode === 0) {
@@ -3947,11 +3947,32 @@ function wsaleNewProvide(
 		    true,
 		    "扫码支付核实",
 		    "扫码支付核实成功，系统更新支付信息失败！！");
-	    } else if (result.ecode === 2615) {
+	    } else if (result.ecode === 2614) {
 		dialog.response(
 		    false,
 		    "扫码支付核实",
-		    "扫码支付核实失败，请尝试重新核实！！" + "错误码=" + result.pay_code.toString());
+		    "扫码支付核实失败，请重新扫码！！");
+	    } else if (result.ecode === 2687) {
+		dialog.response(
+		    false,
+		    "扫码支付",
+		    "用户支付状态未知，请主动通过支付记录核对支付结果后操作！！") ;
+	    } else if (result.ecode === 2689) {
+		dialog.response(
+		    false,
+		    "扫码支付",
+		    "用户支付中，请主动核对支付结果后操作！！");
+	    } else if (result.ecode === 2690) {
+		dialog.response(
+		    false,
+		    "扫码支付",
+		    "用户支付失败，支付已关闭，请重新扫码！！");
+	    } else if (result.ecode === 2691) {
+		dialog.response(
+		    false,
+		    "扫码支付",
+		    "扫码支付失败，请重新扫码！！错误码="
+			+ result.pay_code.toString() + result.msg.toString());
 	    } else {
 		dialog.set_error("扫码支付", result.ecode);
 	    }
@@ -3989,13 +4010,18 @@ function wsaleNewProvide(
 		    console.log(result); 
 		    if (result.ecode === 0) {
 			// play sound
-			var paySpeak = new diabloPaySpeak(); 
+			var paySpeak = new diabloPaySpeak();
+			var content = diablo_set_string(result.balance) + "元";
 			if (pay_type === diablo_wxin_scan) {
-			    paySpeak.set_text(
-				"微信收款" + diablo_set_string(result.balance) + "元"); 
+			    paySpeak.set_text("微信收款" + content); 
+			} else if (pay_type === diablo_alipay_scan){
+			    paySpeak.set_text("支付宝收款" + content); 
+			} else if (pay_type === diablo_best_pay_scan) {
+			    paySpeak.set_text("翼支付收款" + content); 
+			} else if (pay_type === diablo_yl_pay_scan) {
+			    paySpeak.set_text("云闪付收款" + content); 
 			} else {
-			    paySpeak.set_text(
-				"支付宝收款" + diablo_set_string(result.balance) + "元"); 
+			    paySpeak.set_text("支付宝收款" + content); 
 			}
 			paySpeak.speak();
 			
@@ -4006,18 +4032,36 @@ function wsaleNewProvide(
 			dialog.response(
 			    false,
 			    "扫码支付",
-			    "用户支付状态未知，请主动通过支付记录核对支付结果后操作！！") 
+			    "用户支付状态未知，请主动通过支付记录核对支付结果后操作！！") ;
 		    } else if (result.ecode === 2688) {
 			get_pay_scan_balance(result.pay_order, result.pay_type, result.balance);
 			dialog.response(
 			    true,
 			    "扫码支付",
 			    "扫码支付成功，系统记录支付信息失败！！");
+		    } else if (result.ecode === 2689) {
+			$scope.refresh_pay_scan(result.pay_order);
+			dialog.response(
+			    false,
+			    "扫码支付",
+			    "用户支付中，请主动核对支付结果后操作！！");
+		    } else if (result.ecode === 2690) {
+			$scope.refresh_pay_scan(result.pay_order);
+			dialog.response(
+			    false,
+			    "扫码支付",
+			    "用户支付失败，支付已关闭！！");
 		    } else if (result.ecode === 2614) {
 			dialog.response(
 			    false,
 			    "扫码支付",
-			    "扫码支付失败，请重新扫码！！" + "错误码=" + result.pay_code.toString());
+			    "扫码支付失败，请重新扫码！！");
+		    } else if (result.ecode === 2691) {
+			dialog.response(
+			    false,
+			    "扫码支付",
+			    "扫码支付失败，请重新扫码！！错误码="
+				+ result.pay_code.toString() + result.msg.toString());
 		    } else {
 			dialog.set_error("扫码支付", result.ecode);
 		    } 

@@ -102,6 +102,9 @@ format_date(Year, Month, Date) ->
 format_date({Year, Month, Date}) ->
     format_date(Year, Month, Date).
 
+format_date(yyyyMMdd, {Year, Month, Date}) ->
+    lists:flatten(io_lib:format("~4..0w~2..0w~2..0w", [Year, Month, Date])).
+
 
 small_date(date, {Y, M, D}, {Y1, M1, D1}) ->
     case calendar:date_to_gregorian_days({Y, M, D}) < calendar:date_to_gregorian_days({Y1, M1, D1}) of

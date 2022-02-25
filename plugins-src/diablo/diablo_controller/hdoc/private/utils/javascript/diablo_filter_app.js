@@ -1268,9 +1268,10 @@ function filterProvider(){
 		     count:  itemsPerpage}).$promise;
 	    },
 
-	    check_pay_scan:function(pay_order, shop, pay_use) {
+	    check_pay_scan:function(pay_order, shop, pay_use, pay_time) {
 		return _wsaleHttp.save(
-		    {operation:"check_w_pay_scan"}, {pay_order:pay_order, shop:shop, use:pay_use}).$promise;
+		    {operation:"check_w_pay_scan"},
+		    {pay_order:pay_order, shop:shop, use:pay_use, pay_time:pay_time}).$promise;
 	    }
 	    
 	    // 
