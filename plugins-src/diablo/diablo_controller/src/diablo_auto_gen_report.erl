@@ -26,6 +26,7 @@
 	 terminate/2, code_change/3]).
 
 -export([syn_report/3, sys_vip_of/2, syn_ticket/2]).
+-export([syn_stastic_per_shop/5]).
 
 -export([gen_report/3]).
 
@@ -49,6 +50,7 @@ cancel_report(stastic_per_shop) ->
     gen_server:cast(?SERVER, cancel_stastic_per_shop). 
 syn_report(stastic_per_shop, {Merchant, UTable}, Conditions) ->
     %% 30 minute
+    %% ?DEBUG("syn_report: Merchant ~p, UTable ~p, Conditions ~p", [Merchant, UTable, Conditions]),
     gen_server:call(?SERVER, {syn_stastic_per_shop, Merchant, UTable, Conditions}, 60000 * 30).
 
 add(report_task, Merchant, TriggerTime) ->
@@ -280,6 +282,7 @@ code_change(_OldVsn, State, _Extra) ->
 syn_stastic_per_shop(_Merchant, _UTable, _Shop, StartDay, EndDay) when StartDay >= EndDay -> 
     ok;
 syn_stastic_per_shop(Merchant, UTable, Shop, StartDay, EndDay) ->
+    %% ?DEBUG("syn_stastic_per_shop: StartDay ~p, EndDay ~p", [StartDay, EndDay]),
     %% {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, Shop),
     %% BaseSettings = ?w_report_request:get_setting(Merchant, Shop),
     
@@ -1240,7 +1243,7 @@ stock(fix, [{StockFix}]) ->
      ?v(<<"cost">>, StockFix, 0)}.
 
 charge(info, []) ->
-    {0, 0, 0, 0};
+    {0, 0, 0, 0, 0};
 charge(info, [{ChargeInfo}]) ->
     {?v(<<"cbalance">>, ChargeInfo, 0),
      ?v(<<"sbalance">>, ChargeInfo, 0),
