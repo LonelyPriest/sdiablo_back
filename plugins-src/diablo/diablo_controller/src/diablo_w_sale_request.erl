@@ -3176,7 +3176,8 @@ start_pay(2, Merchant, Shop, _PayType, MchntCd, PayCode, Balance) ->
 	    {?err(pay_scan_not_open, ShopId)};
 	false ->
 	    %% record first
-	    {RealPayType, _} = diablo_pay:get_pay_type(by_prefix, PayCode),
+	    {RealPayType, _} = diablo_pay:get_pay_type(PayCode),
+	    %% ?DEBUG("RealPayType ~p", [RealPayType]),
 	    PayOrder = diablo_pay:pack_sn(?to_s(?inventory_sn:sn(pay_order_sn, Merchant))),
 	    PayTime = ?utils:current_time(localtime),
 	    case ?w_sale:pay_scan(

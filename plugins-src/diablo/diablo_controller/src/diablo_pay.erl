@@ -5,7 +5,7 @@
 
 -export([pay/3, pay/5]).
 -export([pay_yc/4, pay_yc/5, pay_sx/5, pay_sx/7]).
--export([pack_sn/1, get_pay_type/2]).
+-export([pack_sn/1, get_pay_type/1]).
 -export([pay_test_sx/4]).
 
 -define(MIN_SN_LEN, 7).
@@ -778,6 +778,9 @@ pay_test_sx(query_sx, Merchant, PayOrder, PayTime) ->
 	    {error, pay_http_failed, Reason}
     end.
     
+get_pay_type(PayCode) ->
+    <<Prefix:2/binary, _/binary>> = ?to_b(PayCode),
+    get_pay_type(by_prefix, Prefix).
 
 get_pay_type(by_prefix, PayCodePrefix) when PayCodePrefix =:= <<"10">>
 					  orelse PayCodePrefix =:= <<"11">>
