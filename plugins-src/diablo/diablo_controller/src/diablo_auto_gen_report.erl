@@ -42,7 +42,9 @@
 %%% API
 %%%===================================================================
 lookup(state) ->
-    gen_server:call(?SERVER, lookup_state).
+    gen_server:call(?SERVER, lookup_state);
+lookup(task_of_per_shop) ->
+    gen_server:call(?SERVER, lookup_task_of_pershop).
 
 report(stastic_per_shop, TriggerTime) ->
     gen_server:cast(?SERVER, {stastic_per_shop, TriggerTime}). 
@@ -116,6 +118,14 @@ handle_call(lookup_state, _From, #state{merchant=Merchants,
 					ticket_of_merchant=Tickets} = State) ->
     {reply, {Merchants, Tasks, Tickets}, State};
 
+handle_call(lookup_task_of_pershop,
+	    _From,
+	    #state{merchant=_Merchants,
+		   task_of_per_shop=Tasks,
+		   ticket_of_merchant=_Tickets} = State) ->
+    
+    {reply, Tasks, State};
+
 handle_call({syn_stastic_per_shop, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("syn_stastic_per_shop: merchant ~p, conditions ~p", [Merchant, Conditions]),
     StartTime = ?v(<<"start_time">>, Conditions),
@@ -153,7 +163,7 @@ handle_call(_Request, _From, State) ->
     {reply, Reply, State}.
 
 handle_cast({stastic_per_shop, TriggerTime}, #state{merchant=Merchants, task_of_per_shop=Tasks} = State) ->
-    %% ?DEBUG("stastic_per_shop ~p, tasks ~p", [TriggerTime, Tasks]),
+    ?DEBUG("stastic_per_shop ~p, tasks ~p", [TriggerTime, Tasks]),
     case Tasks of
 	[] -> 
 	    NewTasks = 
@@ -164,8 +174,8 @@ handle_cast({stastic_per_shop, TriggerTime}, #state{merchant=Merchants, task_of_
 					      task(stastic_per_shop, Datetime, M)
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
-		  end, [], Merchants),
-	    %% end, [], [101]),
+			  %% end, [], Merchants),
+	    end, [], [138]),
 	    %% ?DEBUG("new tasks ~p with merchants ~p", [NewTasks, Merchants]),
 	    %% {noreply, #state{merchant=Merchants, task_of_per_shop=NewTasks}};
 	    {noreply, State#state{task_of_per_shop=NewTasks}};

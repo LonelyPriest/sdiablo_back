@@ -3178,7 +3178,8 @@ start_pay(2, Merchant, Shop, _PayType, MchntCd, PayCode, Balance) ->
 	    %% record first
 	    {RealPayType, _} = diablo_pay:get_pay_type(PayCode),
 	    %% ?DEBUG("RealPayType ~p", [RealPayType]),
-	    PayOrder = diablo_pay:pack_sn(?to_s(?inventory_sn:sn(pay_order_sn, Merchant))),
+	    PayOrder = ?to_s(Merchant)
+		++ diablo_pay:pack_sn(?to_s(?inventory_sn:sn(pay_order_sn, Merchant))),
 	    PayTime = ?utils:current_time(localtime),
 	    case ?w_sale:pay_scan(
 		    start,
@@ -3194,26 +3195,31 @@ start_pay(2, Merchant, Shop, _PayType, MchntCd, PayCode, Balance) ->
 			   Balance) of
 			{error, invalid_pay_scan_code_len} ->
 			    ?err(invalid_pay_scan_code_len, PayOrder);
-			{ok, ?PAY_SCAN_SUCCESS} ->
+			{error, pay_http_trans_failed, Reason} ->
+			    ?err(pay_http_trans_failed, Reason);
+			{error, pay_http_failed, HttpCode} ->
+			    ?err(pay_http_failed, HttpCode);
+			
+			{ok, ?PAY_SCAN_SUCCESS, RealFee} ->
 			    Extra = [{<<"pay_order">>, ?to_b(PayOrder)},
-			    	     {<<"balance">>, Balance},
+			    	     {<<"balance">>, RealFee},
 			    	     {<<"pay_type">>, RealPayType}],
 			    case ?w_sale:pay_scan(
 				    check,
 				    Merchant,
 				    ShopId,
-				    {RealPayType, ?PAY_SCAN_SUCCESS, PayOrder, Balance}) of
+				    {RealPayType, ?PAY_SCAN_SUCCESS, PayOrder, RealFee}) of
 				{ok, _} ->
 				    {?succ(pay_scan, Merchant), Extra};
 				{error, _CheckError} ->
 				    {?err(pay_scan_success_but_db_error, PayOrder), Extra}
 			    end; 
-			{error, PayState} ->
+			{error, PayState, RealFee} ->
 			    ?w_sale:pay_scan(
 			       check,
 			       Merchant,
 			       ShopId,
-			       {RealPayType, PayState, PayOrder, Balance}),
+			       {RealPayType, PayState, PayOrder, RealFee}),
 			    case PayState of
 				?PAY_SCAN_UNKOWN -> 
 				    ?err(pay_scan_unkown, PayOrder);
@@ -3226,11 +3232,7 @@ start_pay(2, Merchant, Shop, _PayType, MchntCd, PayCode, Balance) ->
 			    end;
 			{error, ?PAY_SCAN_ABNORMAL, PayReturnCode, Msg} -> 
 			    {?err(pay_scan_abnormal, PayOrder),
-			     [{<<"pay_code">>, PayReturnCode}, {<<"msg">>, ?to_b(Msg)}]}; 
-			{error, pay_http_failed, HttpCode} ->
-			    ?err(pay_http_failed, HttpCode);
-			{error, pay_http_trans_failed, Reason} ->
-			    ?err(pay_http_trans_failed, Reason)
+			     [{<<"pay_code">>, PayReturnCode}, {<<"msg">>, ?to_b(Msg)}]} 
 		    end; 
 		Error ->
 		    Error

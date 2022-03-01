@@ -209,7 +209,7 @@ pay_yc(yc, Merchant, MchntCd, PayCode, Moneny) ->
 	    %% Path = "https://ipayfront.cloudwalk.cn/api/transaction/front/pay/gateway",
 	    %% Service = "unified.trade.micropay",
 	    %% MchId = "800310000015826",
-	    OutTradeNo = pack_sn(?to_s(?inventory_sn:sn(pay_order_sn, Merchant))),
+	    OutTradeNo = ?to_s(Merchant) ++ pack_sn(?to_s(?inventory_sn:sn(pay_order_sn, Merchant))),
 	    GoodDesc = "DaTangTongYong",
 	    TotalFee = case is_float(Moneny) of
 	    		   true ->
@@ -424,6 +424,12 @@ pay_yc(query_yc, Merchant, MchntCd, MchntOrder) ->
 pay_sx(sx, Merchant, {MchntCd, PayOrder, PayTime, PayTerm, PayKey}, PayCode, Moneny) ->
     ?DEBUG("pay sx: merchant ~p, MchntCd ~p, PayCode ~p, Moneny ~p",
 	   [Merchant, MchntCd, PayCode, Moneny]),
+    TotalFee = case is_float(Moneny) of
+		   true ->
+		       erlang:float_to_list((?to_i(Moneny) * 100), [{decimals, 0}]);
+		   false ->
+		       ?to_i(Moneny) * 100
+	       end,
     PayCodeLen = erlang:size(PayCode),
     case PayCodeLen < ?PAY_SCAN_CODE_MIN_LEN
 	orelse PayCodeLen > ?PAY_SCAN_CODE_MAX_LEN of 
@@ -442,8 +448,8 @@ pay_sx(sx, Merchant, {MchntCd, PayOrder, PayTime, PayTerm, PayKey}, PayCode, Mon
 		   {<<"signType">>, ?to_b("MD5")},
 		   {<<"version">>, ?to_b("V1.0.0")},
 
-		   {<<"amount">>, ?to_b(1)},
-		   {<<"totalAmount">>, ?to_b(1)},
+		   {<<"amount">>, ?to_b(TotalFee)},
+		   {<<"totalAmount">>, ?to_b(TotalFee)},
 		   {<<"authCode">>, ?to_b(PayCode)},
 		   {<<"payMode">>, ?to_b(PayMode)},
 		   {<<"subject">>, ?to_b(<<"DTGOOD">>)}
@@ -477,21 +483,23 @@ pay_sx(sx, Merchant, {MchntCd, PayOrder, PayTime, PayTerm, PayKey}, PayCode, Mon
 		    ?DEBUG("pay result ~p", [Info]),
 		    ReturnCode = ?v(<<"returnCode">>, Info),
 		    Msg = ?v(<<"message">>, Info),
+		    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
+		    
 		    case ReturnCode of 
 			<<"000000">> ->
-			    TradeState = ?v(<<"result">>, Info), 
-			    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
+			    TradeState = ?v(<<"result">>, Info),
+			    RealFee = ?to_i(?v(<<"totalAmount">>, Info, 0)) / 100,
 			    case TradeState of
 				<<"S">> ->
-				    {ok, ?PAY_SCAN_SUCCESS};
+				    {ok, ?PAY_SCAN_SUCCESS, RealFee};
 				<<"F">> ->
-				    {error, ?PAY_SCAN_FAILED};
+				    {error, ?PAY_SCAN_FAILED, RealFee};
 				<<"A">> ->
-				    {error, ?PAY_SCAN_PAYING};
+				    {error, ?PAY_SCAN_PAYING, RealFee};
 				<<"Z">> ->
-				     {error, ?PAY_SCAN_UNKOWN};
+				     {error, ?PAY_SCAN_UNKOWN, RealFee};
 				<<"C">> ->
-				    {error, ?PAY_SCAN_CLOSED}
+				    {error, ?PAY_SCAN_CLOSED, RealFee}
 			    end;
 			_ ->
 			    ?DEBUG("ReturnCode ~p, msg ~ts", [ReturnCode, Msg]),
@@ -601,7 +609,8 @@ pay_test_sx(sx, Merchant, PayCode, Moneny) ->
 	    %% Service = "unified.trade.micropay",
 	    %% MchId = "800310000015826",
 	    
-	    OutTradeNo = pack_sn(?to_s(?inventory_sn:sn(pay_order_sn, Merchant))),
+	    OutTradeNo = ?to_s(Merchant)
+		++ pack_sn(?to_s(?inventory_sn:sn(pay_order_sn, Merchant))),
 
 	    OrgNo = "8028",
 	    MchntCd = "80280106",
