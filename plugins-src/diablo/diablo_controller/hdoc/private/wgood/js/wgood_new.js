@@ -935,6 +935,21 @@ function wgoodDetailCtrlProvide(
 	diablo_goto_page("#/inventory_new");
     };
 
+    $scope.syn_barcode = function(g) {
+    	wgoodService.syn_barcode(g.style_number, g.brand_id).then(function(result){
+    	    console.log(result);
+    	    if (result.ecode === 0){
+    		dialog.response(
+    		    true,
+    		    "条码同步",
+    		    "条码同步成功！！",
+    		    undefined)
+    	    } else {
+    		dialog.set_error(false, "同步条码", result.ecode); 
+    	    }
+    	});
+    };
+    
     $scope.reset_barcode = function(g) {
 	var callback = function() {
 	    wgoodService.reset_barcode(g.style_number, g.brand_id).then(function(result) {

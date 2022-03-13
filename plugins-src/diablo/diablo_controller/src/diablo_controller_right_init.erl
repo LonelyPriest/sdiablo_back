@@ -587,7 +587,8 @@ init([]) ->
 
 	 {?new_w_commision, <<"新增提成方案">>, <<"new_w_commision">>, ?right_w_good},
 	 {?del_w_commision, <<"删除提成方案">>, <<"del_w_commision">>, ?right_w_good},
-	 {?update_w_commision, <<"修改提成方案">>, <<"update_w_commision">>, ?right_w_good}
+	 {?update_w_commision, <<"修改提成方案">>, <<"update_w_commision">>, ?right_w_good},
+	 {?syn_barcode, <<"同步条码">>, <<"syn_barcode">>, ?right_w_good}
 	 %% {?list_w_commision, <<"查询提成方案">>, <<"list_w_commision">>, ?right_w_good}
 	],
 
@@ -1080,6 +1081,7 @@ pass_action(wholesaler) ->
      <<"copy_w_stock">>,
      <<"get_stock_note">>,
      <<"get_stock_by_shop">>,
+     %% <<"syn_barcode">>,
      %% <<"update_w_inventory_batch">>,
 
      %% inventory new

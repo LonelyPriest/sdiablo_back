@@ -3651,7 +3651,7 @@ function purchaserInventoryDetailCtrlProvide(
 	    }) 
 	}
     };
-
+    
     $scope.stock_flow = function(inv){
 	console.log(inv);
 	$scope.goto_page("#/inventory_detail/inventory_flow"

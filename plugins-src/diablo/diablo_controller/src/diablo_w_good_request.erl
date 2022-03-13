@@ -750,6 +750,35 @@ action(Session, Req, {"syn_type_pinyin"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"syn_barcode"}, Payload) ->
+    ?DEBUG("syn_barcode: session ~p, paylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    UTable   = ?session:get(utable, Session),
+    
+    StyleNumber = ?v(<<"style_number">>, Payload),
+    BrandId = ?v(<<"brand">>, Payload),
+    BCode  = ?v(<<"bcode">>, Payload),
+    
+    case {StyleNumber, BrandId} of
+	{undefined, _} ->
+	    ?utils:respond(200, Req, ?err(params_error, style_number));
+	{_, undefined} ->
+	    ?utils:respond(200, Req, ?err(params_error, brand));
+	_ ->
+	    case ?utils:check_empty(barcode, BCode) of
+		true ->
+		    ?utils:respond(200, Req, ?err(params_error, bcode));
+		false ->
+		    case ?w_inventory:purchaser_good(
+			    syn_barcode, {Merchant, UTable}, StyleNumber, BrandId) of 
+			{ok, Merchant} ->
+			    ?utils:respond(200, Req, ?succ(update_purchaser_good, StyleNumber));
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end
+	    end
+    end;
+
 
 action(Session, Req, {"reset_w_good_barcode"}, Payload) ->
     Merchant = ?session:get(merchant, Session),

@@ -1935,8 +1935,10 @@ var wsalePrint = function(){
 		}
 		// LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
 
-		var brand = angular.isObject(d.brand) && angular.isDefined(d.brand.name) ? d.brand.name : d.brand;
-		brand += angular.isObject(d.type) && angular.isDefined(d.type.name) ? d.type.name : d.type;
+		// var brand = angular.isObject(d.brand) && angular.isDefined(d.brand.name) ? d.brand.name : d.brand;
+		// brand += angular.isObject(d.type) && angular.isDefined(d.type.name) ? d.type.name : d.type;
+		
+		var brand = angular.isObject(d.type) && angular.isDefined(d.type.name) ? d.type.name : d.type;
 		var maxLines = Math.ceil(brand.length / 7);
 		for (var i=0; i<maxLines; i++) {
 		    LODOP.ADD_PRINT_TEXT(

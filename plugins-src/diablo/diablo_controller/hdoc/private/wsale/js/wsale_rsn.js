@@ -485,7 +485,8 @@ function wsaleRsnDetailCtrlProvide (
 	    cake_mode:      wsaleUtils.cake_mode(shop.id, base),
 	    comments:       wsaleUtils.comment(shop.id, base),
 	    head_seperater: wsaleUtils.to_integer(sale_mode.charAt(23)),
-	    print_score:    wsaleUtils.to_integer(sale_mode.charAt(26))
+	    print_score:    wsaleUtils.to_integer(sale_mode.charAt(26)),
+	    mark_phone:     wsaleUtils.to_integer(sale_mode.charAt(36))
 	};
 	
     	if (diablo_frontend === p_mode){
@@ -506,12 +507,14 @@ function wsaleRsnDetailCtrlProvide (
     			console.log(retailers);
     			// console.log(diablo_get_object(sale.retailer_id, retailers).name);
     			var retailer = diablo_get_object(sale.retailer_id, retailers);
+			var retailer_info = retailer.name + print_setting.mark_phone
+			    ? wsaleUtils.mark_phone(retailer.mobile) : retailer.mobile;
     			var top = wsalePrint.gen_head(
     			    LODOP,
     			    shop.name,
     			    rsn,
     			    diablo_get_object(sale.employ_id, filterEmployee).name,
-    			    retailer.name,
+    			    retailer_info,
     			    sale.entry_date,
 			    sale.direct,
 			    print_setting

@@ -548,6 +548,7 @@
 -define(del_w_commision, ?right_w_good + 21).
 -define(update_w_commision, ?right_w_good + 22).
 -define(list_w_commision, ?right_w_good + 23).
+-define(syn_barcode, ?right_w_good + 24).
 
 %% report
 -define(daily_wreport,   ?right_w_report + 1).

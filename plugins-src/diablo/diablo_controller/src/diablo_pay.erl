@@ -824,9 +824,9 @@ get_pay_type(by_name, _) ->
     {1, ?ALIPAY}. 
     
 pack_sn(String) when length(String) =:= ?MIN_SN_LEN ->
-    "M" ++ String;
+    "TM" ++ String;
 pack_sn(String) when length(String) > ?MIN_SN_LEN ->
-    "M" ++ String;
+    "TM" ++ String;
 pack_sn(String) when length(String) < ?MIN_SN_LEN ->
     pack_sn(String, "0").
 
@@ -835,6 +835,6 @@ pack_sn(String, Pack) ->
     SS = ?to_string(String),
     pack_sn(SS, ?to_string(Pack), length(SS)).
 pack_sn(String, _Pack, ?MIN_SN_LEN) -> 
-    "M" ++ String;
+    "TM" ++ String;
 pack_sn(String, Pack, Length) ->
     pack_sn(Pack ++ String, Pack, Length + length(Pack)).

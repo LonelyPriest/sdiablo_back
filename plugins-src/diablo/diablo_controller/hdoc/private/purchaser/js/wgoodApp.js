@@ -132,6 +132,11 @@ function wgoodConfig(){
 			     {type:types}).$promise;
 	};
 
+	this.syn_barcode = function(style_number, brand) {
+	    return http.save({operation: "syn_barcode"},
+			     {style_number:style_number, brand:brand}).$promise;
+	};
+
 	/*
 	 * size
 	 */

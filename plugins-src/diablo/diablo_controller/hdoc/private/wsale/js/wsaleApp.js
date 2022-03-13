@@ -746,6 +746,7 @@ function wsaleNewProvide(
 	$scope.setting.allowed_save = wsaleUtils.to_integer(sale_mode.charAt(33));
 	$scope.setting.member_discount_with_ticket = wsaleUtils.yes_default(sale_mode.charAt(34));
 	$scope.setting.active_score = wsaleUtils.to_integer(sale_mode.charAt(35));
+	$scope.setting.mark_member_phone = wsaleUtils.to_integer(sale_mode.charAt(36));
 
 	angular.extend($scope.setting, wsaleUtils.gift_sale(shopId, base));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
@@ -2376,14 +2377,20 @@ function wsaleNewProvide(
 			    parseInt($scope.select.ticket_balance / s.balance) * s.score;
 		    } 
 		}
-		
+
+		var retailer_info = $scope.select.retailer.wname
+		    + $scope.setting.mark_member_phone
+		    ? wsaleUtils.mark_phone($scope.select.retailer.mobile)
+		    : $scope.select.retailer.mobile
 		var top = wsalePrint.gen_head(
 		    LODOP,
 		    $scope.select.shop.name,
 		    $scope.select.rsn,
 		    $scope.select.employee.name,
 		    // $scope.select.retailer.name,
-		    $scope.select.retailer.wname + wsaleUtils.mark_phone($scope.select.retailer.mobile),
+		    // $scope.select.retailer.wname
+		    // 	+ wsaleUtils.mark_phone($scope.select.retailer.mobile),
+		    retailer_info,
 		    dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
 		    wsaleService.direct.wsale,
 		    $scope.print_setting);

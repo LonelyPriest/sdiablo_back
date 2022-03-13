@@ -832,6 +832,8 @@ alter table w_daily_report add column sbalance DECIMAL(10,2) not null default 0 
 alter table shops add column pay_term VARCHAR(64) default '' not null after pay_cd;
 alter table shops add column pay_key VARCHAR(64) default '' not null after pay_term;
 
+alter table shops add column brand VARCHAR(16) default '' not null after sms_sign;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 
