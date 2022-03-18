@@ -1093,6 +1093,7 @@ function filterProvider(){
 			_retailers =  retailers.map(function(r){
 			    return {id:      r.id,
 				    name:    r.name + "," + r.mobile,
+				    wname:   r.name,
 				    mobile:  r.mobile,
 				    type_id: r.type_id,
 				    score:   r.score,

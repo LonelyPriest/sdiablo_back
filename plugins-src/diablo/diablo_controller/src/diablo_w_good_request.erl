@@ -770,8 +770,8 @@ action(Session, Req, {"syn_barcode"}, Payload) ->
 		    ?utils:respond(200, Req, ?err(params_error, bcode));
 		false ->
 		    case ?w_inventory:purchaser_good(
-			    syn_barcode, {Merchant, UTable}, StyleNumber, BrandId) of 
-			{ok, Merchant} ->
+			    syn_barcode_with_good, {Merchant, UTable}, StyleNumber, BrandId, BCode) of 
+			{ok, BCode} ->
 			    ?utils:respond(200, Req, ?succ(update_purchaser_good, StyleNumber));
 			{error, Error} ->
 			    ?utils:respond(200, Req, Error)

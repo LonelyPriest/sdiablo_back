@@ -507,8 +507,16 @@ function wsaleRsnDetailCtrlProvide (
     			console.log(retailers);
     			// console.log(diablo_get_object(sale.retailer_id, retailers).name);
     			var retailer = diablo_get_object(sale.retailer_id, retailers);
-			var retailer_info = retailer.name + print_setting.mark_phone
-			    ? wsaleUtils.mark_phone(retailer.mobile) : retailer.mobile;
+			var retailer_info = diablo_empty_string;
+
+			if (retailer.type_id !== diablo_system_retailer) {
+			    if (print_setting.mark_phone) {
+				retailer_info = retailer.name + wsaleUtils.mark_phone(retailer.mobile); 
+			    } else {
+				retailer_info = retailer.name + retailer.mobile; 
+			    }
+			} 
+			
     			var top = wsalePrint.gen_head(
     			    LODOP,
     			    shop.name,

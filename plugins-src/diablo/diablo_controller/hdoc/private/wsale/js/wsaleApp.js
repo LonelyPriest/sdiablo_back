@@ -2378,10 +2378,16 @@ function wsaleNewProvide(
 		    } 
 		}
 
-		var retailer_info = $scope.select.retailer.wname
-		    + $scope.setting.mark_member_phone
-		    ? wsaleUtils.mark_phone($scope.select.retailer.mobile)
-		    : $scope.select.retailer.mobile
+		var retailer_info = diablo_empty_string;
+		if ($scope.select.retailer.type_id !== diablo_system_retailer) {
+		    if ($scope.setting.mark_member_phone) {
+			retailer_info = $scope.select.retailer.wname
+			    + wsaleUtils.mark_phone($scope.select.retailer.mobile);
+		    } else {
+			retailer_info = $scope.select.retailer.name;
+		    }
+		}
+		
 		var top = wsalePrint.gen_head(
 		    LODOP,
 		    $scope.select.shop.name,

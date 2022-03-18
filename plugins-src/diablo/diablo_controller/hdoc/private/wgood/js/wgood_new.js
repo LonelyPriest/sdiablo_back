@@ -936,7 +936,7 @@ function wgoodDetailCtrlProvide(
     };
 
     $scope.syn_barcode = function(g) {
-    	wgoodService.syn_barcode(g.style_number, g.brand_id).then(function(result){
+    	wgoodService.syn_barcode(g.style_number, g.brand_id, g.bcode).then(function(result){
     	    console.log(result);
     	    if (result.ecode === 0){
     		dialog.response(
@@ -945,7 +945,7 @@ function wgoodDetailCtrlProvide(
     		    "条码同步成功！！",
     		    undefined)
     	    } else {
-    		dialog.set_error(false, "同步条码", result.ecode); 
+    		dialog.set_error("同步条码", result.ecode); 
     	    }
     	});
     };

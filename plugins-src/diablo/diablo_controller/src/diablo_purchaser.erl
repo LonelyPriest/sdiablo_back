@@ -70,16 +70,16 @@ purchaser_good(update, {Merchant, UTable}, Attrs, OldAttrs) ->
     
 purchaser_good(used, {Merchant, UTable}, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {lookup_used_good, Merchant, UTable, StyleNumber, Brand});
-
-purchaser_good(syn_barcode, {Merchant, UTable}, StyleNumber, Brand) ->
-    Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {syn_barcode, Merchant, UTable, StyleNumber, Brand}).
+    gen_server:call(Name, {lookup_used_good, Merchant, UTable, StyleNumber, Brand}).
 
 %% purchaser_good(used, {Merchant, UTable}, Shops, StyleNumber, Brand) ->
 %%     Name = ?wpool:get(?MODULE, Merchant), 
 %%     gen_server:call(
 %%       Name, {lookup_used_good, Merchant, UTable, Shops, StyleNumber, Brand});
+purchaser_good(syn_barcode_with_good, {Merchant, UTable}, StyleNumber, Brand, BCode) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {syn_barcode_with_good, Merchant, UTable, StyleNumber, Brand, BCode});
+
 purchaser_good(reset_barcode, AutoBarcode, {Merchant, UTable}, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {reset_good_barcode, AutoBarcode, Merchant, UTable, StyleNumber, Brand}).
@@ -1129,10 +1129,10 @@ handle_call({lookup_used_good, Merchant, UTable, StyleNumber, Brand}, _Form, Sta
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({syn_barcode, Merchant, UTable, StyleNumber, Brand, BCode}, _Form, State) ->
+handle_call({syn_barcode_with_good, Merchant, UTable, StyleNumber, Brand, BCode}, _Form, State) ->
     ?DEBUG("syn_barcode with merchant ~p, StyleNumber ~p, Brand ~p",
 	   [Merchant, StyleNumber, Brand]),
-    Sql = "update " ++ ?table:t(stock, Merchant, UTable)
+    Sql = "update" ++ ?table:t(stock, Merchant, UTable)
 	++ " set bcode=\'" ++ ?to_s(BCode) ++ "\'"
 	++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 	++ " and brand=" ++ ?to_s(Brand)
