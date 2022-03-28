@@ -1848,12 +1848,16 @@ var wsalePrint = function(){
 	    wsalePrint.init(LODOP);
 
 	    var top = 10;
-	    if (pSetting.head_seperater) {
+	    if (pSetting.head_seperater !== 0) {
 		var shopA = shop.split(diablo_dash_seperator);
 		for (var i=0, l=shopA.length; i<l; i++) {
 		    LODOP.ADD_PRINT_TEXT(top, left, vWidth, 30, shopA[i]); 
 		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
-		    LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
+		    if (pSetting.head_seperater === 1) {
+			LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
+		    } else if (pSetting.head_seperater === 2) {
+			LODOP.SET_PRINT_STYLEA(0, "Alignment", 1); 
+		    }
 		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
 		    top += 25
 		}
@@ -1865,7 +1869,11 @@ var wsalePrint = function(){
 		    30,
 		    wsaleUtils.to_integer(direct) === 0 ? shop : shop + "（退）"); 
 		LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
-		// LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
+		if (pSetting.head_seperater === 0) {
+		    LODOP.SET_PRINT_STYLEA(0, "Alignment", 1); 
+		} else if (pSetting.head_seperater === 3) {
+		    LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
+		}
 		LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
 		top += 25; 
 		// LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
@@ -2081,17 +2089,23 @@ var wsalePrint = function(){
 		var order = 1;
 		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, "顾客需知：");
 		hLine += 20;
+		var char_per_line = pSetting.print_char_per_line;
+		if ( 0 === char_per_line) {
+		    char_per_line = 14;
+		}
+		
 		angular.forEach(pSetting.comments, function(c){
 		    if (c){
 			var s = order.toString() + ":" + c.name;
-			var maxLines = Math.ceil(s.length / 14); 
+			var maxLines = Math.ceil(s.length / char_per_line); 
 			for (var i=0; i<maxLines; i++) {
 			    LODOP.ADD_PRINT_TEXT(
 				hLine,
 				left,
 				vWidth,
 				hFont,
-				s.substr(i*14, s.length > i*14 ? 14 : s.length));
+				s.substr(i*char_per_line,
+					 s.length > i*char_per_line ? char_per_line : s.length));
 			    hLine += 15; 
 			} 
 			order++;

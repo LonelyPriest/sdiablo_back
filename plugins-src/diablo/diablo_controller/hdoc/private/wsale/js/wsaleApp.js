@@ -746,7 +746,7 @@ function wsaleNewProvide(
 	$scope.setting.allowed_save = wsaleUtils.to_integer(sale_mode.charAt(33));
 	$scope.setting.member_discount_with_ticket = wsaleUtils.yes_default(sale_mode.charAt(34));
 	$scope.setting.active_score = wsaleUtils.to_integer(sale_mode.charAt(35));
-	$scope.setting.mark_member_phone = wsaleUtils.to_integer(sale_mode.charAt(36));
+	$scope.setting.mark_member_phone = wsaleUtils.to_integer(sale_mode.charAt(36)); 
 
 	angular.extend($scope.setting, wsaleUtils.gift_sale(shopId, base));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
@@ -757,7 +757,9 @@ function wsaleNewProvide(
 	    cake_mode:      wsaleUtils.cake_mode(shopId, base),
 	    comments:       wsaleUtils.comment(shopId, base),
 	    head_seperater: wsaleUtils.to_integer(sale_mode.charAt(23)),
-	    print_score:    wsaleUtils.yes_default(sale_mode.charAt(26))
+	    print_score:    wsaleUtils.yes_default(sale_mode.charAt(26)),
+	    print_char_per_line: wsaleUtils.to_integer(sale_mode.charAt(37)) * 10
+		+ wsaleUtils.to_integer(sale_mode.charAt(38))
 	};
 
 

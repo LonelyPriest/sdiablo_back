@@ -975,7 +975,11 @@ sys_config() ->
 	      %% [20]: charge special 0: none, 1:special stock can charge
 	      %% [21]: allowed multi ticket 0:limit, 1:allowed
 	      %% [22]: gift ticket strategy 0:only one max ticket, 1:greed strategy
-	      %% [23]: head title seperater by '-' when print. 0:one line, 1:seperaer by '-'
+	      %% [23]: head title seperater by '-' when print.
+	      %% 0:one line and align left,
+	      %% 1:both seperaer by '-' and align center
+	      %% 2:both seperaer by '-' and align left
+	      %% 3:one line and align center
 	      %% [24]: use pay scan
 	      %% [25]: disable withdarw on sale
 	      %% [26]: print score information of retailer
@@ -989,9 +993,10 @@ sys_config() ->
 	      %% [34]: use member discount when take ticket. 1: use
 	      %% [35]: active score when on sale
 	      %% [36]: hide member info such as 188****9999
+	      %% [37-38]: every charactor per line when print note default 14; 
 	      {"p_balance",
 	       "销售模式",
-	       "0000"++"0000"++"0000"++"0001"++"0000"++"0000"++"0010"++"0030" ++ "0010" ++ "0", "0"},
+	       "0000"++"0000"++"0000"++"0001"++"0000"++"0000"++"0010"++"0030" ++ "0010" ++ "000", "0"},
 
 	      %% [0]: auto generate ticket at 04:00
 	      %% [1]: use ticket with no check 0-> check 1-> no check

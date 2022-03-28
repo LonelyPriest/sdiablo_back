@@ -106,7 +106,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
     {RName, Phone, Shop, Score, Consume, Balance, Birth, Date} = H,
     ?DEBUG("H ~p", [H]),
     NewShop = case Shop of
-		  <<>> -> 14;
+		  <<>> -> 416;
 		  _ -> Shop
 	      end,
     NewScore = case Score of
@@ -121,7 +121,8 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 
     NewBalance = case Balance of
 		     <<>> -> 0;
-		     _ -> round(?to_f(string:strip(?to_s(Balance))))
+		     %% _ -> round(?to_f(string:strip(?to_s(Balance))))
+		     _ -> 0
 		 end,
 
     NewBirth = case Birth of
@@ -180,12 +181,22 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 			    
 		    Entry = case Date of
 				<<>> -> Datetime;
-				%% _ -> ?to_s(Date) ++ " " ++ Time
-				_ ->?to_s(Date)
+				_ -> ?to_s(Date) ++ " " ++ Time
+				%% _ ->?to_s(Date)
 			    end, 
 
 		    Sql = ["insert into w_retailer("
-			   "name, score, consume, balance, mobile, shop, merchant, Birth, entry_date)"
+			   "name"
+			   ", score"
+			   ", consume"
+			   ", balance"
+			   ", mobile"
+			   ", shop"
+			   ", merchant"
+			   ", type"
+			   ", Birth"
+			   ", entry_date)"
+			   
 			   " values ("
 			   ++ "\"" ++ ?to_s(UName) ++ "\","
 			   ++ ?to_s(NewScore) ++ ","
@@ -194,7 +205,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 			   ++ "\"" ++ ?to_s(Phone) ++ "\","
 			   ++ ?to_s(NewShop) ++ ","
 			   ++ ?to_s(Merchant) ++ ","
-			   %% ++ ?to_s(1) ++ ","
+			   ++ ?to_s(1) ++ ","
 			   ++ "\"" ++ ?to_s(NewBirth) ++ "\","
 			   ++ "\"" ++ ?to_s(Entry) ++ "\")"],
 		    insert_into_member(Merchant, Datetime, Time, T, [H|Sort], Sql ++ Acc);

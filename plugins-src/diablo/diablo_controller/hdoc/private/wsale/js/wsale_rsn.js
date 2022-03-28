@@ -486,7 +486,9 @@ function wsaleRsnDetailCtrlProvide (
 	    comments:       wsaleUtils.comment(shop.id, base),
 	    head_seperater: wsaleUtils.to_integer(sale_mode.charAt(23)),
 	    print_score:    wsaleUtils.to_integer(sale_mode.charAt(26)),
-	    mark_phone:     wsaleUtils.to_integer(sale_mode.charAt(36))
+	    mark_phone:     wsaleUtils.to_integer(sale_mode.charAt(36)),
+	    print_char_per_line: wsaleUtils.to_integer(sale_mode.charAt(37)) * 10
+		+ wsaleUtils.to_integer(sale_mode.charAt(38))
 	};
 	
     	if (diablo_frontend === p_mode){
