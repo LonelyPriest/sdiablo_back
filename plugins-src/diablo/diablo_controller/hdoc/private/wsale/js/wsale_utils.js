@@ -1920,12 +1920,11 @@ var wsalePrint = function(){
 		    vprice = d.vir_price;
 		}
 		// perform += d.total * vprice - calc;
-		
-		var ediscount = wsaleUtils.ediscount(d.rprice, vprice).toString(); 
-		
-		LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, d.style_number); 
+
 		LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, vprice.toString()); 
 		LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, d.total.toString());
+		
+		var ediscount = wsaleUtils.ediscount(d.rprice, vprice).toString(); 
 		if (pSetting.print_discount) {
 		    LODOP.ADD_PRINT_TEXT(top, left + 140, left + 140, hFont, ediscount.toString()); 
 		}
@@ -1933,29 +1932,52 @@ var wsalePrint = function(){
 		    LODOP.ADD_PRINT_TEXT(
 			top, left + 140, vWidth - left - 140, hFont, d.rprice.toString()); 
 		}
+		
+		var maxLines = Math.ceil(d.style_number.length / 10);
+		var i = 0;
+		for (i=0; i<maxLines; i++) {
+		    var s = d.style_number.substring(
+			i*10,
+			d.style_number.length - i*10 > 10 ? i*10 + 10 : d.style_number.length);
+		    LODOP.ADD_PRINT_TEXT(top, left, 85, hFont, s);
+		    top += 15;
+		    if (i === 0) {
+			if (pSetting.print_discount) {
+			    LODOP.ADD_PRINT_TEXT(
+				top, left + 140, vWidth - left - 140, hFont, d.rprice.toString());
+			}
+		    }
+		}
+		
+		// LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, d.style_number);
 		    
 		// LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString()); 
 		
-		top += 15; 
-		if (pSetting.print_discount) {
-		    LODOP.ADD_PRINT_TEXT(
-			top, left + 140, vWidth - left - 140, hFont, d.rprice.toString());
-		}
+		// top += 15; 
+		// if (pSetting.print_discount) {
+		//     LODOP.ADD_PRINT_TEXT(
+		// 	top, left + 140, vWidth - left - 140, hFont, d.rprice.toString());
+		// }
 		// LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
 
-		// var brand = angular.isObject(d.brand) && angular.isDefined(d.brand.name) ? d.brand.name : d.brand;
-		// brand += angular.isObject(d.type) && angular.isDefined(d.type.name) ? d.type.name : d.type;
+		var brand = angular.isObject(d.brand) && angular.isDefined(d.brand.name) ? d.brand.name : d.brand;
+		brand += angular.isObject(d.type) && angular.isDefined(d.type.name) ? d.type.name : d.type;
 		
-		var brand = angular.isObject(d.type) && angular.isDefined(d.type.name) ? d.type.name : d.type;
-		var maxLines = Math.ceil(brand.length / 7);
-		for (var i=0; i<maxLines; i++) {
+		// var brand = angular.isObject(d.type) && angular.isDefined(d.type.name) ? d.type.name : d.type;
+		maxLines = Math.ceil(brand.length / 10);
+		for (i=0; i<maxLines; i++) {
 		    LODOP.ADD_PRINT_TEXT(
 			top,
 			left,
 			vWidth - left,
 			hFont,
-			brand.substr(i*6, brand.length > i*7 ? 7 : brand.length));
-		    top += 15;
+			brand.substring(i*10, brand.length - i*10 > 10 ? i*10 + 10 : brand.length));
+		    
+		    // if (i === 0) {
+		    // 	LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString()); 
+		    // }
+		    
+		    top += 15; 
 		}
 		
 		// LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, brand); 
@@ -2162,6 +2184,7 @@ var wsalePrint = function(){
 			callback(job); 
 		}
 	    } else {
+		// LODOP.PREVIEW();
 		LODOP.PRINT();
 	    }
 	    
