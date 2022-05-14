@@ -283,9 +283,10 @@ filter(total_gift, 'and', Merchant, Conditions) ->
     gen_server:call(Name, {total_gift, Merchant, Conditions});
 filter(total_gift_exchange, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {total_gift_exchange, Merchant, Conditions}).
-
-
+    gen_server:call(Name, {total_gift_exchange, Merchant, Conditions});
+filter(total_card_flow, 'and', Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {total_card_flow, Merchant, Conditions}).
 
 filter({retailer, Order, Sort}, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -334,10 +335,12 @@ filter(gift, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
 filter(gift_exchange, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(
-      Name, {filter_gift_exchange, Merchant, Conditions, CurrentPage, ItemsPerPage}).
+      Name, {filter_gift_exchange, Merchant, Conditions, CurrentPage, ItemsPerPage});
 
-
-
+filter(card_flow, 'and', Merchant, CurrentPage, ItemsPerPage, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(
+      Name, {filter_card_flow, Merchant, CurrentPage, ItemsPerPage, Conditions}).
 
 %% match
 match(phone, Merchant, {Mode, Phone, Shops}) ->
@@ -3874,6 +3877,85 @@ handle_call({filter_gift_exchange, Merchant, Conditions, CurrentPage, ItemsPerPa
 	++ ?sql_utils:condition(page_desc, {use_id, none, <<"a.">>}, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
+
+handle_call({total_card_flow, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_card: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {C1, C2} = correct_condition(card_flow, Conditions, [], []), 
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, C1),
+    Sql = 
+	case C2 of
+	    [] ->
+		"select COUNT(*) as total"
+		    ", SUM(balance) as t_balance"
+		    " from w_retailer_bank_flow a"
+		    " where a.merchant=" ++ ?to_s(Merchant)
+		    ++ ?sql_utils:condition(proplists, NewConditions)
+		    ++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime);
+	    C2 ->
+		"select COUNT(*) as total"
+		    ", SUM(Balance) as t_balance"
+		    " from ("
+		    "select a.id, a.bank, a.balance from w_retailer_bank_flow a"
+		    " left join w_retailer_bank b"
+		    " on a.bank=b.id and a.merchant=b.merchant" 
+		    ++ " where a.merchant=" ++ ?to_s(Merchant)
+		    ++ ?sql_utils:condition(proplists,
+					    ?utils:correct_condition(<<"b.">>, C2))
+		    ++ ?sql_utils:condition(proplists,
+					    ?utils:correct_condition(<<"a.">>, NewConditions))
+		    ++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime) ++ ") c"
+	end,
+		    
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({filter_card_flow, Merchant, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
+    ?DEBUG("filter_card_flow: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {C1, C2} = correct_condition(card_flow, Conditions, [], []), 
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, C1),
+    Sql = "select a.id"
+	", a.rsn"
+	", a.retailer as retailer_id"
+	", a.bank"
+	", a.balance"
+	", a.type"
+	", a.merchant"
+	", a.shop as shop_id"
+	", a.entry_date"
+
+	", b.shop as cshop_id"
+	", b.card_name"
+
+	", c.name as retailer_name"
+	", c.mobile"
+	
+	" from w_retailer_bank_flow a"
+
+	" left join (select m.id"
+	", m.cid"
+	", m.shop"
+	", m.merchant"
+	", n.name as card_name"
+	
+	" from w_retailer_bank m" 
+	" left join w_charge n"
+	" on m.cid=n.id and m.merchant=n.merchant"
+	" where m.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists,
+				?utils:correct_condition(<<"m.">>, C2)) ++ ") b" 
+	" on a.bank=b.id and a.merchant=b.merchant"
+	
+	" left join w_retailer c"
+	" on a.retailer=c.id and a.merchant=c.merchant"
+	
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:condition(proplists,
+				?utils:correct_condition(<<"b.">>, C2))
+	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime)
+	++ ?sql_utils:condition(page_desc, {use_id, none, <<"a.">>}, CurrentPage, ItemsPerPage),
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
     
 handle_call(_Request, _From, State) ->
     Reply = ok,
@@ -4155,5 +4237,10 @@ correct_condition(card_sale, [{<<"employ">>, Value}|T], Acc) ->
 correct_condition(card_sale, [H|T], Acc) ->
     correct_condition(card_sale, T, [H|Acc]).
 
+correct_condition(card_flow, [], Acc0, Acc1) ->
+    {Acc0, Acc1};
+correct_condition(card_flow, [{<<"charge_shop">>, Value}|T], Acc0, Acc1) ->
+    correct_condition(card_flow, T, Acc0, [{<<"shop">>, Value}|Acc1]);
+correct_condition(card_flow, [H|T], Acc0, Acc1) ->
+    correct_condition(card_flow, T, [H|Acc0], Acc1).
 
-    

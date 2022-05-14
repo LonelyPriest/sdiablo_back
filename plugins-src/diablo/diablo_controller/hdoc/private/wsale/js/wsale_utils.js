@@ -1852,7 +1852,8 @@ var wsalePrint = function(){
 		var shopA = shop.split(diablo_dash_seperator);
 		for (var i=0, l=shopA.length; i<l; i++) {
 		    LODOP.ADD_PRINT_TEXT(top, left, vWidth, 30, shopA[i]); 
-		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
+		    if (i===0) LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
+		    else LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
 		    if (pSetting.head_seperater === 1) {
 			LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
 		    } else if (pSetting.head_seperater === 2) {

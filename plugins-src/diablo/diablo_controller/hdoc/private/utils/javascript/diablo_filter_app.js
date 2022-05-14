@@ -387,6 +387,9 @@ function filterProvider(){
 		} else if (name === 'ticket_cshop') {
 		    _filter.fields.push({name:"ticket_cshop", chinese:"消费店铺"});
 		    _prompt.ticket_cshop = promptValues;
+		} else if (name === 'charge_shop') {
+		    _filter.fields.push({name:"charge_shop", chinese:"充值店铺"});
+		    _prompt.charge_shop = promptValues;
 		} else if (name === 'ticket_employee'){
 		    _filter.fields.push({name:"ticket_employee", chinese:"经手人"});
 		    _prompt.employee = promptValues;

@@ -347,7 +347,10 @@ init([]) ->
 	 {?filter_w_sale_order,
 	  <<"查询销售定单">>, <<"filter_w_sale_order">>, ?right_w_sale},
 	 {?filter_w_sale_order_detail, 
-	  <<"查询销售定单详情">>, <<"filter_w_sale_order_detail">>, ?right_w_sale}
+	  <<"查询销售定单详情">>, <<"filter_w_sale_order_detail">>, ?right_w_sale},
+	 
+	 {?filter_w_sale_card_flow, 
+	  <<"查询充值卡消费流水">>, <<"filter_card_flow">>, ?right_w_sale}
 	],
 
     %% batch sale

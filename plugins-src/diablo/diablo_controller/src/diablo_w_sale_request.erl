@@ -1805,7 +1805,20 @@ action(Session, Req, {"check_w_pay_scan"}, Payload) ->
 	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
-    end.
+    end;
+
+action(Session, Req, {"filter_card_flow"}, Payload) ->
+    ?DEBUG("filter_card_flow: Session ~p, Payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_retailer:filter(total_card_flow, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_retailer:filter(
+		  card_flow,
+		  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+       end, Req, Payload).
 
 sidebar(Session) -> 
     case ?right_request:get_shops(Session, sale) of
@@ -1839,7 +1852,13 @@ sidebar(Session) ->
 			   [{"list_daily_cost",
 			     "日常费用", "glyphicon glyphicon-euro"}];
 		       _ -> []
-		   end,
+		   end
+		++ case ?right_auth:authen(?filter_w_sale_card_flow, Session) of
+		       {ok, ?filter_w_sale_card_flow} ->
+			   [{"filter_card_flow",
+			     "充值消费", "glyphicon glyphicon-credit-card"}];
+		       _ -> []
+		   end, 
 
 	    Order =
                 [{{"order", "销售定单", "glyphicon glyphicon-ok-sign"},

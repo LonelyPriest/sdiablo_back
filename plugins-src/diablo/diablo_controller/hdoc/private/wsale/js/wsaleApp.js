@@ -162,7 +162,11 @@ function wsaleConfg(angular){
 		controller: 'payScanCtrl',
 		resolve: angular.extend({}, user) 
 	    }).
-	    
+	    when('/filter_card_flow', {
+		templateUrl: '/private/wsale/html/wsale_card_flow.html',
+		controller: 'cardFlowCtrl',
+		resolve: angular.extend({}, user) 
+	    }). 
 	    when('/order/new_order', {
 		templateUrl: '/private/wsale/html/new_wsale_order.html',
 		controller: 'wsaleOrderNewCtrl',
@@ -468,6 +472,18 @@ function wsaleConfg(angular){
 	};
 	this.delete_daily_cost = function(cost) {
 	    return http.save({operation: "delete_daily_cost"}, {cid: cost.id}).$promise;
+	};
+
+	/*
+	 * card flow
+	 */
+	this.filter_card_flow = function(match, fields, currentPage, itemsPerpage) {
+	    return http.save(
+		{operation: "filter_card_flow"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
 	};
 
 	/*

@@ -432,6 +432,7 @@
 -define(update_w_sale_order,    ?right_w_sale + 21).
 -define(filter_w_sale_order,    ?right_w_sale + 22).
 -define(filter_w_sale_order_detail,  ?right_w_sale + 23).
+-define(filter_w_sale_card_flow,  ?right_w_sale + 24).
 
 %% inventory
 -define(new_w_inventory,             ?right_w_inventory + 4).

@@ -967,6 +967,96 @@ function payScanCtrlProvide (
     };
 };
 
+function cardFlowCtrlProvide (
+    $scope, dateFilter, diabloUtilsService, diabloFilter, diabloPattern, wsaleService, user) {
+    $scope.shops   = user.sortShops.filter(function(s) {return s.deleted===0});
+    $scope.shopIds = user.shopIds;
+
+    $scope.filters = [];
+    diabloFilter.reset_field(); 
+    diabloFilter.add_field("shop", $scope.shops);
+    diabloFilter.add_field("charge_shop", $scope.shops);
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt();
+
+    // console.log($scope.filter);
+    // console.log($scope.prompt);
+
+    // pagination
+    $scope.total_items   = 0;
+    $scope.default_page  = 1;
+    $scope.current_page  = $scope.default_page;
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.pay_detail    = [];
+    
+    var dialog = diabloUtilsService; 
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenSaleRight();
+    
+    var now = wsaleUtils.first_day_of_month();
+    $scope.time = wsaleUtils.correct_query_time(
+	$scope.right.master,
+	user.sdays,
+	now.current,
+	now.current,
+	diabloFilter);
+    // console.log($scope.time);
+    
+    $scope.do_search = function(page) {
+	console.log(page);
+	if (!$scope.right.master && user.sdays !== diablo_nolimit_day){
+	    var diff = now - diablo_get_time($scope.time.start_time);
+	    // console.log(diff);
+	    if (diff - diablo_day_millisecond * user.sdays > diablo_day_millisecond)
+	    	$scope.time.start_time = now - user.sdays * diablo_day_millisecond;
+	    
+	    if ($scope.time.end_time < $scope.time.start_time)
+		$scope.time.end_time = now;
+	}
+
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search) {
+	    if (angular.isUndefined(search.shop) || !search.shop || search.shop.length === 0){
+		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
+	    }
+	    
+	    wsaleService.filter_card_flow(
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    $scope.current_page = page; 
+		    if (page === 1) {
+			$scope.total_items   = result.total;
+			$scope.total_balance = result.t_balance; 
+		    }
+
+		    angular.forEach(result.data, function(d) {
+			// d.crsn = diablo_array_last(d.rsn.split(diablo_date_seprator));
+			d.retailer=d.retailer_name + "/" + d.mobile;
+			d.shop = diablo_get_object(d.shop_id, $scope.shops);
+			d.cshop = diablo_get_object(d.cshop_id, $scope.shops);
+		    });
+
+		    diablo_order_page(page, $scope.items_perpage, result.data);
+		    $scope.flows = result.data;
+		}
+	    })
+	});
+    };
+
+    $scope.refresh = function() {
+	$scope.do_search($scope.default_page)
+    };
+
+    $scope.page_changed = function() {
+	$scope.do_search($scope.current_page)
+    };
+
+    $scope.go_back = function() {
+	diablo_goto_page("#/new_wsale_detail");
+    };
+};
+
 function wsaleUploadCtrlProvide (
     $scope, $routeParams, dateFilter, FileUploader, diabloUtilsService, diabloFilter,
     wsaleService, user, base){
@@ -1211,6 +1301,7 @@ define (["wsaleApp"], function(app){
     app.controller("wsaleRsnDetailCtrl", wsaleRsnDetailCtrlProvide);
     app.controller("dailyCostCtrl", dailyCostCtrlProvide);
     app.controller("payScanCtrl", payScanCtrlProvide);
+    app.controller("cardFlowCtrl", cardFlowCtrlProvide);
     app.controller("wsalePrintNoteCtrl", wsalePrintNoteCtrlProvide);
     app.controller("wsalePrintA4Ctrl", wsalePrintA4CtrlProvide);
     app.controller("wsaleUploadCtrl", wsaleUploadCtrlProvide);
