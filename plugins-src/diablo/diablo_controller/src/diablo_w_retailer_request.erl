@@ -372,7 +372,8 @@ action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
 					LimitDraw = ?v(<<"charge">>, DrawStratege),
 					{ok,
 					  ?utils:min_value(LimitDraw, MaxDraw),
-					  [{?DEFAULT_BANK_CARD, 
+					  [{?DEFAULT_BANK_CARD,
+					    ChargeId,
 					    ?utils:min_value(LimitDraw, MaxDraw),
 					    RetailerBalance,
 					    1,
@@ -388,7 +389,8 @@ action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
 						LimitDraw = Pay div ThresholdBalance * LimitBalance,
 						{ok,
 						 ?utils:min_value(LimitDraw, MaxDraw),
-						 [{?DEFAULT_BANK_CARD, 
+						 [{?DEFAULT_BANK_CARD,
+						   ChargeId,
 						   ?utils:min_value(LimitDraw, MaxDraw),
 						   RetailerBalance,
 						   1,
@@ -405,7 +407,8 @@ action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
 							OneTakeBalance = (CBalance + SBalance) div LimitCount,
 							{ok,
 							 ?utils:min_value(OneTakeBalance, RetailerBalance),
-							 [{?DEFAULT_BANK_CARD, 
+							 [{?DEFAULT_BANK_CARD,
+							   ChargeId,
 							   ?utils:min_value(OneTakeBalance, RetailerBalance),
 							   RetailerBalance,
 							   1,
@@ -416,6 +419,7 @@ action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
 							{ok,
 							 MaxDraw,
 							 [{?DEFAULT_BANK_CARD,
+							   ChargeId,
 							   MaxDraw,
 							   RetailerBalance,
 							   0,
@@ -467,8 +471,9 @@ action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
 	    ?DEBUG("ShouldDraw ~p, DrawInfos ~p", [ShouldDraw, DrawInfos]),
 	    MyDraw = 
 		lists:foldr(
-		  fun({Card, MDraw, CardBalance, CardType, SameShop, LimitShop, ChargeShop}, Acc) ->
+		  fun({Card, ChargeId, MDraw, CardBalance, CardType, SameShop, LimitShop, ChargeShop}, Acc) ->
 			  [{[{<<"card">>, Card},
+			     {<<"charge_id">>, ChargeId},
 			     {<<"draw">>, MDraw},
 			     {<<"balance">>, CardBalance},
 			     {<<"type">>, CardType},
@@ -1742,6 +1747,7 @@ draw_with_bank_card([Card|T], Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw,Acc)
 			      MaxDraw - CanDraw,
 			      CalcDraw + CanDraw,
 			      [{BankCardId,
+				ChargeId,
 				CanDraw,
 				CardBalance,
 				CardType,
@@ -1767,6 +1773,7 @@ draw_with_bank_card([Card|T], Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw,Acc)
 				      MaxDraw - CanDraw,
 				      CalcDraw + CanDraw,
 				      [{BankCardId,
+					ChargeId,
 					CanDraw,
 					CardBalance,
 					CardType,
@@ -1780,9 +1787,10 @@ draw_with_bank_card([Card|T], Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw,Acc)
 				      Merchant,
 				      ConsumeShop,
 				      Pay,
-				      MaxDraw - CanDraw,
-				      CalcDraw + CanDraw,
+				      MaxDraw - CanDraw, 
+				      CalcDraw + CanDraw, 
 				      [{BankCardId,
+					ChargeId,
 					CanDraw,
 					CardBalance,
 					CardType,
@@ -1796,4 +1804,6 @@ draw_with_bank_card([Card|T], Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw,Acc)
 			    
 same_shop(S1, S2) when S1=:=S2 -> ?YES;
 same_shop(_S1, _S2) -> ?NO.
+	    
+    
     

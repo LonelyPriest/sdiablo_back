@@ -1103,6 +1103,142 @@
   </div> 
 </script>
 
+<script type="text/ng-template" id="manual-withdraw.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title"><span class="label label-sm label-primary">
+	会员提现</span></h4>
+  </div>
+  
+  <div class="modal-body">
+    <form class="form-horizontal" name="mWithdrawForm" novalidate>
+      <div class="form-body">
+	
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">姓名</label>
+	  <div class="col-sm-8 col-md-8">
+	    <input class="form-control"
+		   type="text"
+		   x-ng-readonly="true"
+		   x-ng-model="params.retailer.name"/> 
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">余额</label>
+	  <div class="col-sm-8 col-md-8">
+	    <input class="form-control"
+		   type="number"
+		   readonly
+		   x-ng-model="params.retailer.surplus"/> 
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">提现</label>
+	  <div class="col-md-8 col-sm-8">
+	    <div class="input-group">
+	      <input class="form-control"
+		     type="number"
+		     readonly 
+		     name="total_draw"
+		     x-ng-model="params.total_draw"/> 
+	      <span class="input-group-btn">
+		<button x-ng-click="params.add_draw(params.draw_cards, params.cards, params.total_draw)"
+			x-ng-disabled="params.draw_cards.length === params.cards.length"
+			type="button"
+			class="btn green">
+		  <i class="glyphicon glyphicon-plus"></i>
+		</button>
+	      </span>
+	      <span class="input-group-btn">
+		<button x-ng-click="params.move_draw(params.draw_cards, params.total_draw)"
+			x-ng-disabled="params.draw_cards.length===1"
+			type="button"
+			class="btn red">
+		  <i class="glyphicon glyphicon-minus"></i>
+		</button>
+	      </span>
+	    </div>
+	  </div> 
+	</div> <!--  -->
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">充值卡</label>
+	  <div class="col-md-8 col-sm-8">
+	    <table class="table
+			  table-bordered
+			  table-striped
+			  table-condensed
+			  table-advanced
+			  diablo-form-table"> 
+	      <tbody>
+		<tr class="text-center" x-ng-repeat="d in params.draw_cards"> 
+		  <td class="vert-align">
+		    <form name="lcForm">
+		      <div ng-class="{'has-error':lcForm.$invalid && !lcForm.$pristine}">
+			<div class="input-group">
+			  <select class="form-control"
+				  required
+				  x-ng-model="c"
+				  x-ng-options="c.name for c in params.cards"
+				  x-ng-init="c=params.cards[0]"
+				  x-ng-change="params.total_draw=params.calc_total_draw(params.draw_cards)">
+			  </select>
+			  <span class="input-group-addon">
+			    <span class="fg-red">{{d.card.balance}}</span>
+			  </span>
+			  <span class="input-group-addon"></span>
+			  <input type="number"
+				 step="1"
+				 class="form-control"
+				 required
+				 disable-key
+				 x-ng-edit
+				 x-ng-model="d.draw"
+				 x-ng-pattern="/^\d+(.\d{1,2})?$/"
+				 x-ng-change="params.total_draw=params.calc_total_draw(params.draw_cards)"/> 
+			</div>
+			<div ng-show="!params.check_card_withdraw(d)">
+			  <span class="fg-red">帐户余额不足或提现超过上限</span>
+			</div>
+		      </div> 
+		    </form> 
+		  </td> 
+		</tr> 
+	      </tbody>
+	    </table>
+	  </div>
+	</div>
+
+	<div x-ng-if="!params.hide_pwd" class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">密码</label>
+	  <div class="col-sm-8 col-md-8">
+	    <input class="form-control"
+		   required
+		   focus-auto="true"
+		   type="password"
+		   name="withdraw"
+		   x-ng-model="params.retailer.password"
+		   x-ng-enter="mWithdrawForm.$valid && params.total_draw<=params.retailer.surplus && ok()"/> 
+	  </div>
+	</div>
+	
+      </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="mWithdrawForm.$invalid && params.total_draw<=params.retailer.surplus"
+	    x-ng-click="ok()">确定</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div> 
+</script>
+
 <script type="text/ng-template" id="wsale-draft.html">
   <div class="modal-body">
     <div class="table-responsive">

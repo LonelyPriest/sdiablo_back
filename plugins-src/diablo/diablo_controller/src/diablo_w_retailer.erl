@@ -939,8 +939,9 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
     
     Sql = case Rule of
 	      ?GIVING_CHARGE -> 
-		  "select id, charge, balance from w_charge"
+		  "select id, name, charge, balance from w_charge"
 		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and name=\'" ++ ?to_s(Name) ++"\'"
 		      ++ " and charge=" ++ ?to_s(Charge)
 		      ++ " and balance=" ++ ?to_s(Balance)
 		      ++ " and rule=" ++ ?to_s(Rule)

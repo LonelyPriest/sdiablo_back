@@ -993,10 +993,11 @@ sys_config() ->
 	      %% [34]: use member discount when take ticket. 1: use
 	      %% [35]: active score when on sale
 	      %% [36]: hide member info such as 188****9999
-	      %% [37-38]: every charactor per line when print note default 14; 
+	      %% [37-38]: every charactor per line when print note default 14;
+	      %% [39]: withdraw 0:auto calc; 1:list account to select
 	      {"p_balance",
 	       "销售模式",
-	       "0000"++"0000"++"0000"++"0001"++"0000"++"0000"++"0010"++"0030" ++ "0010" ++ "000", "0"},
+	       "0000"++"0000"++"0000"++"0001"++"0000"++"0000"++"0010"++"0030" ++ "0010" ++ "0000", "0"},
 
 	      %% [0]: auto generate ticket at 04:00
 	      %% [1]: use ticket with no check 0-> check 1-> no check
