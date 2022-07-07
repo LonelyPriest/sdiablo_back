@@ -21,6 +21,8 @@
 -export([filter/4, filter/6, export/3]).
 -export([direct/1]).
 
+-export([sort_charge_card/2]).
+
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -429,7 +431,8 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 			       true ->
 				   LimitWithdraw = ?v(<<"limitWithdraw">>, Props),
 				   UnlimitWithdraw = ?v(<<"unlimitWithdraw">>, Props),
-				   NewBankCards = card_pay(BankCards, LimitWithdraw, UnlimitWithdraw, []),
+				   NewBankCards = sort_charge_card(
+						    card_pay(BankCards, LimitWithdraw, UnlimitWithdraw, []), []),
 				   ?DEBUG("NewBankCards ~p", [NewBankCards]),
 				   lists:foldr(
 				     fun({BankCard}, Acc) ->
@@ -4079,7 +4082,7 @@ card_pay([{struct, H}|T], LimitWithdraw, UnlimitWithdraw, Cards) ->
 
     case Type of
 	1 ->
-	    case LimitWithdraw > 0 of
+	    case LimitWithdraw >= 0 of
 		true ->
 		    card_pay(T,
 			     LimitWithdraw - Draw,
@@ -4089,7 +4092,7 @@ card_pay([{struct, H}|T], LimitWithdraw, UnlimitWithdraw, Cards) ->
 		    card_pay(T, LimitWithdraw, UnlimitWithdraw, Cards)
 	    end;
 	0 ->
-	    case UnlimitWithdraw > 0 of
+	    case UnlimitWithdraw >= 0 of
 		true ->
 		    card_pay(T,
 			     LimitWithdraw,
@@ -4100,6 +4103,21 @@ card_pay([{struct, H}|T], LimitWithdraw, UnlimitWithdraw, Cards) ->
 	    end
     end.
 
+sort_charge_card([], Acc) ->
+    Acc;
+sort_charge_card([{H}|T], Acc) ->
+    CardId = ?v(<<"card">>, H),
+    %% ?DEBUG("Acc ~p", [Acc]),
+    case [C || {C} <- Acc, ?v(<<"card">>, C) =:= CardId] of
+	[] ->
+	    sort_charge_card(T, [{H}|Acc]);
+	[C] ->
+	    M = [{[{<<"card">>, CardId},
+		   {<<"draw">>, ?v(<<"draw">>, H) + ?v(<<"draw">>, C)},
+		   {<<"type">>, ?v(<<"type">>, C)}]}],
+	    sort_charge_card(T, (Acc -- [{C}]) ++ M)
+    end.
+      
 card_flow([], Acc) ->
     %% ?DEBUG("Acc ~p", [Acc]),
     lists:sort(fun({_, _, B1}, {_, _, B2}) -> B1 =< B2 end, Acc );

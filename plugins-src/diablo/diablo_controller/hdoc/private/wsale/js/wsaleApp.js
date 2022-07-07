@@ -1189,7 +1189,8 @@ function wsaleNewProvide(
 
     $scope.manual_withdraw = function() {
 	var callback = function(params) {
-	    console.log(params);
+	    console.log(params); 
+	    
 	    var all_widthdraw = params.total_draw;
 	    diabloFilter.check_retailer_password(
 		params.retailer.id, params.retailer.password, params.hide_pwd ? diablo_no:diablo_yes
@@ -1211,16 +1212,16 @@ function wsaleNewProvide(
 			for (var i=0, l=params.draw_cards.length; i<l; i++) {
 			    var c = params.draw_cards[i];
 			    draw_cards.push({card: c.card.card, draw: c.draw, type:c.card.type}); 
-			    if (1 === c.type) {
+			    if (1 === c.card.type) {
 				limitWithdraw += c.draw;
 			    } 
-			    if (0 === c.type) {
+			    if (0 === c.card.type) {
 				unlimitWithdraw += c.draw;
 			    }
 			}
 			
 			$scope.select.draw_cards = draw_cards;
-			console.log($scope.select.draw_cards);
+			// console.log($scope.select);
 
 			$scope.select.withdraw = all_widthdraw;
 			$scope.select.limitWithdraw = limitWithdraw;
@@ -1237,7 +1238,7 @@ function wsaleNewProvide(
 	
 	var startWithdraw = function(cards) {
 	    var draw_cards = [];
-	    draw_cards.unshift({card:cards[0], draw:cards[0].allowed_draw});
+	    draw_cards.unshift({card:cards[0], draw:0});
 
 	    diabloUtilsService.edit_with_modal(
 	    	"manual-withdraw.html",
@@ -1251,19 +1252,27 @@ function wsaleNewProvide(
 	    	},
 		 draw_cards: draw_cards,
 		 cards: cards,
-		 total_draw: draw_cards[0].draw,
+		 total_draw: 0,
 	    	 hide_pwd: $scope.setting.hide_pwd,
 
 		 add_draw: function(draw_cards, cards, total_draw) {
-		     var card = card[draw_cards.length];
-		     draw_cards.push({card:card, draw: card.allowed_draw});
-		     total_draw += card.draw;
+		     var card = cards[draw_cards.length];
+		     draw_cards.push({card:card, draw: 0});
+		     // total_draw += card.allowed_draw;
+		     // return total_draw;
 		 },
 		 
-		 move_ticket: function(draw_cards) {
+		 move_draw: function(draw_cards, total_draw) {
 		     var card = draw_cards.splice(-1, 1);
-		     total_draw -= card.draw;
+		     total_draw -= wsaleUtils.to_integer(card[0].draw);
+		     return total_draw;
 		 },
+
+		 check_draw: function(draw_cards) {
+		     
+
+		     return invalid;
+		 }, 
 
 		 calc_total_draw: function(draw_cards) {
 		     var total_draw = 0;
@@ -1274,9 +1283,37 @@ function wsaleNewProvide(
 		     return total_draw;
 		 },
 
-		 check_card_withdraw: function(card) {
-		     // console.log(card);
-		     return card.draw <= card.card.balance && card.draw <= card.card.allowed_draw;
+		 check_card_withdraw: function(draw_cards, form) {
+		     var cards = [angular.copy(draw_cards[0])];
+		     var found = false;
+		     for (var i=1, l=draw_cards.length; i<l; i++) {
+			 for (var j=0, k=cards.length; j<k; j++) {
+			     if (draw_cards[i].card.card === cards[j].card.card) {
+				 found = true;
+				 cards[j].draw += draw_cards[i].draw;
+			     } 
+			 }
+			 if (!found) {
+			     cards.push(angular.copy(draw_cards[i]));
+			 }
+		     }
+
+		     // console.log(cards);
+		     
+		     // check
+		     var valid = true;
+		     for (var m=0, n=cards.length; m<n; m++) {
+			 if (cards[m].draw > cards[m].card.allowed_draw
+			     || cards[m].draw > cards[m].card.balance) {
+			     valid = false;
+			     break;
+			 }
+		     }
+		     
+		     // console.log(form);
+		     form.$invalid = !valid;
+		     form.$valid = valid; 
+		     return valid;
 		 }, 
 		 
 	    	 check_zero: function(balance) {return balance === 0 ? true:false}}
@@ -1284,7 +1321,7 @@ function wsaleNewProvide(
 	};
 	
 	// check
-	diabloFilter.check_retailer_charge(
+	diabloFilter.check_retailer_charge_extra(
 	    $scope.select.retailer.id,
 	    $scope.select.shop.id,
 	    $scope.setting.fixed_mode===diablo_fixed_draw  ? $scope.select.can_draw:$scope.select.should_pay,
@@ -1329,7 +1366,6 @@ function wsaleNewProvide(
 		angular.forEach(valid_cards, function(c) {
 		    c.name = diablo_get_object(c.charge_id, $scope.charges).name;
 		}); 
-		
 		startWithdraw(valid_cards);
 	    } else {
 		dialog.set_error("会员提现", result.ecode);

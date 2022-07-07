@@ -1156,7 +1156,7 @@
 		</button>
 	      </span>
 	      <span class="input-group-btn">
-		<button x-ng-click="params.move_draw(params.draw_cards, params.total_draw)"
+		<button x-ng-click="params.total_draw=params.move_draw(params.draw_cards, params.total_draw)"
 			x-ng-disabled="params.draw_cards.length===1"
 			type="button"
 			class="btn red">
@@ -1180,19 +1180,17 @@
 		<tr class="text-center" x-ng-repeat="d in params.draw_cards"> 
 		  <td class="vert-align">
 		    <form name="lcForm">
-		      <div ng-class="{'has-error':lcForm.$invalid && !lcForm.$pristine}">
+		      <div ng-class="{'has-error': mWithdrawForm.$invalid}">
 			<div class="input-group">
 			  <select class="form-control"
 				  required
-				  x-ng-model="c"
-				  x-ng-options="c.name for c in params.cards"
-				  x-ng-init="c=params.cards[0]"
-				  x-ng-change="params.total_draw=params.calc_total_draw(params.draw_cards)">
+				  x-ng-model="d.card"
+				  x-ng-options="c.name for c in params.cards">
 			  </select>
 			  <span class="input-group-addon">
 			    <span class="fg-red">{{d.card.balance}}</span>
 			  </span>
-			  <span class="input-group-addon"></span>
+			  <!-- <span class="input-group-addon"></span> -->
 			  <input type="number"
 				 step="1"
 				 class="form-control"
@@ -1203,7 +1201,7 @@
 				 x-ng-pattern="/^\d+(.\d{1,2})?$/"
 				 x-ng-change="params.total_draw=params.calc_total_draw(params.draw_cards)"/> 
 			</div>
-			<div ng-show="!params.check_card_withdraw(d)">
+			<div ng-show="!params.check_card_withdraw(params.draw_cards, mWithdrawForm)">
 			  <span class="fg-red">帐户余额不足或提现超过上限</span>
 			</div>
 		      </div> 
@@ -1223,7 +1221,7 @@
 		   focus-auto="true"
 		   type="password"
 		   name="withdraw"
-		   x-ng-model="params.retailer.password"
+		   x-ng-model="params.retailer.pasosword"
 		   x-ng-enter="mWithdrawForm.$valid && params.total_draw<=params.retailer.surplus && ok()"/> 
 	  </div>
 	</div>
@@ -1233,9 +1231,10 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="mWithdrawForm.$invalid && params.total_draw<=params.retailer.surplus"
+	    x-ng-disabled="mWithdrawForm.$invalid || params.total_draw>params.retailer.surplus"
 	    x-ng-click="ok()">确定</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+    <div>{{lcForm}}</div>
   </div> 
 </script>
 

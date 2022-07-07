@@ -22,6 +22,7 @@ var diablo_date_seprator = "-";
 var diablo_invalid_index = -1;
 var diablo_invalid_firm = -1;
 var diablo_nolimit_day = -1;
+var diablo_invalid_charge_index = -99999;
 var diablo_default_maling_rang = 3;
 
 var diablo_firm_code = 1000;
