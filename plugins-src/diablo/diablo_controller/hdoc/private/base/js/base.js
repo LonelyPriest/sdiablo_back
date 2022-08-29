@@ -1345,6 +1345,16 @@ function printerDetectCtrlProvide($scope, diabloUtilsService, user, base){
 	    }
 	}
     }
+
+    $scope.design = function(p) {
+	LODOP = getLodop();
+	LODOP.PRINT_INIT("task_print_design");
+	LODOP.SET_PRINTER_INDEX(p.index);
+	LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+	if (LODOP.CVERSION) {
+	    LODOP.PRINT_DESIGN()
+	}
+    }
 };
 
 // function downloadStockFixCtrlProvide($scope, diabloUtilsService, baseService) {

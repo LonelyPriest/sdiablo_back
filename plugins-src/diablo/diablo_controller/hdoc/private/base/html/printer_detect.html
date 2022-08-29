@@ -7,7 +7,7 @@
 	  打印机控测
 	</div>	
 
-	<div class="actions">
+	<div class="actions"> 
 	  <button type="button" class="btn blue reload purple-stripe"
 		    x-ng-click="refresh()">刷新
 	    <i class="icon icon-spinner fg-white"></i></button>
@@ -26,7 +26,8 @@
 		  <th>名称</th>
 		  <th>纸张大小</th>
 		  <th>纸宽</th>
-		  <th>纸高</th> 
+		  <th>纸高</th>
+		  <th>操作</th>
 		</tr>
 	      </thead>
 	      <tbody>
@@ -35,10 +36,14 @@
 		  <td>{{p.name}}</td>
 		  <td>{{p.size}}</td> 
 		  <td>{{p.width}}</td>
-		  <td>{{p.height}}</td> 
+		  <td>{{p.height}}</td>
+		  <td>
+		    <button class="btn diablo-button green"
+			    x-ng-click="design(p)">设计
+		      <i class="glyphicon glyphicon-edit"></i></button>
+		  </td>
 		</tr>
-	      </tbody>
-	      
+	      </tbody> 
 	    </table> <!--END supplier table-->
 	  </div>
 	</div>
