@@ -21,10 +21,25 @@ register_e(Service, Module)->
 register_e(Service, Module, ExtraArgs)->
     [{"^" ++ ?to_string(Service) ++ "?$",
       fun(Args) -> gen_request:http(Module, Args, ExtraArgs) end},
-     
+
      {"^" ++ ?to_string(Service) ++ "/(.+?)/?$",
       fun(Args) -> gen_request:http(Module, Args, ExtraArgs) end}
     ].
+
+register_weapp(Service, Module)->
+    [{"^" ++ ?to_string(Service) ++ "?$",        fun(Args) -> app_gen_request:http(Module, Args) end},
+     {"^" ++ ?to_string(Service) ++ "/(.+?)/?$", fun(Args) -> app_gen_request:http(Module, Args) end}
+    ].
+
+register_weapp(Service, Module, ExtraArgs)->
+    [{"^" ++ ?to_string(Service) ++ "?$",
+      fun(Args) -> app_gen_request:http(Module, Args, ExtraArgs) end},
+     
+     {"^" ++ ?to_string(Service) ++ "/(.+?)/?$",
+      fun(Args) -> app_gen_request:http(Module, Args, ExtraArgs) end}
+    ].
+
+
 
 url_match(get) ->
 	register_e(sale,          ?sale_request)
@@ -39,7 +54,8 @@ url_match(get) ->
     %% about wholesale
 	++ register_e(wsale,      ?w_sale_request) 
 	++ register_e(firm,       ?firm_request)
-	++ register_e(wretailer,  ?w_retailer_request) 
+	++ register_e(wretailer,  ?w_retailer_request)
+	++ register_weapp(weapp_retailer,  ?weapp_retailer_request) 
 	++ register_e(purchaser,  ?w_inventory_request)
 	++ register_e(wprint,     ?w_print_request) 
     %% wgood
@@ -65,7 +81,8 @@ url_match(delete) ->
     %% about wholesale
 	++ register_e(wsale,      ?w_sale_request)
 	++ register_e(firm,       ?firm_request)
-	++ register_e(wretailer,  ?w_retailer_request) 
+	++ register_e(wretailer,  ?w_retailer_request)
+	++ register_weapp(weapp_retailer,  ?weapp_retailer_request) 
 	++ register_e(purchaser,  ?w_inventory_request)
 	++ register_e(wprint,     ?w_print_request) 
 	++ register_e(wgood,      ?w_good_request)
@@ -92,7 +109,8 @@ url_match(post, Payload) ->
     %% about wholesale
 	++ register_e(wsale,      ?w_sale_request, Payload) 
 	++ register_e(firm,       ?firm_request, Payload)
-	++ register_e(wretailer,  ?w_retailer_request, Payload) 
+	++ register_e(wretailer,  ?w_retailer_request, Payload)
+	++ register_weapp(weapp_retailer,  ?weapp_retailer_request, Payload) 
 	++ register_e(purchaser,  ?w_inventory_request, Payload) 
 	++ register_e(wprint,     ?w_print_request, Payload) 
 	++ register_e(wgood,      ?w_good_request, Payload)

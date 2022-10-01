@@ -36,41 +36,50 @@ start() ->
     ok.
 
 valid_session(Req) ->
-    case Req:get_cookie_value(?QZG_DY_SESSION) of
-	undefined -> %% redirect to login page
-	    {error, no_session};
-	ESession ->
-	    %% ?DEBUG("MSession ~p", [MSession]),
-	    DSession = mochiweb_base64url:decode(ESession),
-	    case ?session:lookup(DSession) of
-		{ok, []} -> %% session time out or lost
-		    ?INFO("invalid session ~p", [DSession]),
-		    {error, {invalid_session, DSession}};
-		{ok, _} -> %% valid session 
-		    {ok, valid_session}
-	    end
-	
-	    %% case 
-	    %% 	mochiweb_session:check_session_cookie(
-	    %% 	  ?to_b(MSession),
-	    %% 	  3600 * 12,
-	    %% 	  fun(A) -> A end,
-	    %% 	  ?QZG_DY_SESSION) of
-	    %% 	{true, [_, SessionId]} -> 
-	    %% 	    case ?session:lookup(SessionId) of
-	    %% 		{ok, []} -> %% session time out or lost
-	    %% 		    ?INFO("invalid session ~p", [SessionId]),
-	    %% 		    {error, {invalid_session, MSession}};
-	    %% 		{ok, _} -> %% valid session 
-	    %% 		    {ok, valid_session}
-	    %% 	    end;
-	    %% 	{false, []} ->
-	    %% 	    {error, no_session};
-	    %% 	{false, [_, SessionId]} ->
-	    %% 	    ?INFO("failed to check session ~p", [SessionId]),
-	    %% 	    {error, {invalid_session, MSession}}
-	    %% end
-    end.	    
+    %% ?DEBUG("request ~p", [Req]),
+    %% ?DEBUG("header ~p", [Req:get_header_value("app-info")]),
+    case Req:get_header_value(?WEAPP) of
+	undefined -> 
+	    case Req:get_cookie_value(?QZG_DY_SESSION) of
+		undefined -> %% redirect to login page
+		    {error, no_session};
+		ESession ->
+		    %% ?DEBUG("MSession ~p", [MSession]),
+		    DSession = mochiweb_base64url:decode(ESession),
+		    case ?session:lookup(DSession) of
+			{ok, []} -> %% session time out or lost
+			    ?INFO("invalid session ~p", [DSession]),
+			    {error, {invalid_session, DSession}};
+			{ok, _} -> %% valid session 
+			    {ok, valid_session}
+		    end
+
+		    %% case 
+		    %% 	mochiweb_session:check_session_cookie(
+		    %% 	  ?to_b(MSession),
+		    %% 	  3600 * 12,
+		    %% 	  fun(A) -> A end,
+		    %% 	  ?QZG_DY_SESSION) of
+		    %% 	{true, [_, SessionId]} -> 
+		    %% 	    case ?session:lookup(SessionId) of
+		    %% 		{ok, []} -> %% session time out or lost
+		    %% 		    ?INFO("invalid session ~p", [SessionId]),
+		    %% 		    {error, {invalid_session, MSession}};
+		    %% 		{ok, _} -> %% valid session 
+		    %% 		    {ok, valid_session}
+		    %% 	    end;
+		    %% 	{false, []} ->
+		    %% 	    {error, no_session};
+		    %% 	{false, [_, SessionId]} ->
+		    %% 	    ?INFO("failed to check session ~p", [SessionId]),
+		    %% 	    {error, {invalid_session, MSession}}
+		    %% end
+	    end;
+	AppInfo ->
+	    %% {struct, Result} = mochijson2:decode(AppInfo),
+	    ?DEBUG("app-info ~p", [AppInfo]),
+	    {ok, weapp, AppInfo}
+    end.
 
 dispatch(Req, DocRoot) ->
     %% check session
@@ -189,7 +198,7 @@ url_dispatch(Req, [{Regexp,  Function}|T]) ->
 
     case Match of
 	{match, [MatchList]} ->
-	    %% ?DEBUG("Path ~p, Method ~p, Math ~p", [Path, Method, Match]),
+	    %% ?DEBUG("Path ~p, Function ~p, Method ~p, Math ~p", [Path, Function, Method, Match]),
 	    case valid_session(Req) of
 		{ok, _} ->
 		    case length(MatchList) of
@@ -202,6 +211,14 @@ url_dispatch(Req, [{Regexp,  Function}|T]) ->
 		%% {error, _} when Path =:= "login"->
 		%%     %% Function({Method, Req, [["login"]]});
 		%%     ?login_request:action(Req, login);
+		{ok, weapp, _AppInfo} ->
+		    case length(MatchList) of
+			0 ->
+			    %% No any URL param
+			    Function({Method, Req});
+			Length when Length > 0 ->
+			    Function({Method, Req, MatchList})
+		    end;
 		{error, _Error} ->
 		    %% ?INFO("failed to check session of url ~p,"
 		    %% 	  "reseaon ~p, redirect to login...", [Path, _Error]),

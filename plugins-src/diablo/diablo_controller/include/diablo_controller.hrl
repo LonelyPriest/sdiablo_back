@@ -3,6 +3,7 @@
 
 -define(TABLET, 1).
 -define(SUCCESS, 0).
+-define(WEAPP, "app-info").
 
 %% match
 -define(AND, 'and').
@@ -661,6 +662,10 @@
 %% retailer
 -define(w_retailer_request, diablo_w_retailer_request).
 -define(w_retailer, diablo_w_retailer).
+
+%% weapp retailer
+-define(weapp_retailer_request, diablo_app_retailer_request).
+-define(weapp_retailer, diablo_app_retailer).
 
 %% inventory
 %% -define(inventory_request, diablo_controller_inventory_request).

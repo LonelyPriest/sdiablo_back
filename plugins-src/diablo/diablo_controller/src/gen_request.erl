@@ -21,16 +21,16 @@
 -callback action(atom(), any(), tuple(), list()) -> ok.
     
 http(M, {'GET', Req}) ->
-    ?DEBUG("http receiive GET message", []),
+    ?DEBUG("http receive GET message", []),
     action(M, Req);
 http(M, {'GET', Req, [Url]}) ->
-    ?DEBUG("http receiive GET message with url ~p", [Url]),
+    ?DEBUG("http receive GET message with url ~p", [Url]),
     action(M, Req, ?split_url(Url));
 http(M, {'DELETE', Req, [Url]}) ->
-    ?DEBUG("http receiive DELETE message with url ~p", [Url]),
+    ?DEBUG("http receive DELETE message with url ~p", [Url]),
     action(M, Req, ?split_url(Url));
 http(UnkownModule, UnkownReq) ->
-    ?DEBUG("http receiive unkown message, module ~p, Req ~p", [UnkownModule, UnkownReq]).
+    ?DEBUG("http receive unkown message, module ~p, Req ~p", [UnkownModule, UnkownReq]).
 
 http(M, {'POST', Req, [Url]}, Payload) ->
     case Url =:= "upload_w_sale" of

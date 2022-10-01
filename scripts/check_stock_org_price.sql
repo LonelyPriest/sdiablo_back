@@ -249,21 +249,21 @@ set a.type=b.type where a.rsn='M-31-S-134-x-9' and a.merchant=31 and a.shop=134;
 -- delete from w_inventory_good where merchant=86;
 
 -- goods
-delete from w_inventory_good where merchant=52;
+delete from w_inventory_good where merchant=152;
 
 -- delete from w_inventory_new_detail_amount_117 where merchant=117;
-delete from w_inventory_new_detail_amount_49 where merchant=49;
-delete from w_inventory_new_detail_49 where merchant=49;
-delete from w_inventory_new_49 where merchant=49;
+delete from w_inventory_new_detail_amount_152 where merchant=152;
+delete from w_inventory_new_detail_152 where merchant=152;
+delete from w_inventory_new_152 where merchant=152;
 
 -- clear stock
-delete from w_inventory_amount_49 where merchant=49;
-delete from w_inventory_49 where merchant=49;
+delete from w_inventory_amount_152 where merchant=152;
+delete from w_inventory_152 where merchant=152;
 
 -- clear sale
-delete from w_sale_detail_amount_49 where merchant=49;
-delete from w_sale_detail_49 where merchant=49;
-delete from w_sale_49 where merchant=49;
+delete from w_sale_detail_amount_152 where merchant=152;
+delete from w_sale_detail_152 where merchant=152;
+delete from w_sale_152 where merchant=152;
 
 -- clear batch sale
 delete from batch_sale where merchant=49;
@@ -279,8 +279,8 @@ delete from w_inventory_transfer where merchant=49;
 
 
 -- report
-delete from w_daily_report where merchant=49;
-delete from w_change_shift where merchant=49;
+delete from w_daily_report where merchant=152;
+delete from w_change_shift where merchant=152;
 
 -- charge
 -- delete from w_charge_detail where merchant=27;
