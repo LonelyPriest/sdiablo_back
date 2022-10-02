@@ -10,33 +10,26 @@
 %% ================================================================================
 %% POST
 %% ================================================================================
-action(Session, Req, AppInfo, {"match_retailer_phone"}, Payload) ->
-    ?DEBUG("match_retailer_phone with session ~p, appinfo ~p, paylaod~n~p", [Session, AppInfo, Payload]),
+action(Session, Req, AppInfo, {"get_app_retailer"}, Payload) ->
+    ?DEBUG("get_retailer with session ~p, appinfo ~p, paylaod~n~p", [Session, AppInfo, Payload]),
     Merchant = ?v(<<"merchant">>, AppInfo),
-    Phone = ?v(<<"prompt">>, Payload),
-    Mode  = ?v(<<"mode">>, Payload, 0),
-    ShopId  = ?v(<<"shop">>, Payload, -1),
-    Shops = 
-	case ?v(<<"region">>, Payload) of
-	    undefined -> [];
-	    ?NO -> [];
-	    ?YES ->
-		{ok, AllShop} = ?w_user_profile:get(shop, Merchant),
-		%% ?DEBUG("AllShop ~p", [AllShop]),
-		case lists:filter(fun({S}) -> ?v(<<"id">>, S) =:= ShopId end, AllShop) of
-		    [] -> [];
-		    [{Shop}] ->
-			%% ?DEBUG("Shop ~p", [Shop]),
-			SameRegionShops =
-			    lists:filter(
-			      fun({S}) ->
-				      ?v(<<"region_id">>, Shop) =:= ?v(<<"region_id">>, S)
-			      end, AllShop),
-			lists:foldr(fun({S}, Acc) ->
-					    [?v(<<"id">>, S)|Acc]
-				    end, [], SameRegionShops)
-		end
-	end, 
-    ?utils:respond(batch, fun() -> ?w_retailer:match(phone, Merchant, {Mode, Phone, Shops}) end, Req).
+    Phone = ?v(<<"phone">>, Payload),
+    ?utils:app_respond(fun() -> ?w_retailer:retailer(get_by_phone, Merchant, Phone) end, Req);
 
+action(Session, Req, AppInfo, {"new_app_retailer"}, Payload) ->
+    ?DEBUG("new_app_retailer with session ~p, appinfo ~p, paylaod~n~p", [Session, AppInfo, Payload]),
+    Merchant = ?v(<<"merchant">>, AppInfo),
+    case ?w_retailer:retailer(new, Merchant, Payload) of
+	{ok, RId} ->
+	    ?utils:respond(
+	       200, Req, ?succ(add_w_retailer, RId), {<<"id">>, RId});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, AppInfo, {"get_app_shop"}, Payload) ->
+    ?DEBUG("get_retailer with session ~p, appinfo ~p, paylaod~n~p", [Session, AppInfo, Payload]),
+    Merchant = ?v(<<"merchant">>, AppInfo),
+    ?utils:app_respond(fun() -> ?shop:lookup(Merchant) end, Req). 
+    
 

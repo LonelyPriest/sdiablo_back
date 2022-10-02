@@ -184,6 +184,18 @@ fmonth(last, Year, Month) ->
 
     {LastYear, LastMonth}.
 
+app_respond(Fun, Req) ->
+    case Fun() of
+	{ok, Value} ->
+	    ?utils:respond(
+	       200, object_mochijson, Req,
+	       {[{<<"ecode">>, 0},
+		 {<<"data">>, Value} 
+		]});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end.
+
 respond(batch, Fun, Req) ->
     case Fun() of
 	{ok, Values} ->

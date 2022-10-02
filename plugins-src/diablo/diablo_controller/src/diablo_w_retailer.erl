@@ -67,6 +67,9 @@ retailer(delete, {Merchant, UTable}, RetailerId) ->
 retailer(get, Merchant, RetailerId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {get_retailer, Merchant, RetailerId});
+retailer(get_by_phone, Merchant, Phone) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {get_retailer_by_phone, Merchant, Phone});
 retailer(get_batch, Merchant, RetailerIds) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {get_retailer_batch, Merchant, RetailerIds}).
@@ -751,6 +754,33 @@ handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
 	", a.merchant"
 	", a.entry_date" 
 	" from w_retailer a where a.id=" ++ ?to_s(RetailerId)
+	++ " and a.merchant=" ++ ?to_s(Merchant), 
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({get_retailer_by_phone, Merchant, Phone}, _From, State) ->
+    ?DEBUG("get_retailer with merchant ~p, phone ~p",
+	   [Merchant, Phone]),
+    Sql = "select a.id"
+	", a.name"
+	", a.intro as intro_id"
+	", a.level"
+	", a.card"
+	", a.id_card"
+	", a.py"
+	", a.birth"
+	", a.lunar as lunar_id"
+	", a.type as type_id"
+	", a.balance"
+	", a.consume"
+	", a.score"
+	", a.mobile"
+	", a.address"
+	", a.shop as shop_id"
+	", a.draw as draw_id"
+	", a.merchant"
+	", a.entry_date" 
+	" from w_retailer a where a.mobile=\'" ++ ?to_s(Phone) ++ "\'"
 	++ " and a.merchant=" ++ ?to_s(Merchant), 
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
