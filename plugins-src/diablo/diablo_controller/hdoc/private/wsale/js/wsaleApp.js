@@ -889,7 +889,7 @@ function wsaleNewProvide(
     // retailer;
     $scope.match_retailer_phone = function(viewValue){
 	console.log($scope.select.retailer);
-	if ($scope.setting.retailer_mode === 1) {
+	if (!$scope.right.master && $scope.setting.retailer_mode === 1) {
 	    if (viewValue.length < 19) {
 		dialog.set_error_with_callback("会员扫描", 2188, $scope.reset_retailer);
 	    } else {
