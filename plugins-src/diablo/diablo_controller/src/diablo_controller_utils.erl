@@ -185,7 +185,7 @@ fmonth(last, Year, Month) ->
     {LastYear, LastMonth}.
 
 app_respond(Fun, Req) ->
-    case Fun() of
+    case Fun() of 
 	{ok, Value} ->
 	    ?utils:respond(
 	       200, object_mochijson, Req,

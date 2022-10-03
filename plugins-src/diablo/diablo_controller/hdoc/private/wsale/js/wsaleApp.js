@@ -735,6 +735,7 @@ function wsaleNewProvide(
 	var scan_mode = wsaleUtils.scan_only(shopId, base);
 	$scope.setting.scan_only     = wsaleUtils.to_integer(scan_mode.charAt(0));
 	$scope.setting.focus_style_number = wsaleUtils.to_integer(scan_mode.charAt(4));
+	$scope.setting.retailer_mode = wsaleUtils.to_integer(scan_mode.charAt(10));
 					     
 	$scope.setting.maling_rang   = wsaleUtils.maling_rang(shopId, base);
 	$scope.setting.type_sale     = wsaleUtils.type_sale(shopId, base);
@@ -887,11 +888,53 @@ function wsaleNewProvide(
     
     // retailer;
     $scope.match_retailer_phone = function(viewValue){
-	return wsaleUtils.match_retailer_phone(
-	    viewValue,
-	    diabloFilter,
-	    $scope.select.shop.id,
-	    $scope.setting.solo_retailer);
+	console.log($scope.select.retailer);
+	if ($scope.setting.retailer_mode === 1) {
+	    if (viewValue.length < 19) {
+		dialog.set_error_with_callback("会员扫描", 2188, $scope.reset_retailer);
+	    } else {
+		// check time
+		if (wsaleUtils.check_retailer_barcode(diablo_trim(viewValue).substring(11))) {
+		    diabloFilter.get_retailer_by_phone(
+			diablo_trim(viewValue).substring(0,11),
+			$scope.select.shop.id,
+			$scope.setting.solo_retailer).then(function(r) {
+			    console.log(r);
+			    if (r.ecode === 0 && !diablo_is_empty(r.data)) {
+			    	$scope.select.retailer =
+				    {id:      r.data.id,
+			    	     name:    r.data.name+ "/" + r.data.mobile,
+			    	     wname:   r.data.name,
+			    	     birth:   r.data.birth.substr(5,8),
+			    	     wbirth:  r.data.birth,
+			    	     lunar_id: r.data.lunar_id,
+			    	     level:   r.data.level,
+			    	     mobile:  r.data.mobile,
+			    	     type_id: r.data.type_id,
+			    	     score:   r.data.score,
+			    	     shop_id: r.data.shop_id,
+			    	     draw_id: r.data.draw_id,
+			    	     py:      r.data.py,
+			    	     comment: r.data.comment,
+			    	     balance: r.data.balance};
+				
+				$scope.on_select_retailer($scope.select.retailer, $scope.select.retailer, undefined);
+
+			    } else {
+				dialog.set_error_with_callback("会员扫描", 2186, $scope.reset_retailer);
+			    }
+			}) 
+		} else {
+		    dialog.set_error_with_callback("会员扫描", 2187, $scope.reset_retailer);
+		}
+	    }
+	} else {
+	    return wsaleUtils.match_retailer_phone(
+		diablo_trim(viewValue),
+		diabloFilter,
+		$scope.select.shop.id,
+		$scope.setting.solo_retailer);
+	} 
     };
     
     $scope.set_retailer = function(){
@@ -955,7 +998,7 @@ function wsaleNewProvide(
     	    if (user.loginRetailer !== diablo_invalid){
     		for (var i=0, l=$scope.sysRetailers.length; i<l; i++){
                     if (user.loginRetailer === $scope.sysRetailers[i].id){
-    			$scope.select.retailer = $scope.sysRetailers[i]
+    			$scope.select.retailer = $scope.sysRetailers[i];
     			break;
                     }
     		}

@@ -845,6 +845,25 @@ var wsaleUtils = function(){
 
 	mark_phone: function(phone) {
 	    return phone.replace(phone.substring(3,7), "****");
+	},
+
+	check_retailer_barcode: function(barcode) {
+	    o_barcode = parseInt(barcode, 16).toString();
+	    console.log(o_barcode);
+	    var year   = o_barcode.substring(0, 2);
+	    var month  = wsaleUtils.to_integer(o_barcode.substring(2, 4));
+	    var date   = wsaleUtils.to_integer(o_barcode.substring(4, 6));
+	    var hour   = wsaleUtils.to_integer(o_barcode.substring(6, 8));
+	    var minute = wsaleUtils.to_integer(o_barcode.substring(8, 10));
+
+	    var t2 = new Date();
+	    var t2_year = t2.getFullYear();
+	    var full_year = wsaleUtils.to_integer(t2_year.toString().substring(0, 2) + year);
+	    
+	    var t1 =  new Date(full_year, month - 1, date, hour, minute); 
+	    console.log(t1);
+	    // 5 minute
+	    return t2.getTime() - t1.getTime() <= 5 * 1000 * 60; 
 	}
 	
 	// 

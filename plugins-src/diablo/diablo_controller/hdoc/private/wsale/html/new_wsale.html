@@ -517,7 +517,7 @@
 	    <div class="input-group">
 	      <span class="input-group-addon">
 		<i class="glyphicon glyphicon-star fg-red"></i>会员</span>
-	      <input class="form-control" type="text"
+	      <input x-ng-if="setting.retailer_mode===0" class="form-control" type="text"
 		     x-ng-edit
 		     name="retailer"
 	  	     x-ng-model="select.retailer"
@@ -527,6 +527,12 @@
 		     typeahead-loading="loading_retailer"
 		     typeahead-on-select="on_select_retailer($item, $model, $label)"
 		     uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"/>
+	      <input x-ng-if="setting.retailer_mode===1" class="form-control" type="text"
+		     x-ng-edit
+		     name="retailer"
+	  	     x-ng-model="select.retailer.name"
+	  	     placeholder="请选择会员" 
+		     x-ng-enter="match_retailer_phone(select.retailer.name)"/>
 	      <span class="input-group-btn"> 
 		<button class="btn btn-success" x-ng-click="new_retailer()">
 		  <i class="glyphicon glyphicon-plus"></i></button>

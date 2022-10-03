@@ -647,6 +647,43 @@ function filterProvider(){
 		    })
 	    },
 
+	    // get_retailer_by_phone:function(phone, shop, region) {
+	    // 	var http = $resource("/wretailer/:operation",
+	    // 			     {operation: '@operation'});
+		
+	    // 	return http.save({operation:'get_w_retailer_by_phone'},
+	    // 			 {phone:phone, shop:shop, region:region})
+	    // 	    .$promise.then(function(r){
+	    // 		console.log(r);
+	    // 		if (r.ecode === 0 && !diablo_is_empty(r.data)) {
+	    // 		    return {id:      r.data.id,
+	    // 			    name:    r.data.name+ "/" + r.data.mobile,
+	    // 			    wname:   r.data.name,
+	    // 			    birth:   r.data.birth.substr(5,8),
+	    // 			    wbirth:  r.data.birth,
+	    // 			    lunar_id: r.data.lunar_id,
+	    // 			    level:   r.data.level,
+	    // 			    mobile:  r.data.mobile,
+	    // 			    type_id: r.data.type_id,
+	    // 			    score:   r.data.score,
+	    // 			    shop_id: r.data.shop_id,
+	    // 			    draw_id: r.data.draw_id,
+	    // 			    py:      r.data.py,
+	    // 			    comment: r.data.comment,
+	    // 			    balance: r.data.balance} 
+	    // 		} else {
+	    // 		    return undefined;
+	    // 		}
+	    // 	    })
+	    // },
+
+	    get_retailer_by_phone:function(phone, shop, region) {
+	    	var http = $resource("/wretailer/:operation",
+	    			     {operation: '@operation'}); 
+	    	return http.save({operation:'get_w_retailer_by_phone'},
+	    			 {phone:phone, shop:shop, region:region}).$promise;
+	    },
+
 	    match_cost_class: function(viewValue, ascii) {
 		return _shopHttp.query_by_post(
 		    {operation: 'match_cost_class'},

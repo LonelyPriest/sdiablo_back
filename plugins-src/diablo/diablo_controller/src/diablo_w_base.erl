@@ -1114,7 +1114,10 @@ sys_config() ->
 	      %%[9]:stock reject mode
 	      %%    0 -> common reject
 	      %%    1 -> fast reject
-	      {"scan_only",         "扫码模式",           "0000000111", "0"},
+	      %%[10]:member mode, 0 default
+	      %%    0 -> input manual
+	      %%    1 -> scan by weapp
+	      {"scan_only",         "扫码模式",           "00000001110", "0"},
 	      %% {"auto_level",        "会员自动升级",       "0",    "0"},
 	      {"maling_rang",       "抹零范围",           "3",    "0"},
 	      %% 1: different mode has different dashboard

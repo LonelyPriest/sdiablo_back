@@ -781,6 +781,7 @@ handle_call({get_retailer_by_phone, Merchant, Phone}, _From, State) ->
 	", a.merchant"
 	", a.entry_date" 
 	" from w_retailer a where a.mobile=\'" ++ ?to_s(Phone) ++ "\'"
+	++ " and a.type!=2"
 	++ " and a.merchant=" ++ ?to_s(Merchant), 
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};

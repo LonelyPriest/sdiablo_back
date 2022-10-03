@@ -1120,6 +1120,7 @@ pass_action(wholesaler) ->
      <<"list_w_retailer">>,
      <<"list_sys_wretailer">>,
      <<"get_w_retailer">>,
+     <<"get_w_retailer_by_phone">>,
      <<"get_w_retailer_batch">>,
      <<"filter_retailer_detail">>,
      <<"check_w_retailer_password">>,

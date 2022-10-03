@@ -1628,7 +1628,23 @@ action(Session, Req, {"match_retailer_phone"}, Payload) ->
 				    end, [], SameRegionShops)
 		end
 	end, 
-    ?utils:respond(batch, fun() -> ?w_retailer:match(phone, Merchant, {Mode, Phone, Shops}) end, Req).
+    ?utils:respond(batch, fun() -> ?w_retailer:match(phone, Merchant, {Mode, Phone, Shops}) end, Req);
+
+action(Session, Req, {"get_w_retailer_by_phone"}, Payload) ->
+    ?DEBUG("get_w_retailer_by_phone with session ~p, paylaod~n~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Phone = ?v(<<"phone">>, Payload, []),
+    %% ?utils:app_respond(fun() -> ?w_retailer:retailer(get_by_phone, Merchant, Phone) end, Req);
+
+    case ?w_retailer:retailer(get_by_phone, Merchant, Phone) of 
+	{ok, Retailer} ->
+	    ?utils:respond(200, object_mochijson, Req,
+			   {[{<<"ecode">>, 0},
+			     {<<"data">>, Retailer}]
+			   }); 
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end.
 
 sidebar(Session) ->
     Merchant = ?session:get(merchant, Session),
