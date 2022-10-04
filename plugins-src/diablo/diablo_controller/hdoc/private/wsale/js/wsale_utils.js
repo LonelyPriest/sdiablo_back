@@ -850,7 +850,7 @@ var wsaleUtils = function(){
 	check_retailer_barcode: function(barcode) {
 	    o_barcode = parseInt(barcode, 16).toString();
 	    // console.log(o_barcode);
-	    if (o_barcode.length === 12) {
+	    if (o_barcode.length === 10) {
 		var year   = o_barcode.substring(0, 2);
 		var month  = wsaleUtils.to_integer(o_barcode.substring(2, 4));
 		var date   = wsaleUtils.to_integer(o_barcode.substring(4, 6));
@@ -864,7 +864,7 @@ var wsaleUtils = function(){
 		var t1 =  new Date(full_year, month - 1, date, hour, minute); 
 		console.log(t1);
 		// 5 minute
-		return t2.getTime() - t1.getTime() <= 5 * 1000 * 60; 
+		return t2.getTime() - t1.getTime() <= 2 * 1000 * 60; 
 	    }
 
 	    return false;
