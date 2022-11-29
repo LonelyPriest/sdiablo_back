@@ -4922,7 +4922,18 @@ function wsaleNewDetailProvide(
 
 	    // var wholeBalance = (r.has_pay - r.ticket - noTicketBalance)
 	    // 	- (r.has_pay - r.ticket - noTicketBalance) % 100;
-	    var wholeBalance = (r.has_pay - r.ticket) - (r.has_pay - r.ticket ) % 100;
+	    // var wholeBalance = (r.has_pay - r.ticket) - (r.has_pay - r.ticket ) % 100;
+	    var wholeBalance = 0;
+	    if (r.has_pay >= 100) {
+		wholeBalance = (r.has_pay - r.ticket) - (r.has_pay - r.ticket ) % 100;
+	    } else if (r.has_pay >= 10 && r.has_pay <100) {
+		wholeBalance = (r.has_pay - r.ticket);
+	    } else if (r.has_pay > 0 && r.has_pay < 10) {
+		wholeBalance = (r.has_pay - r.ticket);
+	    } else {
+		wholeBalance = 0;
+	    }
+	    
 	    var realBalance  = wholeBalance;
 	    var ticketLength = $scope.ticketPlans.length;
 	    var validPlans   = [], maxSend;
