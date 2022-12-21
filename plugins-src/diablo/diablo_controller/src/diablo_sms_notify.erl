@@ -3,8 +3,12 @@
 -include("../../../../include/knife.hrl").
 -include("diablo_controller.hrl").
 
--export([sms_notify/2, sign/1, zz_sms/1, zz_sms/3, sms/3, sms/4, init_sms/0, sms_once/4, check_sms_rate/1]).
+-export([sms_notify/2,
+	 sign/1,
+	 zz_sms/1, zz_sms/3, sms/3, sms/4,
+	 init_sms/0, sms_once/4, check_sms_rate/1]).
 -export([check_merchant_balance/2]).
+-export([gen_verficate_code/1]).
 
 -define(zz_sms_account, <<"N3001234">>).
 -define(zz_sms_password, <<"dLZJfzK5Mc7a9d">>).
@@ -12,16 +16,25 @@
 init_sms() ->
     Sqls= [
 	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 0, \'会员提醒：欢迎光临{$var}，本次{$var}成功，消费金额{$var}，当前余额{$var}，累计积分{$var}，感谢您的惠顾！！\')">>,
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 3, \'尊敬的VIP：欢迎光临{$var}，现赠与总价值{$var}元的优惠券{$var}张，{$var}天激活后可使用，请保管好该信息并及时消费。\')">>,
-	   <<"insert into zz_sms_template(merchant, type, content) values(15, 3, \'尊敬的VIP，现赠予总价值{$var}元的优惠券{$var}张，{$var}天后激活可在钻石女人、艾莱依、E主题、波司登、千仞岗使用！\')">>,
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 4, \'尊敬的{$var}会员，花开一季，岁月一轮，祝您生日快乐，本店特意为您准备了礼品，感谢您的一路陪伴。{$var}祝！\')">>,
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 5, \'会员提醒：欢迎光临{$var}，本次{$var}成功，剩余次数{$var}，有效期截止日{$var}，感谢您的惠顾！！\')">>,
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 6, \'尊敬的客户{$var}，短信充值成功，您已充值{$var}元，目前剩余短消息{$var}条，感谢您的使用！！\')">>,
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 7, \'尊敬的钱掌柜客户{$var}，您名下店铺{$var}会员{$var}消费异常，近一月内消费达{$var}次，请及时核对本次交易！！！！\')">>,
 	   
 	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 1, \'会员提醒：欢迎光临{$var}，本次{$var}成功，消费金额{$var}，当前余额{$var}，累计积分{$var}，感谢您的惠顾！！\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(2, 1, \'{$var}提醒您：本次消费{$var}元，本次积分{$var}，累计积分{$var}，特价不积分。5千积分兑换50元现金券，请及时兑换！\')" >>,
+	   
 	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 2, \'会员提醒：欢迎光临{$var}，本次{$var}成功，消费金额{$var}，当前余额{$var}，累计积分{$var}，感谢您的惠顾！！\')">>,
-	   <<"insert into zz_sms_template(merchant, type, content) values(2, 1, \'{$var}提醒您：本次消费{$var}元，本次积分{$var}，累计积分{$var}，特价不积分。5千积分兑换50元现金券，请及时兑换！\')" >>],
+	   
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 3, \'尊敬的VIP：欢迎光临{$var}，现赠与总价值{$var}元的优惠券{$var}张，{$var}天激活后可使用，请保管好该信息并及时消费。\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(15, 3, \'尊敬的VIP，现赠予总价值{$var}元的优惠券{$var}张，{$var}天后激活可在钻石女人、艾莱依、E主题、波司登、千仞岗使用！\')">>,
+	   
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 4, \'尊敬的{$var}会员，花开一季，岁月一轮，祝您生日快乐，本店特意为您准备了礼品，感谢您的一路陪伴。{$var}祝！\')">>,
+	   
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 5, \'会员提醒：欢迎光临{$var}，本次{$var}成功，剩余次数{$var}，有效期截止日{$var}，感谢您的惠顾！！\')">>,
+	   
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 6, \'尊敬的客户{$var}，短信充值成功，您已充值{$var}元，目前剩余短消息{$var}条，感谢您的使用！！\')">>,
+	   
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 7, \'尊敬的钱掌柜客户{$var}，您名下店铺{$var}会员{$var}消费异常，近一月内消费达{$var}次，请及时核对本次交易！！\')">>,
+	   
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 8, \' 验证码{$var}，尊敬的{$var}会员，您正在使用会员充值消费功能，请勿转发或泄露（2分钟这内有效）。\')">> 
+	  ],
     ?sql_utils:execute(transaction, Sqls, ok).
     
 
@@ -402,7 +415,15 @@ sms(max_trans, Merchant, Phone, {Manager, Shop, Retailer, TransCount}) ->
 	++ "," ++ ?to_s(Retailer)
 	++ "," ++ ?to_s(TransCount),
     ?DEBUG("params ~ts", [?to_b(Params)]),
-    rocket_sms_send(zz, Merchant, <<"钱掌柜">>, ?MAX_TRANS, Phone, Params, fun() -> ok end).
+    rocket_sms_send(zz, Merchant, <<"钱掌柜">>, ?MAX_TRANS, Phone, Params, fun() -> ok end);
+
+sms(verficate_code, Merchant, Phone, {ShopId, Code})->
+    {ShopName, ShopSign} = ?shop:shop(get_sign, Merchant, ShopId),
+    Params = string:strip(?to_s(Phone))
+	++ "," ++ ?to_s(Code)
+	++ "," ++ ?to_s(ShopName),
+    ?DEBUG("params ~ts", [?to_b(Params)]),
+    rocket_sms_send(zz, Merchant, ShopSign, ?VERIFICATION_CODE, Phone, Params, fun() -> ok end).
 
 start_sms(Merchant, Phone, SMSTemplate, SMSParams) ->
     case check_sms_rate(Merchant) of
@@ -776,7 +797,8 @@ get_sms_template(zz, Action, Merchant, Templates) ->
 		   ?BIRTH_NOTIFY -> ?v(<<"type">>, T) =:= 4; %% birth
 		   ?THEORETIC_CARD_SALE -> ?v(<<"type">>, T) =:= 5; %% card sale
 		   ?SMS_CHARGE -> ?v(<<"type">>, T) =:= 6; %% sms charge
-		   ?MAX_TRANS -> ?v(<<"type">>, T) =:= 7
+		   ?MAX_TRANS -> ?v(<<"type">>, T) =:= 7;
+		   ?VERIFICATION_CODE -> ?v(<<"type">>, T) =:= 8 %% msg code for retailer
 	       end] of
 	FTemplates ->
 	    ?DEBUG("FTemplates ~p", [FTemplates]),
@@ -905,4 +927,10 @@ hex(N) when N < 10 ->
 hex(N) when N >= 10, N < 16 ->
     $a + (N-10).
 
-     
+gen_verficate_code(with_4)->
+    crypto:rand_uniform(1000, 9999);
+gen_verficate_code(with_5) ->
+    crypto:rand_uniform(10000, 99999);
+gen_verficate_code(with_6) ->
+    crypto:rand_uniform(100000, 999999).
+

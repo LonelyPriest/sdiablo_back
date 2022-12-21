@@ -95,6 +95,10 @@ init([]) ->
 	       {diablo_controller_session_manager, start_link, []},
 	       Restart, Shutdown, Type, [diablo_controller_session_manager]},
 
+    MsgCodeCheck = {diablo_controller_msg_code_check,
+		    {diablo_controller_msg_code_check, start_link, []},
+		    Restart, Shutdown, Type, [diablo_controller_msg_code_check]},
+
     RightTree = {diablo_controller_right_init,
 	       {diablo_controller_right_init, start_link, []},
 	       Restart, Shutdown, Type, [diablo_controller_right_init]},
@@ -242,6 +246,6 @@ init([]) ->
 
     {ok, {SupFlags, [IConv, Mysql, Employ, Merchant,
     		     Shop, Right, Supplier,
-    		     InventorySN, Login, Session,
+    		     InventorySN, Login, Session, MsgCodeCheck,
     		     RightTree, Authen, Attr]
 	  ++ WholeSale ++ PoolSup}}.

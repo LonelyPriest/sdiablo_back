@@ -65,10 +65,9 @@ start_link() ->
 
 init([]) ->
     ets:new(?SESSION, [set, private, named_table]),
-
     %% cleanup session that was timeout
     ok = timer:start(),
-    %% minisecond, multi 1000
+    %% millisecond, multi 1000
     {ok, TRef} = timer:send_interval(
 		   ?INTERVAL * 1000 * 60 , ?SERVER, {'$gen_cast', cleanup_session}),
     
@@ -319,5 +318,3 @@ get(sdays, Session) ->
     Session#session.sdays;
 get(discount, Session) ->
     Session#session.discount.
-
-

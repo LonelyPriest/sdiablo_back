@@ -128,6 +128,7 @@
 -define(THEORETIC_CARD_SALE, 5).
 -define(SMS_CHARGE, 6).
 -define(MAX_TRANS, 7).
+-define(VERIFICATION_CODE, 8).
 
 %% bill mode
 -define(CASH, 0).
@@ -839,13 +840,20 @@
 
 
 -record(diablo_node,
-       {
-	 id       = -1  :: integer(),
-	 name           :: string(),
-	 action   = ""  :: string(),
-	 parent   = -1  :: integer(),
-	 children = []
-       }).
+	{
+	  id       = -1  :: integer(),
+	  name           :: string(),
+	  action   = []  :: string(),
+	  parent   = -1  :: integer(),
+	  children = []
+	}).
 -type tree() :: #diablo_node{}.
 
-
+-define(MSG_CHECK_CODE, tbl_msg_check_code).
+-record(msg_check_code,
+	{
+	  merchant = -1 :: integer(),
+	  mobile   = [] :: string(),
+	  code     = [] :: string(),
+	  gen_time = [] :: string()
+	}).
