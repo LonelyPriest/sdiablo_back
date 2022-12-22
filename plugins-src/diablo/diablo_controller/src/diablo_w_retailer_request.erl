@@ -1645,23 +1645,29 @@ action(Session, Req, {"get_w_retailer_by_phone"}, Payload) ->
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
-action(Session, Req, {"gen_w_retailer_msgcode"}, Payload) ->
-    ?DEBUG("gen_w_retailer_msgcode with session ~p, paylaod ~p", [Session, Payload]),
-    Merchant = ?session:get(merchant, Session),
-    ShopId   = ?v(<<"shop">>, Payload, []),
-    Phone    = ?v(<<"phone">>, Payload, []),
-    
-    VerficateCode = ?notify:gen_verficate_code(with_4),
-    %% store code
 
-    %% send sms
-    ?notify:sms(verficate_code, Merchant, Phone, {ShopId, VerficateCode}),
+action(Session, Req, {"send_w_retailer_sms_vcode"}, Payload) ->
+    ?DEBUG("send_w_retailer_sms_vcode with session ~p, paylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    ShopId   = ?v(<<"shop">>, Payload, undefined),
+    Phone    = ?v(<<"phone">>, Payload, []),
+
+    case ShopId =:= undefined orelse Phone =:= [] of
+	true ->
+	    ?utils:respond(200, Req, ?err(params_error, <<"get_w_retailer_vcode">>));
+	false ->
+	    VerficateCode = ?notify:gen_verificate_code(with_4),
+	    ?DEBUG("VerficateCode ~p", [VerficateCode]),
+	    %% store code
+	    {ok, _} = ?vcode:verificate_code(new, Merchant, Phone, VerficateCode), 
+	    %% send sms
+	    ?notify:sms(verificate_code, Merchant, Phone, {ShopId, VerficateCode}),
     
-    %% gen random check code
-    ?utils:respond(200, object_mochijson, Req,
+	    ?utils:respond(200, object_mochijson, Req,
 		   {[{<<"ecode">>, 0},
 		     {<<"data">>, ?to_b(Phone)}]
-		   }).
+		   })
+    end.
 
 sidebar(Session) ->
     Merchant = ?session:get(merchant, Session),

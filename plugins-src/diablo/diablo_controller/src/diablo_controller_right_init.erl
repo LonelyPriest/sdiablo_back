@@ -1148,6 +1148,7 @@ pass_action(wholesaler) ->
      <<"list_w_gift">>,
      <<"exchange_w_gift">>,
      <<"list_w_gift_exchange">>,
+     <<"send_w_retailer_sms_vcode">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,

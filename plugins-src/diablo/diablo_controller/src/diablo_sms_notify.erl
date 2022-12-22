@@ -6,9 +6,9 @@
 -export([sms_notify/2,
 	 sign/1,
 	 zz_sms/1, zz_sms/3, sms/3, sms/4,
-	 init_sms/0, sms_once/4, check_sms_rate/1]).
+	 init_sms/0, init_sms/1, sms_once/4, check_sms_rate/1]).
 -export([check_merchant_balance/2]).
--export([gen_verficate_code/1]).
+-export([gen_verificate_code/1]).
 
 -define(zz_sms_account, <<"N3001234">>).
 -define(zz_sms_password, <<"dLZJfzK5Mc7a9d">>).
@@ -33,7 +33,13 @@ init_sms() ->
 	   
 	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 7, \'尊敬的钱掌柜客户{$var}，您名下店铺{$var}会员{$var}消费异常，近一月内消费达{$var}次，请及时核对本次交易！！\')">>,
 	   
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 8, \' 验证码{$var}，尊敬的{$var}会员，您正在使用会员充值消费功能，请勿转发或泄露（2分钟这内有效）。\')">> 
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 8, \'验证码{$var}，尊敬的{$var}会员，您正在使用会员充值消费功能，请勿转发或泄露（2分钟这内有效）。\')">> 
+	  ],
+    ?sql_utils:execute(transaction, Sqls, ok).
+
+init_sms(verificate_code) ->
+    Sqls= [
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 8, \'验证码{$var}，尊敬的{$var}会员，您正在使用会员充值消费功能，请勿转发或泄露（2分钟这内有效）。\')">> 
 	  ],
     ?sql_utils:execute(transaction, Sqls, ok).
     
@@ -417,7 +423,7 @@ sms(max_trans, Merchant, Phone, {Manager, Shop, Retailer, TransCount}) ->
     ?DEBUG("params ~ts", [?to_b(Params)]),
     rocket_sms_send(zz, Merchant, <<"钱掌柜">>, ?MAX_TRANS, Phone, Params, fun() -> ok end);
 
-sms(verficate_code, Merchant, Phone, {ShopId, Code})->
+sms(verificate_code, Merchant, Phone, {ShopId, Code})->
     {ShopName, ShopSign} = ?shop:shop(get_sign, Merchant, ShopId),
     Params = string:strip(?to_s(Phone))
 	++ "," ++ ?to_s(Code)
@@ -927,10 +933,10 @@ hex(N) when N < 10 ->
 hex(N) when N >= 10, N < 16 ->
     $a + (N-10).
 
-gen_verficate_code(with_4)->
+gen_verificate_code(with_4)->
     crypto:rand_uniform(1000, 9999);
-gen_verficate_code(with_5) ->
+gen_verificate_code(with_5) ->
     crypto:rand_uniform(10000, 99999);
-gen_verficate_code(with_6) ->
+gen_verificate_code(with_6) ->
     crypto:rand_uniform(100000, 999999).
 

@@ -684,6 +684,13 @@ function filterProvider(){
 	    			 {phone:phone, shop:shop, region:region}).$promise;
 	    },
 
+	    send_retailer_sms_vcode:function(phone, shop) {
+	    	var http = $resource("/wretailer/:operation",
+	    			     {operation: '@operation'}); 
+	    	return http.save({operation:'send_w_retailer_sms_vcode'},
+	    			 {phone:phone, shop:shop}).$promise;
+	    },
+
 	    match_cost_class: function(viewValue, ascii) {
 		return _shopHttp.query_by_post(
 		    {operation: 'match_cost_class'},

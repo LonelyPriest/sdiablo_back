@@ -557,6 +557,7 @@ function wsaleNewProvide(
     
     $scope.pattern    = {
 	money:        diabloPattern.decimal_2,
+	vcode:        diabloPattern.number_4,
 	sell:         diabloPattern.integer_except_zero,
 	discount:     diabloPattern.discount,
 	barcode:      diabloPattern.number,
@@ -765,6 +766,7 @@ function wsaleNewProvide(
 	$scope.setting.active_score = wsaleUtils.to_integer(sale_mode.charAt(35));
 	$scope.setting.mark_member_phone = wsaleUtils.to_integer(sale_mode.charAt(36));
 	$scope.setting.auto_calc_card = wsaleUtils.to_integer(sale_mode.charAt(39));
+	$scope.setting.use_verificate_code = wsaleUtils.to_integer(sale_mode.charAt(40));
 
 	angular.extend($scope.setting, wsaleUtils.gift_sale(shopId, base));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
@@ -1994,6 +1996,19 @@ function wsaleNewProvide(
 	    
 	); 
     };
+
+    $scope.send_sms_vcode = function() {
+	diabloFilter.send_retailer_sms_vcode(
+	    $scope.select.retailer.mobile, $scope.select.shop.id).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    // dialog.response(true, "验证码生成", "请通知客户查收验证码！！");
+		}
+		else  {
+		    dialog.set_error("验证码生成", result.ecode)
+		}
+	    })
+    }
 
     $scope.update_retailer = function() {
 	var oRetailer = angular.copy($scope.select.retailer);

@@ -133,12 +133,13 @@
 		  <td class="text-center vert-align">{{inv.order_id}}</td> 
 		  <td class="text-left vert-align col-md-2">
 		    <div class={{color_negative_sale(inv.negative)}}>
-		    <span x-ng-if="setting.barcode_mode">
-		      {{inv.bcode}}/{{inv.full_name}}
-		    </span>
-		    <span x-ng-if="!setting.barcode_mode">
-		      {{inv.full_name}}
-		    </span>
+		      <span x-ng-if="setting.barcode_mode">
+			{{inv.bcode}}/{{inv.full_name}}
+		      </span>
+		      <span x-ng-if="!setting.barcode_mode">
+			{{inv.full_name}}
+		      </span>
+		    </div>
 	  	  </td>
 		  
 		  <!-- <td class="col-md-2 text-left vert-align"> -->
@@ -442,7 +443,6 @@
 	
       </div>
     </div>
-    
   </div> <!--END col-md-8-->
 
   <div class="col-md-4">
@@ -711,8 +711,7 @@
 	    <!-- <div x-ng-show="!check_verificate(select.retailer)"> -->
 	    <!--   <span class="fg-red">核销金额超过上限</span> -->
 	    <!-- </div> -->
-	  </div>
-	  
+	  </div> 
 	</div>
 
 	<div x-ng-if="setting.hide_charge" class="row" style="margin-top:10px">
@@ -725,6 +724,28 @@
 	    	     x-ng-model="select.charge"/> 
 	    </div>
 	  </div>
+	</div>
+
+	<div class="row diablo-good-form-group" style="margin-top:10px">
+	  <div class="col-xs-12 col-md-12">
+	    <div class="input-group">
+	      <span class="input-group-addon">
+		<i class="glyphicon glyphicon-lock fg-red"></i>验证码</span>
+	      <input class="form-control"
+		     type="number" step="1"
+		     disable-key
+		     x-ng-edit
+		     name="vcode"
+		     x-ng-pattern="pattern.vcode"
+	  	     x-ng-model="select.vcode"
+	  	     placeholder="验证码2分钟内有效"
+		     x-ng-enter="disable_save() || save_wsale()"/> 
+	      <span class="input-group-btn"> 
+		<button class="btn btn-success" x-ng-click="send_sms_vcode()">
+		  <i class="glyphicon glyphicon-arrow-right"></i></button>
+	      </span> 
+	    </div> 
+	  </div> 
 	</div>
 	
       </div>
@@ -815,7 +836,7 @@
 	</div>
       </div> 
     </div> 
-  </div>
+  </div> <!--end col-md-4 -->
   
 </div> <!--END row-->
 
@@ -1097,6 +1118,7 @@
 	</div>
 	
       </div>
+    </form>
   </div>
 
   <div class="modal-footer">
@@ -1233,6 +1255,7 @@
 	</div>
 	
       </div>
+    </form>
   </div>
 
   <div class="modal-footer">
@@ -1287,7 +1310,6 @@
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
 </script>
-
 
 <script type="text/ng-template" id="new-ticket.html">
   <div class="modal-header">

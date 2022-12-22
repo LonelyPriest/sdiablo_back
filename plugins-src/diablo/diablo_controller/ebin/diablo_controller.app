@@ -39,6 +39,7 @@
                         diablo_lunar_calendar,diablo_controller_right_init,
                         diablo_controller_authen,diablo_wuser_profile,
                         diablo_sms_notify,diablo_pay,
+                        diablo_controller_msg_code_check,
                         diablo_batch_sale_request,diablo_batch_sale,
                         diablo_batch_saler,app_gen_request,
                         diablo_app_retailer_request,base_frame,

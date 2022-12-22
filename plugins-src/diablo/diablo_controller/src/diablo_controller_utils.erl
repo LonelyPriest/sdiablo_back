@@ -36,6 +36,9 @@ current_time(year) ->
     {{Year, _, _}, {_, _, _}} = calendar:now_to_local_time(erlang:now()),
     lists:flatten(io_lib:format("~4..0w", [Year]));
 
+%%--------------------------------------------------------------------------------
+%% @return: second
+%%--------------------------------------------------------------------------------
 current_time(timestamp) ->
     {M, S, _} = erlang:now(),
     

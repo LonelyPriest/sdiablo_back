@@ -15,8 +15,9 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     
     this.decimal_2 = /^[+|\-]?\d+(\.\d{1,2})?$/;
 
+    this.number_2 = /^[0-9]{1,2}$/; 
     this.number_3 = /^[0-9]{1,3}$/;
-    this.number_2 = /^[0-9]{1,2}$/;
+    this.number_4 = /^[0-9]{1,4}$/;
     
     this.percent  = /^\d{1,2}(\.\d{1,2})?$|100$/;
     this.size_specific = /^[A-Za-z0-9\/\s]{2,}$/;

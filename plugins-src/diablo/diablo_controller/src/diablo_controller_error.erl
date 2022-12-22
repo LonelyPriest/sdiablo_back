@@ -657,6 +657,10 @@ error(invalid_pay_scan_code_len, PayCode) ->
     {2617, "invalid pay code len:" ++ ?to_s(PayCode)};
 error(pay_http_trans_failed, ECode) ->
     {2618, "failed to pay scan trade: " ++ ?to_s(ECode)};
+error(verficate_code_not_found, Mobile) ->
+    {2619, "failed to find verficate code with mobile:" ++ ?to_s(Mobile)};
+error(verficate_code_timeout, Code) ->
+    {2620, "verficate code was timeout:" ++ ?to_s(Code)};
 error(check_pay_scan_but_db_error, PayOrderNo) ->
     {2686, "success to check pay, error to db:" ++ ?to_s(PayOrderNo)};
 error(pay_scan_unkown, PayOrderNo) ->
@@ -669,6 +673,7 @@ error(pay_scan_closed, PayOrderNo) ->
     {2690, "closed state while pay scan:" ++ ?to_s(PayOrderNo)};
 error(pay_scan_abnormal, PayOrderNo) ->
     {2691, "pay scan abnormal:" ++ ?to_s(PayOrderNo)};
+
 
 %% about print
 error(invalid_sn, PrintSN) ->

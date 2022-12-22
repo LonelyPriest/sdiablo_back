@@ -744,6 +744,9 @@
 
 -define(table, diablo_table).
 
+%% verificate code
+-define(vcode, diablo_controller_msg_code_check).
+
 -define(value(Key, Proplists),
 	diablo_controller_utils:value_from_proplists(Key, Proplists)).
 -define(value(Key, Proplists, Default),
@@ -853,7 +856,7 @@
 -record(msg_check_code,
 	{
 	  merchant = -1 :: integer(),
-	  mobile   = [] :: string(),
-	  code     = [] :: string(),
-	  gen_time = [] :: string()
+	  mobile   = <<>> :: binary(),
+	  code     = <<>> :: binary(),
+	  gen_time = 0 :: integer()
 	}).
