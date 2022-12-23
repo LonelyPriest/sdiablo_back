@@ -657,10 +657,12 @@ error(invalid_pay_scan_code_len, PayCode) ->
     {2617, "invalid pay code len:" ++ ?to_s(PayCode)};
 error(pay_http_trans_failed, ECode) ->
     {2618, "failed to pay scan trade: " ++ ?to_s(ECode)};
-error(verficate_code_not_found, Mobile) ->
+error(verificate_code_not_found, Mobile) ->
     {2619, "failed to find verficate code with mobile:" ++ ?to_s(Mobile)};
-error(verficate_code_timeout, Code) ->
-    {2620, "verficate code was timeout:" ++ ?to_s(Code)};
+error(verificate_code_timeout, Code) ->
+    {2620, "verificate code was timeout:" ++ ?to_s(Code)};
+error(verificate_code_wrong, Code) ->
+    {2621, "verificate code was wrong:" ++ ?to_s(Code)};
 error(check_pay_scan_but_db_error, PayOrderNo) ->
     {2686, "success to check pay, error to db:" ++ ?to_s(PayOrderNo)};
 error(pay_scan_unkown, PayOrderNo) ->

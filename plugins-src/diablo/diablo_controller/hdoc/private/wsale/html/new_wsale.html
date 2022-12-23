@@ -726,7 +726,9 @@
 	  </div>
 	</div>
 
-	<div class="row diablo-good-form-group" style="margin-top:10px">
+	<div x-ng-if="!right.master && setting.use_verificate_code
+		      && (select.withdraw || select.ticket_balance) "
+	     class="row diablo-good-form-group" style="margin-top:10px">
 	  <div class="col-xs-12 col-md-12">
 	    <div class="input-group">
 	      <span class="input-group-addon">

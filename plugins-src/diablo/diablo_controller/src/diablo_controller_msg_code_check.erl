@@ -104,13 +104,13 @@ handle_call({check_code, Merchant, Mobile, OrgCode}, _From, State) ->
     
     case ets:select(?MSG_CHECK_CODE, MS) of
     	[] ->
-    	    {reply, {error, ?err(verficate_code_not_found, Mobile)}, State}; 
-    	[{Code, GenTime}] ->
+    	    {reply, {error, ?err(verificate_code_not_found, Mobile)}, State}; 
+    	[{_Code, GenTime}] ->
     	    case ?utils:current_time(timestamp) - GenTime >= ?TIMEOUT of
     	    	true ->
-		    {reply, {error, ?err(verficate_code_timeout, Code)}, State};
+		    {reply, {error, ?err(verificate_code_timeout, OrgCode)}, State};
     	    	false ->
-    	    	    {reply, {ok, Code}, State}
+    	    	    {reply, {ok, OrgCode}, State}
     	    end
     end;
 

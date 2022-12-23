@@ -118,6 +118,8 @@
 -define(TICKET_DISCARD_ONE, 0).
 -define(TICKET_DISCARD_ALL, 1).
 
+%% verificate code
+-define(VERIFICATION_CODE_LENTH, 4).
 
 %% sms action
 -define(NORMAL_CHARGE, 0).

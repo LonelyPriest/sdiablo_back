@@ -281,7 +281,7 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
     {struct, Print} = ?v(<<"print">>, Payload), 
     TicketBatchs    = ?v(<<"ticket_batchs">>, Base),
     TicketBalance   = ?v(<<"ticket">>, Base), 
-    TicketCustom    = ?v(<<"ticket_custom">>, Base, -1),
+    TicketCustom    = ?v(<<"ticket_custom">>, Base, -1), 
 
     TicketInfo = 
 	case TicketCustom of
@@ -347,132 +347,7 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
 	      Print);
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
-    end;
-    
-    %% case TicketBatch =/= undefined andalso TicketBalance =/= undefined of
-    %% 	true ->
-    %% 	    {ok, Ticket} = ?w_retailer:get_ticket(by_batch, Merchant, TicketBatch, TicketCustom), 
-    %% 	    case Ticket of
-    %% 		[] -> 
-    %% 		    ?utils:respond(200, Req, ?err(ticket_not_exist, TicketBatch));
-    %% 		_ ->
-    %% 		    TicketInfo =
-    %% 			case TicketCustom of
-    %% 			    ?SCORE_TICKET ->
-    %% 				TicketSId = ?v(<<"sid">>, Ticket),
-    %% 				case TicketSId of
-    %% 				    ?INVALID_OR_EMPTY -> {ok, 0};
-    %% 				    _ ->
-    %% 					{ok, Scores} = ?w_user_profile:get(score, Merchant),
-    %% 					case lists:filter(
-    %% 					       fun({S})->
-    %% 						       ?v(<<"type_id">>, S) =:= 1
-    %% 							   andalso ?v(<<"id">>, S) =:= TicketSId
-    %% 					       end, Scores) of
-    %% 					    [] ->
-    %% 						{error, ?err(wsale_invalid_ticket_score, TicketSId)}; 
-    %% 					    [{Score2Money}] ->
-    %% 						case TicketBalance /= ?v(<<"balance">>, Ticket) of
-    %% 						    true ->
-    %% 							{error, ?err(wsale_invalid_ticket_balance, TicketBalance)}; 
-    %% 						    false -> 
-    %% 							AccScore = ?v(<<"score">>, Score2Money), 
-    %% 							Balance = ?v(<<"balance">>, Score2Money),
-    %% 							TicketScore =TicketBalance div Balance * AccScore,
-    %% 							{ok, TicketScore} 
-    %% 						end
-    %% 					end
-    %% 				end;
-    %% 			    ?CUSTOM_TICKET ->
-    %% 				case TicketBalance /= ?v(<<"balance">>, Ticket) of
-    %% 				    true ->
-    %% 					{error, ?err(wsale_invalid_ticket_balance, TicketBalance)};
-    %% 				    false ->
-    %% 					{ok, 0}
-    %% 				end
-    %% 			end,
-		    
-    %% 		    case TicketInfo of
-    %% 			{ok, 0} ->
-    %% 			    start(new_sale, Req, Merchant, Invs, Base ++ [{<<"user">>, UserId}], Print);
-    %% 			{ok, _TicketScore} ->
-    %% 			    start(
-    %% 			      new_sale,
-    %% 			      Req,
-    %% 			      Merchant,
-    %% 			      Invs,
-    %% 			      Base ++ [{<<"ticket_score">>, _TicketScore}, {<<"user">>, UserId}],
-    %% 			      Print);
-    %% 			{error, Error} ->
-    %% 			    ?utils:respond(200, Req, Error)
-    %% 		    end
-    %% 	    end;
-    %% 	false ->
-    %% 	    start(new_sale,
-    %% 		  Req,
-    %% 		  Merchant,
-    %% 		  Invs,
-    %% 		  lists:keydelete(<<"ticket_custom">>, 1, Base) ++ [{<<"user">>, UserId}],
-    %% 		  Print)
-    %% end;
-	
-    %% check invs
-    %% case check_inventory(oncheck, Round, 0, ShouldPay, Invs) of
-    %%     {ok, _} -> 
-    %% 	    case ?w_sale:sale(new, Merchant, lists:reverse(Invs), Base) of 
-    %% 		{ok, RSN} ->
-    %% 		    case ImmediatelyPrint =:= ?YES andalso PMode =:= ?PRINT_BACKEND of
-    %% 			true ->
-    %% 			    SuccessRespone =
-    %% 				fun(PCode, PInfo) ->
-    %% 					?utils:respond(
-    %% 					   200, Req, ?succ(new_w_sale, RSN),
-    %% 					   [{<<"rsn">>, ?to_b(RSN)},
-    %% 					    {<<"pcode">>, PCode},
-    %% 					    {<<"pinfo">>, PInfo}])
-    %% 				end,
-
-    %% 			    NewInvs =
-    %% 				lists:foldr(
-    %% 				  fun({struct, Inv}, Acc) ->
-    %% 					  StyleNumber = ?v(<<"style_number">>, Inv),
-    %% 					  BrandId     = ?v(<<"brand">>, Inv),
-    %% 					  Total       = ?v(<<"sell_total">>, Inv),
-    %% 					  TagPrice    = ?v(<<"tag_price">>, Inv),
-    %% 					  RPrice      = ?v(<<"rprice">>, Inv),
-
-    %% 					  P = [{<<"style_number">>, StyleNumber},
-    %% 					       {<<"brand_id">>, BrandId},
-    %% 					       {<<"tag_price">>, TagPrice},
-    %% 					       {<<"rprice">>, RPrice},
-    %% 					       {<<"total">>, Total}
-    %% 					      ],
-
-    %% 					  [P|Acc] 
-    %% 				  end, [], Invs),
-    %% 			    print(RSN, Merchant, NewInvs, Base, Print, SuccessRespone);
-    %% 			false ->
-    %% 			    ?utils:respond(
-    %% 			       200, Req, ?succ(new_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}])
-    %% 		    end,
-    %% 		    ?w_user_profile:update(retailer, Merchant); 
-    %% 		{error, Error} ->
-    %% 		    ?utils:respond(200, Req, Error)
-    %% 	    end;
-    %% 	{error, EInv} ->
-    %%         StyleNumber = ?v(<<"style_number">>, EInv),
-    %% 	    ?utils:respond(
-    %%            200,
-    %%            Req,
-    %%            ?err(wsale_invalid_inv, StyleNumber),
-    %%            [{<<"style_number">>, StyleNumber},
-    %%             {<<"order_id">>, ?v(<<"order_id">>, EInv)}]);
-    %% 	{error, Moneny, ShouldPay} ->
-    %%         ?utils:respond(
-    %%            200,
-    %%            Req,
-    %%            ?err(wsale_invalid_pay, Moneny))
-    %% end;
+    end; 
 
 action(Session, Req, {"update_w_sale"}, Payload) ->
     ?DEBUG("update_w_sale with session ~p~npaylaod ~p", [Session, Payload]),
@@ -2658,22 +2533,64 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
 
     Datetime         = ?v(<<"datetime">>, Base),
 
+    %% verificate code
+    Master          = ?v(<<"master">>, Base, 0),
+    VCode           = ?v(<<"vcode">>, Base, 0),
+    RetailerPhone   = ?v(<<"mobile">>, Base, []),
+    Withdraw        = ?v(<<"withdraw">>, Base, 0),
+    TicketBalance   = ?v(<<"ticket">>, Base, 0),
+    
     BaseSettings = ?w_report_request:get_setting(Merchant, ShopId),
+    %% ?DEBUG("BaseSettings ~p", [BaseSettings]),
     SMS = ?utils:nth(1, ?w_report_request:get_config(<<"consume_sms">>, BaseSettings)), 
     %% ?DEBUG("sms notify ~p", [SMS]), 
     CheckSale = ?utils:nth(1, ?w_report_request:get_config(<<"check_sale">>, BaseSettings)),
-    AllowedSave = ?utils:nth(34, ?w_report_request:get_config(<<"p_balance">>, BaseSettings)), 
+    AllowedSave = ?utils:nth(34, ?w_report_request:get_config(<<"p_balance">>, BaseSettings)),
+    UseVCode = ?utils:nth(41, ?w_report_request:get_config(<<"p_balance">>, BaseSettings)),
+    %% ?DEBUG("p_blance ~p", [?w_report_request:get_config(<<"p_balance">>, BaseSettings)]),
+    %% ?DEBUG("UseVCode ~p", [UseVCode]),
     %% ?DEBUG("check sale ~p", [CheckSale]),
     %% half an hour
-    case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 1800 of
-	true ->
-	    CurDatetime = ?utils:current_time(format_localtime), 
-	    ?utils:respond(200,
-			   Req,
-			   ?err(wsale_invalid_date, "new_w_sale"),
-			   [{<<"fdate">>, Datetime},
-			    {<<"bdate">>, ?to_b(CurDatetime)}]);
-	false-> 
+    CheckVCode = ?to_i(Master) =:= ?NO
+	andalso Vip
+	andalso UseVCode =:= ?YES
+	%% andalso VCode
+	%% andalso length(?to_s(VCode)) == ?VERIFICATION_CODE_LENTH
+	andalso (?to_i(Withdraw) /= 0 orelse (TicketBalance) /= 0),
+
+    ?DEBUG("CheckVCode ~p, VCode ~p", [CheckVCode, VCode]),
+
+    ParamsCheckFuns =
+	[fun() ->
+		 case abs(?utils:current_time(localtime2second)
+			  - ?utils:datetime2seconds(Datetime)) > 1800 of
+		     true ->
+			 {error, wsale_invalid_date}; 
+		     false->
+			 {ok, time}
+		 end
+	 end,
+	 fun() ->
+		 case CheckVCode of
+		     true ->
+			 case VCode =:= 0
+			     orelse  length(?to_s(VCode)) =/= ?VERIFICATION_CODE_LENTH of
+			     true -> {error, ?err(verificate_code_wrong, VCode)};
+			     false ->
+				 case ?vcode:verificate_code(
+					 check, Merchant, RetailerPhone, VCode) of
+				     {ok, _} -> {ok, vcode};
+				     CheckVcodeError -> CheckVcodeError
+				 end
+			 end;
+		     false ->
+			 {ok, vcode}
+		 end
+	 end
+	],
+    
+    case check_params(new_sale, ParamsCheckFuns, []) of
+	[time, vcode] -> %% success
 	    case check_inventory(
 		   {oncheck, Merchant, ShopId, UTable, CheckSale}, Round, 0, ShouldPay, Invs) of
 		{ok, _} -> 
@@ -2683,6 +2600,16 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
 			    lists:reverse(Invs),
 			    [{<<"allow_save">>, AllowedSave}|Base]) of 
 			{ok, {RSN, Phone, _ShouldPay, Balance, Score0, Score}} ->
+			    %% delete vcode
+			    case CheckVCode of
+				true ->
+				    case VCode > 0 of
+					true ->
+					    ?vcode:verificate_code(delete, Merchant, Phone);
+					false -> ok
+				    end;
+				false -> ok
+			    end,
 			    {SMSCode, _} =
 				try
 				    %% BaseSettings = ?w_report_request:get_setting(Merchant, ShopId), 
@@ -2785,8 +2712,139 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
 		       Req,
 		       ?err(not_enought_stock, StyleNumber),
 		       [{<<"style_number">>, StyleNumber}])
-	    end
-    end.
+	    end;
+	{error, wsale_invalid_date}->
+	    CurDatetime = ?utils:current_time(format_localtime), 
+	    ?utils:respond(200,
+			   Req,
+			   ?err(wsale_invalid_date, "new_w_sale"),
+			   [{<<"fdate">>, Datetime},
+			    {<<"bdate">>, ?to_b(CurDatetime)}]);
+	{error, CheckError} ->
+	    ?utils:respond(200, Req, CheckError)
+    end. 
+    %% case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 1800 of
+    %% 	true ->
+    %% 	    CurDatetime = ?utils:current_time(format_localtime), 
+    %% 	    ?utils:respond(200,
+    %% 			   Req,
+    %% 			   ?err(wsale_invalid_date, "new_w_sale"),
+    %% 			   [{<<"fdate">>, Datetime},
+    %% 			    {<<"bdate">>, ?to_b(CurDatetime)}]);
+    %% 	false-> 
+    %% 	    case check_inventory(
+    %% 		   {oncheck, Merchant, ShopId, UTable, CheckSale}, Round, 0, ShouldPay, Invs) of
+    %% 		{ok, _} -> 
+    %% 		    case ?w_sale:sale(
+    %% 			    new,
+    %% 			    {Merchant, UTable},
+    %% 			    lists:reverse(Invs),
+    %% 			    [{<<"allow_save">>, AllowedSave}|Base]) of 
+    %% 			{ok, {RSN, Phone, _ShouldPay, Balance, Score0, Score}} ->
+    %% 			    {SMSCode, _} =
+    %% 				try
+    %% 				    %% BaseSettings = ?w_report_request:get_setting(Merchant, ShopId), 
+    %% 				    %% {ok, Retailer} = ?w_user_profile:get(
+    %% 				    %% 			retailer, Merchant, RetailerId), 
+    %% 				    %% SysVips  = sys_vip_of_shop(Merchant, ShopId),
+    %% 				    %% ?DEBUG("SysVips ~p, Retailer ~p", [SysVips, Retailer]), 
+    %% 				    case Vip andalso RetailerType =/= 3 andalso SMS =:= 1 of
+    %% 					true ->
+    %% 					    %% {ShopName, ShopSign} =
+    %% 					    %% 	case ?w_user_profile:get(shop, Merchant, ShopId) of
+    %% 					    %% 	    {ok, []} -> ShopId;
+    %% 					    %% 	    {ok, [{Shop}]} ->
+    %% 					    %% 		{?v(<<"name">>, Shop, []),
+    %% 					    %% 		 ?v(<<"sign">>, Shop, [])}
+    %% 					    %% 	end,
+    %% 					    ?notify:sms_notify(
+    %% 					       Merchant,
+    %% 					       {ShopId, Phone, 1, ShouldPay, Balance, Score0, Score});
+    %% 					false ->
+    %% 					    %% ?w_user_profile:update(sysretailer, Merchant),
+    %% 					    {0, none} 
+    %% 				    end
+    %% 				catch
+    %% 				    _:{badmatch, _Error} ->
+    %% 					?INFO("failed to send sms phone:~p, merchant ~p, Error ~p",
+    %% 					      [Phone, Merchant, _Error]),
+    %% 					?err(sms_send_failed, Merchant)
+    %% 				end,
+
+    %% 			    %% ?DEBUG("SMSCode ~p", [SMSCode]),
+
+    %% 			    case ImmediatelyPrint =:= ?YES andalso PMode =:= ?PRINT_BACKEND of
+    %% 				true ->
+    %% 				    SuccessRespone =
+    %% 					fun(PCode, PInfo) ->
+    %% 						?utils:respond(
+    %% 						   200, Req, ?succ(new_w_sale, RSN),
+    %% 						   [{<<"rsn">>, ?to_b(RSN)},
+    %% 						    {<<"sms_code">>, SMSCode},
+    %% 						    {<<"pcode">>, PCode},
+    %% 						    {<<"pinfo">>, PInfo}])
+    %% 					end,
+
+    %% 				    NewInvs =
+    %% 					lists:foldr(
+    %% 					  fun({struct, Inv}, Acc) ->
+    %% 						  StyleNumber = ?v(<<"style_number">>, Inv),
+    %% 						  BrandId     = ?v(<<"brand">>, Inv),
+    %% 						  TypeId      = ?v(<<"type">>, Inv),
+    %% 						  Type        = ?v(<<"type_name">>, Inv), 
+    %% 						  Total       = ?v(<<"sell_total">>, Inv),
+    %% 						  TagPrice    = ?v(<<"tag_price">>, Inv),
+    %% 						  RPrice      = ?v(<<"rprice">>, Inv), 
+    %% 						  Amounts     = ?v(<<"amounts">>, Inv),
+
+    %% 						  P = {[{<<"style_number">>, StyleNumber},
+    %% 							{<<"brand_id">>, BrandId},
+    %% 							{<<"type_id">>, TypeId},
+    %% 							{<<"type">>, Type},
+    %% 							{<<"tag_price">>, TagPrice},
+    %% 							{<<"rprice">>, RPrice},
+    %% 							{<<"total">>, Total},
+    %% 							{<<"amounts">>, Amounts}
+    %% 						       ]},
+
+    %% 						  [P|Acc] 
+    %% 					  end, [], Invs),
+    %% 				    print(RSN, Merchant, NewInvs, Base, Print, SuccessRespone);
+    %% 				false ->
+    %% 				    ?utils:respond(
+    %% 				       200, Req, ?succ(new_w_sale, RSN),
+    %% 				       [{<<"rsn">>, ?to_b(RSN)},
+    %% 					{<<"sms_code">>, SMSCode}])
+    %% 			    end;
+    %% 			%% ?w_user_profile:update(retailer, Merchant); 
+    %% 			{error, Error} ->
+    %% 			    ?utils:respond(200, Req, Error)
+    %% 		    end;
+    %% 		{error, EInv} ->
+    %% 		    StyleNumber = ?v(<<"style_number">>, EInv),
+    %% 		    ?utils:respond(
+    %% 		       200,
+    %% 		       Req,
+    %% 		       ?err(wsale_invalid_inv, StyleNumber),
+    %% 		       [{<<"style_number">>, StyleNumber},
+    %% 			{<<"order_id">>, ?v(<<"order_id">>, EInv)}]);
+    %% 		{error, Moneny, ShouldPay} ->
+    %% 		    ?utils:respond(
+    %% 		       200,
+    %% 		       Req,
+    %% 		       ?err(wsale_invalid_pay, Moneny),
+    %% 		       [{<<"should_pay">>, ShouldPay},
+    %% 			{<<"check_pay">>, Moneny}]);
+    %% 		{db_error, StyleNumber} ->
+    %% 		    ?utils:respond(200, Req, ?err(db_error, StyleNumber));
+    %% 		{not_enought_stock, StyleNumber} ->
+    %% 		    ?utils:respond(
+    %% 		       200,
+    %% 		       Req,
+    %% 		       ?err(not_enought_stock, StyleNumber),
+    %% 		       [{<<"style_number">>, StyleNumber}])
+    %% 	    end
+    %% end.
 
 start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props) ->
     SaleRsn = ?v(<<"sale_rsn">>, Props, []),
@@ -3374,3 +3432,17 @@ check_inventory_error(Req, Error) ->
 	       ?err(not_enought_stock, StyleNumber),
 	       [{<<"style_number">>, StyleNumber}])
     end.
+
+
+check_params(new_sale, [], Acc) ->
+    ?DEBUG("Acc ~p", [Acc]),
+    lists:reverse(Acc);
+check_params(new_sale, [CheckFun|T], Acc) ->
+    case CheckFun() of
+	{ok, CheckParam} ->
+	    check_params(new_sale, T, [CheckParam|Acc]);
+	Error ->
+	    Error
+    end.
+
+	    

@@ -92,6 +92,8 @@ var diablo_print_none = 2;
 
 var diablo_nolimit_discount = 0;
 
+var diablo_vcode_length = 4;
+
 
 /*
  * shop mode

@@ -228,6 +228,9 @@ function wsaleConfg(angular){
 	    2601: "获取零售商历史记录失败！！",
 	    2602: "单号不存在，请重新选择销售单",
 	    2603: "该销售单交易明细不为空，请删除交易明细后再重新删除！！",
+	    2619: "验证码不存在，请输入验证码！！",
+	    2620: "验证码已过期，请重新发送！！",
+	    2621: "验证码错误，请输入正确的验证码！！",
 	    2701: "文件导出失败，请重试或联系服务人员查找原因！！",
 	    2702: "文件导出失败，没有任何数据需要导出，请重新设置查询条件！！",
 	    2703: "用户余额不足！！",
@@ -672,6 +675,7 @@ function wsaleNewProvide(
 	unlimitdraw: undefined,
 	draw_cards:  undefined,
 	order_rsn: undefined,
+	vcode: undefined,
 	
 	ticket_batchs: [],
 	ticket_balance: 0,
@@ -2103,6 +2107,7 @@ function wsaleNewProvide(
 	$scope.select.unlimitWithdraw = undefined;
 	$scope.select.draw_cards      = undefined;
 	$scope.select.order_rsn       = undefined;
+	$scope.select.vcode           = undefined;
 	
 	$scope.select.ticket_batchs = [];
 	$scope.select.ticket_balance = 0;
@@ -2544,7 +2549,14 @@ function wsaleNewProvide(
 	//     return true;
 
 	// if ($scope.select.should_pay < 0 && $scope.select.charge > 0)
-	//     return true; 
+	//     return true;
+	if (!$scope.right.master && $scope.setting.use_verificate_code
+	    && ($scope.select.withdraw || $scope.select.ticket_balance)) {
+	    if (!wsaleUtils.to_integer(($scope.select.vcode))
+		|| $scope.select.vcode.toString().length !== diablo_vcode_length){
+		return true;
+	    } 
+	}
 
 	return $scope.setting.allowed_save ? false : $scope.select.charge > 0;
 	// if (!$scope.setting.allowed_save && $scope.select.charge > 0) return true; 
@@ -3069,6 +3081,7 @@ function wsaleNewProvide(
 	// console.log(im_print);
 	var base = {
 	    retailer:       $scope.select.retailer.id,
+	    mobile:         $scope.select.retailer.mobile,
 	    retailer_type:  $scope.select.retailer.type_id,
 	    vip:            wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
 	    shop:           $scope.select.shop.id,
@@ -3103,6 +3116,11 @@ function wsaleNewProvide(
 	    order_rsn:      $scope.select.order_rsn,
 	    
 	    round:          $scope.setting.round,
+
+	    // verificate code
+	    master:         $scope.right.master ? diablo_yes : diablo_no,
+	    // use_vcode:      $scope.setting.use_verificate_code,
+	    vcode:          $scope.select.vcode
 	};
 
 	var print = {
