@@ -39,7 +39,7 @@ init_sms() ->
 
 init_sms(verificate_code) ->
     Sqls= [
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 8, \'验证码{$var}，尊敬的{$var}会员，您正在使用会员充值消费功能，请勿转发或泄露（2分钟这内有效）。\')">> 
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 8, \'验证码{$var}，尊敬的{$var}会员，您正在使用会员充值消费功能，请勿转发或泄露（1分钟之内有效）。\')">> 
 	  ],
     ?sql_utils:execute(transaction, Sqls, ok).
     

@@ -995,7 +995,10 @@ sys_config() ->
 	      %% [36]: hide member info such as 188****9999
 	      %% [37-38]: every charactor per line when print note default 14;
 	      %% [39]: withdraw 0:auto calc; 1:list account to select
-	      %% [40]: verificate code when draw or ticket. 0:none, 1:use verificate code
+	      %% [40]: verificate code when draw or ticket.
+	      %% 0:none,
+	      %% 1:use verificate code in ticket or withdraw
+	      %% 2: use verificate code allways
 	      {"p_balance",
 	       "销售模式",
 	       "0000"++"0000"++"0000"++"0001" ++ "0000"++"0000"++"0010"++"0030"

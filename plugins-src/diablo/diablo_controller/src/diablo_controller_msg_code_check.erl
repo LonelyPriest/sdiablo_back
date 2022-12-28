@@ -26,8 +26,8 @@
 
 %% second, one hour
 -define(INTERVAL, 3600).
-%% check code exist in 2 minitue
--define(TIMEOUT,  120).
+%% check code exist in 1 minitue
+-define(TIMEOUT,  60).
 
 -record(state, {tref}).
 
@@ -106,7 +106,7 @@ handle_call({check_code, Merchant, Mobile, OrgCode}, _From, State) ->
     	[] ->
     	    {reply, {error, ?err(verificate_code_not_found, Mobile)}, State}; 
     	[{_Code, GenTime}] ->
-    	    case ?utils:current_time(timestamp) - GenTime >= ?TIMEOUT of
+    	    case ?utils:current_time(timestamp) - GenTime > ?TIMEOUT of
     	    	true ->
 		    {reply, {error, ?err(verificate_code_timeout, OrgCode)}, State};
     	    	false ->

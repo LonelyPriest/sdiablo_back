@@ -726,8 +726,11 @@
 	  </div>
 	</div>
 
-	<div x-ng-if="!right.master && setting.use_verificate_code
-		      && (select.withdraw || select.ticket_balance) "
+	<div x-ng-if="!right.master
+		      && select.retailer.type_id !== 2
+		      && (((setting.use_verificate_code === 1)
+		      && (select.withdraw || select.ticket_balance))
+		      || (setting.use_verificate_code===2)) "
 	     class="row diablo-good-form-group" style="margin-top:10px">
 	  <div class="col-xs-12 col-md-12">
 	    <div class="input-group">

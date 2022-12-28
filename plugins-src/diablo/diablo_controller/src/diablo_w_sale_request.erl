@@ -2553,10 +2553,9 @@ start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
     %% half an hour
     CheckVCode = ?to_i(Master) =:= ?NO
 	andalso Vip
-	andalso UseVCode =:= ?YES
-	%% andalso VCode
-	%% andalso length(?to_s(VCode)) == ?VERIFICATION_CODE_LENTH
-	andalso (?to_i(Withdraw) /= 0 orelse (TicketBalance) /= 0),
+	andalso ((UseVCode =:= 1
+		  andalso (?to_i(Withdraw) /= 0 orelse (TicketBalance) /= 0))
+		 orelse UseVCode =:= 2),
 
     ?DEBUG("CheckVCode ~p, VCode ~p", [CheckVCode, VCode]),
 

@@ -2543,20 +2543,51 @@ function wsaleNewProvide(
      */
     $scope.disable_save = function(){
 	// save one time only
-	if ($scope.has_saved || $scope.draft || $scope.inventories.length === 0)
+	if ($scope.has_saved
+	    || $scope.draft
+	    || $scope.inventories.length === 0
+	    || angular.isUndefined($scope.select.retailer)
+	    || diablo_is_empty($scope.select.retailer))
 	    return true;
+
+	
 	// if ($scope.select.should_pay >=0 && $scope.select.charge > 0)
 	//     return true;
 
 	// if ($scope.select.should_pay < 0 && $scope.select.charge > 0)
 	//     return true;
-	if (!$scope.right.master && $scope.setting.use_verificate_code
-	    && ($scope.select.withdraw || $scope.select.ticket_balance)) {
+	// var check_vcode = false;
+	// if (!$scope.right.master) {
+	//     if ($scope.setting.use_verificate_code === 1) {
+	// 	if ($scope.select.withdraw || $scope.select.ticket_balance) {
+	// 	    check_vcode = true;
+	// 	}
+	//     } else if ($scope.setting.use_verificate_code === 2){
+	// 	if ($scope.select.retailer.type_id !== diablo_system_retailer) {
+	// 	    check_vcode = true;
+	// 	}
+	//     } else {
+	// 	check_vcode = false;
+	//     }
+	// }
+
+	
+	if (!$scope.right.master
+	    && ($scope.select.retailer.type_id !== diablo_system_retailer)
+	    && (($scope.setting.use_verificate_code === 1
+		 && ($scope.select.withdraw || $scope.select.ticket_balance))
+		|| ($scope.setting.use_verificate_code === 2))
+	   ) {
 	    if (!wsaleUtils.to_integer(($scope.select.vcode))
 		|| $scope.select.vcode.toString().length !== diablo_vcode_length){
 		return true;
 	    } 
 	}
+	
+	// if (check_vcode) {
+	//     return !wsaleUtils.to_integer($scope.select.vcode)
+	// 	|| $scope.select.vcode.toString().length !== diablo_vcode_length
+	// }
 
 	return $scope.setting.allowed_save ? false : $scope.select.charge > 0;
 	// if (!$scope.setting.allowed_save && $scope.select.charge > 0) return true; 
