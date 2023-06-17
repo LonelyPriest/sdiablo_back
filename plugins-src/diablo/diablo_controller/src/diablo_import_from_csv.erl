@@ -106,7 +106,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
     {RName, Phone, Shop, Score, Consume, Balance, Birth, Date, ChangeDate} = H,
     ?DEBUG("H ~p", [H]),
     NewShop = case Shop of
-		  <<>> -> 424;
+		  <<>> -> 294;
 		  _ -> Shop
 	      end,
     NewScore = case Score of
@@ -217,7 +217,10 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 			   ++ "\"" ++ ?to_s(Phone) ++ "\","
 			   ++ ?to_s(NewShop) ++ ","
 			   ++ ?to_s(Merchant) ++ ","
-			   ++ ?to_s(0) ++ ","
+			   ++ case ?to_f(Balance) > 0 of
+			       true -> ?to_s(1);
+			       false -> ?to_s(0)
+			   end ++ ","
 			   ++ "\"" ++ ?to_s(NewBirth) ++ "\","
 			   ++ "\"" ++ ?to_s(NewChangeDate) ++ "\","
 			   ++ "\"" ++ ?to_s(Entry) ++ "\")"],
@@ -244,6 +247,52 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 		    insert_into_member(Merchant, Datetime, Time, T, [H|Sort], Sql ++ Acc)
 		    %% insert_into_member(Merchant, Datetime, Time, T, Sort, Acc)
 		end
+    end.
+
+import_member_balance(recharge, Merchant, Shop, ChargeId, Path) ->
+    ?INFO("current path ~p", [file:get_cwd()]), 
+    {ok, Device} = file:open(Path, [read]),
+    Content = read_line(Device, []),
+    file:close(Device),
+    
+    insert_into_balance(recharge, Merchant, Shop, ChargeId, Content).
+
+insert_into_balance(recharge, _Merchant, _Shop, _ChargeId, []) ->
+    {ok, all};
+insert_into_balance(recharge, Merchant, Shop, ChargeId, [H|T]) ->
+    ?DEBUG("insert_int_balance: Charge ~p, H ~p", [H]),
+    {_RName, Phone, _Shop, _Score, _Consume, Balance, _Birth, _Date, _ChangeDate} = H,
+    Sql = "select id, mobile from w_retailer"
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and mobile=\'" ++ ?to_s(Phone) ++ "\'",
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} -> insert_into_balance(recharge, Merchant, Shop, ChargeId, T);
+	{ok, RetailerInfo} ->
+	    RoundBalnce = erlang:round(?to_f(Balance)),
+	    case RoundBalnce > 0 of
+		true ->
+		    ChargeInfo = [{<<"retailer">>, ?v(<<"id">>, RetailerInfo)},
+				  {<<"shop">>, Shop},
+				  {<<"employee">>, <<"00000001">>},
+				  {<<"card">>, erlang:round(?to_f(Balance))},
+				  {<<"charge">>, ChargeId}],
+		    %% ChargeRule = [{<<"rule_id">>, ?GIVING_CHARGE}],
+
+		    case ?w_user_profile:get(charge, Merchant, ChargeId) of
+			{ok, []} -> {error, charge_id_not_found};
+			{ok, Charge} -> 
+			    case ?w_retailer:charge(recharge, Merchant, {ChargeInfo, Charge}) of
+				{ok, _ChargeResult} -> 
+				    insert_into_balance(recharge, Merchant, Shop, ChargeId, T);
+				Error ->
+				    Error
+			    end
+		    end;
+		false ->
+		    insert_into_balance(recharge, Merchant, Shop, ChargeId, T)
+	    end;
+	Error ->
+	    ?DEBUG("Error ~p", [Error])
     end.
 
 import(firm, Merchant, Shop, Path) ->
@@ -777,7 +826,6 @@ insert_into_good(good, Merchant, Shop, Datetime, [H|T], Sqls) ->
 %% 1: import good first
 %% 2: import stock next
 %% --------------------------------------------------------------------------------
-
 import_good_nj(Merchant, Shop, Path) ->
     ?INFO("current path ~p", [file:get_cwd()]),
     {ok, Device} = file:open(Path, [read]), 
@@ -792,33 +840,56 @@ import_good_nj(_Merchant, _Shop, _Datetime, [], Sqls) ->
     Sqls;
 import_good_nj(Merchant, Shop, Datetime, [H|T], Sqls) ->
     ?DEBUG("H~p", [H]),
-    {_Barcode, StyleNumber, ColorCode, ColorName, _SizeCode, SizeName, Type, TagPrice, ShiftDate, _Stock, _StdBarcode} = H,
+    {StyleNumber, Type, ColorName, SizeName, _SmallSizeName, _Amount, Year, Season, TagPrice, _BigClass} = H,
     %% ?DEBUG("StyleNumber ~p", [StyleNumber]),
     %% get style_number, brand from sn
     %% {NewSN, NewBrand} = parse_style_number(SN, <<>>), 
-    {Year, Season, FirstShiftDate} =
-    	case ShiftDate of
-    	    <<>> -> {2019, 12, Datetime};
-    	    _ ->
-		<<YY:4/binary, "-",  MM:2/binary, "-", _DD:2/binary>> = ShiftDate,
-		SS = 
-		    case ?to_i(MM) of
-			1 -> 0;
-			2 -> 0;
-			3 -> 0;
-			4 -> 1;
-			5 -> 1;
-			6 -> 1;
-			7 -> 2;
-			8 -> 2;
-			9 -> 2;
-			10 -> 3;
-			11 -> 3;
-			12 -> 3
-		    end,
-		{YY, SS, <<ShiftDate/binary, <<" 13:30:22">>/binary>>}
-	end,
+    %% {Year, Season, FirstShiftDate} =
+    %% 	case ShiftDate of
+    %% 	    <<>> -> {2019, 12, Datetime};
+    %% 	    _ ->
+    %% 		<<YY:4/binary, "-",  MM:2/binary, "-", _DD:2/binary>> = ShiftDate,
+    %% 		SS = 
+    %% 		    case ?to_i(MM) of
+    %% 			1 -> 0;
+    %% 			2 -> 0;
+    %% 			3 -> 0;
+    %% 			4 -> 1;
+    %% 			5 -> 1;
+    %% 			6 -> 1;
+    %% 			7 -> 2;
+    %% 			8 -> 2;
+    %% 			9 -> 2;
+    %% 			10 -> 3;
+    %% 			11 -> 3;
+    %% 			12 -> 3
+    %% 		    end,
+    %% 		{YY, SS, <<ShiftDate/binary, <<" 13:30:22">>/binary>>}
+    %% 	end,
 
+    FirstShiftDate = Datetime,
+    NewSizeName = case SizeName of
+		      <<"220">> -> 34;
+		      <<"225">> -> 35;
+		      <<"230">> -> 36;
+		      <<"235">> -> 37;
+		      <<"240">> -> 38;
+		      <<"245">> -> 39;
+		      <<"250">> -> 40;
+		      <<"255">> -> 41;
+		      <<"260">> -> 42;
+		      <<"265">> -> 43;
+		      <<"270">> -> 44;
+		      _ -> SizeName
+		  end,
+    ?DEBUG("NewSizeName ~p", [NewSizeName]),
+
+    NSeason = case Season of
+		  <<"春">> -> 0;
+		  <<"夏">> -> 1;
+		  <<"秋">> -> 2;
+		  <<"冬">> -> 3
+	      end,
 
     case StyleNumber =:= <<>> of
 	true ->
@@ -828,12 +899,7 @@ import_good_nj(Merchant, Shop, Datetime, [H|T], Sqls) ->
 	    %% 		    true -> <<"鬼洗">>;
 	    %% 		    false -> NewBrand
 	    %% 		end, 
-	    <<ShortBrand:1/binary, _/binary>> = StyleNumber,
-	    RealBrand = 
-		case ShortBrand =:= <<"E">> of
-		    true -> <<"ET BOITE">>;
-		    false -> <<"鬼洗">>
-		end, 
+	    RealBrand = <<"高蒂">>, 
 	    {ok, BrandId} = ?attr:brand(new, Merchant, [{<<"name">>, RealBrand}]),
 	    %% {ok, TypeId} = ?attr:type(new, Merchant, Type),
 	    {ok, TypeId} =
@@ -858,8 +924,7 @@ import_good_nj(Merchant, Shop, Datetime, [H|T], Sqls) ->
 					   Merchant,
 					   [{<<"name">>, ColorName},
 					    {<<"type">>, 1},
-					    {<<"auto_barcode">>, ?NO},
-					    {<<"bcode">>, ColorCode}]); 
+					    {<<"auto_barcode">>, ?NO}]); 
 			    {ok, R} ->
 				{ok, ?v(<<"id">>, R)}
 			end
@@ -867,12 +932,12 @@ import_good_nj(Merchant, Shop, Datetime, [H|T], Sqls) ->
 
 	    %% get valid size group
 	    {[SelectGroup], SizesInGroup} = 
-		case SizeName =:= <<"F">> of
-		    true -> {["0"], []};
+		case NewSizeName =:= <<"F">> orelse NewSizeName =:= <<>> of
+		    true -> {["0"], ["0"]};
 		    false ->
 			{ok, AllSizeGroup} = ?w_user_profile:get(size_group, Merchant), 
 			case get_size_group(
-			       by_name, correct_size_name(SizeName), AllSizeGroup, [], []) of
+			       by_name, correct_size_name(NewSizeName), AllSizeGroup, [], []) of
 			    {[], _} -> {-1, []};
 			    Any -> Any
 			end
@@ -897,7 +962,7 @@ import_good_nj(Merchant, Shop, Datetime, [H|T], Sqls) ->
 			 ++ ?to_s(0) ++ ","
 			 ++ "\"" ++ ?to_s(ColorId) ++ "\","
 			 ++ ?to_s(Year) ++ ","
-			 ++ ?to_s(Season) ++ "," 
+			 ++ ?to_s(NSeason) ++ "," 
 			 ++ ?to_s(TypeId) ++ ","
 			 ++ "\'" ++ ?to_s(string:join(SizesInGroup, ",")) ++ "\',"
 			 ++ "\'" ++ ?to_s(SelectGroup) ++ "\',"
@@ -955,7 +1020,7 @@ import_good_nj(Merchant, Shop, Datetime, [H|T], Sqls) ->
 
 			?DEBUG("NewGroups ~p, NewSizes ~p, AddColors ~p",
 			       [NewGroups, NewSizes, AddColors]), 
-			["update w_inventory_good set merchant=1"
+			["update w_inventory_good set merchant=" ++ ?to_s(Merchant)
 			 ++ case AddColors of
 				[] -> [];
 				_ ->
@@ -990,63 +1055,81 @@ import_stock_nj(Merchant, Shop, [], _F, Content, _Count) ->
 	_ -> new_nj(Merchant, Shop, Content)
     end;
 import_stock_nj(Merchant, Shop, [H|T], F, Content, Count) ->
-    {_Barcode, StyleNumber, _ColorCode, ColorName, _SizeCode, SizeName, _Type, _TagPrice, _ShiftDate, Stock, _StdBarcode} = H,
-    <<ShortBrand:1/binary, _/binary>> = StyleNumber,
-    RealBrand =
-	case ShortBrand =:= <<"E">> of
-	    true -> <<"ET BOITE">>;
-	    false -> <<"鬼洗">>
-	end, 
-    {ok, BrandId} = ?attr:brand(new, Merchant, [{<<"name">>, RealBrand}]),
-	
-    Sql00 = 
-	"select id"
-	", bcode"
-	", style_number"
-	", brand"
-	", firm"
-	", s_group"
-	", type"
-	", sex"
-	", season"
-	", year"
-	", free"
-	", org_price"
-	", tag_price"
-	", discount" 
-	", ediscount"
-	
-	" from w_inventory_good"
-	" where merchant=" ++ ?to_s(Merchant)
-	++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
-	++ " and brand=" ++ ?to_s(BrandId),
-    case ?sql_utils:execute(s_read, Sql00) of
-	{ok, []} -> import_stock_nj(Merchant, Shop, T, F, Content, Count);
-	{ok, Good} ->
-	    SqlColor = "select id, name from colors"
+    {StyleNumber, _Type, ColorName, SizeName, _SmallSizeName, Stock, _Year, _Season, _TagPrice, _BigClass} = H,
+    case ?to_i(Stock) =< 0 of
+	true ->
+	    import_stock_nj(Merchant, Shop, T, F, Content, Count);
+	false ->
+	    
+	    RealBrand = <<"高蒂">>,
+	    {ok, BrandId} = ?attr:brand(new, Merchant, [{<<"name">>, RealBrand}]),
+
+	    NewSizeName = case SizeName of
+			      <<"220">> -> 34;
+			      <<"225">> -> 35;
+			      <<"230">> -> 36;
+			      <<"235">> -> 37;
+			      <<"240">> -> 38;
+			      <<"245">> -> 39;
+			      <<"250">> -> 40;
+			      <<"255">> -> 41;
+			      <<"260">> -> 42;
+			      <<"265">> -> 43;
+			      <<"270">> -> 44;
+			      _ -> SizeName
+			  end,
+
+	    ?DEBUG("NewSizeName ~p", [NewSizeName]),
+
+	    Sql00 = 
+		"select id"
+		", bcode"
+		", style_number"
+		", brand"
+		", firm"
+		", s_group"
+		", type"
+		", sex"
+		", season"
+		", year"
+		", free"
+		", org_price"
+		", tag_price"
+		", discount" 
+		", ediscount"
+
+		" from w_inventory_good"
 		" where merchant=" ++ ?to_s(Merchant)
-		++ " and name=\'" ++ ?to_s(ColorName) ++ "\'",
-	    {ok, Color} = ?sql_utils:execute(s_read, SqlColor), 
-	    StockInfo = {[{<<"color">>, ?v(<<"id">>, Color)},
-			  {<<"size">>, correct_size_name(SizeName)},
-			  {<<"stock">>, Stock}] ++ Good},
-	    ?DEBUG("Count ~p", [Count]),
-	    case F =:= ?v(<<"firm">>, Good) andalso Count < 100 of
-		true -> 
-		    import_stock_nj(
-		      Merchant,
-		      Shop,
-		      T,
-		      F,
-		      Content ++ [StockInfo], Count + 1);
-		false ->
-		    case Content of
-			[] -> ok;
-			_ ->
-			    %% NewContent = sort_nj(firm, Content, []),
-			    new_nj(Merchant, Shop, Content) 
-		    end,
-		    import_stock_nj(Merchant, Shop, T, ?v(<<"firm">>, Good), [StockInfo], 1)
+		++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+		++ " and brand=" ++ ?to_s(BrandId),
+	    case ?sql_utils:execute(s_read, Sql00) of
+		{ok, []} -> import_stock_nj(Merchant, Shop, T, F, Content, Count);
+		{ok, Good} ->
+		    SqlColor = "select id, name from colors"
+			" where merchant=" ++ ?to_s(Merchant)
+			++ " and name=\'" ++ ?to_s(ColorName) ++ "\'",
+		    {ok, Color} = ?sql_utils:execute(s_read, SqlColor), 
+		    StockInfo = {[{<<"color">>, ?v(<<"id">>, Color)},
+				  {<<"size">>, correct_size_name(NewSizeName)},
+				  {<<"stock">>, Stock}] ++ Good},
+		    ?DEBUG("Count ~p", [Count]),
+		    case F =:= ?v(<<"firm">>, Good) andalso Count < 100 of
+			true -> 
+			    import_stock_nj(
+			      Merchant,
+			      Shop,
+			      T,
+			      F,
+			      Content ++ [StockInfo], Count + 1);
+			false ->
+			    case Content of
+				[] -> ok;
+				_ ->
+				    %% NewContent = sort_nj(firm, Content, []),
+				    new_nj(Merchant, Shop, Content) 
+			    end,
+			    import_stock_nj(Merchant, Shop, T, ?v(<<"firm">>, Good), [StockInfo], 1)
+		    end
 	    end
     end.
 
@@ -1254,7 +1337,7 @@ stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, Datetime) ->
 	     {ok, R01} ->
 		 "update w_inventory_new_detail_amount"
 		     " set total=total+" ++ ?to_s(Stock)
-		     ++ ", entry_date=" ++ ?to_s(Datetime)
+		     ++ ", entry_date=\'" ++ ?to_s(Datetime) ++ "\'"
 		     ++ " where id=" ++ ?to_s(?v(<<"id">>, R01));
 	     {error, E00} ->
 		 throw({db_error, E00})

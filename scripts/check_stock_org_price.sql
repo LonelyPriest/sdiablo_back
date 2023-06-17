@@ -245,54 +245,71 @@ update w_inventory_fix_detail_amount a inner join(select style_number, brand, ty
 on a.merchant=b.merchant and a.style_number=b.style_number and a.brand=b.brand and a.shop=b.shop \
 set a.type=b.type where a.rsn='M-31-S-134-x-9' and a.merchant=31 and a.shop=134;
 
+
+-- import retailer
+-- basic info
+diablo_import_from_csv:import(member, 162, <<"gtvip.csv">>).
+-- balance
+diablo_import_from_csv:import_member_balance(recharge, 162, 448, 457, <<"gtvip.csv">>).
+
+-- import good info
+diablo_import_from_csv:import_good_nj(162, 448, "gtkc.csv").
+
+-- import stock
+diablo_import_from_csv:import_stock_nj(162, 448, "gtkc.csv").
+
+
+
 -- clear date
 -- delete from w_inventory_good where merchant=86;
 
 -- goods
-delete from w_inventory_good where merchant=152;
+delete from w_inventory_good where merchant=1;
 
 -- delete from w_inventory_new_detail_amount_117 where merchant=117;
-delete from w_inventory_new_detail_amount_152 where merchant=152;
-delete from w_inventory_new_detail_152 where merchant=152;
-delete from w_inventory_new_152 where merchant=152;
+delete from w_inventory_new_detail_amount where merchant=1;
+delete from w_inventory_new_detail where merchant=1;
+delete from w_inventory_new where merchant=1;
 
 -- clear stock
-delete from w_inventory_amount_152 where merchant=152;
-delete from w_inventory_152 where merchant=152;
+delete from w_inventory_amount where merchant=1;
+delete from w_inventory where merchant=1;
 
 -- clear sale
-delete from w_sale_detail_amount_152 where merchant=152;
-delete from w_sale_detail_152 where merchant=152;
-delete from w_sale_152 where merchant=152;
+delete from w_sale_detail_amount where merchant=1;
+delete from w_sale_detail where merchant=1;
+delete from w_sale where merchant=1;
 
 -- clear batch sale
-delete from batch_sale where merchant=49;
-delete from batch_sale_detail where merchant=49;
-delete from batch_sale_detail_amount where merchant=49;
+delete from batch_sale where merchant=1;
+delete from batch_sale_detail where merchant=1;
+delete from batch_sale_detail_amount where merchant=1;
 -- delete from batchsaler where merchant=27 and type!=2;
 
 
 -- clear transefer
-delete from w_inventory_transfer_detail_amount where merchant=49;
-delete from w_inventory_transfer_detail where merchant=49;
-delete from w_inventory_transfer where merchant=49;
+delete from w_inventory_transfer_detail_amount where merchant=1;
+delete from w_inventory_transfer_detail where merchant=1;
+delete from w_inventory_transfer where merchant=1;
 
 
 -- report
-delete from w_daily_report where merchant=152;
-delete from w_change_shift where merchant=152;
+delete from w_daily_report where merchant=1;
+delete from w_change_shift where merchant=1;
 
 -- charge
 -- delete from w_charge_detail where merchant=27;
 
 -- brands
-delete from brands where merchant=49;
-delete from inv_types where merchant=49;
+delete from brands where merchant=1;
+delete from inv_types where merchant=1;
 
 -- types
--- delete from inv_types where merchant=27;
+delete from inv_types where merchant=1;
+delete from colors where merchant=1;
+delete from size_group where merchant=1;
 
 -- bill
-delete from w_bill_detail where merchant=49;
+delete from w_bill_detail where merchant=1;
 
-update suppliers set balance=0 where merchant=52;
+update suppliers set balance=0 where merchant=1;
