@@ -1066,6 +1066,7 @@ import_good_nj(Merchant, Shop, UTable, Datetime, [H|T], Sqls) ->
 %% ================================================================================
 import_stock_nj(Merchant, Shop, UTable, Path) ->
     ?INFO("current path ~p", [file:get_cwd()]),
+    
     %% {ok, Content} = file:read_file(Path), 
     {ok, Device} = file:open(Path, [read]), 
     Content = read_line(Device, []),
