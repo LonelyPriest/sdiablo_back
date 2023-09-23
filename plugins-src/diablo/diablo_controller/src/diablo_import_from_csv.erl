@@ -826,21 +826,22 @@ insert_into_good(good, Merchant, Shop, Datetime, [H|T], Sqls) ->
 %% 1: import good first
 %% 2: import stock next
 %% --------------------------------------------------------------------------------
-import_good_nj(Merchant, Shop, Path) ->
+import_good_nj(Merchant, Shop, UTable, Path) ->
     ?INFO("current path ~p", [file:get_cwd()]),
     {ok, Device} = file:open(Path, [read]), 
     Content = read_line(Device, []),
     %% ?DEBUG("Content ~p", [Content]),
     file:close(Device),
     Datetime = ?utils:current_time(format_localtime),
-    Sqls = import_good_nj(Merchant, Shop, Datetime, Content, []),
+    Sqls = import_good_nj(Merchant, Shop, UTable, Datetime, Content, []),
     ?DEBUG("all sqls ~p", [Sqls]).
 
-import_good_nj(_Merchant, _Shop, _Datetime, [], Sqls) ->
+import_good_nj(_Merchant, _Shop, _UTable,  _Datetime, [], Sqls) ->
     Sqls;
-import_good_nj(Merchant, Shop, Datetime, [H|T], Sqls) ->
+import_good_nj(Merchant, Shop, UTable, Datetime, [H|T], Sqls) ->
     ?DEBUG("H~p", [H]),
-    {StyleNumber, Type, ColorName, SizeName, _SmallSizeName, _Amount, Year, Season, TagPrice, _BigClass} = H,
+    %% {StyleNumber, Type, ColorName, SizeName, _SmallSizeName, _Amount, Year, Season, TagPrice, _BigClass} = H,
+    {StyleNumber, Type, ColorName, SizeName, _Amount, Year, Season, OrgPrice, TagPrice} = H,
     %% ?DEBUG("StyleNumber ~p", [StyleNumber]),
     %% get style_number, brand from sn
     %% {NewSN, NewBrand} = parse_style_number(SN, <<>>), 
@@ -868,21 +869,27 @@ import_good_nj(Merchant, Shop, Datetime, [H|T], Sqls) ->
     %% 	end,
 
     FirstShiftDate = Datetime,
-    NewSizeName = case SizeName of
-		      <<"220">> -> 34;
-		      <<"225">> -> 35;
-		      <<"230">> -> 36;
-		      <<"235">> -> 37;
-		      <<"240">> -> 38;
-		      <<"245">> -> 39;
-		      <<"250">> -> 40;
-		      <<"255">> -> 41;
-		      <<"260">> -> 42;
-		      <<"265">> -> 43;
-		      <<"270">> -> 44;
-		      _ -> SizeName
-		  end,
+    %% NewSizeName = case SizeName of
+    %% 		      <<"220">> -> 34;
+    %% 		      <<"225">> -> 35;
+    %% 		      <<"230">> -> 36;
+    %% 		      <<"235">> -> 37;
+    %% 		      <<"240">> -> 38;
+    %% 		      <<"245">> -> 39;
+    %% 		      <<"250">> -> 40;
+    %% 		      <<"255">> -> 41;
+    %% 		      <<"260">> -> 42;
+    %% 		      <<"265">> -> 43;
+    %% 		      <<"270">> -> 44;
+    %% 		      _ -> SizeName
+    %% 		  end,
+    NewSizeName = SizeName,
     ?DEBUG("NewSizeName ~p", [NewSizeName]),
+
+    NYear = case Year of
+		<<>> -> 2023;
+		_ -> Year
+	    end,
 
     NSeason = case Season of
 		  <<"春">> -> 0;
@@ -891,15 +898,20 @@ import_good_nj(Merchant, Shop, Datetime, [H|T], Sqls) ->
 		  <<"冬">> -> 3
 	      end,
 
+    NTagPrice = case TagPrice of
+		    <<>> -> 0;
+		    _ -> TagPrice
+		end,
+
     case StyleNumber =:= <<>> of
 	true ->
-	    import_good_nj(Merchant, Shop, Datetime, T, Sqls);
+	    import_good_nj(Merchant, Shop, UTable, Datetime, T, Sqls);
 	false ->
 	    %% RealBrand = case NewBrand =:= <<>> of
 	    %% 		    true -> <<"鬼洗">>;
 	    %% 		    false -> NewBrand
 	    %% 		end, 
-	    RealBrand = <<"高蒂">>, 
+	    RealBrand = <<"名思图">>, 
 	    {ok, BrandId} = ?attr:brand(new, Merchant, [{<<"name">>, RealBrand}]),
 	    %% {ok, TypeId} = ?attr:type(new, Merchant, Type),
 	    {ok, TypeId} =
@@ -944,24 +956,28 @@ import_good_nj(Merchant, Shop, Datetime, [H|T], Sqls) ->
 		end,
 	    ?DEBUG("SelectGroup ~p, SizesInGroup ~p", [SelectGroup, SizesInGroup]), 
 
-	    Sql1 = "select id, style_number, brand, color, size, s_group from w_inventory_good"
-		" where merchant=" ++ ?to_s(Merchant)
+	    Sql1 = "select id, style_number, brand, color, size, s_group"
+		" from"
+		%% " w_inventory_good"
+		++ ?table:t(good, Merchant, UTable)
+		++ " where merchant=" ++ ?to_s(Merchant)
 		++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		++ " and brand=" ++ ?to_s(BrandId),
 
 	    Sql10 = 
 		case ?sql_utils:execute(s_read, Sql1) of
 		    {ok, []} ->
-			["insert into w_inventory_good"
-			 "(bcode, style_number, sex, color, year, season, type, size, s_group, free"
+			["insert into"
+			 ++ ?table:t(good, Merchant, UTable)
+			 ++ "(bcode, style_number, sex, color, year, season, type, size, s_group, free"
 			 ", brand, firm, org_price, tag_price, ediscount, discount"
 			 ", alarm_day, merchant, change_date, entry_date"
 			 ") values("
-			 ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
+			 ++ "\'" ++ ?to_s(-1) ++ "\',"
 			 ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
 			 ++ ?to_s(0) ++ ","
 			 ++ "\"" ++ ?to_s(ColorId) ++ "\","
-			 ++ ?to_s(Year) ++ ","
+			 ++ ?to_s(NYear) ++ ","
 			 ++ ?to_s(NSeason) ++ "," 
 			 ++ ?to_s(TypeId) ++ ","
 			 ++ "\'" ++ ?to_s(string:join(SizesInGroup, ",")) ++ "\',"
@@ -972,8 +988,8 @@ import_good_nj(Merchant, Shop, Datetime, [H|T], Sqls) ->
 			 end ++ ","
 			 ++ ?to_s(BrandId) ++ ","
 			 ++ ?to_s(-1) ++ ","
-			 ++ ?to_s(0) ++ ","
-			 ++ ?to_s(TagPrice) ++ ","
+			 ++ ?to_s(OrgPrice) ++ ","
+			 ++ ?to_s(NTagPrice) ++ ","
 			 ++ ?to_s(0) ++ ","
 			 ++ ?to_s(100) ++ ","
 			 ++ ?to_s(7) ++ ","
@@ -1000,15 +1016,19 @@ import_good_nj(Merchant, Shop, Datetime, [H|T], Sqls) ->
 				false -> 
 				    AddGroups = string:join(ExistSizeGroup, ",")
 					++ "," ++ ?to_s(SelectGroup),
-				    ExistSizes = string:tokens(?to_s(?v(<<"size">>, R1)), ","), 
+				    ExistSizes = string:tokens(?to_s(?v(<<"size">>, R1)), ","),
+				    %% ?DEBUG("SizesInGroup ~p, ExistSizes ~p", [SizesInGroup, ExistSizes]),
+				    
 				    AddSizes = 
 					 lists:foldr(
 					   fun(S, Acc) ->
 						   case lists:member(S, ExistSizes) of
-						       true -> [];
-						       false -> [S|Acc]
+						       true -> Acc;
+						       false -> [S | Acc]
 						   end 
 					   end, [], SizesInGroup),
+
+				    %% ?DEBUG("AddSize ~p", [AddSizes]),
 				    
 				    {AddGroups, string:join(ExistSizes, ",") ++
 					 case AddSizes of
@@ -1020,7 +1040,10 @@ import_good_nj(Merchant, Shop, Datetime, [H|T], Sqls) ->
 
 			?DEBUG("NewGroups ~p, NewSizes ~p, AddColors ~p",
 			       [NewGroups, NewSizes, AddColors]), 
-			["update w_inventory_good set merchant=" ++ ?to_s(Merchant)
+			%% ["update w_inventory_good set merchant=" ++ ?to_s(Merchant)
+			["update"
+			 ++ ?table:t(good, Merchant, UTable)
+			 ++ " set merchant=" ++ ?to_s(Merchant)
 			 ++ case AddColors of
 				[] -> [];
 				_ ->
@@ -1035,50 +1058,52 @@ import_good_nj(Merchant, Shop, Datetime, [H|T], Sqls) ->
 		end,
 	    ?DEBUG("sql10 ~p", [Sql10]),
 	    ?sql_utils:execute(transaction, Sql10, Merchant),
-	    import_good_nj(Merchant, Shop, Datetime, T, Sql10 ++ Sqls)
+	    import_good_nj(Merchant, Shop, UTable, Datetime, T, Sql10 ++ Sqls)
     end.
 
 %% ================================================================================
 %% import stock with color and size
 %% ================================================================================
-import_stock_nj(Merchant, Shop, Path) ->
+import_stock_nj(Merchant, Shop, UTable, Path) ->
     ?INFO("current path ~p", [file:get_cwd()]),
     %% {ok, Content} = file:read_file(Path), 
     {ok, Device} = file:open(Path, [read]), 
     Content = read_line(Device, []),
     file:close(Device),
-    import_stock_nj(Merchant, Shop, Content, <<>>, [], 0).
+    import_stock_nj(Merchant, Shop, UTable, Content, <<>>, [], 0).
 
-import_stock_nj(Merchant, Shop, [], _F, Content, _Count) ->
+import_stock_nj(Merchant, Shop, UTable, [], _F, Content, _Count) ->
     case Content of
 	[] -> ok;
-	_ -> new_nj(Merchant, Shop, Content)
+	_ -> new_nj(Merchant, Shop, UTable, Content)
     end;
-import_stock_nj(Merchant, Shop, [H|T], F, Content, Count) ->
-    {StyleNumber, _Type, ColorName, SizeName, _SmallSizeName, Stock, _Year, _Season, _TagPrice, _BigClass} = H,
+import_stock_nj(Merchant, Shop, UTable, [H|T], F, Content, Count) ->
+    %% {StyleNumber, _Type, ColorName, SizeName, _SmallSizeName, Stock, _Year, _Season, _TagPrice, _BigClass} = H,
+    {StyleNumber, _Type, ColorName, SizeName,  Stock, _Year, _Season, _OrgPrice, _TagPrice} = H,
     case ?to_i(Stock) =< 0 of
 	true ->
-	    import_stock_nj(Merchant, Shop, T, F, Content, Count);
+	    import_stock_nj(Merchant, Shop, UTable, T, F, Content, Count);
 	false ->
 	    
-	    RealBrand = <<"高蒂">>,
+	    RealBrand = <<"名思图">>,
 	    {ok, BrandId} = ?attr:brand(new, Merchant, [{<<"name">>, RealBrand}]),
 
-	    NewSizeName = case SizeName of
-			      <<"220">> -> 34;
-			      <<"225">> -> 35;
-			      <<"230">> -> 36;
-			      <<"235">> -> 37;
-			      <<"240">> -> 38;
-			      <<"245">> -> 39;
-			      <<"250">> -> 40;
-			      <<"255">> -> 41;
-			      <<"260">> -> 42;
-			      <<"265">> -> 43;
-			      <<"270">> -> 44;
-			      _ -> SizeName
-			  end,
-
+	    %% NewSizeName = case SizeName of
+	    %% 		      <<"220">> -> 34;
+	    %% 		      <<"225">> -> 35;
+	    %% 		      <<"230">> -> 36;
+	    %% 		      <<"235">> -> 37;
+	    %% 		      <<"240">> -> 38;
+	    %% 		      <<"245">> -> 39;
+	    %% 		      <<"250">> -> 40;
+	    %% 		      <<"255">> -> 41;
+	    %% 		      <<"260">> -> 42;
+	    %% 		      <<"265">> -> 43;
+	    %% 		      <<"270">> -> 44;
+	    %% 		      _ -> SizeName
+	    %% 		  end,
+	    
+	    NewSizeName = SizeName,
 	    ?DEBUG("NewSizeName ~p", [NewSizeName]),
 
 	    Sql00 = 
@@ -1098,12 +1123,13 @@ import_stock_nj(Merchant, Shop, [H|T], F, Content, Count) ->
 		", discount" 
 		", ediscount"
 
-		" from w_inventory_good"
-		" where merchant=" ++ ?to_s(Merchant)
+		%% " from w_inventory_good"
+		" from " ++ ?table:t(good, Merchant, UTable)
+		++ " where merchant=" ++ ?to_s(Merchant)
 		++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		++ " and brand=" ++ ?to_s(BrandId),
 	    case ?sql_utils:execute(s_read, Sql00) of
-		{ok, []} -> import_stock_nj(Merchant, Shop, T, F, Content, Count);
+		{ok, []} -> import_stock_nj(Merchant, Shop, UTable, T, F, Content, Count);
 		{ok, Good} ->
 		    SqlColor = "select id, name from colors"
 			" where merchant=" ++ ?to_s(Merchant)
@@ -1118,6 +1144,7 @@ import_stock_nj(Merchant, Shop, [H|T], F, Content, Count) ->
 			    import_stock_nj(
 			      Merchant,
 			      Shop,
+			      UTable,
 			      T,
 			      F,
 			      Content ++ [StockInfo], Count + 1);
@@ -1126,14 +1153,14 @@ import_stock_nj(Merchant, Shop, [H|T], F, Content, Count) ->
 				[] -> ok;
 				_ ->
 				    %% NewContent = sort_nj(firm, Content, []),
-				    new_nj(Merchant, Shop, Content) 
+				    new_nj(Merchant, Shop, UTable, Content) 
 			    end,
-			    import_stock_nj(Merchant, Shop, T, ?v(<<"firm">>, Good), [StockInfo], 1)
+			    import_stock_nj(Merchant, Shop, UTable, T, ?v(<<"firm">>, Good), [StockInfo], 1)
 		    end
 	    end
     end.
 
-new_nj(Merchant, Shop, Content) ->
+new_nj(Merchant, Shop, UTable, Content) ->
     Datetime = ?utils:current_time(format_localtime),
     RSN = ?w_inventory:rsn(
 	     new,
@@ -1148,12 +1175,12 @@ new_nj(Merchant, Shop, Content) ->
     {ok, Employee} = ?sql_utils:execute(s_read, Sql),
     ?DEBUG("employees ~p", [Employee]),
     EmployeeId = ?v(<<"number">>, Employee), 
-    stock_new_nj(Content, RSN, EmployeeId, Merchant, Shop, Datetime).
+    stock_new_nj(Content, RSN, EmployeeId, Merchant, Shop, UTable, Datetime).
 
-stock_new_nj([], RSN, _Employee, _Merchant, _Shop, _Datetime) ->
+stock_new_nj([], RSN, _Employee, _Merchant, _Shop, _UTable, _Datetime) ->
     {ok, RSN};
-stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, Datetime) ->
-    %% ?DEBUG("H ~p", [H]),
+stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, UTable, Datetime) ->
+    ?DEBUG("H ~p", [H]),
     BCode = ?v(<<"bcode">>, H),
     StyleNumber = ?v(<<"style_number">>, H),
     BrandId   = ?v(<<"brand">>, H),
@@ -1174,8 +1201,10 @@ stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, Datetime) ->
     Size    = ?v(<<"size">>, H),
 
 
-    Sql0 = "select id, style_number, brand from w_inventory"
-	" where merchant=" ++ ?to_s(Merchant)
+    Sql0 = "select id, style_number, brand"
+	%% " from w_inventory"
+	" from" ++ ?table:t(stock, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 	++ " and brand=" ++ ?to_s(BrandId)
     %% ++ " and color=" ++ ?to_s(Color)
@@ -1184,7 +1213,10 @@ stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, Datetime) ->
     Sql1 = 
 	case ?sql_utils:execute(s_read, Sql0) of
 	    {ok, []} ->
-		["insert into w_inventory(bcode"
+		["insert into"
+		 %% " w_inventory"
+		 ++ ?table:t(stock, Merchant, UTable)
+		 ++ "(bcode"
 		 ", style_number"
 		 ", brand"
 		 ", type"
@@ -1226,8 +1258,10 @@ stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, Datetime) ->
 		 ++ ?to_s(Merchant) ++ ","
 		 ++ "\"" ++ ?to_s(Datetime) ++ "\")"]; 
 	    {ok, R} ->
-		["update w_inventory set"
-		 " amount=amount+" ++ ?to_s(Stock) 
+		["update"
+		 %% " w_inventory"
+		 ++ ?table:t(stock, Merchant, UTable)
+		 ++ " set amount=amount+" ++ ?to_s(Stock) 
 		 ++ " where id=" ++ ?to_s(?v(<<"id">>, R))]; 
 	    {error, Error} ->
 		throw({db_error, Error})
@@ -1235,15 +1269,20 @@ stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, Datetime) ->
 
 
     Sql20 = "select id, rsn, style_number, brand"
-	" from w_inventory_new_detail"
-	" where rsn=\'" ++ ?to_s(RSN) ++ "\'"
-	" and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
-	" and brand=" ++ ?to_s(BrandId),
+	%% " from w_inventory_new_detail"
+	" from "
+	++ ?table:t(stock_new_detail, Merchant, UTable)
+	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+	++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+	++ " and brand=" ++ ?to_s(BrandId),
 
     Sql2 = 
 	case ?sql_utils:execute(s_read, Sql20) of
 	    {ok, []} ->
-		["insert into w_inventory_new_detail(rsn, style_number"
+		["insert into"
+		 %% " w_inventory_new_detail"
+		 ++ ?table:t(stock_new_detail, Merchant, UTable)
+		 ++ "(rsn, style_number"
 		 ", brand, type, sex, season, amount"
 		 ", year, s_group, free"
 		 ", org_price, tag_price, ediscount, discount"
@@ -1268,8 +1307,10 @@ stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, Datetime) ->
 		 ++ ?to_s(Shop) ++ ","
 		 ++ "\"" ++ ?to_s(Datetime) ++ "\")"];
 	    {ok, R20} ->
-		["update w_inventory_new_detail" 
-		 " set amount=amount+" ++ ?to_s(Stock) 
+		["update"
+		 %% " w_inventory_new_detail"
+		 ++ ?table:t(stock_new_detail, Merchant, UTable)
+		 ++ " set amount=amount+" ++ ?to_s(Stock) 
 		 ++ ", entry_date=" ++ "\"" ++ ?to_s(Datetime) ++ "\"" 
 		 ++ " where id=" ++ ?to_s(?v(<<"id">>, R20))];
 	    {error, Error20} ->
@@ -1278,8 +1319,10 @@ stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, Datetime) ->
 
     
     Sql00 = "select id, style_number, brand, color, size"
-	" from w_inventory_amount"
-	" where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+	" from "
+	%% "w_inventory_amount"
+	++ ?table:t(stock_note, Merchant, UTable)
+	++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 	++ " and brand=" ++ ?to_s(BrandId)
 	++ " and color=" ++ ?to_s(Color)
 	++ " and size=\'" ++ ?to_s(Size) ++ "\'"
@@ -1288,8 +1331,10 @@ stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, Datetime) ->
 
     Sql01 =
 	"select id, style_number, brand, color, size"
-	" from w_inventory_new_detail_amount"
-	" where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+	%% " from w_inventory_new_detail_amount"
+	" from"
+	++ ?table:t(stock_new_note, Merchant, UTable)
+	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 	++ " and style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 	++ " and brand=" ++ ?to_s(BrandId)
 	++ " and color=" ++ ?to_s(Color)
@@ -1299,7 +1344,10 @@ stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, Datetime) ->
     Sql3 = 
 	[case ?sql_utils:execute(s_read, Sql00) of
 	     {ok, []} ->
-		 "insert into w_inventory_amount(rsn"
+		 "insert into"
+		     %% " w_inventory_amount"
+		     ++ ?table:t(stock_note, Merchant, UTable)
+		     ++ "(rsn"
 		     ", style_number, brand, color, size"
 		     ", shop, merchant, total, entry_date)"
 		     " values("
@@ -1313,8 +1361,10 @@ stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, Datetime) ->
 		     ++ ?to_s(Stock) ++ "," 
 		     ++ "\"" ++ ?to_s(Datetime) ++ "\")"; 
 	     {ok, R00} ->
-		 "update w_inventory_amount set"
-		     " total=total+" ++ ?to_s(Stock) 
+		 "update"
+		     %% " w_inventory_amount"
+		     ++ ?table:t(stock_note, Merchant, UTable)
+		     ++" set total=total+" ++ ?to_s(Stock) 
 		     ++ " where id=" ++ ?to_s(?v(<<"id">>, R00));
 	     {error, E00} ->
 		 throw({db_error, E00})
@@ -1322,7 +1372,10 @@ stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, Datetime) ->
 
 	 case ?sql_utils:execute(s_read, Sql01) of
 	     {ok, []} ->
-		 "insert into w_inventory_new_detail_amount(rsn"
+		 "insert into"
+		     %% " w_inventory_new_detail_amount"
+		     ++ ?table:t(stock_new_note, Merchant, UTable)
+		     ++ "(rsn"
 		     ", style_number, brand, color, size"
 		     ", total, merchant, shop, entry_date) values("
 		     ++ "\"" ++ ?to_s(RSN) ++ "\","
@@ -1335,24 +1388,30 @@ stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, Datetime) ->
 		     ++ ?to_s(Shop) ++ "," 
 		     ++ "\"" ++ ?to_s(Datetime) ++ "\")";
 	     {ok, R01} ->
-		 "update w_inventory_new_detail_amount"
-		     " set total=total+" ++ ?to_s(Stock)
+		 "update"
+		     %% " w_inventory_new_detail_amount"
+		     ++ ?table:t(stock_new_note, Merchant, UTable)
+		     ++ " set total=total+" ++ ?to_s(Stock)
 		     ++ ", entry_date=\'" ++ ?to_s(Datetime) ++ "\'"
 		     ++ " where id=" ++ ?to_s(?v(<<"id">>, R01));
 	     {error, E00} ->
 		 throw({db_error, E00})
 	 end],
 
-    Sql02 = "select rsn, merchant, shop from w_inventory_new"
-	" where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+    Sql02 = "select rsn, merchant, shop from"
+	%% " w_inventory_new"
+	++ ?table:t(stock_new, Merchant, UTable)
+	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 	++ " and merchant=" ++ ?to_s(Merchant)
 	++ " and shop=" ++ ?to_s(Shop),
 
     Sql4 = 
 	case ?sql_utils:execute(s_read, Sql02) of
 	    {ok, []} ->
-		["insert into w_inventory_new("
-		 "rsn, employ, shop, merchant, should_pay, total, type, entry_date) values("
+		["insert into"
+		 %% "w_inventory_new"
+		 ++ ?table:t(stock_new, Merchant, UTable)
+		 ++ "(rsn, employ, shop, merchant, should_pay, total, type, entry_date) values("
 		 ++ "\'" ++ ?to_s(RSN) ++ "\',"
 		 ++ "\'" ++ ?to_s(Employee) ++ "\',"
 		 ++ ?to_s(Shop) ++ ","
@@ -1362,8 +1421,10 @@ stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, Datetime) ->
 		 ++ ?to_s(0) ++ ","
 		 ++ "\'" ++ ?to_s(Datetime) ++ "\')"];
 	    {ok, _StockNew} ->
-		["update w_inventory_new set"
-		 " total=total+" ++ ?to_s(Stock)
+		["update"
+		 %% " w_inventory_new"
+		 ++ ?table:t(stock_new, Merchant, UTable)
+		 ++ " set total=total+" ++ ?to_s(Stock)
 		 ++ ", should_pay=should_pay+" ++ ?to_s(OrgPrice * ?to_i(Stock))
 		 ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 		 ++ " and merchant=" ++ ?to_s(Merchant)]
@@ -1372,7 +1433,7 @@ stock_new_nj([{H}|T], RSN, Employee, Merchant, Shop, Datetime) ->
     AllSql = Sql1 ++ Sql2 ++ Sql3 ++ Sql4,
     {ok, RSN} = ?sql_utils:execute(transaction, AllSql, RSN),
     %% ?DEBUG("Allsql ~p", [AllSql]),
-    stock_new_nj(T, RSN, Employee, Merchant, Shop, Datetime).
+    stock_new_nj(T, RSN, Employee, Merchant, Shop, UTable, Datetime).
 		    
 parse_style_number(<<>>, SN)->
     {SN, <<>>};

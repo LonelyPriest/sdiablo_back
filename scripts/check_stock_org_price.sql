@@ -253,10 +253,12 @@ diablo_import_from_csv:import(member, 162, <<"gtvip.csv">>).
 diablo_import_from_csv:import_member_balance(recharge, 162, 448, 457, <<"gtvip.csv">>).
 
 -- import good info
-diablo_import_from_csv:import_good_nj(162, 448, "gtkc.csv").
+diablo_import_from_csv:import_good_nj(166, 457, 1, "qt-1.csv").
+diablo_import_from_csv:import_good_nj(1, 294, 1, "qt-0.csv").
 
 -- import stock
-diablo_import_from_csv:import_stock_nj(162, 448, "gtkc.csv").
+diablo_import_from_csv:import_stock_nj(166, 457, 1, "gt-1.csv").
+diablo_import_from_csv:import_stock_nj(1, 294, 1, "qt-0.csv").
 
 
 
