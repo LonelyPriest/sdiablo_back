@@ -263,8 +263,7 @@ handle_call({authen_action, Action, UserId}, _From, #func_tree{rights = Rights} 
 	    %% 	_ ->
 	    %% 	    ?DEBUG("success to auth action ~p", [Action]),
 	    %% 	    {reply, {ok, Action}, State}
-	    %% end
-		
+	    %% end	
 	    case dict:find(UserId, Rights) of
 	    	{ok, UserTree} ->
 	    	    case gb_trees:lookup(?to_b(Action), UserTree) of

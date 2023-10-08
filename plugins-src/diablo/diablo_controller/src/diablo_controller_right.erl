@@ -32,7 +32,7 @@
 -define(SERVER, ?MODULE). 
 -define(tbl_merchant, "merchants").
 
-
+-define(CALL_TIMEOUT, 30000).
 -record(state, {}).
 
 %%%===================================================================
@@ -81,14 +81,14 @@ get(account, Merchant, Account) ->
 %%     gen_server:call(?MODULE, {new_shopowner, Role, Merchant, Attrs}).
 
 lookup_account(Condition) ->
-    gen_server:call(?MODULE, {lookup_account, Condition}).
+    gen_server:call(?MODULE, {lookup_account, Condition}, ?CALL_TIMEOUT).
 lookup_account_right(Condition) ->
-    gen_server:call(?MODULE, {lookup_account_right, Condition}).
+    gen_server:call(?MODULE, {lookup_account_right, Condition}, ?CALL_TIMEOUT).
 lookup_role_right(Condition) ->
-    gen_server:call(?MODULE, {lookup_role_right, Condition}).
+    gen_server:call(?MODULE, {lookup_role_right, Condition}, ?CALL_TIMEOUT).
 
 lookup_role_shop(Condition) ->
-    gen_server:call(?MODULE, {lookup_role_shop, Condition}).
+    gen_server:call(?MODULE, {lookup_role_shop, Condition}, ?CALL_TIMEOUT).
 
 %% lookup(Condition) ->
 %%     gen_server:call(?MODULE, {lookup, Condition}).
