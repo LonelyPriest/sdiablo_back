@@ -170,6 +170,8 @@ date_after({Year, Month, Date}, After) ->
     Days = calendar:date_to_gregorian_days({Year, Month, Date}),
     calendar:gregorian_days_to_date(Days + After).
 
+current_date_after(After) when After < 0->
+    current_date_after(0);
 current_date_after(After) ->
     CurrentDate = current_date(),
     {Year, Month, Date} = date_after(CurrentDate, After),
