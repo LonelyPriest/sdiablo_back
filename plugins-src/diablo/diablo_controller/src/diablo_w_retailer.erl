@@ -665,13 +665,23 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
 
 
 handle_call({update_score, Merchant, RetailerId, Score}, _From, State) ->
-    Sql = "update w_retailer set score=" ++ ?to_s(Score) ++ ""
-	++ " where merchant=" ++ ?to_s(Merchant)
+    Sql0 = "select id, mobile, shop, merchant from"
+	" w_retailer where merchant=" ++ ?to_s(Merchant)
 	++ " and id=" ++ ?to_s(RetailerId),
-
-    Reply = ?sql_utils:execute(write, Sql, RetailerId),
-    {reply, Reply, State};
-
+    case ?sql_utils:execute(s_read, Sql0) of
+	{ok, []} ->
+	    {reply, {error, ?err(retailer_not_exist, RetailerId)}, State};
+	{ok, R} -> 
+	    Sql = "update w_retailer set score=" ++ ?to_s(Score) ++ ""
+		++ " where merchant=" ++ ?to_s(Merchant)
+		++ " and id=" ++ ?to_s(RetailerId), 
+	    case ?sql_utils:execute(write, Sql, RetailerId) of
+		{ok, _} -> 
+		    {reply, {ok, ?v(<<"mobile">>, R), ?v(<<"shop">>, R)}, State};
+		Error ->
+		    {reply, Error, State}
+	    end
+    end;
 
 handle_call({check_password, Merchant, RetailerId, Password, CheckPwd}, _From, State) ->
     Sql = "select id, password, draw from w_retailer"

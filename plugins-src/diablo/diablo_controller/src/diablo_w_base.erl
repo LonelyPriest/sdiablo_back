@@ -999,6 +999,7 @@ sys_config() ->
 	      %% 0:none,
 	      %% 1:use verificate code in ticket or withdraw
 	      %% 2: use verificate code allways
+	      %% [41]: update score. 0: update directly, 1: add mode
 	      {"p_balance",
 	       "销售模式",
 	       "0000"++"0000"++"0000"++"0001" ++ "0000"++"0000"++"0010"++"0030"
@@ -1013,7 +1014,8 @@ sys_config() ->
 	      %% [1]: threshold_card consume notify
 	      %% [2]: gift ticket notify
 	      %% [3]: birth notify at 9:00 am
-	      {"recharge_sms",    "充值短信提醒",         "0000",   "0"},	      
+	      %% [4]: update score notify
+	      {"recharge_sms",    "充值短信提醒",         "00000",   "0"},	      
 	      {"consume_sms",     "消费短信提醒",         "0",   "0"},
 	      
 	      {"price_on_region", "按区域填写价格",       "0",   "0"},

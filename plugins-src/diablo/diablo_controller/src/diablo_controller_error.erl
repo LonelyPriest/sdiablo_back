@@ -587,7 +587,8 @@ error(gift_drawed_last_year, Gift) ->
     {2141, "gift has been drawed:" ++ ?to_s(Gift)};
 error(max_trans, RetailerId) ->
     {2142, "more trans of the retailer:" ++ ?to_s(RetailerId)};
-    
+error(retailer_not_exist, RetailerId) ->
+    {2143, "there is no retailer exist:" ++ ?to_s(RetailerId)};
 %% wprint
 error(wprint_server_exist, Server) ->
     {2201, "wprint server " ++ ?to_s(Server) ++ " does exist."}; 

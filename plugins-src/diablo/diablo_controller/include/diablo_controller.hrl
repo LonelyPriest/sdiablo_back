@@ -131,6 +131,7 @@
 -define(SMS_CHARGE, 6).
 -define(MAX_TRANS, 7).
 -define(VERIFICATION_CODE, 8).
+-define(SCORE_MODIFY, 9).
 
 %% bill mode
 -define(CASH, 0).
@@ -175,7 +176,7 @@
 -define(PRINT_DEFAULT_MODE, <<"000">>).
 
 %% sms
--define(SMS_NOTIFY, <<"0000">>).
+-define(SMS_NOTIFY, <<"00000">>).
 
 %% price
 -define(BARGIN_PRICE, 3).

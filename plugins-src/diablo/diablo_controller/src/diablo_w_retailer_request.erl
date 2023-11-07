@@ -197,10 +197,40 @@ action(Session, Req, {"update_retailer_score", Id}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     Score = ?v(<<"score">>, Payload),
     case ?w_retailer:retailer(update_score, Merchant, Id, Score) of
-	{ok, RId} ->
+	{ok, Phone, ShopId} ->
 	    %% ?w_user_profile:update(retailer, Merchant),
-	    ?utils:respond(
-	       200, Req, ?succ(update_w_retailer, RId));
+	    try
+		BaseSettings = ?w_report_request:get_setting(Merchant, ?DEFAULT_BASE_SETTING),
+		?DEBUG("BaseSettings ~p", [BaseSettings]),
+		Notifies = 
+		    case ?w_report_request:get_config(<<"recharge_sms">>, BaseSettings) of
+			[] -> ?to_s(?SMS_NOTIFY);
+			_Value  -> ?to_s(_Value)
+		    end,
+		?DEBUG("notify ~p", [Notifies]),
+		SMS = ?utils:nth(5, Notifies),
+		?DEBUG("sms ~p", [SMS]), 
+		case ?to_i(SMS) of
+		    0 ->
+			?utils:respond(
+			   200,
+			   Req,
+			   ?succ(update_w_retailer, Phone), [{<<"sms_code">>, 0}]);
+		    1 ->
+			{SMSCode, _} = ?notify:sms(score_modify, Merchant, Phone, {0, ShopId, Score}),
+			?utils:respond(200,
+				       Req,
+				       ?succ(update_w_retailer, Phone), [{<<"sms_code">>, SMSCode}]) 
+		end
+	    catch
+		_:{badmatch, _Error} ->
+		    {Code1, _} =  ?err(sms_send_failed, Merchant),
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?succ(update_w_retailer, Phone), [{<<"sms_code">>, Code1}])
+	    end;
+	    %% ?utils:respond(200, Req, ?succ(update_w_retailer, RId));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;

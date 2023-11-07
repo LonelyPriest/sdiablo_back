@@ -33,15 +33,16 @@ init_sms() ->
 	   
 	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 7, \'尊敬的钱掌柜客户{$var}，您名下店铺{$var}会员{$var}消费异常，近一月内消费达{$var}次，请及时核对本次交易！！\')">>,
 	   
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 8, \'验证码{$var}，尊敬的{$var}会员，您正在使用会员充值消费功能，请勿转发或泄露（2分钟这内有效）。\')">> 
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 8, \'验证码{$var}，尊敬的{$var}会员，您正在使用会员充值消费功能，请勿转发或泄露（2分钟这内有效）。\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 9, \'会员提醒：欢迎光临{$var}，您于{$var}当天{$var}积分成功，目前累计积分为{$var}，感谢您的惠顾！！\')">>
 	  ],
     ?sql_utils:execute(transaction, Sqls, ok).
 
-init_sms(verificate_code) ->
+init_sms(added) ->
     Sqls= [
-	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 8, \'验证码{$var}，尊敬的{$var}会员，您正在使用会员充值消费功能，请勿转发或泄露（1分钟之内有效）。\')">> 
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 9, \'会员提醒：欢迎光临{$var}，您于{$var}当天{$var}积分成功，目前累计积分为{$var}，感谢您的惠顾！！\')">>
 	  ],
-    ?sql_utils:execute(transaction, Sqls, ok).
+    ?sql_utils:execute(transaction, Sqls, ok).    
     
 
 sms_notify(Merchant, {ShopId, Phone, Action, Money, RetailerBalance, Score0, Score}) ->
@@ -429,7 +430,17 @@ sms(verificate_code, Merchant, Phone, {ShopId, Code})->
 	++ "," ++ ?to_s(Code)
 	++ "," ++ ?to_s(ShopName),
     ?DEBUG("params ~ts", [?to_b(Params)]),
-    rocket_sms_send(zz, Merchant, ShopSign, ?VERIFICATION_CODE, Phone, Params, fun() -> ok end).
+    rocket_sms_send(zz, Merchant, ShopSign, ?VERIFICATION_CODE, Phone, Params, fun() -> ok end);
+sms(score_modify, Merchant, Phone, {Action, ShopId, Score}) ->
+    {ShopName, ShopSign} = ?shop:shop(get_sign, Merchant, ShopId),
+    Params = string:strip(?to_s(Phone))
+	++ "," ++ ?to_s(ShopName)
+	++ "," ++ ?utils:current_date(format)
+	++ "," ++ ?to_s(action(score, Action))
+	++ "," ++ ?to_s(Score),
+    
+    ?DEBUG("params ~ts", [?to_b(Params)]),
+    rocket_sms_send(zz, Merchant, ShopSign, ?SCORE_MODIFY, Phone, Params, fun() -> ok end).
 
 start_sms(Merchant, Phone, SMSTemplate, SMSParams) ->
     case check_sms_rate(Merchant) of
@@ -804,7 +815,8 @@ get_sms_template(zz, Action, Merchant, Templates) ->
 		   ?THEORETIC_CARD_SALE -> ?v(<<"type">>, T) =:= 5; %% card sale
 		   ?SMS_CHARGE -> ?v(<<"type">>, T) =:= 6; %% sms charge
 		   ?MAX_TRANS -> ?v(<<"type">>, T) =:= 7;
-		   ?VERIFICATION_CODE -> ?v(<<"type">>, T) =:= 8 %% msg code for retailer
+		   ?VERIFICATION_CODE -> ?v(<<"type">>, T) =:= 8; %% msg verificate code for retailer
+		   ?SCORE_MODIFY -> ?v(<<"type">>, T) =:= 9 %% sms score modify
 	       end] of
 	FTemplates ->
 	    ?DEBUG("FTemplates ~p", [FTemplates]),
@@ -913,7 +925,9 @@ action(0) -> <<"充值">>;
 action(1) -> <<"消费">>;
 action(2) -> <<"退款">>.
 
-
+action(score, 0)-> <<"获得">>;
+action(score, 1)-> <<"消费">>.
+    
 limit_swiming(?INVALID_OR_EMPTY) -> <<"未限制">>;
 limit_swiming(V) ->  ?to_b(V).
 

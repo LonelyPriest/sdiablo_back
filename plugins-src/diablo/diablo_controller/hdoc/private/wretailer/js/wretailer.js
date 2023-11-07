@@ -23,7 +23,7 @@ function wretailerNewCtrlProvide(
 
     var sale_mode = retailerUtils.sale_mode($scope.shops[0].id, base);
     $scope.setting = {
-	hide_pwd:retailerUtils.to_integer(sale_mode.charAt(9)),
+	hide_pwd:  retailerUtils.to_integer(sale_mode.charAt(9)),
 	shop_mode: retailerUtils.shop_mode($scope.shops[0].id, base)
     }; 
     
@@ -106,8 +106,9 @@ function wretailerDetailCtrlProvide(
 
     var sale_mode = retailerUtils.sale_mode($scope.shops[0].id, base);
     $scope.setting = {
-	hide_pwd:retailerUtils.to_integer(sale_mode.charAt(9)),
-	shop_mode: retailerUtils.shop_mode($scope.shops[0].id, base)
+	hide_pwd:  retailerUtils.to_integer(sale_mode.charAt(9)),
+	score_update_mode: retailerUtils.to_integer(sale_mode.charAt(41)),
+	shop_mode: retailerUtils.shop_mode($scope.shops[0].id, base),
     };
     //console.log($scope.setting.shop_mode);
     // console.log(DASHBOARD_MODE[$scope.setting.shop_mode]);
@@ -817,17 +818,28 @@ function wretailerDetailCtrlProvide(
     $scope.update_score = function(retailer){
 	console.log(retailer);
 	var callback = function(params){
-	    console.log(params); 
-	    var score = diablo_get_modified(params.retailer.nscore, retailer.score); 
+	    console.log(params);
+	    var score = 0;
+	    if ($scope.setting.score_update_mode === 1) { // add mode
+		score = retailer.score + params.retailer.nscore;
+	    } else { // update directly
+		score = diablo_get_modified(params.retailer.nscore, retailer.score); 
+	    }
+	    
 	    // console.log(update_retailer);
-
 	    wretailerService.update_retailer_score(retailer.id, score).then(function(
 		result){
     		console.log(result);
     		if (result.ecode == 0){
 		    dialog.response_with_callback(
 			true, "会员积分修改",
-			"会员积分 [" +  score.toString() + "] 修改成功！！",
+			"会员积分 [" +  score.toString() + "] 修改成功！！"
+			+ function() {
+			    if (result.sms_code !== 0)
+				return "发送短消息失败："
+				+ wretailerService.error[result.sms_code];
+			    else return ""; 
+			}(),
 			$scope, function(){
 			    $scope.refresh();
 			});
@@ -842,7 +854,9 @@ function wretailerDetailCtrlProvide(
 
 	dialog.edit_with_modal(
 	    "update-score.html", undefined, callback, undefined,
-	    {retailer:angular.extend(retailer, {nscore:retailer.score})});
+	    {retailer:angular.extend(retailer,
+				     {nscore: $scope.setting.score_update_mode ? 0 : retailer.score,
+				      update_mode: $scope.setting.score_update_mode})});
     };
 
     $scope.export_retailer = function(){
