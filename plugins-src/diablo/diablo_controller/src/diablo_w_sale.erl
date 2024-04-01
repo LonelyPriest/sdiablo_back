@@ -136,7 +136,7 @@ filter(total_order_detail, 'and', {Merchant, UTable}, Conditions) ->
 
 filter(news, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {filter_news, Merchant, UTable, CurrentPage, ItemsPerPage, Conditions});
+    gen_server:call(Name, {filter_news, Merchant, UTable, CurrentPage, ItemsPerPage, Conditions}, 10 * 1000 );
 
 filter(rsn_group, MatchMode, {Merchant, UTable}, CurrentPage, ItemsPerPage, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -145,7 +145,7 @@ filter(rsn_group, MatchMode, {Merchant, UTable}, CurrentPage, ItemsPerPage, Cond
 	     {use_id, 0},
 	     MatchMode,
 	     {Merchant, UTable},
-	     CurrentPage, ItemsPerPage, Conditions}, 6 * 1000);
+	     CurrentPage, ItemsPerPage, Conditions}, 10 * 1000);
 
 filter({rsn_group, Mode, Sort}, MatchMode, {Merchant, UTable}, CurrentPage, ItemsPerPage, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -154,7 +154,7 @@ filter({rsn_group, Mode, Sort}, MatchMode, {Merchant, UTable}, CurrentPage, Item
 	     {Mode, Sort},
 	     MatchMode,
 	     {Merchant, UTable},
-	     CurrentPage, ItemsPerPage, Conditions}, 6 * 1000);
+	     CurrentPage, ItemsPerPage, Conditions}, 10 * 1000);
 
 filter(employee_evaluation, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 

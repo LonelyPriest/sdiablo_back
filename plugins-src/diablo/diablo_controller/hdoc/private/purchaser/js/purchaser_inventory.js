@@ -2325,7 +2325,9 @@ function purchaserInventoryDetailCtrlProvide(
 	gift_stock: rightAuthen.authen(
 	    user.type, rightAuthen.stock_action()["gift_w_stock"], user.right),
 	show_stock_firm_info: rightAuthen.authen(
-	    user.type, rightAuthen.stock_action()["show_stock_firm_info"], user.right)
+	    user.type, rightAuthen.stock_action()["show_stock_firm_info"], user.right),
+	print_w_barcode: rightAuthen.authen(
+	    user.type, rightAuthen.stock_action()["print_w_barcode"], user.right)
     };
     console.log($scope.stock_right);
     
