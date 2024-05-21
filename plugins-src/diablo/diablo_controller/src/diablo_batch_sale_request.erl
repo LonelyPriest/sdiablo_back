@@ -672,7 +672,7 @@ sidebar(Session) ->
     end.
 
 
-start(new_bsale, Req, Merchant, Invs, Base) ->
+start(new_bsale, Req, {Merchant, UTable}, Invs, Base) ->
     Round            = ?v(<<"round">>, Base, 1),
     ShouldPay        = ?v(<<"should_pay">>, Base),
     Shop             = ?v(<<"shop">>, Base),
@@ -687,9 +687,9 @@ start(new_bsale, Req, Merchant, Invs, Base) ->
 			   [{<<"fdate">>, Datetime},
 			    {<<"bdate">>, ?to_b(CurDatetime)}]);
 	false-> 
-	    case check_inventory({oncheck, Shop, Merchant}, Round, 0, ShouldPay, Invs) of 
+	    case check_inventory({oncheck, Shop, Merchant, UTable}, Round, 0, ShouldPay, Invs) of 
 		{ok, _} -> 
-		    case ?b_sale:bsale(new, Merchant, lists:reverse(Invs), Base) of 
+		    case ?b_sale:bsale(new, {Merchant, UTable}, lists:reverse(Invs), Base) of 
 			{ok, RSN} -> 
 			    ?utils:respond(
 			       200, Req, ?succ(new_w_sale, RSN),
@@ -723,7 +723,7 @@ start(new_bsale, Req, Merchant, Invs, Base) ->
 	    end
     end.
 
-check_inventory({oncheck, _Shop, _Merchant}, Round, Moneny, ShouldPay, []) ->
+check_inventory({oncheck, _Shop, _Merchant, _UTable}, Round, Moneny, ShouldPay, []) ->
     ?DEBUG("Moneny ~p, ShouldPay, ~p", [Moneny, ShouldPay]),
     case Round of
 	1 -> 
@@ -738,7 +738,7 @@ check_inventory({oncheck, _Shop, _Merchant}, Round, Moneny, ShouldPay, []) ->
 	    end
     end;
 
-check_inventory({oncheck, Shop, Merchant}, Round, Money, ShouldPay, [{struct, Inv}|T]) ->
+check_inventory({oncheck, Shop, Merchant, UTable}, Round, Money, ShouldPay, [{struct, Inv}|T]) ->
     StyleNumber = ?v(<<"style_number">>, Inv),
     Brand = ?v(<<"brand">>, Inv),
     Amounts = ?v(<<"amounts">>, Inv),
@@ -757,8 +757,10 @@ check_inventory({oncheck, Shop, Merchant}, Round, Money, ShouldPay, [{struct, In
 		true ->
 		    %% is enought stock
 		    Sql = "select style_number, brand, amount, shop, merchant"
-			" from w_inventory"
-			" where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+			" from "
+			%% "w_inventory"
+			++ ?table:t(stock, Merchant, UTable)
+			++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 			++ " and brand=" ++ ?to_s(Brand)
 			++ " and shop=" ++ ?to_s(Shop)
 			++ " and merchant=" ++ ?to_s(Merchant),
@@ -768,7 +770,7 @@ check_inventory({oncheck, Shop, Merchant}, Round, Money, ShouldPay, [{struct, In
 				true -> {not_enought_stock, StyleNumber};
 				false ->
 				    check_inventory(
-				      {oncheck, Shop, Merchant}, Round, Money + Calc, ShouldPay, T)
+				      {oncheck, Shop, Merchant, UTable}, Round, Money + Calc, ShouldPay, T)
 			    end;
 			{error, _Error} ->
 			    {db_error, StyleNumber}
