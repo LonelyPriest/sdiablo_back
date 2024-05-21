@@ -57,10 +57,11 @@ action(Session, Req, {"list_sys_bsaler"}) ->
 action(Session, Req, {"new_batch_sale"}, Payload) ->
     ?DEBUG("new_batch_sale with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session), 
     UserId = ?session:get(id, Session), 
     Invs            = ?v(<<"inventory">>, Payload, []),
     {struct, Base}  = ?v(<<"base">>, Payload),    
-    start(new_bsale, Req, Merchant, Invs, Base ++ [{<<"user">>, UserId}]);
+    start(new_bsale, Req, {Merchant, UTable}, Invs, Base ++ [{<<"user">>, UserId}]);
 
 action(Session, Req, {"check_batch_sale"}, Payload) ->
     ?DEBUG("chekc_batch_sale with session ~p, paylaod~n~p", [Session, Payload]),
@@ -311,13 +312,14 @@ action(Session, Req, {"list_batch_sale_stastic_note"}, Payload) ->
 action(Session, Req, {"update_batch_sale"}, Payload) ->
     ?DEBUG("update_w_sale with session ~p~npaylaod ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session), 
     Invs            = ?v(<<"inventory">>, Payload, []),
     {struct, Base}  = ?v(<<"base">>, Payload),
     RSN             = ?v(<<"rsn">>, Base),
     
     case ?b_sale:bsale(get_sale, Merchant, [{<<"rsn">>, RSN}]) of
 	{ok, OldBase} -> 
-	    case ?b_sale:bsale(update_sale, Merchant, lists:reverse(Invs), {Base, OldBase}) of
+	    case ?b_sale:bsale(update_sale, {Merchant, UTable}, lists:reverse(Invs), {Base, OldBase}) of
 		{ok, RSN} -> 
 		    ?utils:respond(200, Req, ?succ(update_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}]); 
 		{error, Error} ->

@@ -29,12 +29,12 @@
 %%%===================================================================
 %%% API
 %%%===================================================================
-bsale(new, Merchant, Inventories, Props) ->
+bsale(new, {Merchant, UTable}, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {new_sale, Merchant, Inventories, Props}); 
-bsale(update_sale, Merchant, Inventories, {Props, OldProps}) ->
+    gen_server:call(Name, {new_sale, {Merchant, UTable}, Inventories, Props}); 
+bsale(update_sale, {Merchant, UTable}, Inventories, {Props, OldProps}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {update_sale, Merchant, Inventories, Props, OldProps}); 
+    gen_server:call(Name, {update_sale, {Merchant, UTable}, Inventories, Props, OldProps}); 
 bsale(check, Merchant, RSN, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {check_sale, Merchant, RSN, Mode});
@@ -128,7 +128,7 @@ start_link(Name) ->
 init([]) ->
     {ok, #state{}}.
 
-handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
+handle_call({new_sale, {Merchant, UTable}, Inventories, Props}, _From, State) ->
     ?DEBUG("new_sale with merchant ~p~n~p, props ~p", [Merchant, Inventories, Props]),
     UserId = ?v(<<"user">>, Props, -1), 
     BSaler   = ?v(<<"bsaler">>, Props),
@@ -163,7 +163,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	    Sql1 = lists:foldr(
 		     fun({struct, Inv}, Acc0)-> 
 			     Amounts = ?v(<<"amounts">>, Inv), 
-			     bsale(new, SaleSn, DateTime, Merchant, Shop, Inv, Amounts) ++ Acc0
+			     bsale(new, SaleSn, DateTime, {Merchant, UTable}, Shop, Inv, Amounts) ++ Acc0
 		     end, [], Inventories), 
 
 	    Sql2 = "insert into batch_sale(rsn"
@@ -203,7 +203,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	    {reply, Error, State}
     end;
 
-handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State) ->
+handle_call({update_sale, {Merchant, UTable}, Inventories, Props, OldProps}, _From, State) ->
     ?DEBUG("update_sale with merchant ~p~n~p, props ~p, OldProps ~p", [Merchant, Inventories, Props, OldProps]), 
     Curtime    = ?utils:current_time(format_localtime), 
 
@@ -246,7 +246,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 		      false -> ?utils:correct_datetime(datetime, Datetime)
 		  end,
 
-    Sql1 = sql(update_bsale, RSN, Merchant, Shop, NewDatetime, OldDatetime, Inventories),
+    Sql1 = sql(update_bsale, RSN, {Merchant, UTable}, Shop, NewDatetime, OldDatetime, Inventories),
 
     IsSame = fun(_, New, Old) when New == Old -> undefined;
 		(number, New, _Old) -> New; 
@@ -276,7 +276,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 	    true ->
 		update_sale(same_bsaler, Merchant, Updates, {Props, OldProps});
 	    false ->
-		update_sale(same_bsaler, Merchant, Updates, {Props, OldProps})
+		update_sale(diff_bsaler, Merchant, Updates, {Props, OldProps})
 	end,
     Reply = ?sql_utils:execute(transaction, Sqls, RSN),
     {reply, Reply, State};
@@ -755,7 +755,7 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-sql(update_bsale, RSN, _Merchant, _Shop, NewDatetime, OldDatetime, []) ->
+sql(update_bsale, RSN, {_Merchant, _UTable}, _Shop, NewDatetime, OldDatetime, []) ->
     case NewDatetime =:= OldDatetime of
 	true -> [];
 	false ->
@@ -767,23 +767,23 @@ sql(update_bsale, RSN, _Merchant, _Shop, NewDatetime, OldDatetime, []) ->
 	     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"]
     end;
 
-sql(update_bsale, RSN, Merchant, Shop, NewDatetime, _OldDatetime, Inventories) -> 
+sql(update_bsale, RSN, {Merchant, UTable}, Shop, NewDatetime, _OldDatetime, Inventories) -> 
     lists:foldr(
       fun({struct, Inv}, Acc0)-> 
 	      Operation   = ?v(<<"operation">>, Inv), 
 	      case Operation of
 		  <<"d">> ->
 		      Amounts = ?v(<<"amount">>, Inv),
-		      bsale(delete, RSN, NewDatetime, Merchant, Shop, Inv, Amounts) ++ Acc0; 
+		      bsale(delete, RSN, NewDatetime, {Merchant, UTable}, Shop, Inv, Amounts) ++ Acc0; 
 		  <<"a">> ->
 		      Amounts = ?v(<<"amount">>, Inv), 
-		      bsale(new, RSN, NewDatetime, Merchant, Shop, Inv, Amounts) ++ Acc0; 
+		      bsale(new, RSN, NewDatetime, {Merchant, UTable}, Shop, Inv, Amounts) ++ Acc0; 
 		  <<"u">> -> 
-		      bsale(update, RSN, NewDatetime, Merchant, Shop, Inv) ++ Acc0
+		      bsale(update, RSN, NewDatetime, {Merchant, UTable}, Shop, Inv) ++ Acc0
 	      end
       end, [], Inventories).
 
-bsale(update, RSN, Datetime, Merchant, Shop, Inventory) -> 
+bsale(update, RSN, Datetime, {Merchant, UTable}, Shop, Inventory) -> 
     StyleNumber    = ?v(<<"style_number">>, Inventory),
     Brand          = ?v(<<"brand">>, Inventory),
     OrgPrice       = ?v(<<"org_price">>, Inventory),
@@ -845,7 +845,10 @@ bsale(update, RSN, Datetime, Merchant, Shop, Inventory) ->
 		  ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		  ++ " and brand=" ++ ?to_s(Brand)];
 	    Metric -> 
-		["update w_inventory set amount=amount-" ++ ?to_s(Metric)
+		["update"
+		 %%" w_inventory"
+		 ++ ?table:t(stock, Merchant, UTable)
+		 ++ " set amount=amount-" ++ ?to_s(Metric)
 		 ++ ", sell=sell+" ++ ?to_s(Metric)
 		 ++ " where "
 		 "style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
@@ -878,7 +881,10 @@ bsale(update, RSN, Datetime, Merchant, Shop, Inventory) ->
 			Sql01 = "select id, style_number, brand, color, size"
 			    " from batch_sale_detail_amount where " ++ C2(Color, Size),
 
-			["update w_inventory_amount set total=total-" ++ ?to_s(Count)
+			["update"
+			 %% " w_inventory_amount"
+			 ++ ?table:t(stock_note, Merchant, UTable)
+			 ++ " set total=total-" ++ ?to_s(Count)
 			 ++ " where " ++ C1(Color, Size),
 
 			 case ?sql_utils:execute(s_read, Sql01) of
@@ -903,15 +909,20 @@ bsale(update, RSN, Datetime, Merchant, Shop, Inventory) ->
 			 end | Acc1];
 
 		    <<"d">> -> 
-			["update w_inventory_amount set total=total+"
+			["update"
+			 %% " w_inventory_amount"
+			 ++ ?table:t(stock_note, Merchant, UTable)
+			 ++ " set total=total+"
 			 ++ ?to_s(Count) ++ " where " ++ C1(Color, Size), 
 
 			 "delete from batch_sale_detail_amount"
 			 " where " ++ C2(Color, Size)
 			 | Acc1];
 		    <<"u">> -> 
-			["update w_inventory_amount"
-			 " set total=total-" ++ ?to_s(Count)
+			["update"
+			 %% " w_inventory_amount"
+			 ++ ?table:t(stock_note, Merchant, UTable)
+			 ++ " set total=total-" ++ ?to_s(Count)
 			 ++ " where " ++ C1(Color, Size),
 
 			 " update batch_sale_detail_amount"
@@ -922,7 +933,7 @@ bsale(update, RSN, Datetime, Merchant, Shop, Inventory) ->
 	end,
     Sql0 ++ lists:foldr(ChangeFun, [], ChangeAmounts). 
 
-bsale(delete, RSN, _DateTime, Merchant, Shop, Inventory, Amounts)
+bsale(delete, RSN, _DateTime, {Merchant, UTable}, Shop, Inventory, Amounts)
   when is_list(Amounts)-> 
     StyleNumber = ?v(<<"style_number">>, Inventory),
     Brand       = ?v(<<"brand">>, Inventory), 
@@ -934,7 +945,10 @@ bsale(delete, RSN, _DateTime, Merchant, Shop, Inventory, Amounts)
 		       end, 0, Amounts)
 	     end(),
 
-    ["update w_inventory set amount=amount+" ++ ?to_s(Metric)
+    ["update"
+     %% " w_inventory"
+     ++ ?table:t(stock, Merchant, UTable)
+     ++ " set amount=amount+" ++ ?to_s(Metric)
      ++ ",sell=sell-" ++ ?to_s(Metric) 
      ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
      ++ " and brand=" ++ ?to_s(Brand)
@@ -951,7 +965,10 @@ bsale(delete, RSN, _DateTime, Merchant, Shop, Inventory, Amounts)
 		  CId    = ?v(<<"cid">>, Attr),
 		  Size   = ?v(<<"size">>, Attr),
 		  Count  = ?v(<<"sell_count">>, Attr),
-		  ["update w_inventory_amount set total=total+" ++ ?to_s(Count)
+		  ["update"
+		   %% " w_inventory_amount"
+		   ++ ?table:t(stock_note, Merchant, UTable)
+		   ++ " set total=total+" ++ ?to_s(Count)
 		   ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		   ++ " and brand=" ++ ?to_s(Brand) 
 		   ++ " and color=" ++ ?to_s(CId)
@@ -968,7 +985,7 @@ bsale(delete, RSN, _DateTime, Merchant, Shop, Inventory, Amounts)
 		   | Acc1]
 	  end, [], Amounts);
 
-bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) -> 
+bsale(Action, RSN, Datetime, {Merchant, UTable}, Shop, Inventory, Amounts) -> 
     ?DEBUG("batch_sale ~p with inv ~p, amounts ~p", [Action, Inventory, Amounts]), 
     StyleNumber = ?v(<<"style_number">>, Inventory),
     Brand       = ?v(<<"brand">>, Inventory),
@@ -1023,7 +1040,10 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 	" and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 	" and brand=" ++ ?to_s(Brand), 
 
-    ["update w_inventory set amount=amount-" ++ ?to_s(Total)
+    ["update"
+     %% "w_inventory"
+     ++ ?table:t(stock, Merchant, UTable)
+     ++" set amount=amount-" ++ ?to_s(Total)
      ++ ", sell=sell+" ++ ?to_s(Total) 
      ++ ", last_sell=" ++ "\'" ++ ?to_s(Datetime) ++ "\'"
      ++ " where " ++ C1(),
@@ -1117,7 +1137,10 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		      " from batch_sale_detail_amount"
 		      " where " ++ C2(Color, Size),
 
-		  ["update w_inventory_amount set total=total-" ++ ?to_s(Count)
+		  ["update"
+		   %% " w_inventory_amount"
+		   ++ ?table:t(stock_note, Merchant, UTable)
+		   ++ " set total=total-" ++ ?to_s(Count)
 		   ++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 		   ++ " and brand=" ++ ?to_s(Brand)
 		   ++ " and color=" ++ ?to_s(Color)

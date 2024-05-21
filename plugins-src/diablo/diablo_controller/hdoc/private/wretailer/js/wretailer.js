@@ -7,7 +7,7 @@ function wretailerNewCtrlProvide(
 		      decimal_2:    diabloPattern.decimal_2,
 		      score:        diabloPattern.number,
 		      password:     diabloPattern.num_passwd,
-		      name:         diabloPattern.chinese_name,
+		      name:         diabloPattern.chinese_lname,
 		      id_card:      diabloPattern.id_card,
 		      card:         diabloPattern.card};
     $scope.shops = user.sortShops.filter(function(s) {return s.deleted===0});

@@ -253,7 +253,7 @@
 			   x-ng-edit
 			   placeholder="支持二位小数，无折扣请输入100"
 			   x-ng-model="good.ediscount"
-			   x-ng-pattern="/^\d{2}(.\d{1,2})?$|100|0$/"
+			   x-ng-pattern="/^\d{1,2}(.\d{1,2})?$|100|0$/"
 			   x-ng-model-options="{debounce:300}"
 			   x-ng-change="row_change_ediscount(good)"
 			   x-ng-enter=""/>
