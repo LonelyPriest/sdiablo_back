@@ -2505,7 +2505,8 @@ handle_call({total_consume, Mode, Merchant, UTable, Conditions}, _From, State) -
 		    ++ " where merchant=" ++ ?to_s(Merchant)
 		    ++ ?sql_utils:condition(proplists, FilterConditions)
 		    ++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime)
-		    ++ " group by retailer, shop) a"
+		    %% ++ " group by retailer, shop) a"
+		    ++ " group by retailer) a"
 		    ++ case SortCondtions of
 			   [] -> [];
 			   _ -> " where " ++ SortCondtions

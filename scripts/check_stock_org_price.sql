@@ -5,6 +5,11 @@ select a.style_number, a.brand, a.amount, a.org_price, a.nprice, a.nprice*a.amou
 select a.style_number, a.brand, a.amount, a.org_price, b.org_price as nprice from (select style_number, brand, amount, org_price from w_inventory where merchant=3 and org_price=0) a, (select style_number, brand, org_price from w_inventory_new_detail where merchant=3) b where a.style_number=b.style_number and a.brand=b.brand and a.org_price!=b.org_price;
 
 
+-- check stock of sepcial firm
+select a.style_number, a.brand, a.intotal, b.amount, c.stotal from \
+(select style_number, brand, sum(amount) as intotal from w_inventory_new_detail_101 where merchant=170 and shop=472 and firm=24058 group by style_number, brand) a left join \
+(select style_number, brand, amount from w_inventory_101 where merchant=170 and shop=472 and firm=24058 ) b on a.style_number=b.style_number and a.brand=b.brand left join \
+(select style_number, brand, sum(total) as stotal from w_sale_detail_101 where merchant=170 and shop=472 and firm=24058 group by style_number, brand) c on a.style_number=c.style_number and a.brand=c.brand;
 
 -- check stock
 select sum(x.intotal), sum(x.amount), sum(x.stotal) from \
