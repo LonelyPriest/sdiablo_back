@@ -2659,7 +2659,8 @@ handle_call({filter_consume, Mode, Merchant, UTable, Conditions, CurrentPage, It
 		      ++ ?sql_utils:condition(proplists, FilterConditions)
 		  %% ++ SortCondtions
 		      ++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime)
-		      ++ " group by retailer, shop) a"
+		   %%   ++ " group by retailer, shop) a"
+		      ++ " group by retailer) a"
 
 		      ++ " left join w_retailer b on a.retailer_id=b.id"
 		  %%++ " left join shops c on a.shop_id=c.id"

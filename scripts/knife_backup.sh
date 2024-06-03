@@ -55,6 +55,7 @@ tar -zcf ${TAR} ${BACKUP_DIR}
 ## cp ${TAR} /home/diablo
 mkdir -p /home/bxhui2/sql_back
 ## cp ${TAR} /home/bxhui2/sql_back/
+rm -f /home/bxhui2/sql_back/*.tar.gz
 mv ${TAR} /home/bxhui2/sql_back/
 
 if [ $? -eq 0 ]; then
