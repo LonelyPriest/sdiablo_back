@@ -103,7 +103,10 @@ var stockUtils = function(){
 		    + stockUtils.to_integer(hide.charAt(18)),
 		im_print_label: stockUtils.to_integer(hide.charAt(19)),
 		hide_draw:    default_hide(hide.charAt(20)),
-		hide_oil:     default_hide(hide.charAt(21))
+		hide_oil:     default_hide(hide.charAt(21)),
+		hide_product_batch: default_hide(hide.charAt(22)),
+		hide_gen_date: default_hide(hide.charAt(23)),
+		hide_valid_date: default_hide(hide.charAt(24))
 	    }
 	    
 	},

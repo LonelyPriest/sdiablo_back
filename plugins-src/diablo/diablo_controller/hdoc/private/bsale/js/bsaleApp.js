@@ -752,6 +752,10 @@ function bsaleNewProvide(
 	add.free         = src.free;
 	add.entry        = src.entry_date;
 
+	add.product_batch = src.product_batch;
+	add.gen_date    = src.gen_date;
+	add.valid_date  = src.valid_date;
+
 	add.full_name    = add.style_number + "/" + add.brand + "/" + add.type;
 
 	return add; 
@@ -941,6 +945,10 @@ function bsaleNewProvide(
 		    stock       : add.total,
 		    unit        : add.unit,
 		    prop        : bsaleUtils.get_valid_id($scope.select.sale_prop),
+
+		    product_batch : add.product_batch,
+		    gen_date    : add.gen_date,
+		    valid_date  : add.valid_date,
 		    
 		    path        : sets(add.path), 
 		    sizes       : add.sizes,

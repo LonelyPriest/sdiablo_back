@@ -76,7 +76,12 @@
 		<th class="text-center">单价</th> 
 		<th x-ng-if="!print_mode.hide_unit" class="text-center">单位</th>
 		<th class="text-center">合计</th>
-		<th x-ng-if="!batch_mode.hide_comment" class="text-center">备注</th>
+		
+		<th x-ng-if="!print_mode.hide_p_product_date" class="text-center">生产批次</th>
+		<th x-ng-if="!print_mode.hide_p_product_date" class="text-center">生产日期</th>
+		<th x-ng-if="!print_mode.hide_p_product_date" class="text-center">有效期</th>
+		
+		<th x-ng-if="!print_mode.hide_p_comment" class="text-center">备注</th>
 		
 		<th x-ng-if="print_mode.both" class="text-center">小计</th>
 		<th x-ng-if="print_mode.both" class="text-center">颜色</th>
@@ -104,7 +109,11 @@
 		
 		<td x-ng-if="!print_mode.hide_unit" class="text-center">{{std_units[n.unit]}}</td>
 		<td class="text-center">{{n.calc}}</td>
-		<td x-ng-if="!batch_mode.hide_comment" class="text-center">{{n.comment}}</td>
+
+		<td x-ng-if="!print_mode.hide_p_product_date" class="text-center">{{n.product_batch}}</td>
+		<td x-ng-if="!print_mode.hide_p_product_date" class="text-center">{{n.gen_date}}</td>
+		<td x-ng-if="!print_mode.hide_p_product_date" class="text-center">{{n.valid_date}}</td>
+		<td x-ng-if="!print_mode.hide_p_comment" class="text-center">{{n.comment}}</td>
 		
 		<td x-ng-if="print_mode.both" class="text-center">{{n.amount}}</td>
 		<td x-ng-if="print_mode.both" class="text-center">{{n.color.cname}}</td>

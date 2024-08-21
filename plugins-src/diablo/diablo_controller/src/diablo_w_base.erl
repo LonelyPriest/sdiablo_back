@@ -862,7 +862,7 @@ sys_config(shop) ->
      {"m_sale",          "允许负数退货",         "1",   "0"},
      {"round",           "四舍五入",             "1",   "0"},
      {"h_stock",         "入库字段隐藏",
-      "0001"++"1011"++"1111"++"0111"++"0000"++"11", "0"},
+      "0001"++"1011"++"1111"++"0111"++"0000"++"11111", "0"},
      
      {"consume_sms",     "消费短信提醒",         "0",   "0"}, 
 
@@ -947,8 +947,11 @@ sys_config() ->
 	      %% [19]: print label with dialog 0: no dialog, 1: dialog
 	      %% [20]: hide fixed draw or reduction, refer to sale_mode[28]
 	      %% [21]: hide commision
+	      %% [22]: hide product_batch
+	      %% [23]: hide gen_date
+	      %% [24]: hide valid_date
 	      {"h_stock",         "入库字段隐藏",
-	       "0001"++"1011"++"1111"++"0111"++"0000"++"11", "0"},
+	       "0001"++"1011"++"1111"++"0111"++"0000"++"11111", "0"},
 	      
 	      {"s_member",        "会员区域隔离",         "0",   "0"},
 	      {"s_employee",      "营业员必选",           "0",   "0"},
@@ -1058,7 +1061,9 @@ sys_config() ->
 	      %% [9]:  hide vir price when print
 	      %% [10]: hide batch retailer balance info when print
 	      %% [11]: hide batch retailer code when print
-	      {"p_color_size",    "打印颜色尺码",         "000111111101", "0"},
+	      %% [12]: hide comment
+	      %% [13]: hide product_batch, gen_date, valid_date
+	      {"p_color_size",    "打印颜色尺码",         "00011111110111", "0"},
 	      
 	      {"saler_stock",      "营业员查看区域库存",  "0",   "0"},
 	      %% {"r_stock_oprice",    "厂商退货检测进价",   "1",   "0"},

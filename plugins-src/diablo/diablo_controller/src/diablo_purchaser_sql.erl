@@ -35,6 +35,10 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
     Sizes       = ?v(<<"sizes">>, Attrs, [?FREE_SIZE]),
     AutoBarcode = ?v(<<"Autobarcode">>, Attrs, ?YES), 
     DateTime    = ?utils:current_time(localtime),
+
+    ProductBatch = ?v(<<"product_batch">>, Attrs, []),
+    GenDate = ?v(<<"gen_date">>, Attrs, []),
+    ValidDate = ?v(<<"valid_date">>, Attrs, []),
     
     Free = case Colors =:= [0] andalso Sizes =:= [0] of
 	       true  -> 0;
@@ -98,6 +102,9 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 	", contailer"
 	", alarm_a"
 	", merchant"
+	", product_batch"
+	", gen_date"
+	", valid_date"
 	", change_date"
 	", entry_date"
 	") values("
@@ -135,9 +142,11 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 	++ ?to_s(Contailer) ++ ","
 	++ ?to_s(Alarm_a) ++ ","
 	++ ?to_s(Merchant) ++ ","
+	++ "\'" ++ ?to_s(ProductBatch) ++ "\',"
+	++ "\'" ++ ?to_s(GenDate) ++ "\',"
+	++ "\'" ++?to_s(ValidDate) ++ "\',"
 	++ "\'" ++ ?to_s(DateTime) ++ "\',"
 	++ "\'" ++ ?to_s(DateTime) ++ "\');",
-
 
     Level = ?v(<<"level">>, Attrs, -1), 
     StdExecutive = ?v(<<"executive">>, Attrs, -1),
@@ -523,6 +532,10 @@ good_match(style_number_with_firm, Merchant, UTable, StyleNumber, Firm) ->
 	", a.path"
 	", a.alarm_day"
 	", a.unit"
+
+	", a.product_batch"
+	", a.gen_date"
+	", a.valid_date"
 	
 	", a.contailer"
 	", a.alarm_a"
@@ -589,6 +602,10 @@ good_match(all_style_number_with_firm, Merchant, UTable, StartTime, Firm) ->
 	", a.path"
 	", a.alarm_day"
 	", a.unit"
+
+	", a.product_batch"
+	", a.gen_date"
+	", a.valid_date"
 	
 	", a.contailer"
 	", a.alarm_a"
@@ -737,6 +754,10 @@ inventory({group_detail, MatchMode}, {Merchant, UTable}, Conditions, PageFun) ->
 	%% ", a.category as category_id"
 	%% ", a.fabric as fabric_json"
 	%% ", a.feather as feather_json"
+
+	", a.product_batch"
+	", a.gen_date"
+	", a.valid_date"
 	
 	", a.sell"
 	", a.shop as shop_id"
@@ -1989,6 +2010,11 @@ inventory_match(Merchant, UTable, StyleNumber, Shop, Firm) ->
 	
 	", a.state"
 	", a.unit"
+
+	", a.product_batch"
+	", a.gen_date"
+	", a.valid_date"
+	
     %% ", a.gift"
 	", a.path"
 	", a.entry_date"
@@ -2397,6 +2423,10 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
     Contailer  = ?v(<<"contailer">>, Inv, -1),
     Alarm_a    = ?v(<<"alarm_a">>, Inv, 0),
 
+    ProductBatch = ?v(<<"product_batch">>, Inv, []),
+    GenDate      = ?v(<<"gen_date">>, Inv, []),
+    ValidDate    = ?v(<<"valid_date">>, Inv, []),
+
     %% Level = ?v(<<"level">>, Inv, -1), 
     %% StdExecutive = ?v(<<"executive">>, Inv, -1),
     %% SafetyCategory = ?v(<<"category">>, Inv, -1),
@@ -2453,9 +2483,14 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 		  %% ", category"
 		  %% ", fabric"
 		  %% ", feather"
+
+		  ", product_batch"
+		  ", gen_date"
+		  ", valid_date"
 		  
 		  ", merchant"
-		  ", last_sell"
+
+		  ", last_sell" 
 		  ", change_date"
 		  ", entry_date)"
 		  " values("
@@ -2492,8 +2527,13 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 		  %% ++ ?to_s(SafetyCategory) ++ ","
 		  %% ++ "\'" ++ ?to_s(Fabric) ++ "\',"
 		  %% ++ "\'" ++ ?to_s(Feather) ++ "\',"
+
+		  ++ "\'" ++ ?to_s(ProductBatch) ++ "\',"
+		  ++ "\'" ++ ?to_s(GenDate) ++ "\',"
+		  ++ "\'" ++ ?to_s(ValidDate) ++ "\',"
 		  
 		  ++ ?to_s(Merchant) ++ ","
+		  
 		  ++ "\"" ++ ?to_s(CurDateTime) ++ "\","
 		  ++ "\"" ++ ?to_s(CurDateTime) ++ "\","
 		  ++ "\"" ++ ?to_s(CurDateTime) ++ "\")"], new_stock}; 
@@ -2561,7 +2601,12 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 		 ", ediscount"
 		 ", discount"
 		 " , path"
-		 ", merchant"
+
+		 ", product_batch"
+		 ", gen_date"
+		 ", valid_date"
+		 
+		 ", merchant" 
 		 ", shop"
 		 ", entry_date) values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
@@ -2594,6 +2639,11 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 		 ++ ?to_s(EDiscount) ++ ","
 		 ++ ?to_s(Discount) ++ ","
 		 ++ "\"" ++ ?to_s(Path) ++ "\","
+
+		 ++ "\'" ++ ?to_s(ProductBatch) ++ "\',"
+		 ++ "\'" ++ ?to_s(GenDate) ++ "\',"
+		 ++ "\'" ++ ?to_s(ValidDate) ++ "\',"
+		 
 		 ++ ?to_s(Merchant) ++ ","
 		 ++ ?to_s(Shop) ++ ","
 		 ++ "\"" ++ ?to_s(CurDateTime) ++ "\")"];

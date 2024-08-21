@@ -834,6 +834,9 @@ sort_sale_new_detail(sort_by_color, {K1, K2, K3} = K, [{H}|T], DictNote, Acc) ->
     RDiscount   = ?v(<<"rdiscount">>, H), 
     Total       = ?v(<<"total">>, H),
     Unit        = ?v(<<"unit">>, H),
+    ProductBatch = ?v(<<"product_batch">>, H),
+    GenDate     = ?v(<<"gen_date">>, H),
+    ValidDate   = ?v(<<"valid_date">>, H),
 
     Comment     = ?v(<<"comment">>, H),
     
@@ -871,6 +874,9 @@ sort_sale_new_detail(sort_by_color, {K1, K2, K3} = K, [{H}|T], DictNote, Acc) ->
 		  {<<"fdiscount">>, FDiscount}, 
 		  {<<"rdiscount">>, RDiscount},
 		  {<<"comment">>, Comment},
+		  {<<"product_batch">>, ProductBatch},
+		  {<<"gen_date">>, GenDate},
+		  {<<"valid_date">>, ValidDate},
 		  {<<"note">>,
 		   lists:foldr(
 		     fun({ColorId, TotalOfColor, SizeDesc}, Acc1) ->

@@ -160,6 +160,9 @@
 			<th>用券</th>
 			<th x-ng-if="!setting.hide_oil">提成</th>
 			<th>店铺</th>
+			<th x-ng-if="!setting.hide_product_batch">生产批号</th>
+			<th x-ng-if="!setting.hide_product_batch">生产日期</th>
+			<th x-ng-if="!setting.hide_product_batch">有效期</th>
 			<th>上架日期</th>
 			<th>退货日期</th>
 			<th x-ng-if="setting.stock_alarm">预警</th>
@@ -237,7 +240,10 @@
 			  </div>
 			</td>
 
-			<td class="css(inv.isAlarm)">{{inv.shop}}</td> 
+			<td class="css(inv.isAlarm)">{{inv.shop}}</td>
+			<td x-ng-if="!setting.hide_product_batch">{{inv.product_batch}}</td>
+			<td x-ng-if="!setting.hide_gen_date">{{inv.gen_date}}</td>
+			<td x-ng-if="!setting.hide_valid_date">{{inv.valid_date}}</td> 
 			<td>{{inv.entry_date}}</td>
 			<td>
 			  <div x-ng-switch on="inv.expire_date">

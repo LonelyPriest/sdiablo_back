@@ -834,6 +834,39 @@ alter table shops add column pay_key VARCHAR(64) default '' not null after pay_t
 
 alter table shops add column brand VARCHAR(16) default '' not null after sms_sign;
 
+--2024-08-17
+alter table w_inventory_good add column product_batch VARCHAR(64) default'' after merchant;
+alter table w_inventory_good add column gen_date DATE default 0 after merchant;
+alter table w_inventory_good add column valid_date DATE default 0 after merchant;
+
+alter table w_inventory_good_171 add column product_batch VARCHAR(64) default'' after merchant;
+alter table w_inventory_good_171 add column gen_date DATE default 0 after merchant;
+alter table w_inventory_good_171 add column valid_date DATE default 0 after merchant;
+
+alter table w_inventory add column product_batch VARCHAR(64) default'' after merchant;
+alter table w_inventory add column gen_date DATE default 0 after merchant;
+alter table w_inventory add column valid_date DATE default 0 after merchant;
+
+alter table w_inventory_171 add column product_batch VARCHAR(64) default'' after merchant;
+alter table w_inventory_171 add column gen_date DATE default 0 after merchant;
+alter table w_inventory_171 add column valid_date DATE default 0 after merchant;
+
+alter table w_inventory_new_detail add column product_batch VARCHAR(64) default'' after merchant;
+alter table w_inventory_new_detail add column gen_date DATE default 0 after merchant;
+alter table w_inventory_new_detail add column valid_date DATE default 0 after merchant;
+
+alter table w_inventory_new_detail_171 add column product_batch VARCHAR(64) default'' after merchant;
+alter table w_inventory_new_detail_171 add column gen_date DATE default 0 after merchant;
+alter table w_inventory_new_detail_171 add column valid_date DATE default 0 after merchant;
+
+alter table batch_sale_detail add column product_batch VARCHAR(64) default'' after merchant;
+alter table batch_sale_detail add column gen_date DATE default 0 after merchant;
+alter table batch_sale_detail add column valid_date DATE default 0 after merchant;
+
+alter table batch_sale_detail_171 add column product_batch VARCHAR(64) default'' after merchant;
+alter table batch_sale_detail_171 add column gen_date DATE default 0 after merchant;
+alter table batch_sale_detail_171 add column valid_date DATE default 0 after merchant;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 

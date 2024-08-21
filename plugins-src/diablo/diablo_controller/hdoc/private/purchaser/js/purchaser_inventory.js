@@ -440,6 +440,10 @@ function purchaserInventoryNewCtrlProvide (
 	add.category    = src.category_id;
 	add.fabric      = src.fabric_json;
 	add.feather     = src.feather_json;
+
+	add.product_batch = src.product_batch;
+	add.gen_date = src.gen_date;
+	add.valid_date = src.valid_date;
 	
 	if ( add.free === 0 ){
 	    add.free_color_size = true;
@@ -716,7 +720,11 @@ function purchaserInventoryNewCtrlProvide (
 		path        : add.path,
 		alarm_day   : add.alarm_day,
 		total       : add.total,
-		score       : add.state === 3 && $scope.base_settings.no_score_with_promotion ? diablo_invalid : $scope.select.shop.score_id 
+		score       : add.state === 3 && $scope.base_settings.no_score_with_promotion ? diablo_invalid : $scope.select.shop.score_id,
+		
+		product_batch : add.product_batch,
+		gen_date : add.gen_date,
+		valid_date : add.valid_date
 	    })
 	};
 
@@ -1107,7 +1115,7 @@ function purchaserInventoryNewCtrlProvide (
 			       discount:   inv.discount,
 			       over:       inv.over,
 			       colors:     inv.colors_info,
-			       path:       inv.path,
+			       path:       inv.path, 
 			       stock:      inv.stock,
 			       free:       inv.free_color_size, 
 			       right:      $scope.stock_right,
@@ -1399,7 +1407,9 @@ function purchaserInventoryNewCtrlProvide (
 		      discount: diabloPattern.discount,
 		      expire: diabloPattern.expire_date,
 		      percent: diabloPattern.percent,
-		      barcode: diabloPattern.number};
+		      barcode: diabloPattern.number,
+		      product_batch: diabloPattern.number,
+		      date: diabloPattern.date};
 
     $scope.focus_attrs = {
 	barcode: false,
@@ -1417,6 +1427,9 @@ function purchaserInventoryNewCtrlProvide (
 	color:false,
 	size:false,
 	expire: false,
+	product_batch:false,
+	gen_date:false,
+	valid_date:false,
 	ok:false};
     $scope.on_focus_attr = function(attr){
 	stockUtils.on_focus_attr(attr, $scope.focus_attrs);
@@ -1913,7 +1926,10 @@ function purchaserInventoryNewCtrlProvide (
 	fabrics   : $scope.base_settings.hide_fabric ? undefined : [],
 	feathers  : $scope.base_settings.hide_feather ? undefined : [],
 
-	unit      : $scope.base_settings.hide_unit ? undefined : $scope.std_units[0]
+	unit      : $scope.base_settings.hide_unit ? undefined : $scope.std_units[0],
+	product_batch : undefined,
+	gen_date : undefined,
+	valid_date : undefined
 	// d_image   : true
     };
     // console.log($scope.good);
@@ -1950,6 +1966,9 @@ function purchaserInventoryNewCtrlProvide (
 	good.alarm_a   = $scope.good.alarm_a;
 
 	good.unit  = angular.isDefined($scope.good.unit) ? $scope.std_units.indexOf($scope.good.unit) : undefined;
+	good.product_batch = $scope.good.product_batch;
+	good.gen_date = $scope.good.gen_date;
+	good.valid_date = $scope.good.valid_date;
 	
 	good.level     = angular.isDefined($scope.good.level) ? $scope.levels.indexOf($scope.good.level) : undefined;
 	good.executive = angular.isObject($scope.good.executive)  ? $scope.good.executive.id : undefined;
@@ -2035,6 +2054,7 @@ function purchaserInventoryNewCtrlProvide (
 	}();
 
 	var add_purchaser_good = function() {
+	    console.log(good);
 	    diabloFilter.add_purchaser_good(good, image).then(function(state){
 		console.log(state);
 		$scope.good_saving = false;
@@ -2118,7 +2138,11 @@ function purchaserInventoryNewCtrlProvide (
 			executive_id: good.executive,
 			category_id:  good.category,
 			fabric_json:  good.fabric,
-			feather_json: good.feather
+			feather_json: good.feather,
+
+			product_batch: good.product_batch,
+			gen_date: good.gen_date,
+			valid_date: good.valid_date
 		    };
 		    
 		    // $scope.focus.style_number = true;
@@ -2243,7 +2267,11 @@ function purchaserInventoryNewCtrlProvide (
 	    fabrics   : $scope.base_settings.hide_fabric ? undefined : [],
 	    feathers  : $scope.base_settings.hide_feather ? undefined : [],
 
-	    unit      : $scope.base_settings.hide_unit ? undefined : $scope.std_units[0]
+	    unit      : $scope.base_settings.hide_unit ? undefined : $scope.std_units[0],
+	    
+	    product_batch: undefined,
+	    gen_date: undefined,
+	    valid_date: undefined
 	    // image.file: undefined,
 	    // d_image: true
 	};
@@ -2256,6 +2284,9 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.form.gForm.tag_price.$pristine = true;
 	$scope.form.gForm.draw.$pristine = true;
 	$scope.form.gForm.discount.$pristine  = true;
+	$scope.form.gForm.batch.$pristine  = true;
+	$scope.form.gForm.genDate.$pristine  = true;
+	$scope.form.gForm.validDate.$pristine  = true;
 	// $scope.form.gForm.alarm.$pristine     = true;
 	// $scope.image = undefined;
 

@@ -114,11 +114,32 @@ PASSWORD=$2
 # done
 
 # 2021-08-26
-for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 72 73 74 90 101 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125
+# for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 72 73 74 90 101 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125
+# do
+#     echo w_sale_${t}
+#     mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
+# alter table w_inventory_fix_detail_amount_${t} add column type INTEGER not null default -1 after brand;
+# EOF
+# done
+
+
+
+# 2024-08-21
+for t in 2 4 7 9 15 16 19 26 35 41 42 68 70 72 73 74 90 101 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 161 162 163 164 165 166 167 168 169 170 171
 do
-    echo w_sale_${t}
+    echo w_inventory_good_${t}
+    echo w_inventory_${t}
+    echo w_inventory_new_detail_${t}
     mysql -u${USER} -p${PASSWORD} sdiablo <<EOF
-alter table w_inventory_fix_detail_amount_${t} add column type INTEGER not null default -1 after brand;
+alter table w_inventory_good_${t} add column product_batch VARCHAR(64) default'' after merchant;
+alter table w_inventory_good_${t} add column gen_date DATE default 0 after merchant;
+alter table w_inventory_good_${t} add column valid_date DATE default 0 after merchant;
+alter table w_inventory_${t} add column product_batch VARCHAR(64) default'' after merchant;
+alter table w_inventory_${t} add column gen_date DATE default 0 after merchant;
+alter table w_inventory_${t} add column valid_date DATE default 0 after merchant;
+alter table w_inventory_new_detail_${t} add column product_batch VARCHAR(64) default'' after merchant;
+alter table w_inventory_new_detail_${t} add column gen_date DATE default 0 after merchant;
+alter table w_inventory_new_detail_${t} add column valid_date DATE default 0 after merchant;
 EOF
 done
 

@@ -275,7 +275,9 @@ var bsaleUtils = function(){
 		hide_p_tagprice:   default_hide(mode.charAt(8)),
 		hide_p_virprice:   default_hide(mode.charAt(9)),
 		hide_p_balance:    default_hide(mode.charAt(10)),
-		hide_p_code:       default_hide(mode.charAt(11))
+		hide_p_code:       default_hide(mode.charAt(11)),
+		hide_p_comment:    default_hide(mode.charAt(12)),
+		hide_p_product_date: default_hide(mode.charAt(13))
 	    };
 	},
 	

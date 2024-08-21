@@ -1015,6 +1015,10 @@ bsale(Action, RSN, Datetime, {Merchant, UTable}, Shop, Inventory, Amounts) ->
     Unit        = ?v(<<"unit">>, Inventory, 0),
     %% SaleProp    = ?v(<<"prop">>, Inventory, -1),
 
+    ProductBatch = ?v(<<"product_batch">>, Inventory, []),
+    GenDate = ?v(<<"gen_date">>, Inventory, []),
+    ValidDate = ?v(<<"valid_date">>, Inventory, []),
+
     C1 =
 	fun() ->
 		?utils:to_sqls(proplists,
@@ -1079,6 +1083,9 @@ bsale(Action, RSN, Datetime, {Merchant, UTable}, Shop, Inventory, Amounts) ->
 		 ", rprice"
 		 ", path"
 		 ", comment"
+		 ", product_batch"
+		 ", gen_date"
+		 ", valid_date" 
 		 ", entry_date) values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
@@ -1108,6 +1115,9 @@ bsale(Action, RSN, Datetime, {Merchant, UTable}, Shop, Inventory, Amounts) ->
 
 		 ++ "\"" ++ ?to_s(Path) ++ "\","
 		 ++ "\"" ++ ?to_s(Comment) ++ "\","
+		 ++ "\"" ++ ?to_s(ProductBatch) ++ "\","
+		 ++ "\"" ++ ?to_s(GenDate) ++ "\","
+		 ++ "\"" ++ ?to_s(ValidDate) ++ "\","
 		 ++ "\"" ++ ?to_s(Datetime) ++ "\")";
 	 {ok, _} ->
 	     "update batch_sale_detail set total=total+" ++ ?to_s(Total)
@@ -1327,6 +1337,9 @@ sale_new(sale_new_detail, MatchMode, Merchant, Conditions, PageFun) ->
 	", a.in_datetime"
 	", a.path"
 	", a.comment"
+	", a.product_batch"
+	", a.gen_date"
+	", a.valid_date"
 	", a.entry_date"
 
 	", a.shop_id"
@@ -1368,6 +1381,9 @@ sale_new(sale_new_detail, MatchMode, Merchant, Conditions, PageFun) ->
 	", b.in_datetime"
 	", b.path"
 	", b.comment"
+	", b.product_batch"
+	", b.gen_date"
+	", b.valid_date"
 	", b.entry_date"
 
 	", a.shop as shop_id"
