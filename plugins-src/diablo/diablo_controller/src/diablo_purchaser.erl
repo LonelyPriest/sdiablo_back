@@ -573,6 +573,10 @@ handle_call({update_good, Merchant, UTable, Attrs, OldAttrs}, _Form, State) ->
     Sizes          = ?v(<<"size">>, Attrs),
     Path           = ?v(<<"path">>, Attrs),
 
+    ProductBatch   = ?v(<<"product_batch">>, Attrs),
+    GenDate        = ?v(<<"gen_date">>, Attrs),
+    ValidDate      = ?v(<<"valid_date">>, Attrs),
+
     Level = ?v(<<"level">>, Attrs), 
     StdExecutive = ?v(<<"executive_id">>, Attrs),
     SafetyCategory = ?v(<<"category_id">>, Attrs),
@@ -598,7 +602,10 @@ handle_call({update_good, Merchant, UTable, Attrs, OldAttrs}, _Form, State) ->
 	++ ?utils:v(season, integer, Season)
 	++ ?utils:v(s_group, string, SizeGroup)
 	++ ?utils:v(alarm_day, integer, AlarmDay)
-	++ ?utils:v(path, string, Path),
+	++ ?utils:v(path, string, Path) 
+	++ ?utils:v(product_batch, string, ProductBatch)
+	++ ?utils:v(gen_date, string, GenDate)
+	++ ?utils:v(valid_date, string, ValidDate),
     %% ++ ?utils:v(change_date, string, DateTime),
 
     UpdatePrice = ?utils:v(org_price, float, OrgPrice)
@@ -738,8 +745,12 @@ handle_call({update_good, Merchant, UTable, Attrs, OldAttrs}, _Form, State) ->
 				    %% ++ case lists:keydelete(
 				    %% 	      <<"alarm_day">>, 1,
 				    %% 	      lists:keydelete(
-				    %% 		<<"sex">>, 1, U3)) of
-				    ++ case lists:keydelete(<<"alarm_day">>, 1, U3) of
+				%% 		<<"sex">>, 1, U3)) of
+				    ++ case lists:keydelete(<<"valid_date">>, 1,
+							    lists:keydelete(<<"gen_date">>, 1,
+									    lists:keydelete(
+									      <<"product_batch">>, 1,
+									      lists:keydelete(<<"alarm_day">>, 1, U3)))) of
 					[] -> [];
 					U1 ->
 					    [%% "update w_sale_detail set "
@@ -975,7 +986,7 @@ handle_call({update_good, Merchant, UTable, Attrs, OldAttrs}, _Form, State) ->
 					", color"
 					", size"
 					", total"
-					%% " from w_inventory_amount"
+					%% " From w_inventory_amount"
 					++ " from "
 					++ ?table:t(stock_note, Merchant, UTable)
 					++ " where " ++ C(true, OrgStyleNumber, OrgBrand))
@@ -991,7 +1002,7 @@ handle_call({update_good, Merchant, UTable, Attrs, OldAttrs}, _Form, State) ->
 			    %% ++ ", color, size, shop, merchant, total"
 			    %% " from w_inventory_amount where "
 			    %% ++ C(true, OrgStyleNumber, OrgBrand) ++ ") b"
-			    %% " on a.style_number=b.style_number"
+			    %% " On a.style_number=b.style_number"
 			    %% " and a.brand=b.brand"
 			    %% " and a.color=b.color"
 			    %% " and a.size=b.size"

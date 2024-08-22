@@ -839,25 +839,25 @@ alter table w_inventory_good add column product_batch VARCHAR(64) default'' afte
 alter table w_inventory_good add column gen_date DATE default 0 after merchant;
 alter table w_inventory_good add column valid_date DATE default 0 after merchant;
 
-alter table w_inventory_good_171 add column product_batch VARCHAR(64) default'' after merchant;
-alter table w_inventory_good_171 add column gen_date DATE default 0 after merchant;
-alter table w_inventory_good_171 add column valid_date DATE default 0 after merchant;
+alter table w_inventory_good_98 add column product_batch VARCHAR(64) default'' after merchant;
+alter table w_inventory_good_98 add column gen_date DATE default 0 after merchant;
+alter table w_inventory_good_98 add column valid_date DATE default 0 after merchant;
 
 alter table w_inventory add column product_batch VARCHAR(64) default'' after merchant;
 alter table w_inventory add column gen_date DATE default 0 after merchant;
 alter table w_inventory add column valid_date DATE default 0 after merchant;
 
-alter table w_inventory_171 add column product_batch VARCHAR(64) default'' after merchant;
-alter table w_inventory_171 add column gen_date DATE default 0 after merchant;
-alter table w_inventory_171 add column valid_date DATE default 0 after merchant;
+alter table w_inventory_98 add column product_batch VARCHAR(64) default'' after merchant;
+alter table w_inventory_98 add column gen_date DATE default 0 after merchant;
+alter table w_inventory_98 add column valid_date DATE default 0 after merchant;
 
 alter table w_inventory_new_detail add column product_batch VARCHAR(64) default'' after merchant;
 alter table w_inventory_new_detail add column gen_date DATE default 0 after merchant;
 alter table w_inventory_new_detail add column valid_date DATE default 0 after merchant;
 
-alter table w_inventory_new_detail_171 add column product_batch VARCHAR(64) default'' after merchant;
-alter table w_inventory_new_detail_171 add column gen_date DATE default 0 after merchant;
-alter table w_inventory_new_detail_171 add column valid_date DATE default 0 after merchant;
+alter table w_inventory_new_detail_98 add column product_batch VARCHAR(64) default'' after merchant;
+alter table w_inventory_new_detail_98 add column gen_date DATE default 0 after merchant;
+alter table w_inventory_new_detail_98 add column valid_date DATE default 0 after merchant;
 
 alter table batch_sale_detail add column product_batch VARCHAR(64) default'' after merchant;
 alter table batch_sale_detail add column gen_date DATE default 0 after merchant;

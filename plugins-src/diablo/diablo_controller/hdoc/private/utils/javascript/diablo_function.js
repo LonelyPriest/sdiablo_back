@@ -853,6 +853,16 @@ var diablo_format_datetime = function(dateFilter, datetime) {
     return datetime;
 };
 
+var diablo_format_date = function(date) {
+    var f = date.split("-");
+    if (f.length >= 3)
+    {
+	return f[0].concat(f[1], f[2]); 
+	
+    }
+    return date;
+};
+
 var diablo_array_last = function(arrary) {
     return arrary[arrary.length - 1];
 };

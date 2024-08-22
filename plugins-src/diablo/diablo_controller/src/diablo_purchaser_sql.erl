@@ -341,6 +341,10 @@ good(detail, {Merchant, UTable}, Conditions) ->
 	", a.path" 
 	", a.alarm_day"
 	", a.unit"
+
+	", a.product_batch"
+	", a.gen_date"
+	", a.valid_date"
 	
 	", a.contailer"
 	", a.alarm_a" 

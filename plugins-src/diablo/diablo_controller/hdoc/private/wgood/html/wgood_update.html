@@ -441,6 +441,70 @@
 		<span class="fg-red">整数或-1，-1表示无退货期限</span>
 	      </div>
 	    </div>
+
+	    <div x-ng-if="!base_settings.hide_product_batch" class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">生产批号</label>
+	      <div class="col-sm-6 col-md-6">
+	    	<div class="input-group">
+	    	  <input class="form-control"
+	    		 name="batch"
+	    		 required
+			 disable-key
+			 x-ng-edit
+	    		 placeholder="请输入生产批次号"
+	    		 x-ng-pattern="pattern.product_batch"
+			 x-ng-enter="" 
+	    		 x-ng-model="good.product_batch"/>
+	    	  <span class="input-group-addon bg-white fg-red">*</span>
+	    	</div>
+	    	<div ng-if="goodForm.batch.$invalid && !goodForm.batch.$pristine">
+	    	  <span style="color:red">生产批次号只能是数字</span>
+	    	</div>
+	      </div>
+	    </div>
+	    
+
+	    <div x-ng-if="!setting.hide_gen_date" class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">生产日期</label>
+	      <div class="col-sm-6 col-md-6">
+	    	<div class="input-group">
+	    	  <input class="form-control"
+	    		 name="genDate"
+	    		 required
+	    		 disable-key
+	    		 x-ng-edit
+	    		 placeholder="请输入生产日期"
+	    		 x-ng-pattern="pattern.date"
+	    		 x-ng-enter=""
+	    		 x-ng-model="good.gen_date"/>
+	    	  <span class="input-group-addon bg-white fg-red">*</span>
+	    	</div>
+	    	<div ng-if="goodForm.genDate.$invalid && !goodForm.genDate.$pristine">
+	    	  <span style="color:red">生产日期只能是8位数字</span>
+	    	</div>
+	      </div>
+	    </div>
+
+	    <div x-ng-if="!setting.hide_valid_date" class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">有效期</label>
+	      <div class="col-sm-6 col-md-6">
+	    	<div class="input-group">
+	    	  <input class="form-control"
+	    		 name="validDate"
+	    		 required
+	    		 disable-key
+	    		 x-ng-edit
+	    		 placeholder="请输入有效日期"
+	    		 x-ng-pattern="pattern.date"
+	    		 x-ng-enter=""
+	    		 x-ng-model="good.valid_date"/>
+	    	  <span class="input-group-addon bg-white fg-red">*</span>
+	    	</div>
+	    	<div ng-if="goodForm.validDate.$invalid && !goodForm.validDate.$pristine">
+	    	  <span style="color:red">有效日期只能是8位数字</span>
+	    	</div>
+	      </div>
+	    </div>
 	    
 	    <div x-ng-if="!setting.hide_unit" class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">计量单位</label>

@@ -24,7 +24,10 @@ function wgoodUpdateCtrlProvide(
 	price:        diabloPattern.positive_decimal_2,
 	expire:       diabloPattern.expire_date,
 	percent:      diabloPattern.percent,
-	barcode:      diabloPattern.number};
+	barcode:      diabloPattern.number,
+	product_batch:diabloPattern.number,
+	date:         diabloPattern.date
+    };
 
     $scope.shops      = user.sortShops;
     $scope.promotions = filterPromotion;
@@ -127,6 +130,8 @@ function wgoodUpdateCtrlProvide(
 	console.log(good); 
 	
 	// old
+	good.gen_date = diablo_format_date(good.gen_date);
+	good.valid_date = diablo_format_date(good.valid_date);
 	$scope.src_good = angular.copy(good);
 	// $scope.src_good.brand =
 	//     diablo_get_object(good.brand_id, $scope.brands);
@@ -212,7 +217,7 @@ function wgoodUpdateCtrlProvide(
 			     };
 	    
 	    angular.extend($scope.setting, hide_mode); 
-	    console.log($scope.base_settings);
+	    console.log($scope.setting);
 	}
 
 	$scope.init_base_setting($scope.good.shop.id);
@@ -673,6 +678,9 @@ function wgoodUpdateCtrlProvide(
 	update_good.discount  = stockUtils.to_integer(good.discount);
 	update_good.alarm_day = stockUtils.to_integer(good.alarm_day);
 	update_good.unit      = $scope.std_units.indexOf(good.unit);
+	update_good.product_batch = good.product_batch;
+	update_good.gen_date      = good.gen_date;
+	update_good.valid_date    = good.valid_date;
 	
 	update_good.level     = function() {
 	    var levelIndex = $scope.levels.indexOf(good.level);
