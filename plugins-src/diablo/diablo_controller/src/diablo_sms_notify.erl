@@ -211,8 +211,8 @@ sms_once(zz, Merchant, Sign, {Shop, Phone, Action, Money, Balance, Score0, Score
 	    Content = ?v(<<"content">>, Template),
 	    Text = case Sign == <<>> orelse Sign == [] of
 			  true ->
-			   %% <<"【大唐通用】", Content/binary>>;
-			   <<"【钱掌柜】", Content/binary>>;
+			   <<"【大唐通用】", Content/binary>>;
+			   %% <<"【钱掌柜】", Content/binary>>;
 			  false ->
 			   << <<"【">>/binary, Sign/binary, <<"】">>/binary, Content/binary>>
 		      end,

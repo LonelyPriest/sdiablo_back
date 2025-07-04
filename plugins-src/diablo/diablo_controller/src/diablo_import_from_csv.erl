@@ -99,14 +99,14 @@ import(member, Merchant, Path) ->
     insert_into_member(Merchant, Datetime, Time, Content, [], []).
 
 insert_into_member(Merchant, _Datetime, _Time, [], _Sort, Acc) ->
-    %% ?DEBUG("Sqls ~p", [lists:reverse(Acc)]),
+    ?DEBUG("Sqls ~ts", [lists:reverse(Acc)]),
     {ok, Merchant} = ?sql_utils:execute(transaction, lists:reverse(Acc), Merchant);
 
 insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
     {RName, Phone, Shop, Score, Consume, Balance, Birth, Date, ChangeDate} = H,
     ?DEBUG("H ~p", [H]),
     NewShop = case Shop of
-		  <<>> -> 294;
+		  <<>> -> 430;
 		  _ -> Shop
 	      end,
     NewScore = case Score of
@@ -217,10 +217,11 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 			   ++ "\"" ++ ?to_s(Phone) ++ "\","
 			   ++ ?to_s(NewShop) ++ ","
 			   ++ ?to_s(Merchant) ++ ","
-			   ++ case ?to_f(Balance) > 0 of
-			       true -> ?to_s(1);
-			       false -> ?to_s(0)
-			   end ++ ","
+			   %% ++ case ?to_f(Balance) > 0 of
+			   %%     true -> ?to_s(1);
+			   %%     false -> ?to_s(0)
+			   %% end ++ ","
+			   ++ ?to_s(0) ++ "," 
 			   ++ "\"" ++ ?to_s(NewBirth) ++ "\","
 			   ++ "\"" ++ ?to_s(NewChangeDate) ++ "\","
 			   ++ "\"" ++ ?to_s(Entry) ++ "\")"],
