@@ -1651,7 +1651,7 @@ stockPrintU.prototype.printBarcode2 = function() {
     }
 
     // fabric
-    if (this.template.fabric) {
+    if (1 == this.template.fabric) {
 	if (angular.isDefined(this.stock.fabrics) && angular.isArray(this.stock.fabrics)) {
 	    if (0 !== this.stock.fabrics.length) {
 		var waynodes = this.sort_waynode_by_fabric(this.stock.fabrics); 
@@ -1668,6 +1668,20 @@ stockPrintU.prototype.printBarcode2 = function() {
 		}
 	    } 
 	} 
+    }
+    
+    if (2 == this.template.fabric) {
+	line = "成分(材质)及洗涤说明见耐久性标签";
+	top += this.start_print(line,
+			 top,
+			 this.left,
+			 iwpx,
+			 this.template.hpx_each,
+			 0,
+			 pSecond,
+			 pThird,
+			 startSecond,
+			 startThird);
     }
 
     // feather
